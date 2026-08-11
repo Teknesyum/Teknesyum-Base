@@ -1,0 +1,14 @@
+{
+  "name": "teknesyum",
+  "owner": {
+    "name": "Teknesyum",
+    "url": "https://github.com/Teknesyum"
+  },
+  "plugins": [
+    {
+      "name": "teknesyum",
+      "source": "./teknesyum",
+      "description": "Neon arayüz standardı + çok ajanlı iş rölesi. Talebi söyle, iş bölümü ve denetim otomatik kurulsun."
+    }
+  ]
+}

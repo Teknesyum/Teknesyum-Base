@@ -1,0 +1,109 @@
+/* Teknesyum Neon — tek kaynak. Değerleri projede override etme. */
+
+@theme {
+  --color-neon-blue: #00f3ff;
+  --color-neon-pink: #ff00ea;
+  --color-neon-purple: #b026ff;
+  --color-neon-success: #34d399;
+  --color-surface: #08090a;
+  --color-dark-glass: rgba(10, 10, 15, 0.85);
+
+  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, 'Courier New', monospace;
+}
+
+:root {
+  --tk-blue: #00f3ff;
+  --tk-pink: #ff00ea;
+  --tk-purple: #b026ff;
+  --tk-success: #34d399;
+  --tk-surface: #08090a;
+  --tk-glass: rgba(10, 10, 15, 0.85);
+
+  --tk-text: #d1d5db;
+  --tk-text-dim: #9ca3af;
+  --tk-text-label: #6b7280;
+  --tk-text-hint: #4b5563;
+
+  --tk-r-box: 16px;
+  --tk-r-btn: 12px;
+  --tk-r-cell: 8px;
+  --tk-r-chip: 6px;
+
+  --tk-glow-blue: 0 0 20px rgba(0, 243, 255, 0.3);
+  --tk-glow-pink: 0 0 20px rgba(255, 0, 234, 0.3);
+  --tk-glow-purple: 0 0 20px rgba(176, 38, 255, 0.3);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans, Inter, system-ui, sans-serif);
+  color: var(--tk-text);
+  background: #050507;
+}
+
+/* --- tipografi --- */
+.tk-h2 {
+  font-size: 18px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--tk-blue); filter: drop-shadow(0 0 5px var(--tk-blue));
+}
+.tk-h3 {
+  font-size: 14px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--tk-text-dim);
+}
+.tk-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--tk-text-label);
+}
+.tk-mono {
+  font-family: var(--font-mono, monospace);
+  font-size: 14px; font-weight: 700; color: var(--tk-pink);
+}
+.tk-hero {
+  font-family: var(--font-mono, monospace);
+  font-size: 24px; font-weight: 900;
+  color: var(--tk-blue); filter: drop-shadow(0 0 8px var(--tk-blue));
+}
+.tk-hint { font-size: 10px; color: var(--tk-text-hint); }
+
+/* --- yüzeyler --- */
+.tk-panel {
+  background: rgba(8, 9, 10, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 243, 255, 0.2);
+  border-radius: var(--tk-r-box);
+  padding: 24px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+}
+
+/* --- butonlar --- */
+.tk-btn {
+  font-weight: 700; letter-spacing: 0.1em;
+  padding: 14px 20px; border-radius: var(--tk-r-btn);
+  border: 1px solid transparent; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  transition: all 200ms;
+}
+.tk-btn:hover { transform: scale(1.02); }
+.tk-btn-primary   { background: var(--tk-blue);   color: #000; box-shadow: var(--tk-glow-blue); }
+.tk-btn-primary:hover   { background: rgba(0, 243, 255, 0.8); }
+.tk-btn-danger    { background: var(--tk-pink);   color: #000; box-shadow: var(--tk-glow-pink); }
+.tk-btn-danger:hover    { background: rgba(255, 0, 234, 0.8); }
+.tk-btn-ghost {
+  background: rgba(176, 38, 255, 0.1);
+  border-color: rgba(176, 38, 255, 0.5);
+  color: var(--tk-purple);
+}
+.tk-btn-ghost:hover { background: rgba(176, 38, 255, 0.2); }
+.tk-btn:disabled { opacity: 0.3; pointer-events: none; transform: none; }
+
+/* --- scrollbar --- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb {
+  background: var(--tk-purple); border-radius: 4px;
+  box-shadow: 0 0 10px var(--tk-purple);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tk-pink); box-shadow: 0 0 10px var(--tk-pink);
+}

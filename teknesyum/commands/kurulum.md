@@ -33,7 +33,12 @@ dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. `/huy` ile e
 - İşi yarıda bırakma; kapsamı kendi kendine daraltma.
 ```
 
-**3. Opsiyonel bağımlılıklar** — sadece eksik olanı bildir, kurma:
+**3. Otomatik sıkıştırma penceresi.** `~/.claude/settings.json` içinde `autoCompactWindow`
+anahtarı **yoksa** `250000` olarak ekle. **Varsa dokunma** — kullanıcının kendi tercihidir.
+Bu ayar makine geneli olduğu için her oturumda geçerlidir; oturum başına ayarlanmaz.
+Sonradan değiştirmek için `/autocompact <sayı>`, kapatmak için anahtarı sil.
+
+**4. Opsiyonel bağımlılıklar** — sadece eksik olanı bildir, kurma:
 - `typescript-language-server` + `typescript-lsp` plugin'i (TS projelerinde tip zekâsı)
 - `csharp-ls` + `csharp-lsp` plugin'i (C# projelerinde)
 - `graphify` (`uv tool install graphifyy`) — büyük kod tabanı indeksleme

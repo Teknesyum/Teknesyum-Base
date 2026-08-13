@@ -63,15 +63,34 @@ dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. \`/huy\` ile
     try { s = JSON.parse(fs.readFileSync(sp, 'utf8')); }
     catch { atlanan.push('settings.json okunamadı (bozuk JSON) — statusline elle eklenmeli'); }
   }
+  let sDegisti = false;
   if (fs.existsSync(SL)) {
     if (s.statusLine && s.statusLine.command && !/teknesyum-statusline/.test(s.statusLine.command)) {
       atlanan.push('statusLine zaten tanımlı, dokunulmadı — değiştirmek istersen: ' + SL);
     } else {
       s.statusLine = { type: 'command', command: 'node "' + SL.replace(/\\/g, '/') + '"' };
-      fs.writeFileSync(sp, JSON.stringify(s, null, 2));
+      sDegisti = true;
       yapilan.push('statusLine settings.json\'a yazıldı');
     }
   }
+
+  // Otomatik sıkıştırma penceresi. Varsayılan eşik uzun oturumlarda erken devreye girip
+  // bağlamı kesiyor. TEKNESYUM_AUTOCOMPACT ile değiştirilir, 'kapali' ile hiç dokunulmaz.
+  // Kullanıcının kendi değeri varsa üzerine YAZILMAZ — bu bir tercih, bir eksiklik değil.
+  const acIstek = (process.env.TEKNESYUM_AUTOCOMPACT || '250000').toLowerCase();
+  if (acIstek === 'kapali' || acIstek === 'off') {
+    atlanan.push('autoCompactWindow atlandı (TEKNESYUM_AUTOCOMPACT=kapali)');
+  } else if (typeof s.autoCompactWindow === 'number') {
+    atlanan.push('autoCompactWindow zaten ' + s.autoCompactWindow + ', dokunulmadı');
+  } else if (!/^\d+$/.test(acIstek)) {
+    atlanan.push('TEKNESYUM_AUTOCOMPACT sayı değil (' + acIstek + '), autoCompactWindow atlandı');
+  } else {
+    s.autoCompactWindow = Number(acIstek);
+    sDegisti = true;
+    yapilan.push('autoCompactWindow = ' + acIstek + ' yazıldı (/autocompact <sayi> ile değişir)');
+  }
+
+  if (sDegisti) fs.writeFileSync(sp, JSON.stringify(s, null, 2));
 
   // 3. HUYLAR.md
   const hp = path.join(HOME, 'HUYLAR.md');

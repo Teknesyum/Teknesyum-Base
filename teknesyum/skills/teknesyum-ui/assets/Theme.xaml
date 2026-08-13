@@ -18,8 +18,8 @@
   <SolidColorBrush x:Key="TextLabel" Color="#FF6B7280"/>
   <SolidColorBrush x:Key="TextHint"  Color="#FF4B5563"/>
 
-  <FontFamily x:Key="FontSans">Inter, Segoe UI</FontFamily>
-  <FontFamily x:Key="FontMono">JetBrains Mono, Consolas</FontFamily>
+  <FontFamily x:Key="FontSans">Segoe UI</FontFamily>
+  <FontFamily x:Key="FontMono">Consolas, Cascadia Mono</FontFamily>
 
   <Style x:Key="H2" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>

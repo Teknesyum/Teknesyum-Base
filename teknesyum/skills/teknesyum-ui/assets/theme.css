@@ -8,8 +8,8 @@
   --color-surface: #08090a;
   --color-dark-glass: rgba(10, 10, 15, 0.85);
 
-  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, 'Courier New', monospace;
+  --font-sans: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --font-mono: Consolas, 'Cascadia Mono', ui-monospace, 'Courier New', monospace;
 }
 
 :root {
@@ -37,7 +37,7 @@
 
 body {
   margin: 0;
-  font-family: var(--font-sans, Inter, system-ui, sans-serif);
+  font-family: var(--font-sans, 'Segoe UI', system-ui, sans-serif);
   color: var(--tk-text);
   background: #050507;
 }

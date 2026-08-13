@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Teknesyum — Claude Code Adamantium Base
+# Kurulum:  curl -fsSL https://raw.githubusercontent.com/Teknesyum/claude-code-adamantium-base/main/install.sh | bash
+set -e
+
+REPO="Teknesyum/claude-code-adamantium-base"
+RAW="https://raw.githubusercontent.com/$REPO/main"
+
+printf '\n  Teknesyum - Claude Code Adamantium Base\n\n'
+
+if ! command -v claude >/dev/null 2>&1; then
+  printf '  Claude Code bulunamadi. Once kur: https://claude.com/code\n'
+  exit 1
+fi
+
+printf '  [1/3] Marketplace ekleniyor...\n'
+claude plugin marketplace add "$REPO"
+
+printf '  [2/3] Plugin kuruluyor...\n'
+claude plugin install teknesyum@teknesyum
+
+printf '  [3/3] Statusline ve huy dosyasi baglaniyor...\n'
+if command -v node >/dev/null 2>&1; then
+  TMP="$(mktemp)"
+  curl -fsSL "$RAW/scripts/post-install.js" -o "$TMP"
+  node "$TMP"
+  rm -f "$TMP"
+else
+  printf '  Node.js yok - statusline atlandi. Claude Code icinde /teknesyum:kurulum calistir.\n'
+fi

@@ -1,7 +1,10 @@
 {
-  "author": "Teknesyum",
+  "surum": "1.1.0",
+  "yazar": "Teknesyum",
   "github": "https://github.com/Teknesyum",
   "sponsor": "https://github.com/sponsors/Teknesyum",
-  "sponsorActive": false,
-  "_note": "GitHub Sponsors profili onay bekliyor. Onaylandığında sponsorActive=true yap; bileşenler otomatik sponsor linkine geçer."
+  "sponsorAktif": true,
+  "imzaMetni": "by Teknesyum",
+  "destekMetni": "Buy me a coffee",
+  "_not": "Bu dosya varsayılandır. Kullanıcı ~/.claude/teknesyum-ui.json ile ezer; /teknesyumui komutu onu düzenler."
 }

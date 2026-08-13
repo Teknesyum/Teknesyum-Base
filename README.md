@@ -160,16 +160,10 @@ The model is chosen at call time.
 
 ### Statusline
 
-```
-⬢ Opus 5  ·  Mangala  ·  ⎇ main
-ctx ██████░░░░ 61%   5s 34%   7g 12%   ▸ T3 ████░░ 4/8
-  ⚙ T4 usta          ███░░░░░  23/60  Edit src/hooks/useMangala.js
-  ⨯ T3 usta-arayuz   ░░░░░░░░   3/60  ran out of context → /devam
-```
-
-Context usage, **your plan limits** (5-hour and weekly), contract progress, and each
-agent's turn budget. It is rendered for you and never for the model, so its
-**token cost is zero**.
+A multi-line statusline showing context usage, **your plan limits** (5-hour and weekly),
+contract progress, and each agent's turn budget with its current action. Dead agents are
+labelled in plain language with the command that revives them. It is rendered for you and
+never for the model, so its **token cost is zero**.
 
 ### Hooks
 

@@ -47,6 +47,16 @@ function olu(a) {
   return a.stop_reason !== null && a.stop_reason !== 'end_turn';
 }
 
+const OLUM_SEBEBI = {
+  max_tokens: 'bağlamı doldu',
+  max_turns: 'tur bütçesi bitti',
+  refusal: 'reddetti',
+  error: 'hata aldı',
+  api_error: 'hata aldı',
+  aborted: 'iptal edildi',
+  canceled: 'iptal edildi',
+};
+
 function ajanSatiri(a) {
   const tavan = TUR_TAVANI[a.agent_type] || 50;
   const pct = Math.min(100, ((a.steps || 0) / tavan) * 100);
@@ -57,7 +67,7 @@ function ajanSatiri(a) {
   else { ikon = '✓'; renk = C.ok; }
   let s = renk + ikon + ' ' + C.r + C.dim + ad + C.r + ' ' + bar(pct, 8) +
           ' ' + C.hint + (a.steps || 0) + '/' + tavan + C.r;
-  if (olu(a)) s += ' ' + C.pink + a.stop_reason + C.r;
+  if (olu(a)) s += ' ' + C.pink + (OLUM_SEBEBI[a.stop_reason] || 'durdu') + ' → /devam' + C.r;
   else if (a.stop_reason === null && a.last_action) s += ' ' + C.hint + kisalt(a.last_action, 34) + C.r;
   return s;
 }

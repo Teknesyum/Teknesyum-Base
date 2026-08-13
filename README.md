@@ -2,11 +2,11 @@
 
 # Claude Code Adamantium Base
 
-**Talebini söyle. Gerisini sistem kursun.**
+**State what you want. Let the system organize the rest.**
 
-Claude Code için tek paket: çok ajanlı iş rölesi + neon arayüz standardı.
-İş büyüklüğünü, kaç parçaya bölüneceğini, hangi ajanın hangi modelle çalışacağını,
-denetimin nasıl yapılacağını sen değil sistem belirler.
+One package for Claude Code: a multi-agent work relay plus a neon UI standard.
+How big the job is, how many pieces it splits into, which agent runs on which model,
+and how the result gets verified — the system decides, not you.
 
 [![Sponsor](https://img.shields.io/badge/Sponsor-Teknesyum-b026ff?style=flat-square&logo=githubsponsors)](https://github.com/sponsors/Teknesyum)
 [![License](https://img.shields.io/badge/License-MIT-00f3ff?style=flat-square)](LICENSE)
@@ -15,38 +15,38 @@ denetimin nasıl yapılacağını sen değil sistem belirler.
 
 ---
 
-## Ne işe yarar
+## What it solves
 
-Claude Code varsayılan halinde tek bir asistandır: sen ne yapacağını söylersin, o yapar.
-Büyük iş verdiğinde bağlamı dolar, limite takılır, kaldığı yeri unutur; kendi işini
-kendisi onaylar; her projede farklı bir arayüz üretir.
+Out of the box, Claude Code is a single assistant: you say what to do, it does it.
+Give it a large job and the context fills up, it hits the limit, it forgets where it
+stopped; it approves its own work; and it produces a different-looking UI in every project.
 
-Bu paket dört şeyi değiştirir:
+This package changes four things:
 
-| | Öncesi | Sonrası |
+| | Before | After |
 |---|---|---|
-| **İş bölümü** | Tek asistan her şeyi yapar, bağlam şişer | Sözleşmelere bölünür, ajanlara dağıtılır, ara çıktı ana bağlamı kirletmez |
-| **Doğrulama** | Kodu yazan "bitti" der | Ayrı bir denetçi doğrular — **yazma aracı yoktur**, onaylamaktan başka bir şey yapamaz |
-| **Kesinti** | Limite takılınca baştan başlarsın | Her ajanın izi diske yazılır, kaldığı yerden sürer |
-| **Arayüz** | Her projede farklı görünüm | Aynı palet, aynı tipografi, aynı imza — her projede |
+| **Division of work** | One assistant does everything, context bloats | Split into contracts, handed to agents; intermediate output never pollutes the main context |
+| **Verification** | The author of the code declares it done | A separate auditor verifies it — it **has no write tools** and can do nothing but approve or reject |
+| **Interruption** | Hit the limit, start over | Every agent's trace is written to disk; work resumes where it stopped |
+| **UI** | A different look in every project | Same palette, same typography, same signature — everywhere |
 
 ---
 
-## Kurulum
+## Install
 
-### Windows — tek satır
+### Windows — one line
 
 ```powershell
 irm https://raw.githubusercontent.com/Teknesyum/claude-code-adamantium-base/main/install.ps1 | iex
 ```
 
-### macOS / Linux — tek satır
+### macOS / Linux — one line
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Teknesyum/claude-code-adamantium-base/main/install.sh | bash
 ```
 
-### Claude Code içinden — üç satır
+### From inside Claude Code — three lines
 
 ```
 /plugin marketplace add Teknesyum/claude-code-adamantium-base
@@ -58,54 +58,58 @@ curl -fsSL https://raw.githubusercontent.com/Teknesyum/claude-code-adamantium-ba
 /teknesyum:kurulum
 ```
 
-Kurulumdan sonra **Claude Code'u yeniden başlat.**
+**Restart Claude Code after installing.**
 
-**Gereken:** Claude Code. **Opsiyonel:** Node.js (statusline için), `typescript-language-server`
-(TS tip zekâsı), `graphify` (büyük kod tabanı indeksleme). Eksik olanlar kurulumda bildirilir,
-zorunlu değildir.
+**Required:** Claude Code. **Optional:** Node.js (for the statusline),
+`typescript-language-server` (TS type intelligence), `graphify` (large-codebase indexing).
+Anything missing is reported during install; none of it is mandatory.
+
+> The plugin's user-facing text, agent prompts and commands are written in **Turkish**.
+> The tooling itself is language-agnostic — it writes code and UI in whatever language
+> your project uses.
 
 ---
 
-## Nasıl çalışır
+## How it works
 
-Bir şey istediğinde `relay` devreye girer ve **sessizce sınıflandırır**:
+When you ask for something, `relay` engages and **classifies it silently**:
 
-| İşin boyu | Ne olur |
+| Job size | What happens |
 |---|---|
-| Soru, açıklama | Cevaplanır. Hiçbir şey kurulmaz. |
-| 1-2 dosya | Doğrudan yapılır. Ajan açılmaz. |
-| 3-4 dosya, tek yetenek | Tek sözleşme, tek ajan. |
-| ≥3 bağımsız parça veya ≥5 dosya | Tam röle: plan, sözleşmeler, paralel ajanlar, denetim |
+| A question, an explanation | It gets answered. Nothing is set up. |
+| 1–2 files | Done directly. No agent is spawned. |
+| 3–4 files, single skill | One contract, one agent. |
+| ≥3 independent pieces or ≥5 files | Full relay: plan, contracts, parallel agents, audit |
 
-Sana "bu büyük bir iş mi" diye sorulmaz. Hazırlık da sorulmadan yapılır:
+You are never asked "is this a big job?". Preparation happens without asking, too:
 
-- **Git yoksa** dosya değiştirmeden önce depo kurulur ve güvenlik commit'i atılır
-- **Kod tabanı yabancı ve büyükse** önce indekslenir, sonra dosya okumak yerine grafik sorgulanır
-- **Arayüz işi varsa** tema standardı yüklü bir ajana gider
-- **Yönlendirici `CLAUDE.md` eksikse** iş bitiminde yazdırılır
+- **No git repo?** One is initialized and a safety commit is made before any file is touched
+- **Codebase large and unfamiliar?** It gets indexed first, then the graph is queried instead of reading files
+- **UI work involved?** It goes to an agent with the theme standard preloaded
+- **Missing `CLAUDE.md` signposts?** They get written when the job closes
 
-### Sözleşme düzeni
+### Contract layout
 
-Büyük işlerde her görev bir dosyaya yazılır:
+For large jobs, every task is written to a file:
 
 ```
 .claude/relay/
-├── PLAN.md              görev grafiği, bağımlılıklar
-├── LOG.md               tek satırlık olay kaydı
-├── canli/               ajan izleri — hook yazar, model değil
+├── PLAN.md              task graph, dependencies
+├── LOG.md               one-line event log
+├── canli/               agent traces — written by a hook, not by the model
 └── contracts/
-    ├── T3.md            açık sözleşmeler
-    └── done/            tamamlananlar (yazmaya kapalı)
+    ├── T3.md            open contracts
+    └── done/            completed ones (write-protected)
 ```
 
-Her sözleşme neyi sahiplendiğini (`owns`) beyan eder. **İki sözleşme aynı dosyayı
-sahiplenemez** — paralel çalışmanın tek güvencesi budur. Ajan bitince sözleşmesini
-`done/` klasörüne taşır; oraya yazmak bir hook tarafından engellenir.
+Every contract declares what it owns (`owns`). **Two contracts can never own the same
+file** — that is the only guarantee parallel work has. When an agent finishes, it moves
+its contract into `done/`; writing there is blocked by a hook.
 
-### Kesintiye dayanıklılık
+### Surviving interruptions
 
-Ajanın her adımı `canli/<agent_id>.json` dosyasına **hook tarafından** yazılır — modelin
-iş birliğine bağlı değildir:
+Every step an agent takes is written to `canli/<agent_id>.json` **by a hook** — it does
+not depend on the model cooperating:
 
 ```json
 {
@@ -113,45 +117,46 @@ iş birliğine bağlı değildir:
   "last_action": "Edit src/theme/tokens.ts",
   "files": ["src/App.tsx", "src/theme/tokens.ts"],
   "stop_reason": "max_tokens",
-  "son_soz": "Tema tokenları yazıldı, panel entegrasyonu kaldı."
+  "son_soz": "Theme tokens written, panel integration still pending."
 }
 ```
 
-`stop_reason` `end_turn` dışında bir değerse ajan ölmüştür. Önce aynı ajan bağlamıyla
-diriltilir; olmazsa taze ajana devir teslim metni bu dosyadan kurulur. `/devam` bunu
-otomatik yapar.
+Any `stop_reason` other than `end_turn` means the agent died. It is first revived with
+its own context; if that fails, a handover brief for a fresh agent is built from this
+file. `/devam` does all of it automatically.
 
-### Düzeltme döngüsü
+### Fix loop
 
-Denetçi "kaldı" derse: 1-3. turlarda **aynı ajan** devam ettirilir (bağlamı korunur),
-4-5. turlarda taze ve bir üst modelde ajan atanır, tavanda karar sana gelir.
-Açık kritik bulgu varken sonraki göreve geçilmez.
+When the auditor says "rejected": rounds 1–3 continue with the **same agent** (context
+preserved), rounds 4–5 assign a fresh agent on a stronger model, and at the ceiling the
+decision comes to you. No job moves forward while a critical finding is open.
 
 ---
 
-## Bileşenler
+## Components
 
-### Ajanlar
+### Agents
 
-| Ajan | İşi | Varsayılan model |
+| Agent | Job | Default model |
 |---|---|---|
-| `usta` | Kod yazar — modül, algoritma, endpoint, refactor, test | sonnet |
-| `usta-arayuz` | Arayüz yazar; tema standardı bağlamına önyüklü | sonnet |
-| `denetci` | Kabul kriterlerini doğrular — **Write/Edit araçları yok** | sonnet |
-| `kayitci` | Mekanik toplu iş — isim, biçim, dokümantasyon | haiku |
+| `usta` | Writes code — modules, algorithms, endpoints, refactors, tests | sonnet |
+| `usta-arayuz` | Writes UI; theme standard preloaded into its context | sonnet |
+| `denetci` | Verifies acceptance criteria — **has no Write/Edit tools** | sonnet |
+| `kayitci` | Mechanical bulk work — naming, formatting, documentation | haiku |
 
-Rol işin türünü, model ağırlığını belirler; ikisi ayrı eksendir. Model çağrı anında seçilir.
+Role determines the kind of work, model determines the weight; they are separate axes.
+The model is chosen at call time.
 
-### Komutlar
+### Commands
 
-| Komut | Ne yapar |
+| Command | What it does |
 |---|---|
-| `/durum` | Sözleşme ilerlemesi + ajan başına tur bütçesi barları |
-| `/devam` | Kesilen oturumu ajan izlerinden sürdürür |
-| `/iskele` | Röleyi açıkça kurar (normalde otomatik) |
-| `/huy` | Kalıcı kural ekler, doğru katmana yazar |
-| `/teknesyumui` | Arayüz standardını ayarlar veya kapatır |
-| `/kurulum` | Statusline ve huy dosyasını bağlar |
+| `/durum` | Contract progress + per-agent turn-budget bars |
+| `/devam` | Resumes an interrupted session from agent traces |
+| `/iskele` | Sets up the relay explicitly (normally automatic) |
+| `/huy` | Records a permanent rule in the right layer |
+| `/teknesyumui` | Configures or disables the UI standard |
+| `/kurulum` | Wires up the statusline and the habits file |
 
 ### Statusline
 
@@ -159,118 +164,131 @@ Rol işin türünü, model ağırlığını belirler; ikisi ayrı eksendir. Mode
 ⬢ Opus 5  ·  Mangala  ·  ⎇ main
 ctx ██████░░░░ 61%   5s 34%   7g 12%   ▸ T3 ████░░ 4/8
   ⚙ T4 usta          ███░░░░░  23/60  Edit src/hooks/useMangala.js
-  ⨯ T3 usta-arayuz   ░░░░░░░░   3/60  max_tokens
+  ⨯ T3 usta-arayuz   ░░░░░░░░   3/60  ran out of context → /devam
 ```
 
-Bağlam doluluğu, **plan limitin** (5 saatlik ve haftalık), sözleşme ilerlemesi ve her
-ajanın tur bütçesi. Modele değil sana gösterildiği için **token maliyeti sıfır**.
+Context usage, **your plan limits** (5-hour and weekly), contract progress, and each
+agent's turn budget. It is rendered for you and never for the model, so its
+**token cost is zero**.
 
-### Hook'lar
+### Hooks
 
-- `koru-sozlesme.js` — tamamlanmış sözleşmelere yazmayı harness seviyesinde engeller
-- `relay-izle.js` — ajan izlerini diske yazar (`SubagentStart` / `PostToolUse` / `SubagentStop`)
+- `koru-sozlesme.js` — blocks writes to completed contracts at the harness level
+- `relay-izle.js` — writes agent traces to disk (`SubagentStart` / `PostToolUse` / `SubagentStop`)
 
 ---
 
-## Arayüz standardı
+## UI standard
 
-Varsayılan palet — neon üçlüsü, koyu zemin:
+Default palette — neon triad on a dark ground:
 
-| | Hex | Kullanım |
+| | Hex | Used for |
 |---|---|---|
-| Birincil | `#00f3ff` | Eylem, aktif durum, sayısal vurgu, başlık |
-| İkincil | `#ff00ea` | Uyarı, ters eylem, kritik değer |
-| Üçüncül | `#b026ff` | Mod anahtarları, scrollbar, ikincil buton |
-| Başarı | `#34d399` | Yalnızca "tamamlandı" |
-| Zemin | `#08090a` | Panel |
+| Primary | `#00f3ff` | Actions, active state, numeric emphasis, headings |
+| Secondary | `#ff00ea` | Warnings, destructive actions, critical values |
+| Tertiary | `#b026ff` | Mode switches, scrollbars, secondary buttons |
+| Success | `#34d399` | "Completed" and nothing else |
+| Surface | `#08090a` | Panels |
 
-Tipografi: **Segoe UI** (metin) + **Consolas** (her sayı, tuş, kod, süre).
-Ölçek 10 → 13 → 14 → 18 → 24, ara boyut yok.
+Typography: **Segoe UI** for text, **Consolas** for every number, key, code fragment and
+duration. Scale 10 → 13 → 14 → 18 → 24, no sizes in between.
 
-Kural seti renk ve ölçü uydurmayı yasaklar: radius dört değerden biri, aralık beş
-değerden biri, renkli metin glow'suz bırakılamaz, sayı sans fontla yazılamaz.
+The rule set forbids inventing colors and dimensions: radius is one of four values,
+spacing one of five, neon text is never left without a glow, numbers are never set in a
+sans font.
 
-Desteklenen stack'ler: Tailwind v4, düz CSS, React, Electron, WPF (XAML), WinForms, ANSI konsol.
+Supported stacks: Tailwind v4, plain CSS, React, Electron, WPF (XAML), WinForms, ANSI console.
 
-### Özelleştirme
+Desktop UI carries extra hard rules — nothing may be clipped, no button strip may drop an
+element, no system title bar is left in its default light chrome, and native scrollbars are
+darkened. UI strings never live in code: every project keeps a `locale/` folder that a
+translator can work in without opening a source file.
+
+### Customization
 
 ```
-/teknesyumui                      mevcut ayarı göster
-/teknesyumui kapat                arayüz standardını tamamen devre dışı bırak
-/teknesyumui palet #ff6b00        birincil rengi değiştir
-/teknesyumui font Inter           varsayılan fontu değiştir
-/teknesyumui imza kapat           imza bloğunu kaldır
-/teknesyumui not <metin>          kendi kuralını yaz — çelişirse seninki kazanır
-/teknesyumui sifirla              varsayılanlara dön
+/teknesyumui                      show current settings
+/teknesyumui kapat                disable the UI standard entirely
+/teknesyumui palet #ff6b00        change the primary color
+/teknesyumui font Inter           change the default font
+/teknesyumui imza kapat           remove the signature block
+/teknesyumui not <text>           write your own rule — yours wins on conflict
+/teknesyumui sifirla              restore defaults
 ```
 
-Ayarlar `~/.claude/teknesyum-ui.json` dosyasında tutulur; sadece değiştirdiğin alan yazılır,
-gerisi varsayılandan gelir. Projeye özel ayar için o projede `.claude/teknesyum-ui.json`
-oluştur — kullanıcı geneline üstündür.
+Settings live in `~/.claude/teknesyum-ui.json`; only fields you change are written, the
+rest come from defaults. For per-project settings, create `.claude/teknesyum-ui.json` in
+that project — it overrides the user-level file.
 
-`kapat` dersen skill hiçbir renk veya ölçü dayatmaz, projenin kendi tarzıyla devam edilir.
+With `kapat`, the skill imposes no color or dimension at all and the project's own style
+is followed.
 
-### İmza bloğu
+### Signature block
 
-Üretilen arayüzlerin ayarlar/hakkında bölümünün en altına sağa yaslı, küçük bir imza
-eklenir: GitHub bağlantısı ve destek bağlantısı. `/teknesyumui imza kapat` ile kaldırılır,
-`/teknesyumui imza github <url>` ile kendi hesabına çevrilir.
+A small, right-aligned signature is added to the bottom of the settings/about section of
+generated UIs: a GitHub link and a support link. The support button is **outlined** —
+transparent fill, colored border, colored label, vector icon. Remove it with
+`/teknesyumui imza kapat`, or point it at your own account with
+`/teknesyumui imza github <url>`.
 
 ---
 
-## Maliyet
+## Cost
 
-Claude Code'un kendi ölçümü:
+Claude Code's own measurement:
 
 ```
-Skills (7) · Agents (4) · Hooks (4)
-Always-on:  ~527 token     her oturuma eklenen
+Skills (8) · Agents (4) · Hooks (4)
+Always-on:  ~1,211 tokens     added to each session
 ```
 
-200k bağlamın **binde ikisinden azı**. Skill gövdeleri yalnızca tetiklendiklerinde yüklenir;
-röle protokolünün tamamı ancak gerçekten röle kurulduğunda okunur.
+Well under one percent of a 200k context, and it is paid once per session — later
+messages hit the prompt cache at roughly a tenth of that. Skill bodies load only when
+triggered; the full relay protocol is read only when a relay is actually set up.
 
-Tasarım boyunca tek kural: **ara çıktı / geri dönen rapor oranı yüksekse delege et.**
-Keşif ve tarama alt ajanın bağlamında ölür, ana oturuma sadece sonuç döner.
+One rule shaped the whole design: **delegate when the ratio of intermediate output to
+returned summary is high.** Exploration and scanning die inside the subagent's context;
+only the conclusion comes back to the main session.
 
 ---
 
-## Ayarlar
+## Settings
 
-Davranış düğmeleri `skills/relay/AYAR.md` içinde:
+Behavior knobs live in `skills/relay/AYAR.md`:
 
-| Düğme | Varsayılan | Ne yapar |
+| Knob | Default | What it controls |
 |---|---|---|
-| `soru_esigi` | `kritik` | Ajan ne zaman durup sorar |
-| `onay_kapisi` | `yok` | Plan onaya sunulsun mu |
-| `denetim` | `her-sozlesme` | Denetçi ne zaman çalışır |
-| `duzeltme_tavani` | `5` | Kaç turdan sonra karar sana gelir |
-| `model_tirmanisi` | `acik` | 3. turda üst modele çıkılsın mı |
-| `paralel_genislik` | `2` | Eşzamanlı ajan tavanı |
-| `worktree_izolasyonu` | `kapali` | Ajanlar izole repo kopyasında mı çalışsın |
+| `soru_esigi` | `kritik` | When an agent stops to ask you something |
+| `onay_kapisi` | `yok` | Whether the plan is submitted for approval |
+| `denetim` | `her-sozlesme` | When the auditor runs |
+| `duzeltme_tavani` | `5` | After how many rounds the decision comes to you |
+| `model_tirmanisi` | `acik` | Whether round 3 escalates to a stronger model |
+| `paralel_genislik` | `2` | Cap on concurrent agents |
+| `worktree_izolasyonu` | `kapali` | Whether agents work in an isolated repo copy |
 
-Projeye özel ezme: `<proje>/.claude/relay/AYAR.md`.
-
----
-
-## Gerçek ölçüm
-
-Bir React projesinde uçtan uca çalıştırıldı: **8 sözleşme, 16 ajan.**
-
-Denetçiler **4 gerçek hata** yakaladı ve hiçbiri build veya lint ile yakalanamazdı:
-- `@import` yanlış yerdeydi, fontlar sessizce düşüyordu — ajan "zararsız uyarı" demişti
-- Bir klavye kısayolu hiç yazılmamıştı ama ajan çıktısında "yapıldı" yazıyordu
-- İki kez ham hex rengi kullanılmıştı, token varken
-
-İkisi **ajanın raporuyla kodun çeliştiği** vakalardı. Denetçi olmasaydı ikisi de geçerdi.
-
-Oturum limiti üç ajanı aynı anda düşürdü; üçü de bağlamlarıyla diriltildi, taze ajana
-geçmek gerekmedi. Sekiz sözleşmenin tamamı kapandı, tek bir sahiplik ihlali olmadı,
-bağımlılık dosyası değişmedi.
+Per-project override: `<project>/.claude/relay/AYAR.md`.
 
 ---
 
-## Güncelleme ve sürümler
+## Measured on a real run
+
+Run end to end on a React project: **8 contracts, 16 agents.**
+
+The auditors caught **4 real defects**, none of which build or lint could have caught:
+- An `@import` in the wrong place, silently dropping fonts — the agent had called it a "harmless warning"
+- A keyboard shortcut that was never implemented, while the agent's output said "done"
+- Raw hex colors used twice where a token existed
+
+Two of those were cases where **the agent's report contradicted the code**. Without the
+auditor, both would have passed.
+
+The session limit killed three agents at once; all three were revived with their own
+context, and no handover to a fresh agent was needed. All eight contracts closed, with no
+ownership violation and no change to the dependency files.
+
+---
+
+## Updating
 
 ```
 /plugin marketplace update teknesyum
@@ -279,16 +297,16 @@ bağımlılık dosyası değişmedi.
 /reload-plugins
 ```
 
-Varsayılan palet, font ve imza sürümle değişebilir; `~/.claude/teknesyum-ui.json`
-içindeki kendi ayarların korunur. Ayar dosyası kendi `surum` alanını taşır, uyumsuzluk
-olduğunda uyarılırsın.
+The default palette, font and signature may change between versions; your own settings in
+`~/.claude/teknesyum-ui.json` are preserved. The settings file carries its own `surum`
+field and you are warned when it drifts out of sync.
 
 ---
 
-## Destek
+## Support
 
-Bu paket boş zamanda geliştiriliyor ve ücretsiz.
+This package is built in spare time and is free.
 
-<a href="https://github.com/sponsors/Teknesyum"><img src="https://img.shields.io/badge/☕_Buy_me_a_coffee-b026ff?style=for-the-badge" alt="Sponsor" /></a>
+<a href="https://github.com/sponsors/Teknesyum"><img src="https://img.shields.io/badge/Buy_me_a_coffee-b026ff?style=for-the-badge&logo=githubsponsors&logoColor=b026ff&labelColor=0d0d0f" alt="Sponsor" /></a>
 
 **[github.com/Teknesyum](https://github.com/Teknesyum)** · MIT

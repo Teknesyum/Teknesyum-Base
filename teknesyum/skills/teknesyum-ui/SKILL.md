@@ -73,6 +73,11 @@ Linkler ve metinler `assets/links.json`'da:
 - GitHub: `https://github.com/Teknesyum`
 - Destek: `https://github.com/sponsors/Teknesyum` — **aktif**
 
+Destek düğmesi **anahat**tır: zemin `transparent`, çerçeve `neon-purple/50`, yazı ve ikon
+`neon-purple` + text-shadow glow. Dolgulu kutu, gri kutu veya emoji ikon (`☕`) kullanma —
+ikon 12px `stroke="currentColor"` SVG/Path olarak çizilir. Hover'da çerçeve tam opaklığa
+çıkar ve dış glow açılır; dolgu hover'da da gelmez.
+
 Kullanıcı ayarında `"imza": { "kapali": true }` varsa **ekleme**.
 `"imza": { "metin": "...", "github": "...", "sponsor": "..." }` varsa onları kullan.
 
@@ -206,3 +211,38 @@ Kurallar:
 2. **Yerleşim en uzun dile göre ölçülür.** İngilizce ve Almanca metinler Türkçeden uzun olur;
    sabit genişlikli düğme ve sütunlar bu yüzden kırpar. §7 doğrulaması **her dil için** yapılır:
    ekran görüntüsünü al, dosyayı aç, bak.
+
+## 10. Varsayılanlar — tartışılmadan uygulanır
+
+Bunlar her yeni arayüzde başlangıç hâlidir. Aksini yapmak için gerekçe gerekir, uygulamak için değil.
+
+**Pencere köşeleri yuvarlatılır.** Keskin dikdörtgen pencere neon temayla uyuşmuyor; yarıçap
+**12px**. Çerçevesiz pencerede (§8) işletim sistemi yuvarlatma uygulamaz — şekli kendin kırp
+(WinForms `Region`, WPF `Border.CornerRadius` + `WindowChrome`, web `border-radius`).
+**Büyütülmüş pencere kare kalır:** ekran kenarında yuvarlatılmış köşe arkadaki masaüstünü
+gösterir. Bu yüzden köşe bölgesi her yeniden boyutlandırmada yeniden hesaplanır.
+
+**Tablo içeriği ortalanır.** Başlık satırı da, hücreler de yatayda ortalı
+(`MiddleCenter` / `text-align: center`). Sola dayalı sütun karışımı ızgarayı dağınık gösteriyor;
+tek hizada okunuyor. Sütun genişliği içeriği ortalanmış hâlde sığdıracak kadar geniş olmalı —
+ortalanmış metin kırpılırsa iki yanından birden kaybeder ve okunmaz olur (§7).
+
+**Başlık çubuğu düğmeleri görünür boyutta ve beyaz çizilir.** Kapat/büyüt/küçült simgeleri harf
+değil çizgidir; 12pt altında kenar yumuşatma onları griye çevirir ve kullanıcı "sönük" görür.
+Tıklama alanı **52×36px**, simge yazı tipi **12pt**, duruk renk `#F3F4F6` (`TextStrong`).
+Renk yalnız hover'da neona döner: büyüt/küçült neon-blue, kapat neon-pink.
+
+**Paletteki `TextStrong` (`#F3F4F6`)** gövde metninden bir kademe parlak; başlık çubuğu simgeleri
+ve öne çıkması gereken tekil işaretler için. Gövde metni yine `TextBody` (`#D1D5DB`).
+
+**Alt bilgi şeridi tek satır ve mümkün olan en kısa.** Etiket yazı tipi + alt uzantısı kadar
+yükseklik (ölçülen: 18px), üstündeki düğme sırasına yapışık. İçerik: solda durum noktası,
+durum metni, sürüm ve dil anahtarı; **sağda destek bağlantısı ile imza yan yana, önce destek
+sonra imza**. Destek bağlantısı imzadan koparılıp sola atılmaz — ikisi tek bir künye okunur.
+**Bağlantı ve değer metinleri neon-blue**, yalnız durum noktası anlamına göre renklenir
+(kurulu `#34D399`, değil `#4B5563`).
+
+**Panel başlıkları neon-blue çizilir.** `GÜVENLİK` / `DAVRANIŞ` / `AYRINTILAR` gibi bölüm
+başlıkları gri değil, `#00F3FF`. Gri bırakılırsa panel çerçevesi renkli, içindeki başlık sönük
+kalıyor ve bölüm başlığı gibi okunmuyor. Bunun **altındaki** "Etiket" rolü (alan üstü küçük
+harf aralıklı yazılar) sönük kalmaya devam eder — hiyerarşiyi ayıran şey o karşıtlık.

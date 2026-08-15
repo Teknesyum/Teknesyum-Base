@@ -34,7 +34,21 @@ AJANLAR
         dokundu: src/theme/tokens.ts, src/App.tsx
 
 SON     T3 kaldi · tur 1, kabul 2
+KALAN   5 sözleşme · 2 paralel yürüyebilir
+RİSK    T6 engelli — kaynak görsel yok, senden gelmesi lazım
 ```
+
+`KALAN` her zaman basılır. `RİSK` sadece gerçekten engel, ölü ajan, tavana yaklaşan
+düzeltme turu veya sahipsiz dosya varsa basılır — uydurma, yoksa satırı yazma.
+
+`ayrinti` argümanı verildiyse `active` ve `blocked` sözleşmelerin **Kabul kriteri**
+bölümlerini de aç, her biri için karşılanan/kalan maddeleri işaretle. Argümansız çağrıda
+gövdeleri açma.
+
+Kullanıcının müdahale edebileceği bir şey varsa (engeli kaldırmak, kapsam daraltmak,
+sırayı değiştirmek) en alta tek satır ekle. Yoksa ekleme.
+
+Argüman: $ARGUMENTS
 
 Sözleşme simgeleri: ✓ done · ▸ active · ● hazır · ⏸ bekliyor · ⨯ blocked
 Ajan simgeleri: ⚙ çalışıyor · ✓ bitti · ⨯ ölü

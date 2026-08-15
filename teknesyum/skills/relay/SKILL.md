@@ -89,5 +89,19 @@ Sözleşme boyutu: **3-8 dosya, tek tutarlı yetenek.** Gerçek projede 5-9 söz
 
 ## 7. Kullanıcıya ne söylersin
 
-Kurduğun düzeni **kısaca** bildir, onay bekleme: kaç sözleşme, hangi ajanlar, ilk adım.
-Bittiğinde ne değişti ve nerede. Süreç anlatma, plan müzakere etme.
+Kullanıcı ajanların içini göremez; **rapor vermezsen süreci yönetemez.** Onay bekleme,
+ama körlemede bırakma. Zorunlu anlar (tam biçimi `references/protokol.md` §8):
+
+| Ne zaman | Ne yazarsın |
+|---|---|
+| Dağıtmadan önce | Plan tek cümle + sözleşme tablosu (ne, kim, hangi model, hangi dosyalar) + kapsam dışı bıraktıkların + risk |
+| Her sözleşme kapanınca | Ne yapıldı · değişen dosyalar · denetim kararı · sırada ne açıldı |
+| Her dalga sonunda | İlerleme `x/y`, harcanan düzeltme turu, açık risk, plandan sapma |
+| Sapma anında | Plan/kapsam/model değişimi, ölen ajan, sahipsiz dosya — beklemeden, sebebiyle |
+| Bitince | Sözleşme tablosu, toplam değişiklik, denetimde yakalananlar, yapılmayanlar ve sebebi |
+
+Tek sözleşmelik işte tablo kurma; aynı bilgiyi iki satırda ver.
+
+Bunlar **durum bildirimidir, düzyazı özet değildir** — tablo, madde, tek satırlık olay.
+Bitmiş işi tekrar anlatma. Sıklığı `bilgilendirme` düğmesi belirler; sapma bildirimi
+hiçbir ayarda kapanmaz.

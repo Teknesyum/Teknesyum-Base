@@ -139,7 +139,61 @@ karşılanmış `open` var → dağıt.
 
 Etiketler: `plan` `done` `kaldi` `olu` `sahipsiz` `blocked`.
 
-## 8. Yönlendirici CLAUDE.md
+## 8. Kullanıcıya raporlama
+
+Kullanıcı ajanların içini göremez. Rapor vermezsen sistem ona kara kutu gibi görünür ve
+yönetemez. **Aşağıdaki altı an zorunludur**, `onay_kapisi: yok` olsa bile — o düğme
+*onay beklemeyi* kapatır, *bilgilendirmeyi* değil.
+
+Her rapor dört soruyu cevaplar: **neredeyiz · ne oldu · sırada ne var · senden bir şey
+gerekiyor mu.** Cevap yoksa satırı yazma.
+
+### 8.1 Açılış brifingi — dağıtmadan önce
+
+```
+Plan: <tek cümle, işin tamamı>
+```
+
+| Sözleşme | Ne yapacak | Rol / model | Bekliyor | Dokunacağı dosyalar |
+|---|---|---|---|---|
+
+Tablonun altına üç satır: **paralel çalışacaklar**, **bilerek kapsam dışı bıraktıklarım**,
+**gördüğüm risk**. Sonra tek satır: neyi şimdi değiştirebileceği (sıralama, kapsam,
+`paralel_genislik`). `onay_kapisi: yok` ise beklemeden başla — ama brifingi yaz.
+
+### 8.2 Dalga başlarken
+
+Aynı anda başlayan ajanlar tek satırda: `▸ T3 usta-arayuz · T4 usta — paralel, owns kesişmiyor`.
+
+### 8.3 Sözleşme kapanınca
+
+Dört satır, fazlası değil: **ne yapıldı** · **değişen dosyalar** · **denetim kararı**
+(geçti / kaldı + kaç tur) · **sırada ne açıldı**. Ajanın Çıktı metnini olduğu gibi
+yapıştırma, kendi cümlenle yaz.
+
+### 8.4 Dalga sonunda ara rapor
+
+İlerleme `x/y`, harcanan düzeltme turu, açık risk, kalan iş ve **plandan sapma varsa
+sapmanın kendisi**. Kullanıcı en çok burada müdahale eder; ara raporu atlama.
+
+### 8.5 Sapma anında — beklemeden
+
+Şunlar sessizce olmaz: plan değişti, sözleşme eklendi/iptal edildi, `owns` genişletildi,
+model tırmandı, ajan öldü, sahipsiz dosya çıktı, denetim tavana dayandı.
+Tek satır + sebep + ne yaptığın.
+
+### 8.6 Kapanış raporu
+
+Sözleşme tablosu (durum + tur sayısı), toplam değişen dosya, denetimde yakalanan bulgular,
+yapılmayanlar ve sebebi, önerilen sonraki adım.
+
+### Biçim kuralı
+
+Rapor **yapılandırılmış durum bildirimidir, düzyazı özet değildir.** Tablo, madde, tek
+satırlık olay. Bitmiş işi tekrar anlatma; anlatılacak şey değişimdir. `bilgilendirme: sessiz`
+ayarında yalnızca 8.1, 8.5 ve 8.6 kalır — diğerlerini kullanıcı `/durum` ile ister.
+
+## 9. Yönlendirici CLAUDE.md
 
 Klasörde 5+ kaynak dosya varsa veya klasör mimari sınırsa (main/renderer, core/ui, api/db)
 → ≤20 satırlık `CLAUDE.md` şart. Şablon: `assets/folder-claude.template.md`.

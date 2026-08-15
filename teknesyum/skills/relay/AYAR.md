@@ -13,6 +13,7 @@ paralel_genislik    : 2           # eşzamanlı ajan sayısı (1-3)
 varsayilan_model    : sonnet      # haiku | sonnet | opus
 worktree_izolasyonu : kapali      # acik | kapali
 rapor_uzunlugu      : kisa        # kisa | normal | ayrintili
+bilgilendirme       : donum-noktasi # sessiz | donum-noktasi | her-adim
 ```
 
 ## Anlamları
@@ -47,6 +48,15 @@ kopyasında çalışır. Paralel çakışmayı dosya sisteminde çözer, ama her
 kopyası maliyeti çıkarır. Sadece 3 paralel ajanda ve büyük projede aç.
 
 **rapor_uzunlugu** — ajanın T0'a dönen raporu. `kisa` = değişen dosyalar + tek paragraf.
+Bu düğme **ajan→T0** trafiğini ayarlar, sana gösterileni değil.
+
+**bilgilendirme** — T0'ın **sana** ne sıklıkta rapor verdiği (`protokol.md` §8).
+`donum-noktasi` varsayılan: açılış brifingi, her sözleşme kapanışı, her dalga sonu ara
+raporu, sapma anı, kapanış raporu · `her-adim` ajan başlangıçlarını ve düzeltme turlarını
+da ekler, uzun işte gürültü yapar · `sessiz` yalnızca brifing, sapma ve kapanış; gerisini
+`/durum` ile sen istersin. Hiçbir değerde sapma bildirimi kapanmaz.
+
+`onay_kapisi` ile karıştırma: o **beklemeyi**, bu **anlatmayı** yönetir.
 
 ## Kural
 

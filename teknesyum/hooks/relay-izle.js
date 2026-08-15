@@ -68,7 +68,9 @@ function run(j) {
     }
 
     case 'SubagentStop':
-      s.stop_reason = j.stop_reason || 'unknown';
+      // Ölçüldü: bu olayın payload'ında `stop_reason` alanı YOK. Eksikliği ölüm sanma —
+      // aksi halde normal biten her ajan statusline'da ⨯ görünür.
+      s.stop_reason = j.stop_reason || 'end_turn';
       s.ended = now;
       if (j.last_assistant_message) s.son_soz = String(j.last_assistant_message).slice(0, 300);
       break;
@@ -80,7 +82,7 @@ function run(j) {
 // Ana oturumun transcript dosyası session_id ile aynı adı taşır; alt ajanınki taşımaz.
 // Ayrım buradan çıkar — ana oturum olaylarını ajan sanma.
 function transcriptKimligi(j) {
-  const tp = j.transcript_path;
+  const tp = j.agent_transcript_path || j.transcript_path;
   if (!tp) return null;
   const base = path.basename(String(tp)).replace(/\.jsonl$/i, '');
   if (!base || base === j.session_id) return null;
@@ -117,7 +119,12 @@ function iz(live, j) {
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
   if (!d.ilk) d.ilk = now;
   d.son = now;
-  if (!d.ornek_alanlar) d.ornek_alanlar = Object.keys(j).sort();
+  d.ornek_alanlar = d.ornek_alanlar || Object.keys(j).sort();
+  d.alanlar = d.alanlar || {};
+  d.alanlar[ev] = Object.keys(j).sort().join(',');
+  if (ev === 'PostToolUse') {
+    d.ptu_ajanli = (d.ptu_ajanli || 0) + (j.agent_id || j.agent_transcript_path ? 1 : 0);
+  }
   try { fs.writeFileSync(f, JSON.stringify(d, null, 2)); } catch {}
 }
 

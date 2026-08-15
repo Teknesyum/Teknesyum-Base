@@ -27,7 +27,26 @@ function gitBranch(dir) {
   } catch { return null; }
 }
 
-const TUR_TAVANI = { usta: 60, 'usta-arayuz': 60, denetci: 30, kayitci: 40 };
+// Adım sayacı yok: alt ajanın araç kullanımları hook'a yansımıyor (ölçüldü).
+// Gösterilebilen tek şey çalışıyor/bitti ve geçen süre.
+function calisanlar(dir) {
+  const f = path.join(dir, '.claude', 'relay', 'canli', '_calisanlar.json');
+  try {
+    const l = JSON.parse(fs.readFileSync(f, 'utf8'));
+    return Array.isArray(l) ? l : [];
+  } catch { return []; }
+}
+
+function sure(ms) {
+  const s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+  return s < 60 ? s + ' sn' : Math.round(s / 60) + ' dk';
+}
+
+function calisanSatiri(c) {
+  const ad = (c.tip || '?').replace(/^teknesyum:/, '');
+  return C.blue + '⚙ ' + C.r + C.dim + ad + C.r + ' ' + C.hint + sure(c.bas) +
+         (c.tanim ? ' · ' + kisalt(c.tanim, 34) : '') + C.r;
+}
 
 function ajanlar(dir) {
   const live = path.join(dir, '.claude', 'relay', 'canli');
@@ -58,17 +77,11 @@ const OLUM_SEBEBI = {
 };
 
 function ajanSatiri(a) {
-  const tavan = TUR_TAVANI[a.agent_type] || 50;
-  const pct = Math.min(100, ((a.steps || 0) / tavan) * 100);
-  const ad = (a.contract || '?') + ' ' + (a.agent_type || '?');
-  let ikon, renk;
-  if (a.stop_reason === null) { ikon = '⚙'; renk = C.blue; }
-  else if (olu(a)) { ikon = '⨯'; renk = C.pink; }
-  else { ikon = '✓'; renk = C.ok; }
-  let s = renk + ikon + ' ' + C.r + C.dim + ad + C.r + ' ' + bar(pct, 8) +
-          ' ' + C.hint + (a.steps || 0) + '/' + tavan + C.r;
+  const ad = (a.contract ? a.contract + ' ' : '') + (a.agent_type || '?').replace(/^teknesyum:/, '');
+  const ikon = olu(a) ? C.pink + '⨯' : C.ok + '✓';
+  let s = ikon + ' ' + C.r + C.dim + ad + C.r;
   if (olu(a)) s += ' ' + C.pink + (OLUM_SEBEBI[a.stop_reason] || 'durdu') + ' → /devam' + C.r;
-  else if (a.stop_reason === null && a.last_action) s += ' ' + C.hint + kisalt(a.last_action, 34) + C.r;
+  else if (a.son_soz) s += ' ' + C.hint + kisalt(a.son_soz, 40) + C.r;
   return s;
 }
 
@@ -144,11 +157,20 @@ process.stdin.on('end', () => {
 
   const satirlar = [l1.join(C.hint + '  ·  ' + C.r), l2.join(C.hint + '   ' + C.r)];
 
+  const cs = calisanlar(dir);
+  for (const c of cs.slice(0, 3)) satirlar.push('  ' + calisanSatiri(c));
+  if (cs.length > 3) satirlar.push('  ' + C.hint + '+' + (cs.length - 3) + ' ajan çalışıyor' + C.r);
+
   const ags = ajanlar(dir);
-  const canliOlan = ags.filter((a) => a.stop_reason === null || olu(a)).slice(0, 3);
-  for (const a of canliOlan) satirlar.push('  ' + ajanSatiri(a));
-  const kalan = ags.length - canliOlan.length;
-  if (kalan > 0) satirlar.push('  ' + C.hint + '+' + kalan + ' ajan (bitti)' + C.r);
+  const olenler = ags.filter(olu).slice(0, 2);
+  for (const a of olenler) satirlar.push('  ' + ajanSatiri(a));
+
+  if (!cs.length && !olenler.length) {
+    const biten = ags.filter((a) => a.stop_reason && !olu(a));
+    const son = biten[0];
+    if (son) satirlar.push('  ' + ajanSatiri(son) +
+      (biten.length > 1 ? C.hint + '  +' + (biten.length - 1) + C.r : ''));
+  }
 
   process.stdout.write(satirlar.join('\n'));
 });

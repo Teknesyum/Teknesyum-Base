@@ -17,6 +17,15 @@ function run(j) {
 
   iz(live, j);
 
+  // ÖLÇÜLDÜ: alt ajanın içindeki araç kullanımları PostToolUse hook'unu tetiklemiyor
+  // (12 olayın 12'si ana oturum, `ptu_ajanli: 0`). Bu yüzden adım sayacı kurulamaz.
+  // Ölçülebilen tek şey ajanın başlaması ve bitmesi: başlangıcı ana oturumdaki
+  // Agent çağrısından, bitişi SubagentStop'tan alıyoruz.
+  if (j.hook_event_name === 'PreToolUse') {
+    if (/^(Agent|Task)$/.test(j.tool_name || '')) calisanEkle(live, j);
+    return;
+  }
+
   // Alt ajanın içinden gelen PostToolUse olaylarında `agent_id` YOK — ölçüldü, varsayım
   // değil. Bu yüzden ikinci bir kimlik kanalı gerekiyor: her ajanın kendi transcript
   // dosyası vardır ve adı ana oturumun session_id'sinden farklıdır.
@@ -68,6 +77,7 @@ function run(j) {
     }
 
     case 'SubagentStop':
+      calisanKapat(live, j.agent_type);
       // Ölçüldü: bu olayın payload'ında `stop_reason` alanı YOK. Eksikliği ölüm sanma —
       // aksi halde normal biten her ajan statusline'da ⨯ görünür.
       s.stop_reason = j.stop_reason || 'end_turn';
@@ -77,6 +87,32 @@ function run(j) {
   }
 
   try { fs.writeFileSync(file, JSON.stringify(s, null, 2)); } catch {}
+}
+
+const CALISAN = '_calisanlar.json';
+
+function calisanEkle(live, j) {
+  const f = path.join(live, CALISAN);
+  const l = read(f) || [];
+  const t = j.tool_input || {};
+  l.push({
+    tip: t.subagent_type || '?',
+    tanim: String(t.description || '').slice(0, 60),
+    bas: Date.now(),
+  });
+  try { fs.writeFileSync(f, JSON.stringify(l)); } catch {}
+}
+
+// agent_id ile Agent çağrısını birbirine bağlayan alan yok; tip eşleşmesiyle kapat,
+// tip tutmazsa en eskisini düşür. Paralel aynı tip ajanda sıra karışabilir, süre yine doğru.
+function calisanKapat(live, tip) {
+  const f = path.join(live, CALISAN);
+  const l = read(f);
+  if (!Array.isArray(l) || !l.length) return;
+  let i = tip ? l.findIndex((x) => x.tip === tip) : -1;
+  if (i < 0) i = 0;
+  l.splice(i, 1);
+  try { fs.writeFileSync(f, JSON.stringify(l)); } catch {}
 }
 
 // Ana oturumun transcript dosyası session_id ile aynı adı taşır; alt ajanınki taşımaz.

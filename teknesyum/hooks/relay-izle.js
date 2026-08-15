@@ -17,10 +17,14 @@ function run(j) {
 
   iz(live, j);
 
-  const agentId = j.agent_id;
+  // Alt ajanın içinden gelen PostToolUse olaylarında `agent_id` YOK — ölçüldü, varsayım
+  // değil. Bu yüzden ikinci bir kimlik kanalı gerekiyor: her ajanın kendi transcript
+  // dosyası vardır ve adı ana oturumun session_id'sinden farklıdır.
+  const agentId = j.agent_id || transcriptKimligi(j);
   if (!agentId) return;
 
   const file = path.join(live, safe(agentId) + '.json');
+  if (j.agent_id) birlestir(live, file, transcriptKimligi(j));
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
   let s = read(file) || {
     agent_id: agentId,
@@ -34,8 +38,10 @@ function run(j) {
     stop_reason: null,
   };
 
+  s.agent_id = agentId;
   s.agent_type = j.agent_type || s.agent_type;
   s.last_seen = now;
+  s.kimlik = j.agent_id ? 'agent_id' : 'transcript';
 
   switch (j.hook_event_name) {
     case 'SubagentStart':
@@ -69,6 +75,36 @@ function run(j) {
   }
 
   try { fs.writeFileSync(file, JSON.stringify(s, null, 2)); } catch {}
+}
+
+// Ana oturumun transcript dosyası session_id ile aynı adı taşır; alt ajanınki taşımaz.
+// Ayrım buradan çıkar — ana oturum olaylarını ajan sanma.
+function transcriptKimligi(j) {
+  const tp = j.transcript_path;
+  if (!tp) return null;
+  const base = path.basename(String(tp)).replace(/\.jsonl$/i, '');
+  if (!base || base === j.session_id) return null;
+  return base;
+}
+
+// agent_id sonradan geldiğinde (SubagentStart/Stop) transcript adıyla biriken adımları
+// gerçek kimliğe taşı; yoksa aynı ajan iki dosyada görünür.
+function birlestir(live, hedef, gecici) {
+  if (!gecici) return;
+  const gf = path.join(live, safe(gecici) + '.json');
+  if (gf === hedef || !fs.existsSync(gf)) return;
+  const g = read(gf);
+  const h = read(hedef);
+  if (g && h) {
+    h.steps = Math.max(h.steps || 0, g.steps || 0);
+    if (g.contract && !h.contract) h.contract = g.contract;
+    if (g.last_action && h.last_action === '—') h.last_action = g.last_action;
+    for (const f of g.files || []) if (!h.files.includes(f)) h.files.push(f);
+    try { fs.writeFileSync(hedef, JSON.stringify(h, null, 2)); } catch {}
+  } else if (g && !h) {
+    try { fs.writeFileSync(hedef, JSON.stringify(g, null, 2)); } catch {}
+  }
+  try { fs.unlinkSync(gf); } catch {}
 }
 
 function iz(live, j) {

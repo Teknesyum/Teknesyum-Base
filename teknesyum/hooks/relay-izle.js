@@ -10,10 +10,15 @@ process.stdin.on('end', () => {
 
 function run(j) {
   const root = findRelay(j.cwd || process.cwd());
-  if (!root) return;
 
-  const live = path.join(root, 'canli');
+  // Röle kurulu projede izler proje içinde durur (/durum, /devam oradan okur).
+  // Kurulu değilse — üst klasörde, rastgele bir dizinde açılmış oturumda — oturuma
+  // özel genel dizine yazarız. Kullanıcının klasör ayarlamasını beklemeyiz.
+  const live = root
+    ? path.join(root, 'canli')
+    : path.join(genelKok(), safe(j.session_id || 'oturum'));
   try { fs.mkdirSync(live, { recursive: true }); } catch { return; }
+  if (!root) supur();
 
   iz(live, j);
 
@@ -62,14 +67,15 @@ function run(j) {
       s.steps++;
       const t = j.tool_input || {};
       const target = t.file_path || t.notebook_path || '';
-      s.last_action = (j.tool_name || '?') + (target ? ' ' + short(target, root) : '');
+      const proj = root ? path.dirname(path.dirname(root)) : (j.cwd || process.cwd());
+      s.last_action = (j.tool_name || '?') + (target ? ' ' + short(target, proj) : '');
 
       if (target) {
         const n = norm(target);
         const m = n.match(/\/relay\/contracts\/(?:done\/)?(T[^/]+)\.md$/i);
         if (m && !s.contract) s.contract = m[1];
         if (!m && /^(Write|Edit|NotebookEdit)$/.test(j.tool_name || '')) {
-          const rel = short(target, root);
+          const rel = short(target, proj);
           if (!s.files.includes(rel)) s.files.push(rel);
         }
       }
@@ -164,6 +170,25 @@ function iz(live, j) {
   try { fs.writeFileSync(f, JSON.stringify(d, null, 2)); } catch {}
 }
 
+function genelKok() {
+  const ev = process.env.CLAUDE_CONFIG_DIR ||
+    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  return path.join(ev, 'teknesyum', 'canli');
+}
+
+// Röle kurulu olmayan oturumların izleri kalıcı değil; bir günü geçeni at.
+function supur() {
+  const kok = genelKok();
+  let l = [];
+  try { l = fs.readdirSync(kok); } catch { return; }
+  if (l.length < 12) return;
+  const sinir = Date.now() - 24 * 60 * 60 * 1000;
+  for (const d of l) {
+    const p = path.join(kok, d);
+    try { if (fs.statSync(p).mtimeMs < sinir) fs.rmSync(p, { recursive: true, force: true }); } catch {}
+  }
+}
+
 function findRelay(start) {
   let d = path.resolve(start);
   for (let i = 0; i < 6; i++) {
@@ -179,8 +204,7 @@ function findRelay(start) {
 function read(f) { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } }
 function norm(p) { return path.normalize(p).replace(/\\/g, '/'); }
 function safe(s) { return String(s).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80); }
-function short(p, relayRoot) {
-  const proj = path.dirname(path.dirname(relayRoot));
+function short(p, proj) {
   const n = norm(p);
   const pn = norm(proj) + '/';
   return n.startsWith(pn) ? n.slice(pn.length) : path.basename(n);

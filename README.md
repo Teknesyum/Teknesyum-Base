@@ -137,14 +137,12 @@ its contract into `done/`; writing there is blocked by a hook.
 
 ### Surviving interruptions
 
-Every step an agent takes is written to `canli/<agent_id>.json` **by a hook** — it does
-not depend on the model cooperating:
+When an agent starts and when it ends is written to `canli/` **by a hook** — it does not
+depend on the model cooperating:
 
 ```json
 {
-  "contract": "T3", "steps": 34,
-  "last_action": "Edit src/theme/tokens.ts",
-  "files": ["src/App.tsx", "src/theme/tokens.ts"],
+  "contract": "T3", "agent_type": "usta",
   "stop_reason": "max_tokens",
   "son_soz": "Theme tokens written, panel integration still pending."
 }
@@ -153,6 +151,12 @@ not depend on the model cooperating:
 Any `stop_reason` other than `end_turn` means the agent died. It is first revived with
 its own context; if that fails, a handover brief for a fresh agent is built from this
 file. `/devam` does all of it automatically.
+
+Two limits worth knowing, both measured rather than assumed. A subagent's own tool calls
+never reach the hook layer, so there is no per-agent step counter — the statusline shows
+which agents are running and for how long, not how far along they are. And when the
+session was opened somewhere without a relay directory, traces go to a per-session folder
+under `~/.claude/teknesyum/canli/` instead, so tracking works with no setup at all.
 
 ### Fix loop
 

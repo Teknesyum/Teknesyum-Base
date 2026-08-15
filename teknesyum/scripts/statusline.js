@@ -27,12 +27,24 @@ function gitBranch(dir) {
   } catch { return null; }
 }
 
+// İzlerin yeri: röle kurulu projede proje içi, değilse oturuma özel genel dizin.
+// Böylece üst klasörde açılan oturumda da ajanlar görünür.
+function izDizini(dir, sessionId) {
+  const p = path.join(dir, '.claude', 'relay', 'canli');
+  if (fs.existsSync(p)) return p;
+  if (!sessionId) return null;
+  const ev = process.env.CLAUDE_CONFIG_DIR ||
+    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const g = path.join(ev, 'teknesyum', 'canli', String(sessionId).replace(/[^a-zA-Z0-9._-]/g, '_'));
+  return fs.existsSync(g) ? g : null;
+}
+
 // Adım sayacı yok: alt ajanın araç kullanımları hook'a yansımıyor (ölçüldü).
 // Gösterilebilen tek şey çalışıyor/bitti ve geçen süre.
-function calisanlar(dir) {
-  const f = path.join(dir, '.claude', 'relay', 'canli', '_calisanlar.json');
+function calisanlar(live) {
+  if (!live) return [];
   try {
-    const l = JSON.parse(fs.readFileSync(f, 'utf8'));
+    const l = JSON.parse(fs.readFileSync(path.join(live, '_calisanlar.json'), 'utf8'));
     return Array.isArray(l) ? l : [];
   } catch { return []; }
 }
@@ -48,9 +60,8 @@ function calisanSatiri(c) {
          (c.tanim ? ' · ' + kisalt(c.tanim, 34) : '') + C.r;
 }
 
-function ajanlar(dir) {
-  const live = path.join(dir, '.claude', 'relay', 'canli');
-  if (!fs.existsSync(live)) return [];
+function ajanlar(live) {
+  if (!live) return [];
   let out = [];
   try {
     for (const f of fs.readdirSync(live)) {
@@ -157,11 +168,12 @@ process.stdin.on('end', () => {
 
   const satirlar = [l1.join(C.hint + '  ·  ' + C.r), l2.join(C.hint + '   ' + C.r)];
 
-  const cs = calisanlar(dir);
+  const live = izDizini(dir, j.session_id);
+  const cs = calisanlar(live);
   for (const c of cs.slice(0, 3)) satirlar.push('  ' + calisanSatiri(c));
   if (cs.length > 3) satirlar.push('  ' + C.hint + '+' + (cs.length - 3) + ' ajan çalışıyor' + C.r);
 
-  const ags = ajanlar(dir);
+  const ags = ajanlar(live);
   const olenler = ags.filter(olu).slice(0, 2);
   for (const a of olenler) satirlar.push('  ' + ajanSatiri(a));
 

@@ -19,10 +19,12 @@ Davranış düğmeleri `AYAR.md`'de. Projede `.claude/relay/AYAR.md` varsa o ön
 | Soru, açıklama, tek dosya okuma | Cevapla. Hiçbir şey kurma. |
 | 1-2 dosya, kalıbı belli, <15 dk | **Kendin yap.** Ajan açma, sözleşme yazma. |
 | 3-4 dosya, tek tutarlı yetenek | **Tek sözleşme, tek ajan.** `PLAN.md` yazma. |
-| ≥3 bağımsız parça, ≥5 dosya, veya sıfırdan proje | **Tam röle** — §3 |
+| ≥3 bağımsız parça veya ≥5 dosya, tek yetenek alanı | **Oturum içi röle** — §3 |
+| Sıfırdan proje · ≥3 bağımsız yetenek alanı · tek oturumda bağlam dolacak | **Çok oturumlu röle** — §3.1 |
 
 Kararsızsan küçük tarafı seç. Röle kurmanın kendi maliyeti var; sonradan büyütmek,
-gereksiz kurulmuş röleyi taşımaktan ucuz.
+gereksiz kurulmuş röleyi taşımaktan ucuz. **Çok oturumlu kararı ise ilk mesajda verilir** —
+yarıda geçiş planı baştan yazdırır.
 
 ## 2. Hazırlık — sormadan yap
 
@@ -47,6 +49,22 @@ düzeltme döngüsü, düşen ajan kurtarma, LOG. Röle kuracaksan onu oku.
 her sözleşmeyi `denetci`'ye doğrulat → kaldıysa düzeltme döngüsü → `LOG.md`'ye satır.
 
 **Planlamayı asla delege etme.** Soğuk başlayan ajan daha kötü plan yapar.
+
+## 3.1 Çok oturumlu röle
+
+Alt ajan tavanı var: her biri ana oturumun bağlamından pay yer, oturum kapanınca hepsi
+birden düşer. Büyük iş **oturumlara** bölünür — bir yönetim oturumu (sen, opus) + 3-5 hat
+oturumu (sonnet/haiku).
+
+Sen planlar, sözleşme yazar, denetler, birleştirirsin; **üretim kodu yazmazsın.**
+Hatlar kod yazar, plan yapmaz. Her hat kesişmeyen bir dosya alanı sahiplenir.
+
+`/dagit` hatları kurar ve kullanıcıya hat başına **tek satırlık başlatma komutu** basar
+(`/teknesyum:hat H2`). Kullanıcı her hat için yeni bir oturum açıp o satırı yapıştırır;
+bağlamın tamamı diskte olduğu için başka bir şey anlatması gerekmez. Hat bitince
+kullanıcı sana döner, `/topla` sonucu alır, denetler ve sonraki dalgayı açarsın.
+
+Kural seti: **`references/cok-oturum.md`**. Bu yola gireceksen onu oku.
 
 ## 4. Kim yapacak: rol × model
 

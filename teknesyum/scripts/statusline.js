@@ -54,7 +54,7 @@ function ajanlar(dir) {
   let out = [];
   try {
     for (const f of fs.readdirSync(live)) {
-      if (!f.endsWith('.json')) continue;
+      if (!f.endsWith('.json') || f.startsWith('_')) continue;
       try { out.push(JSON.parse(fs.readFileSync(path.join(live, f), 'utf8'))); } catch {}
     }
   } catch { return []; }

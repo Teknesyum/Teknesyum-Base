@@ -77,10 +77,10 @@ When you ask for something, `relay` engages and **classifies it silently**:
 | Job size | What happens |
 |---|---|
 | A question, an explanation | It gets answered. Nothing is set up. |
-| 1–2 files | Done directly. No agent is spawned. |
-| 3–4 files, single skill | One contract, one agent. |
+| A one-line, eyeball-verifiable fix | Done directly — a packet would cost more than the fix |
+| One capability, one agent-session of work | A single agent is spawned; the manager supervises |
 | ≥3 independent pieces or ≥5 files | In-session relay: plan, contracts, parallel agents, audit |
-| A project from scratch, or ≥3 independent capability areas | Multi-session relay — see below |
+| A project from scratch, or ≥3 independent capability areas | Task packets — see below |
 
 You are never asked "is this a big job?". Preparation happens without asking, too:
 

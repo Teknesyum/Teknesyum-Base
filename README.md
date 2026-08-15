@@ -89,31 +89,33 @@ You are never asked "is this a big job?". Preparation happens without asking, to
 - **UI work involved?** It goes to an agent with the theme standard preloaded
 - **Missing `CLAUDE.md` signposts?** They get written when the job closes
 
-### Multi-session relay
+### Task packets — moving work out of the session
 
-Subagents inside a single session have a ceiling: each one eats into the main context, and
-when the session closes they all die with it. Large work is therefore split across
-**sessions**, not just agents.
+**The manager plans; it does not do the work.** Opus writes nothing but the files under
+`.claude/relay/`. Everything else is executed either by an agent it spawns in-session, or
+by a *task packet* run outside the session entirely.
 
-One management session (Opus) plans, writes contracts, audits and merges — and **writes no
-production code**. Three to five *lines* (`hat`) run as separate chat sessions on
-Sonnet or Haiku, and each owns a **non-overlapping set of files**.
+Subagents inside one session have a ceiling: each eats into the main context, and they all
+die when the session closes. So large work is split into three to five packets, each
+owning a **non-overlapping set of files**.
 
-`/dagit` carves the project into lines and prints one copy-paste launch command per line:
+The split is deliberate: **the packet file is long and exact, the prompt you copy is one
+line.** The file spends tokens on the executing side, where precision pays off — numbered
+imperative steps, the exact writable paths, the files that must not be touched,
+measurable acceptance criteria, explicit prohibitions. What you paste is just:
 
 ```
-/teknesyum:hat H2
+.claude/relay/G2.md oku ve içindeki görevi eksiksiz uygula.
 ```
 
-You open a new session, add the project folder, paste that single line — nothing else.
-The entire context lives on disk, so a line session never needs to see the management
-conversation. When a line finishes it writes a closing report and sends you back to the
-management session, where `/topla` collects the results, checks for out-of-bounds writes
-with `git status`, runs the auditor, carries the produced signatures into the dependent
-lines, and prints the launch commands for the next wave.
+Packet files carry no tool-specific syntax — no slash commands, no skill names, no
+reference to the planning conversation. **A packet can be handed to a different tool
+entirely**: another Claude Code session, Codex, a GPT-based agent.
 
-The model split is the point: expensive planning happens once, in one place; execution
-runs on cheaper models in parallel sessions.
+There is no command to run when a packet finishes. You come back and say so; the manager
+reads the packet reports and `git status` itself, flags any write that landed outside a
+packet's declared area, runs the auditor, carries the produced signatures into dependent
+packets, and prints the next wave of one-line prompts.
 
 ### Contract layout
 
@@ -178,9 +180,6 @@ The model is chosen at call time.
 
 | Command | What it does |
 |---|---|
-| `/dagit` | Splits a project into line sessions and prints their launch commands |
-| `/hat <id>` | Runs a line session — pasted into a fresh chat, needs no other context |
-| `/topla` | Collects finished lines, audits them, opens the next wave |
 | `/durum` | Contract progress + per-agent turn-budget bars |
 | `/devam` | Resumes an interrupted session from agent traces |
 | `/iskele` | Sets up the relay explicitly (normally automatic) |
@@ -262,7 +261,7 @@ transparent fill, colored border, colored label, vector icon. Remove it with
 Claude Code's own measurement:
 
 ```
-Skills (8) · Commands (11) · Agents (4) · Hooks (4)
+Skills (8) · Agents (4) · Hooks (4)
 Always-on:  ~1,211 tokens     added to each session
 ```
 

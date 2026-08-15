@@ -1,112 +1,125 @@
-# Çok oturumlu röle — hatlar
+# Görev paketi — işi oturum dışına çıkarmak
 
-Tek oturum içinde alt ajan çalıştırmanın tavanı var: her ajan ana oturumun bağlamından
-pay yer, üç dörtten fazlası paralel yürümez ve oturum kapanınca hepsi birden düşer.
-Büyük iş bu yüzden **oturumlara** bölünür.
+Alt ajan tavanı var: her biri ana oturumun bağlamından pay yer, oturum kapanınca hepsi
+birden düşer. Ayrıca ana oturumun bağlamı dolduğunda plan da gider. Bu yüzden büyük iş
+**paketlere** bölünür ve paketler ana oturumun dışında çalıştırılır.
 
-Düzen: **bir yönetim oturumu (T0, opus) + 3-5 hat oturumu (sonnet/haiku).** T0 planlar,
-sözleşme yazar, denetler, birleştirir — **üretim kodu yazmaz.** Hatlar kod yazar,
-plan yapmaz.
+Paketi kim çalıştırdığı senin sorunun değil — başka bir Claude Code oturumu, Codex, GPT
+tabanlı bir ajan, hatta elle çalışan biri olabilir. **Paket dosyası hiçbir araca ait
+olmayacak şekilde yazılır.**
 
-## 1. Ne zaman
+## 1. Rol ayrımı
+
+**Sen (T0, opus) plan yaparsın, iş yapmazsın.** Yazma araçlarını yalnızca
+`.claude/relay/**` altında kullanırsın: paket dosyaları, `PLAN.md`, `LOG.md`.
+Üretim kodu, arayüz, doküman — hepsi paket veya ajan işidir.
+
+Tek istisna: tek satırlık, gözle doğrulanabilir düzeltme. Onun için paket yazmak
+düzeltmenin kendisinden pahalıdır.
+
+## 2. Paket mi, ajan mı
 
 | Durum | Yol |
 |---|---|
-| Tek tutarlı yetenek, ≤8 sözleşme, tek oturumda biter | Oturum içi röle (`protokol.md`) |
-| Sıfırdan yeni proje | **Çok oturumlu** |
-| ≥3 birbirinden bağımsız yetenek alanı (çekirdek / arayüz / paketleme / dokümantasyon) | **Çok oturumlu** |
-| Bağlamın tek oturumda dolacağı belli | **Çok oturumlu** |
+| Tek yetenek, tek ajanın bir oturumda bitireceği iş | Ana oturumda **tek ajan** aç, sen denetle |
+| ≥3 bağımsız yetenek alanı · sıfırdan proje · bağlam dolacak | **Paket** — 3-5 tane |
 
-Kararı **ilk mesajda** ver. İş yarıda çok oturumluya çevrilebilir ama plan yeniden yazılır.
+Paket sayısı beşi aşmasın; kullanıcı yönetemez.
 
-İkisi iç içe çalışır: bir hat oturumu kendi içinde alt ajan da açabilir. Hat = oturum,
-sözleşme = görev.
-
-## 2. Dizin
+## 3. Dizin
 
 ```
 .claude/relay/
-├── PLAN.md              hat grafiği + bağımlılıklar
-├── hatlar/
-│   ├── H1.md            hat brifingi
-│   └── H2.md
-├── contracts/           sözleşmeler (hatlara dağılmış), done/ altında bitmişler
-├── rapor/
-│   └── H1-kapanis.md    hat bitince yazar, T0 buradan okur
-└── LOG.md               tüm hatların ortak olay kaydı
+├── PLAN.md        paket grafiği + bağımlılıklar
+├── G1.md          görev paketi (kök seviyede, yolu kısa olsun — kopyalanacak)
+├── G2.md
+└── LOG.md         ortak olay kaydı
 ```
 
-## 3. Hat brifingi
+Paket dosyası `.claude/relay/` kökünde durur. Derin klasör kullanma; yolu kullanıcı
+kopyalayacak.
+
+## 4. Paket formatı
+
+Paket dosyası **ayrıntılı, emir kipinde ve sınırları kesin** yazılır. Uzunluğundan
+çekinme — bu dosya token'ı ana oturumda değil, paketi çalıştıran tarafta harcar.
+Belirsiz bırakılan her şey yanlış yapılır.
 
 ```markdown
 ---
-id: H2
+paket: G2
 baslik: Arayüz katmanı
-model: sonnet
-alan: [src/components/, src/theme/]
-sozlesmeler: [T4, T5, T6]
-depends: [H1]
-status: bekliyor | acik | kapandi
+model_onerisi: sonnet
+depends: [G1]
+yazilabilir: [src/components/, src/theme/]
+durum: bekliyor | acik | bitti
 ---
-## Amaç          hattın tamamı, tek paragraf
-## Sınır         NEYE DOKUNMAZ — diğer hatların alanı, isim isim
-## Arayüzler     bağımlı olduğu hattın ürettiği imzalar (H1 kapandıktan sonra doldurulur)
-## Çıkış koşulu  hat ne zaman kapanmış sayılır
+# G2 — Arayüz katmanı
+
+## Görev
+Numaralı, emir kipinde adımlar. Her adım tek bir şey söyler.
+"İyileştir", "gerekirse", "uygun görürsen" gibi ifade kullanma.
+
+## Yalnızca şu dosyalara yaz
+Tam yol listesi. Yeni dosya açılacaksa adı burada geçsin.
+
+## Bu dosyalara dokunma
+İsim isim. Diğer paketlerin alanı, bağımlılık dosyaları, üretim yapılandırması.
+
+## Kabul kriteri
+Ölçülebilir maddeler. Mümkünse doğrulama komutunu da yaz.
+
+## Bağlam
+Dar. 3-5 tespit + bağımlı olduğun paketin ürettiği imzalar. Kod yapıştırma.
+
+## Yasaklar
+- Bağımlılık ekleme, sürüm yükseltme
+- Kapsam genişletme — listede olmayan iyileştirme yapma
+- Plan tartışma, mimari değiştirme
+- Soru sormak için durma: varsayımı Rapor'a yaz ve devam et
+
+## Bitince
+1. Bu dosyanın altına `## Rapor` bölümü ekle: ne yapıldı, değişen dosyaların tam listesi,
+   yapılmayan madde ve sebebi, sonraki paketlerin kullanacağı imzalar, varsayımlar.
+2. Frontmatter'da `durum: bitti` yap.
+3. Kullanıcıya tek cümle: "G2 bitti."
 ```
 
-**`alan` kümeleri kesişemez.** Oturum içi röledeki `owns` kuralının hat seviyesindeki
-karşılığıdır ve daha katıdır: ayrı oturumlar birbirini göremez, çakışmayı kimse fark etmez.
-Kesişme kaçınılmazsa o dosyayı tek hatta ver, diğeri `Arayüzler` üzerinden tüketsin.
+`yazilabilir` kümeleri **kesişemez.** Ayrı oturumlar birbirini göremez; çakışmayı kimse
+fark etmez. Kesişme kaçınılmazsa dosyayı tek pakete ver, diğeri imza üzerinden tüketsin.
 
-## 4. Dağıtım
+## 5. Kullanıcıya verilen prompt
 
-T0 her açılabilir hat için **kopyalanabilir tek satırlık** başlatma komutu basar:
+**Tek satır, mümkün olan en kısa hali.** Kopyalanacak, uzunsa yük olur:
 
 ```
-/teknesyum:hat H2
+.claude/relay/G2.md oku ve içindeki görevi eksiksiz uygula.
 ```
 
-Kullanıcı yeni bir oturum açar, proje klasörünü ekler, satırı yapıştırır. Başka hiçbir
-bilgi vermesi gerekmez — bağlamın tamamı `hatlar/H2.md` ve sözleşmelerdedir.
+Bunun içine hiçbir açıklama, gerekçe, konuşma özeti koyma. Araca özel komut (`/skill`,
+`/hat`) kullanma — paket başka bir araçta da çalışabilmeli. Paketi çalıştıracak araç proje
+kökünden başlamıyorsa tam yolu ver.
 
-Prompt'a konuşma geçmişi, özet veya gerekçe **koyma**. Diske yazılmamış hiçbir şeye
-dayanma; hat oturumu T0'ın konuşmasını göremez.
-
-Aynı anda yalnızca **bağımlılığı karşılanmış** hatlar dağıtılır. `depends` açıkken hattı
-başlatma — sözleşme kilitlenir.
-
-## 5. Model dağılımı
-
-| Katman | Model | Neden |
-|---|---|---|
-| T0 yönetim | opus | Plan, hat sınırı, denetim kararı — hatanın maliyeti en yüksek burada |
-| Hat oturumu | sonnet | Bilinen kalıpla üretim, varsayılan |
-| Hat oturumu | haiku | Kalıbı birebir belli mekanik hat (locale, isimlendirme, doküman) |
-| Hat oturumu | opus | Yalnız algoritmik/mimari yük taşıyan hat |
-
-T0 hangi modelin kullanılacağını hat brifingine yazar; hat oturumu ilk iş olarak modeli
-ona ayarlar. **Varsayılan opus değildir** — gerekmedikçe düşür.
+Bağımlılığı açık olan paketin satırını **basma**; hangi paket bitince açılacağını yaz.
 
 ## 6. Toplama
 
-Hat kapanınca `rapor/H<n>-kapanis.md` yazar ve kullanıcıya "T0 oturumuna dön, `/topla`
-yaz" der. T0 `/topla` ile:
+Kullanıcı "bitti" diye döndüğünde ayrı bir komut bekleme, sen topla:
 
-1. `rapor/` ve `contracts/done/` içindekileri okur
-2. `git status --porcelain` ile alan ihlali arar — hat kendi `alan`ı dışına yazmışsa
-   LOG'a `sahipsiz`, düzeltmeyi kimin yapacağına karar verir
-3. `denetim` ayarına göre `denetci` çalıştırır (T0 oturumunda, hat oturumunda değil)
-4. Kalan hatların `Arayüzler` bölümünü kapanan hattın ürettiği imzalarla doldurur
-5. Kullanıcıya dalga raporu verir (§8) ve açılabilir hale gelen hatların başlatma
-   satırlarını basar
-
-**Denetim T0'da yapılır.** Hat kendi işini onaylayamaz.
+1. `.claude/relay/G*.md` içindeki `durum` ve `## Rapor` bölümlerini oku
+2. `git status --porcelain` — her değişen dosyayı paketlerin `yazilabilir` kümesiyle eşle.
+   Dışarı taşan varsa `LOG.md`'ye `sahipsiz` satırı, kullanıcıya bildir, düzeltmeyi hangi
+   pakete vereceğine karar ver. **Sessizce geçme.**
+3. `denetim` ayarına göre `denetci` ajanını **ana oturumda** çalıştır. Paket kendi işini
+   onaylamış sayılmaz. Kaldıysa `protokol.md` §4 — düzeltme paketin `## Görev` bölümüne
+   yazılır ve satır yeniden verilir.
+4. Rapordaki imzaları bağımlı paketlerin `## Bağlam` bölümüne taşı. Atlanırsa sonraki
+   paket imzayı uydurur.
+5. Dalga raporu ver (`protokol.md` §8.4) ve açılabilir paketlerin satırlarını bas.
 
 ## 7. Kesinti
 
-Hat oturumu düşerse kaybedilen tek şey o hattır; diğerleri etkilenmez. Kullanıcı yeni bir
-oturum açıp aynı satırı (`/teknesyum:hat H2`) yapıştırır — hat sözleşmelerin
-`Kayıt noktası` bölümünden devam eder.
+Paket düşerse yalnız o paket kaybolur. Kullanıcı aynı satırı yeni bir oturumda yapıştırır;
+paket `## Rapor` bölümü ve `durum` alanı üzerinden kaldığı yerden devam eder.
 
-T0 oturumu düşerse yeni oturumda `/devam`: `hatlar/*.md` durumları + `LOG.md` +
-`rapor/` okunur, yönetim kaldığı yerden sürer.
+Ana oturum düşerse yeni oturumda `/devam`: paket durumları + `LOG.md` + raporlar okunur.

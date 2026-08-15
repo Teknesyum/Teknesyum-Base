@@ -1,7 +1,7 @@
 {
   "name": "teknesyum",
   "displayName": "Teknesyum Çalışma Düzeni",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Neon arayüz standardı + çok ajanlı iş rölesi. Kullanıcı ne istediğini söyler; iş büyüklüğü, ajan dağılımı, model ve denetim otomatik kurulur.",
   "author": {
     "name": "Teknesyum",
@@ -10,6 +10,5 @@
   "homepage": "https://github.com/sponsors/Teknesyum",
   "repository": "https://github.com/Teknesyum/claude-code-adamantium-base",
   "license": "MIT",
-  "keywords": ["orchestration", "multi-agent", "design-system", "turkish", "neon"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["orchestration", "multi-agent", "design-system", "turkish", "neon"]
 }

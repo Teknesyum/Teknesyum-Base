@@ -38,8 +38,22 @@ anahtarı **yoksa** `250000` olarak ekle. **Varsa dokunma** — kullanıcının 
 Bu ayar makine geneli olduğu için her oturumda geçerlidir; oturum başına ayarlanmaz.
 Sonradan değiştirmek için `/autocompact <sayı>`, kapatmak için anahtarı sil.
 
-**4. Opsiyonel bağımlılıklar** — sadece eksik olanı bildir, kurma:
-- `typescript-language-server` + `typescript-lsp` plugin'i (TS projelerinde tip zekâsı)
+**4. Dil sunucusu (TS/JS tip zekâsı).** Plugin `.lsp.json` ile sunucuyu zaten tanımlıyor;
+eksik olan yalnızca ikili. Şunları **doğrula, eksikse kurulum komutunu bildir**:
+
+- `typescript-language-server --version` çalışıyor mu → yoksa
+  `npm i -g typescript-language-server typescript@5`
+- Global `typescript` sürümü: `npm ls -g --depth=0` çıktısında **5.x** olmalı.
+  **7.x ise LSP hiç çalışmaz** — TS 7 native port, `lib/tsserver.js` göndermiyor, sunucu
+  initialize'da ölüyor ve Claude Code sessizce LSP'siz devam ediyor. Düzeltme:
+  `npm i -g typescript@5`
+- Kullanıcıda `typescript-lsp@claude-plugins-official` **etkinse** aynı uzantılar iki kez
+  tanımlanır; ikincisi yok sayılır ve uyarı basılır. Birini kapatmasını öner.
+
+Doğrulama: sunucu **tembel** başlar — oturum açılışında değil, `LSP` aracı ilk
+çağrıldığında. `LSP` aracının araç listesinde görünmesi kayıtlı olduğunun kanıtıdır.
+
+**5. Opsiyonel bağımlılıklar** — sadece eksik olanı bildir, kurma:
 - `csharp-ls` + `csharp-lsp` plugin'i (C# projelerinde)
 - `graphify` (`uv tool install graphifyy`) — büyük kod tabanı indeksleme
 

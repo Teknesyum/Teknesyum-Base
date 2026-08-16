@@ -184,7 +184,7 @@ The model is chosen at call time.
 
 | Command | What it does |
 |---|---|
-| `/durum` | Contract progress + per-agent turn-budget bars |
+| `/durum` | Contract progress, running agents, what is left |
 | `/devam` | Resumes an interrupted session from agent traces |
 | `/iskele` | Sets up the relay explicitly (normally automatic) |
 | `/huy` | Records a permanent rule in the right layer |
@@ -194,14 +194,38 @@ The model is chosen at call time.
 ### Statusline
 
 A multi-line statusline showing context usage, **your plan limits** (5-hour and weekly),
-contract progress, and each agent's turn budget with its current action. Dead agents are
-labelled in plain language with the command that revives them. It is rendered for you and
-never for the model, so its **token cost is zero**.
+contract progress, and the agents running right now with their elapsed time. Dead agents
+are labelled in plain language with the command that revives them. It is rendered for you
+and never for the model, so its **token cost is zero**.
 
 ### Hooks
 
 - `koru-sozlesme.js` — blocks writes to completed contracts at the harness level
 - `relay-izle.js` — writes agent traces to disk (`SubagentStart` / `PostToolUse` / `SubagentStop`)
+
+### Code intelligence
+
+The plugin ships an `.lsp.json` that registers `typescript-language-server` for
+`.ts .tsx .mts .cts .js .jsx .mjs .cjs`. With it, agents resolve definitions and
+references through the language server instead of grepping, and see compile errors
+without waiting for a build.
+
+Install the binaries once:
+
+```bash
+npm i -g typescript-language-server typescript@5
+```
+
+Two things are worth knowing, both learned the hard way:
+
+- **Pin TypeScript to 5.x.** The 7.x line is the native port and ships no
+  `lib/tsserver.js`, so the language server dies during `initialize` — and Claude Code
+  silently continues without LSP, with no warning anywhere.
+- **The server starts lazily**, on the first `LSP` tool call rather than at session start.
+  Checking the process list proves nothing; the tool being present does.
+
+If you also have `typescript-lsp@claude-plugins-official` enabled, both declare the same
+extensions, the second one is ignored and a warning is printed. Disable one.
 
 ---
 

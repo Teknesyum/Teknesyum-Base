@@ -19,10 +19,46 @@
 **Tek doğruluk kaynağı sözleşme dosyasıdır.** Ayrı durum dosyası tutma; iki kaynak ayrışır.
 İlerleme = `done/` içindeki dosya sayısı.
 
+### Durum makinesi — kim hangi geçişi yapar
+
+```
+open ──► active ──► submitted ──► done          (dosya done/ altına taşınır)
+           ▲            │
+           └────────────┘  denetim: kaldi
+```
+
+| Geçiş | Yapan | Koşul |
+|---|---|---|
+| `open → active` | ajan | sözleşmeyi aldı |
+| `active → submitted` | ajan | kabul kriterlerini işaretledi, Çıktı dolu |
+| `submitted → active` | T0 | denetçi KALDI dedi, düzeltme turu açılır |
+| `submitted → done` | **yalnız T0** | denetçi GEÇTİ dedi **ve** mühür işlendi |
+
+**Ajan `done` yazamaz, dosyayı `done/`'a taşıyamaz.** Kendi işini tamamlanmış ilan
+edebilen ajan, denetimi fiilen atlar — bu, denetçinin kod yazamamasıyla aynı ağırlıkta
+bir sınır. Hook mühürsüz dosyanın `done/` altına girmesini `Write` ve `Bash` yollarından
+engeller; kabuk üzerinden kopyalama, yönlendirme ve taşıma da kapsam içindedir.
+
+**Mühür**, T0'ın `done/`'a taşımadan önce sözleşme frontmatter'ına işlediği dört alandır:
+
+```yaml
+denetim: gecti
+denetci_id: <denetçi ajanın ID'si>
+diff: <denetime verilen git diff'in başlangıç..bitiş hash'i>
+dogrulama: <çalıştırılan komut> → exit <kod>
+```
+
+`diff` alanı "denetlenen kod ile teslim edilen kod aynı mı" sorusunu ölçülebilir yapar:
+mühürden sonra `owns` dosyalarında değişiklik olduysa sözleşme yeniden denetlenir.
+`dogrulama: —` bırakıp `denetim: gecti` yazma; kanıtsız mühür mührün kendisini değersizleştirir.
+
+`owns` kontrolü de bu kapıda yapılır: `canli/<agent_id>.json` içindeki `files` listesi
+`owns` ∪ `yan_etki` kümesini aşıyorsa mühür işlenmez.
+
 **`canli/` neden var:** kayıt noktası ajanın yazmasına bağlıydı, ajan ölünce yazılmıyordu.
 `relay-izle.js` hook'u `SubagentStart` / `PostToolUse` / `SubagentStop` olaylarında
 kendiliğinden yazar. Her dosyada: `contract` (ajanın okuduğu sözleşmeden bağlanır),
-`steps`, `last_action`, `files`, `last_seen`, `stop_reason`, `son_soz`.
+`last_action`, `files`, `last_seen`, `stop_reason`, `son_soz`.
 
 `stop_reason`: `end_turn` normal bitiş · başka her değer **ölüm** · `null` çalışıyor.
 
@@ -41,9 +77,13 @@ model: haiku | sonnet | opus
 depends: [T1]
 owns: [src/components/Form.tsx, src/lib/validate.ts]
 yan_etki: []
-status: open | active | blocked | done
+status: open | active | submitted | blocked | done
 tur: 0
 agent_id: —
+denetim: —          # gecti | kaldi — mührü YALNIZ T0 işler
+denetci_id: —
+diff: —             # denetime verilen aralık: <baslangic>..<bitis>
+dogrulama: —        # <komut> → exit <kod>
 ---
 ## Amaç            tek paragraf: ne, neden
 ## Kabul kriteri   ölçülebilir maddeler
@@ -73,7 +113,10 @@ veya değişikliği geri al.
 → `denetim` ayarına göre `denetci`'ye doğrulat → kaldıysa §4 → `LOG.md`.
 
 **Ajan:** sözleşmeyi oku → `status: active` → sadece `owns`'a yaz → kayıt noktasını güncelle
-→ Çıktı + `status: done` → `contracts/done/`'a taşı → LOG satırı.
+→ Çıktı + `status: submitted` → LOG satırı. **Burada durur.**
+
+**T0 kapısı:** `git diff --name-only` ve sözleşmenin doğrulama komutunu çalıştır → çıktıyı
+denetçiye ver → GEÇTİ ise mührü işle → `status: done` → dosyayı `contracts/done/`'a taşı.
 
 **Bir görev tanımı tek görevi anlatır, oturumun geçmişini değil.** Dispatch prompt'una
 konuşma özeti koyma, sözleşmenin yolunu ver.
@@ -86,6 +129,9 @@ konuşma özeti koyma, sözleşmenin yolunu ver.
 |---|---|
 | 1-3 | **Aynı ajanı devam ettir** — `SendMessage` ile `agent_id`'ye. Bağlamı korur. |
 | 4-5 | **Taze ajan.** `model_tirmanisi: acik` ise bir üst modele çık. |
+
+Model tırmanışı **4. turda, taze ajanla** olur. Üçüncü turda mevcut ajanı modelini
+değiştirerek devam ettiremezsin; devam ettirme bağlamı korur, model değiştirmez.
 | tavan | Dur. Açık bulguları kullanıcıya özetle, kararı o versin. |
 
 Her turda `tur:` artır. Tur 3'te hâlâ çözülmüyorsa sorun genelde ajanın değil
@@ -109,12 +155,13 @@ ajan ölmüştür. Sözleşme `active` ama ajanı ölü — kurtar:
 1. `LOG.md`: `T<n> olu · <stop_reason>`
 2. `SendMessage` ile `agent_id`'ye yaz, dirilt.
 3. Yanıt yoksa **taze ajan**. Devir teslim metnini `canli/`'den kur: `last_action`,
-   `files`, `son_soz`, `steps` + varsa sözleşmenin Kayıt noktası.
+   `files`, `son_soz` + varsa sözleşmenin Kayıt noktası.
    `tur:` artırma — bu kesinti kurtarması, düzeltme turu değil.
 4. İki kurtarma da başarısızsa `status: blocked`, kullanıcıya söyle.
 
 **Denetçi ölürse denetimi atlama.** Denetimsiz `done` yasak; taze `denetci` ata.
-Ajan sözleşmeyi denetimsiz `done/`'a taşımışsa geri al.
+Ajan `done/`'a taşımayı denemişse hook zaten engellemiştir — LOG'a `mühürsüz taşıma
+denemesi` satırı at ve sözleşmeyi `submitted`'da bırak.
 
 `canli/` boşsa (hook çalışmamışsa) geri düş: notification, `git status` ve diskteki
 dosyalar durumu anlatır. Bilgi kaybı olmadan kurtarılabilir ama otomatik değildir.

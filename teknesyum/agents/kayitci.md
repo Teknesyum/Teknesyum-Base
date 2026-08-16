@@ -12,7 +12,7 @@ color: yellow
 1. Sözleşmeyi oku, `status: active` yap.
 2. Sadece `owns` listesindeki dosyalara yaz.
 3. Kayıt noktasını her toplu adımdan sonra güncelle.
-4. Bitince Çıktı + `status: done` + `contracts/done/`'a taşı + LOG satırı.
+4. Bitince Çıktı + `status: submitted` + LOG satırı. `done` ve `done/`'a taşıma T0'ın işi.
 
 Yasaklar — istisnasız:
 - Kod mantığını değiştirme. Değişken adı bile sözleşmede yazmıyorsa dokunma.

@@ -30,13 +30,27 @@ function gitBranch(dir) {
 // İzlerin yeri: röle kurulu projede proje içi, değilse oturuma özel genel dizin.
 // Böylece üst klasörde açılan oturumda da ajanlar görünür.
 function izDizini(dir, sessionId) {
-  const p = path.join(dir, '.claude', 'relay', 'canli');
-  if (fs.existsSync(p)) return p;
+  // Hook röleyi altı seviye yukarıya kadar arıyor; statusline sadece cwd'ye bakınca
+  // depo kökü yerine `src/backend` altında açılan oturumda ikisi farklı kök buluyordu.
+  const p = releKoku(dir);
+  if (p) return p;
   if (!sessionId) return null;
   const ev = process.env.CLAUDE_CONFIG_DIR ||
     path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
   const g = path.join(ev, 'teknesyum', 'canli', String(sessionId).replace(/[^a-zA-Z0-9._-]/g, '_'));
   return fs.existsSync(g) ? g : null;
+}
+
+function releKoku(start) {
+  let d = path.resolve(start || '.');
+  for (let i = 0; i < 6; i++) {
+    const c = path.join(d, '.claude', 'relay', 'canli');
+    if (fs.existsSync(c)) return c;
+    const up = path.dirname(d);
+    if (up === d) break;
+    d = up;
+  }
+  return null;
 }
 
 // Adım sayacı yok: alt ajanın araç kullanımları hook'a yansımıyor (ölçüldü).
@@ -59,7 +73,8 @@ function sure(ms) {
 
 function calisanSatiri(c) {
   const ad = (c.tip || '?').replace(/^teknesyum:/, '');
-  return C.blue + '⚙ ' + C.r + C.dim + ad + C.r + ' ' + C.hint + sure(c.bas) +
+  return C.blue + '⚙ ' + C.r + C.dim + ad + C.r + ' ' + C.hint +
+         (c.belirsiz ? '—' : sure(c.bas)) +
          (c.tanim ? ' · ' + kisalt(c.tanim, 34) : '') + C.r;
 }
 
@@ -72,8 +87,16 @@ function ajanlar(live) {
       try { out.push(JSON.parse(fs.readFileSync(path.join(live, f), 'utf8'))); } catch {}
     }
   } catch { return []; }
+  // Ölü ajan `/devam` çağırır; dünkü ölü ajan için çağırmaz. Bir günü geçen izi gösterme,
+  // yoksa kapanmış bir işin kalıntısı statusline'da kalıcı olur.
+  out = out.filter((a) => !olu(a) || taze(a.last_seen));
   const rank = (a) => (a.stop_reason === null ? 0 : olu(a) ? 1 : 2);
   return out.sort((a, b) => rank(a) - rank(b) || (b.last_seen || '').localeCompare(a.last_seen || ''));
+}
+
+function taze(iso) {
+  const t = Date.parse(String(iso || '').replace(' ', 'T') + 'Z');
+  return !isNaN(t) && Date.now() - t < 24 * 60 * 60 * 1000;
 }
 
 function olu(a) {
@@ -102,7 +125,10 @@ function ajanSatiri(a) {
 function kisalt(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
 function relay(dir) {
-  const base = path.join(dir, '.claude', 'relay', 'contracts');
+  const canli = releKoku(dir);
+  const base = canli
+    ? path.join(path.dirname(canli), 'contracts')
+    : path.join(dir, '.claude', 'relay', 'contracts');
   if (!fs.existsSync(base)) return null;
   const md = (d) => {
     try { return fs.readdirSync(d).filter((f) => f.endsWith('.md')); }

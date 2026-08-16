@@ -17,8 +17,10 @@ Sana bir sözleşme dosyası yolu verildi. Kodu sen yazacaksın.
 4. **Kayıt noktasını her kabul kriteri sınırında** üzerine yaz — her araç çağrısında değil.
    Güncel durumu yaz, geçmişi değil. Kesilirsen buradan devam edilecek.
 5. Kabul kriterlerini gerçekten çalıştırıp doğrula, sonra işaretle.
-6. Bitince: Çıktı'yı doldur, `status: done`, dosyayı `contracts/done/`'a taşı,
-   `LOG.md`'ye tek satır ekle.
+6. Bitince: Çıktı'yı doldur, `status: submitted`, `LOG.md`'ye tek satır ekle. **Dur.**
+   `done` yapmak ve dosyayı `contracts/done/`'a taşımak senin işin değil — denetçi
+   GEÇTİ dedikten sonra T0 yapar. Kendi işini tamamlanmış ilan edemezsin; hook da
+   mühürsüz dosyanın `done/` altına girmesini engeller.
 
 Devam ettirildiysen (`SendMessage` ile geldiysen): bağlamın duruyor, sözleşmeyi baştan
 okuma. Denetim raporundaki açık maddeleri kapat, `tur:` alanını artır.

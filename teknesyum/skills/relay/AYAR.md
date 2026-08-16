@@ -37,8 +37,10 @@ denetim yerine geçmez. `kritik`'e ancak ölçüp güvendikten sonra düş.
 **duzeltme_tavani** — kabul kriteri geçmezse: tur 1-3 aynı ajan devam ettirilir
 (`SendMessage`), tur 4-5 taze ajan atanır. Tavana gelince karar sana sorulur.
 
-**model_tirmanisi** — `acik` ise 3. turda çözülmeyen sözleşme bir üst modele çıkar
-(haiku→sonnet→opus). Sorun modelin seviyesindeyse tur harcamayı keser.
+**model_tirmanisi** — `acik` ise 3 tur sonunda çözülmeyen sözleşme, **4. turda açılan
+taze ajanla** bir üst modele çıkar (haiku→sonnet→opus). Sorun modelin seviyesindeyse tur
+harcamayı keser. Devam ettirilen ajanın modeli değiştirilemez, bu yüzden tırmanış hep
+taze ajanla gelir.
 
 **paralel_genislik** — `owns` kümeleri kesişmeyen sözleşmeler için tavan. 3'ü aşma;
 her paralel ajan tam dispatch maliyeti taşır.

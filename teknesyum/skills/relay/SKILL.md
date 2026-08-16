@@ -113,7 +113,12 @@ Alt ajan soğuk başlar; üretken iş başlamadan ~4-15k token yanar. Karar kura
 
 - Yüksek (keşif, tarama, çok dosyalı refactor) → **delege et.** Ara çıktı alt ajanın
   context'inde ölür, sana sonuç döner. Kazanç budur.
-- Düşük (tek fonksiyon, zaten tasarladığın şeyi yazmak) → **kendin yap.**
+- Düşük (tek fonksiyon, zaten tasarladığın şeyi yazmak) → **yine de tek ajan aç.**
+
+Buradaki "kendin yap" istisnası §1'deki tek satırlık düzeltmeyle sınırlıdır, bir adım
+ötesine geçmez. Sebep token değil rol: senin yazdığın kodu denetleyecek bağımsız taraf
+kalmaz. Düşük oranlı iş, delegenin *kazançsız* olduğu yerdir — *yasak* olduğu değil.
+Kazanç yoksa bile ayrımı koru; maliyeti dispatch, karşılığı denetlenebilirlik.
 
 Sözleşme boyutu: **3-8 dosya, tek tutarlı yetenek.** Gerçek projede 5-9 sözleşme çıkar.
 

@@ -17,7 +17,8 @@ onu aramana veya yüklemene gerek yok, doğrudan uygula.
 3. **Sadece `owns` listesindeki dosyalara yaz.**
 4. Kayıt noktasını her kabul kriteri sınırında üzerine yaz.
 5. Kabul kriterlerini doğrula, sonra işaretle.
-6. Bitince Çıktı + `status: done` + `contracts/done/`'a taşı + LOG satırı.
+6. Bitince Çıktı + `status: submitted` + LOG satırı. `done` ve `done/`'a taşıma T0'ın işi;
+   denetçi GEÇTİ demeden olmaz.
 
 Arayüz kuralları — istisnasız:
 - **Renk, ölçü, radius, aralık, font uydurma.** Hepsi `teknesyum-ui` tokenlarında var.

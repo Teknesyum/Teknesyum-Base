@@ -96,7 +96,7 @@ function run(j) {
     case 'SubagentStop': {
       const c = calisanKapat(live, j.agent_type);
       const rol = String((c && c.tip) || j.agent_type || 'ajan').replace(/^teknesyum:/, '');
-      duyur('bitti · ' + rol + (c ? ' · ' + gecen(c.bas) : ''));
+      duyur('bitti · ' + rol + (c ? ' · ' + (c.belirsiz ? 'süre belirsiz' : gecen(c.bas)) : ''));
       // Ölçüldü: bu olayın payload'ında `stop_reason` alanı YOK. Eksikliği ölüm sanma —
       // aksi halde normal biten her ajan statusline'da ⨯ görünür.
       s.stop_reason = j.stop_reason || 'end_turn';
@@ -106,7 +106,7 @@ function run(j) {
     }
   }
 
-  try { fs.writeFileSync(file, JSON.stringify(s, null, 2)); } catch {}
+  yaz(file, s);
 }
 
 const CALISAN = '_calisanlar.json';
@@ -120,21 +120,24 @@ function calisanEkle(live, j) {
     tanim: String(t.description || '').slice(0, 60),
     bas: Date.now(),
   });
-  try { fs.writeFileSync(f, JSON.stringify(l)); } catch {}
+  yaz(f, l);
   return l.length;
 }
 
-// agent_id ile Agent çağrısını birbirine bağlayan alan yok; tip eşleşmesiyle kapat,
-// tip tutmazsa en eskisini düşür. Paralel aynı tip ajanda sıra karışabilir, süre yine doğru.
+// Stop olayını başlangıç kaydına bağlayan bir kimlik alanı yok; eşleştirme tipten
+// yapılıyor. Aynı tipten birden çok ajan açıksa hangisinin bittiği bilinemez —
+// o durumda süre uydurulmaz, `belirsiz` döner. Yanlış süre, süresizlikten kötüdür.
 function calisanKapat(live, tip) {
   const f = path.join(live, CALISAN);
   const l = read(f);
-  if (!Array.isArray(l) || !l.length) return;
+  if (!Array.isArray(l) || !l.length) return null;
+  const ayni = tip ? l.filter((x) => x.tip === tip).length : 0;
   let i = tip ? l.findIndex((x) => x.tip === tip) : -1;
   if (i < 0) i = 0;
   const [c] = l.splice(i, 1);
-  try { fs.writeFileSync(f, JSON.stringify(l)); } catch {}
-  return c || null;
+  yaz(f, l);
+  if (!c) return null;
+  return ayni > 1 ? { ...c, belirsiz: true } : c;
 }
 
 // Kullanıcı ajanların içini göremez. Base'in devreye girdiği her anı tek satır
@@ -185,9 +188,9 @@ function birlestir(live, hedef, gecici) {
     if (g.contract && !h.contract) h.contract = g.contract;
     if (g.last_action && h.last_action === '—') h.last_action = g.last_action;
     for (const f of g.files || []) if (!h.files.includes(f)) h.files.push(f);
-    try { fs.writeFileSync(hedef, JSON.stringify(h, null, 2)); } catch {}
+    yaz(hedef, h);
   } else if (g && !h) {
-    try { fs.writeFileSync(hedef, JSON.stringify(g, null, 2)); } catch {}
+    yaz(hedef, g);
   }
   try { fs.unlinkSync(gf); } catch {}
 }
@@ -208,7 +211,7 @@ function iz(live, j) {
   if (ev === 'PostToolUse') {
     d.ptu_ajanli = (d.ptu_ajanli || 0) + (j.agent_id || j.agent_transcript_path ? 1 : 0);
   }
-  try { fs.writeFileSync(f, JSON.stringify(d, null, 2)); } catch {}
+  yaz(f, d);
 }
 
 function genelKok() {
@@ -222,7 +225,8 @@ function supur() {
   const kok = genelKok();
   let l = [];
   try { l = fs.readdirSync(kok); } catch { return; }
-  if (l.length < 12) return;
+  // İzler `son_soz` alanında ajan çıktısı taşıyor. Eskiden temizlik 12 klasör
+  // birikmeden başlamıyordu; az oturum açan kullanıcıda hiç çalışmıyordu.
   const sinir = Date.now() - 24 * 60 * 60 * 1000;
   for (const d of l) {
     const p = path.join(kok, d);
@@ -243,6 +247,17 @@ function findRelay(start) {
 }
 
 function read(f) { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } }
+
+// Paralel ajanlarda birden çok hook süreci aynı dosyaya yazıyor. Doğrudan writeFileSync
+// truncate ile başlar: okuyan taraf yarım JSON yakalayabilir. Geçici dosya + rename
+// atomiktir — okuyan ya eski ya yeni içeriği görür, arada bir hal yok.
+function yaz(f, veri) {
+  const tmp = f + '.' + process.pid + '.tmp';
+  try {
+    fs.writeFileSync(tmp, JSON.stringify(veri, null, 2));
+    fs.renameSync(tmp, f);
+  } catch { try { fs.unlinkSync(tmp); } catch {} }
+}
 function norm(p) { return path.normalize(p).replace(/\\/g, '/'); }
 function safe(s) { return String(s).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80); }
 function short(p, proj) {

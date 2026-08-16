@@ -6,16 +6,25 @@ allowed-tools: Read, Write, Edit, Bash, Glob
 Plugin bileşenleri (skill, ajan, komut, hook) kurulumla birlikte zaten aktif.
 Plugin'in taşıyamadığı iki şeyi bu komut bağlar. İkisi de yoksa kur, varsa dokunma.
 
-**1. Statusline.** Plugin dizinini bul (`~/.claude/plugins/` altında `teknesyum` içeren,
-`scripts/statusline.js` barındıran klasör). Kullanıcının `~/.claude/settings.json`
-dosyasına ekle — mevcut `statusLine` varsa üzerine yazma, kullanıcıya sor:
+**1. Statusline.** Eklenti önbelleği **sürümlü** (`plugins/cache/teknesyum/teknesyum/1.12.0/`).
+settings.json oraya doğrudan işaret ederse ilk güncellemede statusline kırılır; elle kopya
+alınırsa güncellemeler kullanıcıya hiç ulaşmaz. İkisini de yapma — **köprü kur**:
+
+1. Eklentideki `scripts/kopru.js` dosyasını `~/.claude/teknesyum-statusline.js` yoluna
+   kopyala (her güncellemede üzerine yaz; köprü sürüme bağlı değil, içeriği sabittir).
+2. `~/.claude/settings.json`:
 
 ```json
-"statusLine": { "type": "command", "command": "node \"<plugin>/scripts/statusline.js\"" }
+"statusLine": { "type": "command", "command": "node \"~/.claude/teknesyum-statusline.js\"" }
 ```
 
-`node` PATH'te değilse tam yolunu kullan. Ekledikten sonra örnek bir JSON'u script'e
-borulayarak çalıştığını doğrula.
+Yolu kullanıcının gerçek ev dizinine göre tam yaz. `node` PATH'te değilse onun da tam
+yolunu kullan. Mevcut `statusLine` başka bir şeye işaret ediyorsa üzerine yazma, sor.
+
+**Eski kurulumu düzelt:** `~/.claude/statusline.js` diye elle alınmış bir kopya varsa
+bu bayat bir sürümdür — sil, köprüyle değiştir. Bunu sormadan yap, söyle.
+
+Doğrulama: örnek bir JSON'u köprüye borula, çıktı gelmeli.
 
 **2. Huy dosyası.** `~/.claude/HUYLAR.md` yoksa şu içerikle oluştur ve
 `~/.claude/CLAUDE.md` dosyasının ilk satırlarına `@HUYLAR.md` satırını ekle:

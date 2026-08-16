@@ -26,7 +26,7 @@ This package changes four things:
 | | Before | After |
 |---|---|---|
 | **Division of work** | One assistant does everything, context bloats | Split into contracts, handed to agents; intermediate output never pollutes the main context |
-| **Verification** | The author of the code declares it done | A separate auditor verifies it — it **has no write tools** and can do nothing but approve or reject |
+| **Verification** | The author of the code declares it done | A separate auditor verifies it — it **cannot write or run anything** and can do nothing but approve or reject |
 | **Interruption** | Hit the limit, start over | Every agent's trace is written to disk; work resumes where it stopped |
 | **UI** | A different look in every project | Same palette, same typography, same signature — everywhere |
 
@@ -132,8 +132,27 @@ For large jobs, every task is written to a file:
 ```
 
 Every contract declares what it owns (`owns`). **Two contracts can never own the same
-file** — that is the only guarantee parallel work has. When an agent finishes, it moves
-its contract into `done/`; writing there is blocked by a hook.
+file** — that is the only guarantee parallel work has.
+
+### The completion gate
+
+A contract moves `open → active → submitted → done`. The agent can reach `submitted` and
+no further: **it cannot mark its own work complete or move its contract into `done/`.**
+That transition belongs to the manager alone, after the auditor returns a pass, and it
+requires a seal written into the contract's frontmatter:
+
+```yaml
+denetim: gecti
+denetci_id: <the auditing agent>
+diff: <the range the auditor was shown>
+dogrulama: npm test → exit 0
+```
+
+A hook enforces the gate rather than trusting it: an unsealed file cannot land in `done/`
+through `Write`, and cannot get there through the shell either — redirects, `mv`,
+`Move-Item`, `cp` and deletions targeting `done/` are all refused unless the source file
+already carries the seal. Reading is untouched. Without this, an agent that finished
+badly could declare itself done and drop out of the audit queue entirely.
 
 ### Surviving interruptions
 
@@ -153,10 +172,12 @@ its own context; if that fails, a handover brief for a fresh agent is built from
 file. `/devam` does all of it automatically.
 
 Two limits worth knowing, both measured rather than assumed. A subagent's own tool calls
-never reach the hook layer, so there is no per-agent step counter — the statusline shows
-which agents are running and for how long, not how far along they are. And when the
-session was opened somewhere without a relay directory, traces go to a per-session folder
-under `~/.claude/teknesyum/canli/` instead, so tracking works with no setup at all.
+usually do not reach the hook layer — they did in one worktree-isolated run and in none of
+the others — so there is no dependable per-agent progress counter. The statusline shows
+which agents are running and for how long, not how far along they are, and when two agents
+of the same role are open it says so instead of guessing which one just finished. And when
+the session was opened somewhere without a relay directory, traces go to a per-session
+folder under `~/.claude/teknesyum/canli/` instead, so tracking works with no setup at all.
 
 ### Fix loop
 
@@ -205,9 +226,14 @@ contract progress, and the agents running right now with their elapsed time. Dea
 are labelled in plain language with the command that revives them. It is rendered for you
 and never for the model, so its **token cost is zero**.
 
+`settings.json` points at a small bridge in your config directory rather than at the
+plugin itself. The plugin cache is versioned, so a direct path would break on the next
+update and a hand-made copy would freeze at the version you copied; the bridge resolves
+the newest installed version at render time and stays correct across updates.
+
 ### Hooks
 
-- `koru-sozlesme.js` — blocks writes to completed contracts at the harness level
+- `koru-sozlesme.js` — enforces the completion gate on `Write`, `Edit` and `Bash`
 - `relay-izle.js` — writes agent traces to disk (`SubagentStart` / `PostToolUse` / `SubagentStop`)
   and prints what the base is doing (`SessionStart` / dispatch / agent finish)
 
@@ -230,11 +256,12 @@ Set `TEKNESYUM_SESSIZ=1` to silence them.
 node test/calistir.js
 ```
 
-21 checks driving the real hooks and the real statusline with real payloads: the
-announcements, the trace files, the write protection on completed contracts, the
-packaging invariants (no `hooks` key in the manifest, valid `.lsp.json`, the auditor's
-tool list), and the four regressions that shipped before the suite existed. Runs on
-plain Node with no dependencies; CI runs it on every push.
+36 checks driving the real hooks and the real statusline with real payloads. They cover
+the announcements, the trace files, the completion gate (including shell bypasses and
+relative Windows paths), concurrent hook processes writing the same file, the packaging
+invariants — no `hooks` key in the manifest, a valid `.lsp.json`, the auditor's tool
+list, no pinned version in the statusline bridge — and every regression that shipped
+before the suite existed. Runs on plain Node with no dependencies; CI runs it on every push.
 
 ### Code intelligence
 

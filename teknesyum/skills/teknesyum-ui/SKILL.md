@@ -50,6 +50,18 @@ Metin/zemin kontrastı **7:1 altına inemez** (beyaz/siyah 21:1, neon-blue/siyah
 Tek istisna gerçekten devre dışı olan kontroldür; o da griliğe ek olarak ayrıca belli edilir
 (ikon, imleç, tooltip) — çünkü renk körü kullanıcı grinin anlamını göremez.
 
+**Beyaz zemin kullanma.** Beyaz burada **yazının rengidir, zeminin değil.** Koyu bir arayüzün
+ortasındaki beyaz kutu göz kamaştırır: kullanıcı karanlık ortamda çalışıyordur, gözü siyah
+zemine uyum sağlamıştır, beyaz panel her açılışında acıtır. Sızdığı yerler bellidir —
+`WebView`/`iframe` varsayılan gövdesi, PDF ve rapor önizlemesi, boş `DataGridView`, yazdırma
+görünümü, yüklenmemiş `<img>` kutusu, üçüncü parti denetimlerin varsayılanı, `MessageBox`.
+Hepsinin zemini açıkça `bg`/`surface` verilir; "varsayılanı ne ise" bırakılmaz.
+
+Beyaz dolgu yalnızca **küçük ve amaçlı** olduğunda geçerlidir: bir ikonun içi, bir grafikteki
+veri noktası, bir imleç. Ölçü, avuç içi kadar alan — panel, satır, sekme ya da diyalog zemini
+asla. İçeriğin kendisi beyaz zeminliyse (kullanıcının PDF'i, dış web sayfası) onu bir
+`surface` çerçeve içine al ve kenarlarına pay bırak; ekranın kenarına dayanmasın.
+
 Glow şart: renkli metin `drop-shadow(0 0 5px <renk>)`, dolgulu buton
 `box-shadow: 0 0 20px <renk>40`, çerçeveli kutu `inset 0 0 8px <renk>`. Glow'suz neon yok.
 
@@ -138,6 +150,7 @@ Geçiş: `200ms` mikro, `300ms` renk/glow, `500ms` panel aç-kapa. Hover `scale(
 ## 6. Sık yapılan hatalar
 
 - Soluk gri gövde metni (`#d1d5db`, `#9ca3af`) → beyaz. Bu temada ara gri yok
+- Beyaz zemin (WebView gövdesi, boş grid, önizleme paneli) → `bg`/`surface` ver
 - Native bırakılan MessageBox, scrollbar, ComboBox popup'ı, sekme başlığı → §8 sızıntı tablosu
 - Panelin/kartın komşusunun çerçevesini ya da glow'unu kesmesi → §8, örtüşme yok
 - Rastgele Tailwind rengi (`text-cyan-400`) → token kullan

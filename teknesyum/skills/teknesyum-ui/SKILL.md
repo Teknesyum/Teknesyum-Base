@@ -36,7 +36,7 @@ success      #34d399   yalnızca "tamamlandı"
 bg           #000000   uygulama zemini — nötr, tam siyah
 surface      #0a0a0c   panel zemini (95% opak), zeminden ancak çerçevesiyle ayrılır
 text         #ffffff   okunması gereken HER şey — gövde, başlık, tablo, değer, etiket metni
-label        #00f3ff   etiket ve bölüm başlığı (küçük, uppercase, tracking'li)
+label        #00f3ff   etiket ve bölüm başlığı (kalın, tracking'li — uppercase değil)
 disabled     #71717a   YALNIZCA devre dışı kontrol. Tek gri budur.
 ```
 
@@ -100,8 +100,8 @@ yaklaşıyor. Birim: web `px`, WPF `DIP` — 96 dpi'de aynı şey.
 | Rol | Boyut | Ağırlık | Tracking | Renk |
 |---|---|---|---|---|
 | Panel başlığı (h2) | 20 | 700 | 0.1em | neon-blue |
-| Bölüm başlığı (h3) | 16 | 700 | 0.1em UPPERCASE | neon-blue |
-| Etiket | 14 | 700 | 0.15em UPPERCASE | neon-blue |
+| Bölüm başlığı (h3) | 16 | 700 | 0.1em | neon-blue |
+| Etiket | 14 | 700 | 0.15em | neon-blue |
 | Gövde | 16 | 400 | 0 | `#ffffff` |
 | Mono değer | 16 | 700 | 0 | neon-pink |
 | Hero sayı | 28 | 900 | 0 | neon-blue + glow |
@@ -109,15 +109,23 @@ yaklaşıyor. Birim: web `px`, WPF `DIP` — 96 dpi'de aynı şey.
 
 Ölçek 14 → 16 → 20 → 28. Ara boyut ekleme.
 
-Etiket ile gövdeyi ayıran şey parlaklık değil: etiket **kalın, harf aralıklı, uppercase ve
-mavi**; gövde **normal ağırlıkta ve beyaz**. Bir bilgiyi göstermeye değer bulduysan okunacak
+Etiket ile gövdeyi ayıran şey parlaklık değil: etiket **kalın, harf aralıklı ve mavi**;
+gövde **normal ağırlıkta ve beyaz**. Bir bilgiyi göstermeye değer bulduysan okunacak
 kadar büyük ve parlak yaz; değmiyorsa ekrandan kaldır. Küçük punto, silinmemiş içeriğin
 bahanesidir.
 
-**Büyük harf kullanımı:** kısa arayüz metni — düğme, sekme, etiket, menü — **Her Kelimenin
-İlk Harfi Büyük**. Uzun açıklama, tooltip gövdesi ve hata metni doğal cümle biçiminde.
-Tek kelimelik etiketi cümle sanıp küçük harfle yazma, uzun açıklamayı başlık sanıp
-her kelimesini büyütme.
+**Büyük harf kullanımı — ilki büyük, gerisi küçük.** Görünen her metin bu kalıba uyar:
+düğme, sekme, etiket, menü, panel başlığı, bölüm başlığı, tooltip, hata mesajı.
+`Dosya seç`, `Ayarlar`, `Çıktı klasörü` — `DOSYA SEÇ` veya `Dosya Seç` değil.
+
+- **UPPERCASE yasak.** Bütünüyle büyük harf ne başlıkta ne etikette kullanılır; okuma
+  hızını düşürür, Türkçe'de İ/I ayrımını bozar ve neon renkle birleşince bağırır.
+  Etiketi ayıran şey harf aralığı, kalınlık ve renktir — büyütmek değil.
+- **Her Kelimenin İlk Harfi Büyük (Title Case) da yazılmaz.** İngilizce'nin alışkanlığıdır,
+  Türkçe'de yanlış görünür.
+- İstisna yalnızca **özel adlar ve kısaltmalar**: `MP4`, `GPU`, `Teknesyum`, `Windows`.
+  Cümle ortasında da büyük kalırlar.
+- Aynı kural depoya, klasöre ve gösterilen dosya adına da uygulanır (bkz. relay §2).
 
 ## 3.1 Arayüz dili — Türkçe, ama koda gömülü değil
 
@@ -207,8 +215,9 @@ kapatılmaz; kapatılırsa 1 DIP'lik çizgiler yarım piksele düşer ve gri gö
 
 **Toplam yüksekliğe bağlanan döngüsel yerleşim kurma.** Bir sütunun yüksekliği içindeki
 panellerin toplamına, panellerin yüksekliği de sütuna bağlanırsa ölçüm turlara girer ve
-sonuç pencere boyutuna göre değişir. Panel yüksekliği sabit verilir (örn. kompakt çıktı
-paneli 254 DIP), sütun ona uyar.
+sonuç pencere boyutuna göre değişir. Panele **`MinHeight`** verilir (örn. kompakt çıktı
+paneli 254 DIP), sütun ona uyar. **`Height` yazma** — sabit yükseklik, yazı tipi/DPI/dil
+değişince içeriği keser; kesilen ilk şey panelin en alt satırı olur.
 
 **Yarıçap tektir.** Genel `CornerRadius` **6 DIP**. Daire yalnızca işlevsel istisnadır:
 `?` rozeti, slider thumb, durum noktası. Kart/panel/düğme için farklı yarıçap üretme.
@@ -234,11 +243,14 @@ sürüklerken neon-purple. Ok düğmeleri yok.
 
 **Sekmeler** — sekme anahattı kontrol sınırından **1 DIP içeride**, `TabItem` kırpması
 **kapalı**. Sekmeler arası **8 DIP** boşluk, alt anahat için **2 DIP** güvenli alan.
-Kapalı `Rectangle` stroke geometrisi korunur. **Son sekmenin sağ kenarı ayrıca doğrulanır** —
-kırpılma tam orada oluyor.
+Anahat, sekme şablonunun **kökünün kendisidir** — kökün içindeki kardeş `Rectangle` değil.
+`TabItem`'a `ClipToBounds="False"` vermek yetmez: kırpan taraf `TabControl`'ün varsayılan
+`TabPanel`'idir, kapsayıcının şablonu da değiştirilir (masaüstü referansı §7.1).
+**Son sekmenin sağ ve alt kenarı ayrıca doğrulanır** — kırpılma tam orada oluyor.
 
 **Onay kutusu** — 20×20 çizim alanı, içinde 1 DIP içeri alınmış `Border`, hücre 24×24.
-Seçili ve seçili olmayan hâlin **dört kenarı da** canlı görüntüde doğrulanır.
+Seçili ve seçili olmayan hâlin **dört kenarı da** canlı görüntüde doğrulanır. Onay kutusunu
+taşıyan panele sabit `Height` verilmez; alt kenarı yiyen şey odur.
 
 **Bilgi rozeti** — teknik/kritik ayarın yanında **12×12** boyutunda, üst simge konumunda,
 metinden **12 DIP** uzakta `?`. Tooltip ayrıntılı ve **iki dilli**. Hover'da yalnızca
@@ -260,9 +272,17 @@ bağlantısı, GitHub/imza, küçült, büyüt, kapat.
 - Native bırakılan MessageBox, scrollbar, ComboBox popup'ı, sekme başlığı → §8 sızıntı tablosu
 - Panelin/kartın komşusunun çerçevesini ya da glow'unu kesmesi → §8, örtüşme yok
 - Rastgele Tailwind rengi (`text-cyan-400`) → token kullan
+- Anahattı şablon kökünün **kardeşi** yapmak → stroke'un yarısı dışarı taşar, kenar kaybolur;
+  anahat kökün kendisi olur (masaüstü §7.1)
+- Kapsayıcının varsayılan şablonunu bırakıp yalnızca çocuğa `ClipToBounds="False"` vermek →
+  kırpan üsttekidir; `TabControl`/`ToolBar`/`Menu` şablonu da değiştirilir
+- Panele sabit `Height` → içerik büyüyünce alt satır kesilir; `MinHeight` kullan
+- "Derlendi, düzelmiştir" → yarım anahat derlemede görünmez; ekran görüntüsü + büyütme
+  olmadan geçti sayma (§8.2)
 - Sayıyı sans font ile yazmak → mono
 - Glow'suz neon renk → ölü görünür
-- Başlıkta tracking/uppercase unutmak
+- Başlıkta tracking unutmak
+- Etiketi UPPERCASE veya Title Case yazmak → ilki büyük gerisi küçük (§3)
 - İmza bloğunu ana ekrana koymak → ayarların altına
 
 ## 7. Masaüstü ve dil yamaları

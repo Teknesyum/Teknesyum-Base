@@ -10,9 +10,9 @@ rounded-2xl p-6 shadow-[0_0_40px_rgba(0,0,0,0.8)] flex flex-col
 
 ## Başlıklar
 ```
-h2  text-[var(--color-neon-blue)] font-bold tracking-widest text-lg drop-shadow-[0_0_5px_var(--color-neon-blue)]
-h3  text-sm font-bold tracking-widest text-gray-400 uppercase
-lbl text-[10px] font-bold uppercase tracking-widest text-gray-500
+h2  text-[var(--color-neon-blue)] font-bold tracking-widest text-xl
+h3  text-base font-bold tracking-widest text-[var(--color-neon-blue)]
+lbl text-sm font-bold tracking-widest text-[var(--color-neon-blue)]
 ```
 
 ## Bölüm ayracı
@@ -83,7 +83,7 @@ bg-[var(--color-neon-pink)]/10 border border-[var(--color-neon-pink)]/30 rounded
 
 ## Rozet / çip
 ```
-text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-md border
+text-sm tracking-widest px-2 py-0.5 rounded-md border
 bg-<renk>/10 border-<renk>/30 text-<renk>
 ```
 

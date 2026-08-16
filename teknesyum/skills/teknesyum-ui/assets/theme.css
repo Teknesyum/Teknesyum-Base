@@ -49,11 +49,11 @@ body {
 }
 .tk-h3 {
   font-size: 16px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--tk-text-label);
+  color: var(--tk-text-label);
 }
 .tk-label {
   font-size: 14px; font-weight: 700; letter-spacing: 0.15em;
-  text-transform: uppercase; color: var(--tk-text-label);
+  color: var(--tk-text-label);
 }
 .tk-mono {
   font-family: var(--font-mono, monospace);

@@ -129,6 +129,12 @@ Yazma işine başlamadan önce, sırayla kontrol et:
 3. **Yönlendirici `CLAUDE.md` var mı?** Yoksa ve proje ≥5 kaynak dosyaysa iş bitiminde
    `scribe`'ye yazdır.
 4. **Arayüz işi var mı?** `teknesyum-ui` devreye girer; sözleşmenin rolü `ui-builder`.
+5. **Yeni depo mu açıyorsun?** Ad **ilki büyük, gerisi küçük**: `Vidshrink`, `Runly`,
+   `Lockpicker`. Tire, alt çizgi, camelCase ve BÜYÜK HARF yok; birden çok kelime
+   gerekiyorsa bitişik yazılır ve yalnızca ilk harf büyür (`Teknesyumbase`), ikinci
+   kelimenin baş harfi büyütülmez. Kısaltma tek başına adsa olduğu gibi kalır (`API`).
+   Aynı kural GitHub deposu, yerel proje klasörü ve çözüm/proje adı için geçerlidir —
+   üçü aynı yazılır. Var olan deponun adını kendiliğinden değiştirme, tek satırla söyle.
 
 ## 3. Tam röle
 

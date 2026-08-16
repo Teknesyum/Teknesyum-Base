@@ -34,6 +34,50 @@ Ordinal belgelenmemiştir — `try/catch` ile sar, başarısızlıkta uygulama a
 **Doğrulama:** ekran görüntüsünü **varsayılan boyutta ve `MinimumSize`'da** al, dosyayı aç ve bak.
 Bakmadan "düzeldi" deme.
 
+## 7.1 WPF'te yarım çizilen anahat — kök nedenler
+
+"Sekmenin sağı ve altı yok", "onay kutusunun altı kesik" şikâyeti üslup değil, aşağıdaki
+üç yapısal nedenden biridir. Anahat düzeltirken önce nedeni bul; `Margin`/`Padding` ile
+itmek belirtiyi bir DPI'da gizler, diğerinde geri getirir.
+
+**1 — Anahat, şablon kökünün kardeşiyse.** `ControlTemplate` kökü `Grid` olup çerçeve o
+grid'in içinde ayrı bir `Rectangle`/`Border` ise, çerçeve kendi ölçüsünü kökten alır ve
+stroke'un yarısı kontrolün çizim sınırının dışına düşer; dışarıda kalan yarı kırpılır.
+**Anahat şablonun kökünün kendisi olur:**
+
+```xml
+<ControlTemplate TargetType="TabItem">
+  <Border x:Name="TabOutline" BorderThickness="1" CornerRadius="6"
+          SnapsToDevicePixels="True" UseLayoutRounding="True">
+    <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}"/>
+  </Border>
+</ControlTemplate>
+```
+
+**2 — Kapsayıcının kendi varsayılan şablonu kırpıyorsa.** `TabControl`'ün varsayılan
+şablonundaki `TabPanel` başlıkları kendi sınırına sıkıştırır; `TabItem` üzerinde
+`ClipToBounds="False"` vermek yetmez, kırpan üsttekidir. Kapsayıcının **şablonu da**
+değiştirilir, başlıklar `IsItemsHost="True"` bir `StackPanel`'e alınır:
+
+```xml
+<ControlTemplate TargetType="TabControl">
+  <Grid ClipToBounds="False">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+    <StackPanel Grid.Row="0" IsItemsHost="True" Orientation="Horizontal"
+                ClipToBounds="False" Margin="0,0,0,2"/>
+    <ContentPresenter Grid.Row="1" ContentSource="SelectedContent"/>
+  </Grid>
+</ControlTemplate>
+```
+
+Aynı sorun `ToolBar`, `Menu`, `ListBox` başlık şeritleri için de geçerlidir: neon anahat
+verdiğin her `ItemsControl`'ün items host'unun ne olduğunu kontrol et.
+
+**3 — Panele sabit `Height` verilmişse.** `Height="260"` bir sözleşme değil, kesme
+emridir: yazı tipi, DPI ölçeği veya dil değiştiğinde içerik büyür, panel büyümez ve en
+alttaki kontrolün (genelde onay kutusu satırı) alt kenarı kaybolur. **Panelde `Height`
+değil `MinHeight` kullanılır** — hizalama korunur, içerik gerekince taşar.
+
 ## 8. Pencere çerçevesi ve başlık çubuğu — masaüstü
 
 **Sistem başlık çubuğu bırakılmaz.** Kapat/küçült/büyüt şeridi işletim sisteminin açık gri

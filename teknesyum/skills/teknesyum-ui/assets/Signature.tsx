@@ -16,7 +16,7 @@ export function Signature() {
         href={GITHUB}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[10px] tracking-[0.15em] uppercase text-gray-600 hover:text-gray-400 transition-colors no-underline"
+        className="text-sm tracking-[0.15em] text-white/70 hover:text-white transition-colors no-underline"
       >
         {IMZA}
       </a>
@@ -26,7 +26,7 @@ export function Signature() {
           target="_blank"
           rel="noopener noreferrer"
           title="Projeyi desteklemek için tıkla"
-          className="group flex items-center gap-1.5 text-[10px] font-bold tracking-[0.15em] uppercase no-underline
+          className="group flex items-center gap-1.5 text-sm font-bold tracking-[0.15em] no-underline
                      px-3 py-1.5 rounded-lg border bg-transparent transition-all duration-300
                      text-[var(--color-neon-purple)] border-[var(--color-neon-purple)]/50
                      [text-shadow:0_0_5px_rgba(176,38,255,0.5)]

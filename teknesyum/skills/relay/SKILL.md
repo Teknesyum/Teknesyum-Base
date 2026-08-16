@@ -46,6 +46,21 @@ Teknesyum ▸ ölçü: sıfırdan proje / 3 yetenek → görev paketi · 8 sözl
 
 Salt soru, açıklama veya sohbette yazma; ölçülecek iş yok.
 
+**İşin sonunda etki raporu.** Ölçü satırı işin başında ne kurduğunu söyler; etki raporu
+sonunda **koda nerede dokunduğunu ve hangi kuralın yönlendirdiğini** söyler. Kullanıcı
+eklentinin çalıştığını başka türlü göremez.
+
+```
+Teknesyum ▸ etki
+  src/api/reset.ts:40   builder/sonnet   T2 · owns: api/**    denetim: geçti
+  src/ui/ResetForm.tsx  ui-builder       T3 · teknesyum-ui §2, §8 uygulandı
+  — kural: git güvenlik noktası atıldı (.gitignore yazıldı, .env eklenmedi)
+```
+
+Ajan açılmayan işte de yaz; satır kısalır, kaybolmaz:
+`Teknesyum ▸ etki · tek dosya, kendim yaptım · kural: kod yorumu yazılmadı (HUYLAR)`.
+Arayüz işinde ayrıntılı biçim `teknesyum-ui` §9'da.
+
 Kararsızsan küçük tarafı seç. Röle kurmanın kendi maliyeti var; sonradan büyütmek,
 gereksiz kurulmuş röleyi taşımaktan ucuz. **Çok oturumlu kararı ise ilk mesajda verilir** —
 yarıda geçiş planı baştan yazdırır.

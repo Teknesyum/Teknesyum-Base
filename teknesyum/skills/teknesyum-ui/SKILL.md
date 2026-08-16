@@ -110,6 +110,29 @@ pencere çerçevesi ve başlık çubuğu, `locale/` klasörü. Web/React işinde
 
 Bunlar her yeni arayüzde başlangıç hâlidir. Aksini yapmak için gerekçe gerekir, uygulamak için değil.
 
+**Sistem başlık çubuğu kaldırılır, yerine tema panelinden bir şerit çizilir.** İşletim
+sisteminin açık gri min/büyüt/kapat bandı neon pencerenin tepesinde temaya ait olmayan bir
+yabancı cisimdir. Her stack'te karşılığı var, üçü de zorunlu:
+
+| Stack | Native çubuğu kaldır | Yerine |
+|---|---|---|
+| WPF | `WindowStyle="None"` + `WindowChrome` | `Border` + `Grid` başlık şeridi |
+| WinForms | `FormBorderStyle.None` | özel caption paneli |
+| Electron | `frame: false` (veya `titleBarStyle: 'hidden'`) | `-webkit-app-region: drag` şerit |
+| Web / PWA | — | uygulanmaz, atla |
+
+Çizilen şerit: yükseklik **32–40px**, zemin `surface`, altında `1px` `neon-blue/20` çizgi.
+Solda ikon + uygulama adı (14px/700/`0.1em`, odaklıyken neon-blue + glow, odak dışıyken
+`#6b7280`). Sağda üç düğme, ikon **10–12px** ve `stroke="currentColor"` SVG/Path — emoji
+veya harf (`X`, `—`) kullanma. Hover: kapat **neon-pink**, diğerleri **neon-blue**, ikisi de
+glow'lu; dolgu gelmez. Dosya yolu, sürüm, config yolu başlık şeridine yazılmaz — o bilgi
+ilgili panele veya alt bilgiye gider.
+
+**Native çubuğu kaldırmak işletim sistemi davranışlarını da kaldırır; hepsi geri takılır:**
+sürükleyerek taşıma, başlığa çift tıkla büyüt/geri al, Aero Snap, kenardan boyutlandırma,
+`Alt`+`F4`, büyütüldüğünde görev çubuğunun altına girmeme. Mekaniği ve WinForms/WPF'te
+kaybolmalarının sebebi: `references/desktop.md` §8. **Teslimden önce dördü de fiilen denenir.**
+
 **Pencere köşeleri yuvarlatılır.** Keskin dikdörtgen pencere neon temayla uyuşmuyor; yarıçap
 **12px**. Çerçevesiz pencerede (§8) işletim sistemi yuvarlatma uygulamaz — şekli kendin kırp
 (WinForms `Region`, WPF `Border.CornerRadius` + `WindowChrome`, web `border-radius`).
@@ -155,3 +178,22 @@ sonra imza**. Destek bağlantısı imzadan koparılıp sola atılmaz — ikisi t
 başlıkları gri değil, `#00F3FF`. Gri bırakılırsa panel çerçevesi renkli, içindeki başlık sönük
 kalıyor ve bölüm başlığı gibi okunmuyor. Bunun **altındaki** "Etiket" rolü (alan üstü küçük
 harf aralıklı yazılar) sönük kalmaya devam eder — hiyerarşiyi ayıran şey o karşıtlık.
+
+## 9. Etki raporu — arayüz işinin sonunda zorunlu
+
+Kullanıcı standardın uygulandığını koddan çıkaramaz; **nereye ne dayattığını sen söyleyeceksin.**
+Arayüz üreten veya değiştiren her işin sonunda, özetin **önüne** şu bloğu yaz. Dosya:satır,
+kuralın adı, ne yaptığın, hangi madde. Uydurma — gerçekten dokunduğun yeri yaz.
+
+```
+Teknesyum ▸ etki · teknesyum-ui
+  MainWindow.xaml:14   başlık çubuğu  sistem bandı kaldırıldı → 36px neon şerit   §8
+  MainWindow.xaml:52   palet          #00f3ff / #ff00ea token; ara renk yok       §2
+  MainWindow.xaml:88   tipografi      sayılar Consolas'a alındı                    §3
+  SettingsPage.xaml:210 imza          ayarların altına, anahat sponsor düğmesi     §4
+  — uygulanmadı: pencere köşesi (WindowChrome projede yok, gerekçe: mevcut chrome)
+```
+
+**Uygulamadığın maddeyi de yaz.** Sessizce atlanan kural, hiç var olmamış kuraldır; gerekçesi
+yazılınca kullanıcı katılmıyorsa itiraz edebilir. Ayar kapalıysa (`"kapali": true`) blok yerine
+tek satır: `Teknesyum ▸ etki · teknesyum-ui kapalı, projenin kendi tarzı korundu`.

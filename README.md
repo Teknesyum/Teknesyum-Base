@@ -60,6 +60,11 @@ curl -fsSL https://raw.githubusercontent.com/Teknesyum/claude-code-adamantium-ba
 
 **Restart Claude Code after installing.**
 
+The third line inspects the machine, wires up everything that has one obvious answer, and
+asks you only about the choices that are genuinely yours — such as overwriting an existing
+statusline or installing a global npm package. If you skip it, the base notices on the next
+session start and offers to run it.
+
 **Required:** Claude Code. **Optional:** Node.js (for the statusline),
 `typescript-language-server` (TS type intelligence), `graphify` (large-codebase indexing).
 Anything missing is reported during install; none of it is mandatory.
@@ -169,7 +174,9 @@ depend on the model cooperating:
 
 Any `stop_reason` other than `end_turn` means the agent died. It is first revived with
 its own context; if that fails, a handover brief for a fresh agent is built from this
-file. `/devam` does all of it automatically.
+file. This happens on its own: when a session opens with contracts still in flight, the
+base reads the traces and picks the work back up without being asked. `/devam` is only
+there for when you want to trigger it by hand.
 
 Two limits worth knowing, both measured rather than assumed. A subagent's own tool calls
 usually do not reach the hook layer — they did in one worktree-isolated run and in none of
@@ -212,12 +219,11 @@ guarantee cannot quietly erode.
 
 | Command | What it does |
 |---|---|
-| `/durum` | Contract progress, running agents, what is left |
-| `/devam` | Resumes an interrupted session from agent traces |
-| `/iskele` | Sets up the relay explicitly (normally automatic) |
-| `/huy` | Records a permanent rule in the right layer |
-| `/teknesyumui` | Configures or disables the UI standard |
-| `/kurulum` | Wires up the statusline and the habits file |
+| `/raporver` | Contract progress, running agents, what is left |
+| `/devam` | Resumes an interrupted session by hand — normally automatic |
+| `/huyekle` | Records a permanent rule in the right layer |
+| `/uiayar` | Configures or disables the UI standard |
+| `/kurulum` | Inspects the machine, wires up what it can, asks about the rest |
 
 ### Statusline
 
@@ -243,7 +249,7 @@ You cannot see inside the agents, so the base narrates itself. One line per real
 emitted by the hook rather than promised by the model:
 
 ```
-Adamantium ▸ röle kurulu · sözleşme 4/7 bitti · 3 açık → /durum
+Adamantium ▸ röle kurulu · sözleşme 4/7 bitti · 3 açık
 Adamantium ▸ görev veriliyor · usta · sonnet · tab component
 Adamantium ▸ bitti · usta · 4 dk
 ```
@@ -318,13 +324,13 @@ translator can work in without opening a source file.
 ### Customization
 
 ```
-/teknesyumui                      show current settings
-/teknesyumui kapat                disable the UI standard entirely
-/teknesyumui palet #ff6b00        change the primary color
-/teknesyumui font Inter           change the default font
-/teknesyumui imza kapat           remove the signature block
-/teknesyumui not <text>           write your own rule — yours wins on conflict
-/teknesyumui sifirla              restore defaults
+/uiayar                      show current settings
+/uiayar kapat                disable the UI standard entirely
+/uiayar palet #ff6b00        change the primary color
+/uiayar font Inter           change the default font
+/uiayar imza kapat           remove the signature block
+/uiayar not <text>           write your own rule — yours wins on conflict
+/uiayar sifirla              restore defaults
 ```
 
 Settings live in `~/.claude/teknesyum-ui.json`; only fields you change are written, the
@@ -339,8 +345,8 @@ is followed.
 A small, right-aligned signature is added to the bottom of the settings/about section of
 generated UIs: a GitHub link and a support link. The support button is **outlined** —
 transparent fill, colored border, colored label, vector icon. Remove it with
-`/teknesyumui imza kapat`, or point it at your own account with
-`/teknesyumui imza github <url>`.
+`/uiayar imza kapat`, or point it at your own account with
+`/uiayar imza github <url>`.
 
 ---
 

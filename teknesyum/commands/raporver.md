@@ -3,7 +3,7 @@ description: Relay ilerleme durumunu ve ajan progress barlarını gösterir
 allowed-tools: Read, Glob, Bash
 ---
 
-`.claude/relay/` oku (yoksa: "relay kurulu değil, /iskele kullan" de ve dur).
+`.claude/relay/` oku. Yoksa tek satır: "röle kurulu değil — iş verdiğinde kendiliğinden kurulur." Dur.
 
 Sadece şunları oku: `canli/*.json`, `contracts/*.md` frontmatter'ları, `contracts/done/`
 dosya listesi, `LOG.md` son 10 satır. Sözleşme gövdelerini açma — `active` olanın

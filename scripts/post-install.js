@@ -30,7 +30,7 @@ function indir(url, hedef) {
 const HUYLAR = `# Huylar
 
 Tekrar eden takıntılar ve daha önce canımı yakmış şeyler. **30 satır tavanı** —
-dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. \`/huy\` ile eklenir.
+dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. \`/huyekle\` ile eklenir.
 
 - Kodda yorum istemiyorum; açıkça istemediysem yazma.
 - Rutin onay sorma. Geri dönüşü zor olmayan her şeyi yap, sonucunu bildir.

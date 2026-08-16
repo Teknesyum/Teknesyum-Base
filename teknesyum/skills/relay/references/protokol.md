@@ -245,7 +245,7 @@ yapılmayanlar ve sebebi, önerilen sonraki adım.
 
 Rapor **yapılandırılmış durum bildirimidir, düzyazı özet değildir.** Tablo, madde, tek
 satırlık olay. Bitmiş işi tekrar anlatma; anlatılacak şey değişimdir. `bilgilendirme: sessiz`
-ayarında yalnızca 8.1, 8.5 ve 8.6 kalır — diğerlerini kullanıcı `/durum` ile ister.
+ayarında yalnızca 8.1, 8.5 ve 8.6 kalır — diğerlerini kullanıcı `/raporver` ile ister.
 
 ## 9. Yönlendirici CLAUDE.md
 

@@ -42,6 +42,19 @@ function proje(sozlesme, biten) {
 
 const ort = (p) => ({ cwd: p, session_id: 'oturum-1', transcript_path: '/x/oturum-1.jsonl' });
 
+// Açılış bildirimi kullanıcının ~/.claude'una bakar; test makineden bağımsız olsun diye
+// sahte bir config dizini kurup CLAUDE_CONFIG_DIR ile gösteriyoruz.
+function konfig(kurulu) {
+  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-cfg-'));
+  if (kurulu) {
+    fs.writeFileSync(path.join(c, 'teknesyum-statusline.js'), '//');
+    fs.writeFileSync(path.join(c, 'settings.json'), JSON.stringify({
+      statusLine: { type: 'command', command: 'node "' + c + '/teknesyum-statusline.js"' },
+    }));
+  }
+  return { CLAUDE_CONFIG_DIR: c };
+}
+
 console.log('\nPaketleme');
 
 ol('plugin.json hooks anahtarı taşımıyor (taşırsa eklenti hiç yüklenmez)', () => {
@@ -75,6 +88,34 @@ ol('statusline köprüsü sürümden bağımsız', () => {
   icerir(fs.readFileSync(path.join(KOK, 'commands', 'kurulum.md'), 'utf8'), 'kopru.js');
 });
 
+ol('komut kümesi beş komut ve eski adlar hiçbir yerde geçmiyor', () => {
+  const v = fs.readdirSync(path.join(KOK, 'commands')).filter((f) => f.endsWith('.md')).sort();
+  esit(v.join(','), 'devam.md,huyekle.md,kurulum.md,raporver.md,uiayar.md');
+  const yuru = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+    e.name === 'node_modules' || e.name === '.git' ? []
+      : e.isDirectory() ? yuru(path.join(d, e.name)) : [path.join(d, e.name)]);
+  for (const f of yuru(path.join(__dirname, '..'))) {
+    if (!/\.(md|js|json|tsx)$/.test(f) || /calistir\.js$/.test(f)) continue;
+    const s = fs.readFileSync(f, 'utf8');
+    for (const eski of ['/iskele', '/durum', '/teknesyumui', '/huy ', '/huy\n']) {
+      if (s.includes(eski)) throw new Error(path.basename(f) + ' hâlâ "' + eski.trim() + '" içeriyor');
+    }
+  }
+});
+
+ol('kurulum komutu tarar, kararı belliyi yapar, kalanını sorar', () => {
+  const s = fs.readFileSync(path.join(KOK, 'commands', 'kurulum.md'), 'utf8');
+  icerir(s, 'Sormadan yapılacaklar');
+  icerir(s, 'Sorulacaklar');
+  icerir(s, 'allowed-tools');
+});
+
+ol('relay oturum açılışında sormadan sürdürür', () => {
+  const s = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  icerir(s, 'Oturum açılışı');
+  icerir(s, 'sürdür');
+});
+
 ol('denetçinin yazma veya çalıştırma aracı yok', () => {
   const md = fs.readFileSync(path.join(KOK, 'agents', 'denetci.md'), 'utf8');
   const tools = (md.match(/^tools:\s*(.+)$/m) || [])[1] || '';
@@ -87,16 +128,31 @@ console.log('\nBildirim');
 
 ol('SessionStart röle durumunu ve sözleşme sayacını bildirir', () => {
   const { p } = proje(2, 1);
-  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' });
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(true));
   const m = JSON.parse(r.out).systemMessage;
   icerir(m, 'Adamantium ▸');
   icerir(m, '1/3 bitti');
   icerir(m, '2 açık');
+  icerir(m, 'sürdürüyorum');
 });
 
-ol('röle kurulu değilse açılışta susar', () => {
+ol('röle kurulu değilse ve makine bağlıysa açılışta susar', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-bos-'));
-  esit(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }).out, '');
+  esit(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(true)).out, '');
+});
+
+ol('statusline bağlı değilse açılışta kurulumu hatırlatır', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-bos-'));
+  const m = JSON.parse(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(false)).out);
+  icerir(m.systemMessage, 'kurulum eksik');
+});
+
+ol('açılışta iki uyarı olsa da stdout tek JSON kalır', () => {
+  const { p } = proje(1, 0);
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(false));
+  const m = JSON.parse(r.out).systemMessage;
+  icerir(m, 'kurulum eksik');
+  icerir(m, 'röle kurulu');
 });
 
 ol('görev dağıtımı rol, model ve açıklamayı bildirir', () => {

@@ -56,7 +56,7 @@ Bu düğme **ajan→T0** trafiğini ayarlar, sana gösterileni değil.
 `donum-noktasi` varsayılan: açılış brifingi, her sözleşme kapanışı, her dalga sonu ara
 raporu, sapma anı, kapanış raporu · `her-adim` ajan başlangıçlarını ve düzeltme turlarını
 da ekler, uzun işte gürültü yapar · `sessiz` yalnızca brifing, sapma ve kapanış; gerisini
-`/durum` ile sen istersin. Hiçbir değerde sapma bildirimi kapanmaz.
+`/raporver` ile sen istersin. Hiçbir değerde sapma bildirimi kapanmaz.
 
 `onay_kapisi` ile karıştırma: o **beklemeyi**, bu **anlatmayı** yönetir.
 

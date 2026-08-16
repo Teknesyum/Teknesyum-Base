@@ -1,6 +1,6 @@
 {
   "name": "claude-code-adamantium-base",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "private": true,
   "description": "Test harness for the Adamantium Base plugin — hooks, statusline, packaging",
   "scripts": {

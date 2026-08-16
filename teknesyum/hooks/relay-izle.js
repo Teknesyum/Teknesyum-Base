@@ -13,7 +13,7 @@ function run(j) {
 
   if (j.hook_event_name === 'SessionStart') return acilis(root);
 
-  // Röle kurulu projede izler proje içinde durur (/durum, /devam oradan okur).
+  // Röle kurulu projede izler proje içinde durur (/raporver, /devam oradan okur).
   // Kurulu değilse — üst klasörde, rastgele bir dizinde açılmış oturumda — oturuma
   // özel genel dizine yazarız. Kullanıcının klasör ayarlamasını beklemeyiz.
   const live = root
@@ -24,10 +24,10 @@ function run(j) {
 
   if (process.env.TEKNESYUM_TANI) iz(live, j);
 
-  // ÖLÇÜLDÜ: alt ajanın içindeki araç kullanımları PostToolUse hook'unu tetiklemiyor
-  // (12 olayın 12'si ana oturum, `ptu_ajanli: 0`). Bu yüzden adım sayacı kurulamaz.
-  // Ölçülebilen tek şey ajanın başlaması ve bitmesi: başlangıcı ana oturumdaki
-  // Agent çağrısından, bitişi SubagentStop'tan alıyoruz.
+  // ÖLÇÜLDÜ: alt ajanın araç kullanımları hook'a çoğunlukla ulaşmıyor — worktree
+  // izolasyonlu bir koşuda ulaştı (16 adım), diğerlerinde hiç. Güvenilir adım sayacı
+  // kurulamaz. Kesin ölçülebilen: başlangıç (ana oturumdaki Agent çağrısı) ve
+  // bitiş (SubagentStop).
   if (j.hook_event_name === 'PreToolUse') {
     if (/^(Agent|Task)$/.test(j.tool_name || '')) {
       const n = calisanEkle(live, j);
@@ -152,13 +152,28 @@ function gecen(bas) {
   return s < 60 ? s + ' sn' : Math.round(s / 60) + ' dk';
 }
 
+// stdout tek JSON taşır — açılışta söylenecek her şey tek satırda birleşir.
 function acilis(root) {
-  if (!root) return;
-  const acik = say(path.join(root, 'contracts'));
-  const biten = say(path.join(root, 'contracts', 'done'));
-  if (!acik && !biten) return duyur('röle kurulu · sözleşme yok');
-  duyur('röle kurulu · sözleşme ' + biten + '/' + (acik + biten) + ' bitti' +
-    (acik ? ' · ' + acik + ' açık' : ''));
+  const parca = [];
+  if (kurulumEksik()) parca.push('kurulum eksik · "kurulum" de, gerekeni sorarım');
+  if (root) {
+    const acik = say(path.join(root, 'contracts'));
+    const biten = say(path.join(root, 'contracts', 'done'));
+    if (!acik && !biten) parca.push('röle kurulu · sözleşme yok');
+    else parca.push('röle kurulu · sözleşme ' + biten + '/' + (acik + biten) + ' bitti' +
+      (acik ? ' · ' + acik + ' açık · kaldığım yerden sürdürüyorum' : ''));
+  }
+  if (parca.length) duyur(parca.join('   ·   '));
+}
+
+// Plugin kendini kuramaz: statusline kullanıcının settings.json'ına yazılır. Eksikse
+// oturum açılışında bir kez söyleriz — kullanıcının komut ezberlemesini bekleme.
+function kurulumEksik() {
+  const kok = process.env.CLAUDE_CONFIG_DIR ||
+    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  if (!fs.existsSync(path.join(kok, 'teknesyum-statusline.js'))) return true;
+  const s = read(path.join(kok, 'settings.json'));
+  return !(s && s.statusLine && /teknesyum-statusline/.test(String(s.statusLine.command || '')));
 }
 
 function say(dir) {

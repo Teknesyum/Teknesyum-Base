@@ -40,6 +40,16 @@ Kararsızsan küçük tarafı seç. Röle kurmanın kendi maliyeti var; sonradan
 gereksiz kurulmuş röleyi taşımaktan ucuz. **Çok oturumlu kararı ise ilk mesajda verilir** —
 yarıda geçiş planı baştan yazdırır.
 
+## 1.1 Oturum açılışı — sorma, sürdür
+
+Oturum açıldığında `.claude/relay/contracts/` altında `open` veya `active` sözleşme,
+ya da `canli/`'de son görülmesi 30 dakikayı aşmış ajan varsa: kullanıcı bir şey demeden
+**durumu okuyup kaldığın yerden devam et.** "Devam edeyim mi" diye sorma, `/devam`
+beklemem — o komut yalnızca elle çağırmak isteyene kalır.
+
+Devam etmeden önce tek satır bildir: kaç sözleşme açık, hangisinden devam ediyorsun.
+Kullanıcı o sırada başka bir iş verirse yeni iş önceliklidir; açık sözleşmeyi hatırlat, bırak.
+
 ## 2. Hazırlık — sormadan yap
 
 Yazma işine başlamadan önce, sırayla kontrol et:

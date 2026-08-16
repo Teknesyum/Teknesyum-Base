@@ -23,7 +23,34 @@
 
   <Style x:Key="H2" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
-    <Setter Property="FontSize" Value="18"/>
+    <Setter Property="FontSize" Value="20"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Foreground" Value="{StaticResource NeonBlue}"/>
+  </Style>
+
+  <Style x:Key="H3" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
+    <Setter Property="FontSize" Value="16"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Foreground" Value="{StaticResource TextLabel}"/>
+  </Style>
+
+  <Style x:Key="Label" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Foreground" Value="{StaticResource TextLabel}"/>
+  </Style>
+
+  <Style x:Key="Body" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
+    <Setter Property="FontSize" Value="16"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBody}"/>
+  </Style>
+
+  <Style x:Key="Hero" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource FontMono}"/>
+    <Setter Property="FontSize" Value="28"/>
     <Setter Property="FontWeight" Value="Bold"/>
     <Setter Property="Foreground" Value="{StaticResource NeonBlue}"/>
     <Setter Property="Effect">
@@ -33,23 +60,9 @@
     </Setter>
   </Style>
 
-  <Style x:Key="H3" TargetType="TextBlock">
-    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
-    <Setter Property="FontSize" Value="14"/>
-    <Setter Property="FontWeight" Value="Bold"/>
-    <Setter Property="Foreground" Value="{StaticResource TextDim}"/>
-  </Style>
-
-  <Style x:Key="Label" TargetType="TextBlock">
-    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
-    <Setter Property="FontSize" Value="10"/>
-    <Setter Property="FontWeight" Value="Bold"/>
-    <Setter Property="Foreground" Value="{StaticResource TextLabel}"/>
-  </Style>
-
   <Style x:Key="MonoValue" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontMono}"/>
-    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="FontSize" Value="16"/>
     <Setter Property="FontWeight" Value="Bold"/>
     <Setter Property="Foreground" Value="{StaticResource NeonPink}"/>
   </Style>

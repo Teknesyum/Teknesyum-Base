@@ -44,27 +44,27 @@ body {
 
 /* --- tipografi --- */
 .tk-h2 {
-  font-size: 18px; font-weight: 700; letter-spacing: 0.1em;
-  color: var(--tk-blue); filter: drop-shadow(0 0 5px var(--tk-blue));
+  font-size: 20px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--tk-blue);
 }
 .tk-h3 {
-  font-size: 14px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--tk-text-dim);
+  font-size: 16px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--tk-text-label);
 }
 .tk-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.15em;
   text-transform: uppercase; color: var(--tk-text-label);
 }
 .tk-mono {
   font-family: var(--font-mono, monospace);
-  font-size: 14px; font-weight: 700; color: var(--tk-pink);
+  font-size: 16px; font-weight: 700; color: var(--tk-pink);
 }
 .tk-hero {
   font-family: var(--font-mono, monospace);
-  font-size: 24px; font-weight: 900;
+  font-size: 28px; font-weight: 900;
   color: var(--tk-blue); filter: drop-shadow(0 0 8px var(--tk-blue));
 }
-.tk-hint { font-size: 10px; color: var(--tk-text-hint); }
+.tk-hint { font-size: 14px; color: var(--tk-text); }
 
 /* --- yüzeyler --- */
 .tk-panel {

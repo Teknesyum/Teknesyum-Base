@@ -33,14 +33,22 @@ neon-blue    #00f3ff   birincil. eylem, aktif durum, sayısal vurgu, başlık
 neon-pink    #ff00ea   ikincil. uyarı, ters/negatif eylem, kritik değer
 neon-purple  #b026ff   üçüncül. mod anahtarları, scrollbar, ikincil buton
 success      #34d399   yalnızca "tamamlandı"
-bg           #000000   uygulama zemini — tam siyah, koyu gri değil
+bg           #000000   uygulama zemini — nötr, tam siyah
 surface      #0a0a0c   panel zemini (95% opak), zeminden ancak çerçevesiyle ayrılır
 text         #ffffff   okunması gereken HER şey — gövde, başlık, tablo, değer, etiket metni
 label        #00f3ff   etiket ve bölüm başlığı (küçük, uppercase, tracking'li)
 disabled     #71717a   YALNIZCA devre dışı kontrol. Tek gri budur.
 ```
 
-Bir ekranda **mavi baskın, pembe vurgu, mor seyrek**. Üçünü eşit kullanma.
+Bir ekranda **mavi baskın, pembe vurgu, mor seyrek**. Üçünü eşit kullanma. Pembe ve morun
+asıl yeri **durum**tur: hover, focus, seçim, sürükleme. Kalıcı pembe metin, bilinçli ve
+tekil bir marka vurgusu değilse kullanılmaz.
+
+**Zemin nötrdür — metnin rengiyle akraba olamaz.** Mavi yazının arkasına mavimsi koyu
+yüzey konmaz: iki renk aynı aileden olunca kontrast sayı olarak yeterli görünse bile göz
+ayırt edemez, yazı yüzeye gömülür. Zemin ve panel tonu **nötr kömür/siyah** kalır; renk
+yalnızca yazıda, çerçevede ve durum vurgusunda bulunur. Aynı sebeple pembe metnin arkasına
+morumsu yüzey konmaz.
 
 **Kontrast pazarlık konusu değil.** Zemin tam siyah, yazı tam beyaz. `#d1d5db`, `#9ca3af`,
 `#6b7280` gibi ara griler bu temada **yok**: koyu zeminde soluk gri yazı, tasarım değil
@@ -62,8 +70,16 @@ veri noktası, bir imleç. Ölçü, avuç içi kadar alan — panel, satır, sek
 asla. İçeriğin kendisi beyaz zeminliyse (kullanıcının PDF'i, dış web sayfası) onu bir
 `surface` çerçeve içine al ve kenarlarına pay bırak; ekranın kenarına dayanmasın.
 
-Glow şart: renkli metin `drop-shadow(0 0 5px <renk>)`, dolgulu buton
-`box-shadow: 0 0 20px <renk>40`, çerçeveli kutu `inset 0 0 8px <renk>`. Glow'suz neon yok.
+Glow **kutuya** uygulanır, **metne değil**: dolgulu buton `box-shadow: 0 0 20px <renk>40`,
+çerçeveli kutu `inset 0 0 8px <renk>`, ikon `drop-shadow(0 0 5px <renk>)`. Glow'suz neon
+yüzey yok.
+
+**Metne glow verilmez.** Sahada ölçüldü: harflerin etrafındaki hale kenarları yumuşatıyor,
+küçük punto ve ince gövdeli yazıda okunurluğu düşürüyor, ekran görüntüsünde metin bulanık
+çıkıyor. Neon etkisi zaten rengin kendisinden geliyor. Tek istisna **hero sayı** (24px+,
+900 ağırlık) — orada harf o kadar kalın ki hale gövdeyi yemiyor. Başlık, etiket, gövde,
+bağlantı, tablo değeri: glow yok. **Okunurluk gösterişten üstündür**; bu skill'de ikisi
+çatıştığında kazanan hep okunurluktur.
 
 Opaklık merdiveni — sadece bunlar: dolgu `/10`, hover `/20`, aktif `/30`, çerçeve `/30`,
 güçlü çerçeve `/50-60`.
@@ -71,25 +87,37 @@ güçlü çerçeve `/50-60`.
 ## 3. Tipografi (varsayılan)
 
 Sans: `'Segoe UI', system-ui, -apple-system, sans-serif` — metin, etiket, başlık.
+Okunurluğun kritik olduğu, veri yoğun ya da uzun süre bakılan arayüzlerde **Atkinson
+Hyperlegible Next** tercih edilir (benzer harfleri — `l/I/1`, `O/0`, `rn/m` — ayırt
+edilebilir çizer). Kullanılacaksa **projeye gömülür**, sistemde var sayılmaz.
 Mono: `Consolas, 'Cascadia Mono', ui-monospace, monospace` — **her sayı, tuş, kod, ID,
 süre**. Sayıyı sans ile yazma.
 
+**Taban: normal metin 16, ikincil/yardım metni 14'ün altına inmez.** Bu bir tercih değil
+alt sınır; 10-13 punto etiketler koyu zeminde okunmuyor ve kullanıcı okumak için ekrana
+yaklaşıyor. Birim: web `px`, WPF `DIP` — 96 dpi'de aynı şey.
+
 | Rol | Boyut | Ağırlık | Tracking | Renk |
 |---|---|---|---|---|
-| Panel başlığı (h2) | 18px | 700 | 0.1em | neon-blue + glow |
-| Bölüm başlığı (h3) | 14px | 700 | 0.1em UPPERCASE | neon-blue |
-| Etiket | 10px | 700 | 0.15em UPPERCASE | neon-blue |
-| Gövde | 13px | 400 | 0 | `#ffffff` |
-| Mono değer | 14px | 700 | 0 | neon-pink |
-| Hero sayı | 24px | 900 | 0 | neon-blue + glow |
-| İpucu | 10px | 400 | 0 | `#ffffff` |
+| Panel başlığı (h2) | 20 | 700 | 0.1em | neon-blue |
+| Bölüm başlığı (h3) | 16 | 700 | 0.1em UPPERCASE | neon-blue |
+| Etiket | 14 | 700 | 0.15em UPPERCASE | neon-blue |
+| Gövde | 16 | 400 | 0 | `#ffffff` |
+| Mono değer | 16 | 700 | 0 | neon-pink |
+| Hero sayı | 28 | 900 | 0 | neon-blue + glow |
+| Yardım / ipucu | 14 | 400 | 0 | `#ffffff` |
 
-Ölçek 10 → 13 → 14 → 18 → 24. Ara boyut ekleme.
+Ölçek 14 → 16 → 20 → 28. Ara boyut ekleme.
 
-Etiket ile gövdeyi ayıran şey artık parlaklık değil: etiket **küçük, kalın, harf aralıklı
-ve mavi**; gövde **büyük, normal ağırlıkta ve beyaz**. İpucu da beyaz kalır — yalnızca
-küçülür. Bir bilgiyi göstermeye değer bulduysan okunacak kadar parlak yaz; değmiyorsa
-ekrandan kaldır. Soluk yazı, silinmemiş içeriğin bahanesidir.
+Etiket ile gövdeyi ayıran şey parlaklık değil: etiket **kalın, harf aralıklı, uppercase ve
+mavi**; gövde **normal ağırlıkta ve beyaz**. Bir bilgiyi göstermeye değer bulduysan okunacak
+kadar büyük ve parlak yaz; değmiyorsa ekrandan kaldır. Küçük punto, silinmemiş içeriğin
+bahanesidir.
+
+**Büyük harf kullanımı:** kısa arayüz metni — düğme, sekme, etiket, menü — **Her Kelimenin
+İlk Harfi Büyük**. Uzun açıklama, tooltip gövdesi ve hata metni doğal cümle biçiminde.
+Tek kelimelik etiketi cümle sanıp küçük harfle yazma, uzun açıklamayı başlık sanıp
+her kelimesini büyütme.
 
 ## 3.1 Arayüz dili — Türkçe, ama koda gömülü değil
 
@@ -116,6 +144,11 @@ eklemek bir dosya kopyalamaktan ibaret olmalı — kod değişikliği gerekiyors
 
 Anahtar bulunamazsa uygulama çökmez: kaynak dile düşer ve bunu bir kez loglar. Sayı, tarih
 ve dosya boyutu biçimlendirmesi de dile bağlıdır, elle `ToString()` ile kurulmaz.
+
+**Yerleşimi en uzun dil belirler.** Taşma kontrolü Türkçe metinle yapılır (Türkçe İngilizce'den
+tipik olarak %20-30 uzundur), sonra dil değiştirilip İngilizce hâli de gözle doğrulanır.
+Bir dilde sığıp diğerinde kırpılan etiket, iki dilde de hatalıdır — kontrol genişliği uzun
+olana göre kurulur.
 
 ## 4. İmza bloğu
 
@@ -147,10 +180,83 @@ Aralık: 4 / 8 / 12 / 16 / 24. Panel padding `24px`, bölüm arası `24px`, sat�
 Geçiş: `200ms` mikro, `300ms` renk/glow, `500ms` panel aç-kapa. Hover `scale(1.02)` buton,
 `1.1` ikon.
 
+## 5.1 Piksel disiplini — kapanan çerçeveler, simetri
+
+Neon tema anahat üstüne kuruludur; anahat yarım kalırsa tema yarım kalır. Aşağıdakiler
+göz kararı değil hesap işidir.
+
+**Kapalı kontur kendi çizim sınırından en az 1 DIP içeri alınır.** Kontrolün tam kenarına
+çizilen çerçeve, DPI yuvarlamasında kenarın dışına taşar ve bir ya da iki kenarı kaybolur —
+klasik "üç kenarı var, sağı yok" hatası. `Rectangle`/`Border` geometrisi sınırdan içeride
+kurulur ve **dört kenarı da çalışan uygulamada** doğrulanır. Sağ ve alt kenar özellikle
+kontrol edilir; kırpılma en çok orada olur.
+
+**Hücre, içindeki nesnenin nominal ölçüsüne eşitlenmez.** Stroke kalınlığı, DPI yuvarlaması
+ve her iki yanda en az 2 DIP güvenlik payı hesaba katılır: **20×20 çizilen bir onay
+kutusunun hücresi 24×24**'tür. Nominal ölçüye eşitlenen hücre, %125 ölçeklemede kenarını yer.
+
+**Simetri şart.** Yan yana duran kontrollerin köşe yarıçapı, yüksekliği, dikey merkezi ve
+panellerin alt kenarı **piksel düzeyinde** eşleşir. Bir piksellik fark, yarım çizgi veya
+kapanmayan anahat kabul edilmez — "neredeyse hizalı" hizasızdır.
+
+**Yan yana kontroller birleşmez.** Aralarında açık boşluk bulunur; iki çerçeve birbirine
+değip tek kalın çizgi görüntüsü vermez (§8 örtüşme kuralının kardeşi).
+
+**Piksel yuvarlaması açık bırakılır.** WPF'te `UseLayoutRounding` ve `SnapsToDevicePixels`
+kapatılmaz; kapatılırsa 1 DIP'lik çizgiler yarım piksele düşer ve gri görünür.
+
+**Toplam yüksekliğe bağlanan döngüsel yerleşim kurma.** Bir sütunun yüksekliği içindeki
+panellerin toplamına, panellerin yüksekliği de sütuna bağlanırsa ölçüm turlara girer ve
+sonuç pencere boyutuna göre değişir. Panel yüksekliği sabit verilir (örn. kompakt çıktı
+paneli 254 DIP), sütun ona uyar.
+
+**Yarıçap tektir.** Genel `CornerRadius` **6 DIP**. Daire yalnızca işlevsel istisnadır:
+`?` rozeti, slider thumb, durum noktası. Kart/panel/düğme için farklı yarıçap üretme.
+
+## 5.2 Gradientler — bantlaşma hatadır
+
+Koyu temada iki durak arasındaki geçiş, 8-bit çıktıda görünür şeritler üretir. Kural:
+
+- **En az 11 birbirine çok yakın durak** kullan; iki duraklı gradient bantlaşır.
+- **Uç renklerin toplam kontrastı düşük** tutulur — gradient bir doku, bir geçiş değildir.
+- Renk enterpolasyonu **`ScRgbLinearInterpolation`** ile yapılır (WPF:
+  `ColorInterpolationMode="ScRgbLinearInterpolation"`).
+- **Görünür bantlaşma ve ani ton/parlaklık sıçraması hatadır**, üslup tercihi değil.
+- Bitişik alanlar **tek kesintisiz gradient** paylaşır. Üst şeride bir, içeriğe başka bir
+  gradient verip aralarında dikiş bırakma; ayrı bant üretme.
+
+## 5.3 Bileşen ölçüleri
+
+Merkezî değerler. Projeye özel ezme gerekirse tokenı değiştir, kontrolü değil.
+
+**Scrollbar** — native olamaz. Yol **10 DIP** ve koyu; thumb neon-blue, hover'da neon-pink,
+sürüklerken neon-purple. Ok düğmeleri yok.
+
+**Sekmeler** — sekme anahattı kontrol sınırından **1 DIP içeride**, `TabItem` kırpması
+**kapalı**. Sekmeler arası **8 DIP** boşluk, alt anahat için **2 DIP** güvenli alan.
+Kapalı `Rectangle` stroke geometrisi korunur. **Son sekmenin sağ kenarı ayrıca doğrulanır** —
+kırpılma tam orada oluyor.
+
+**Onay kutusu** — 20×20 çizim alanı, içinde 1 DIP içeri alınmış `Border`, hücre 24×24.
+Seçili ve seçili olmayan hâlin **dört kenarı da** canlı görüntüde doğrulanır.
+
+**Bilgi rozeti** — teknik/kritik ayarın yanında **12×12** boyutunda, üst simge konumunda,
+metinden **12 DIP** uzakta `?`. Tooltip ayrıntılı ve **iki dilli**. Hover'da yalnızca
+**rengi** değişir: glow yok, büyüme yok, kayma yok.
+
+**Pencere düğmeleri** — 42×30 DIP. Küçült simgesi 10×2 DIP düz çizgi. Sıra: destek
+bağlantısı, GitHub/imza, küçült, büyüt, kapat.
+
 ## 6. Sık yapılan hatalar
 
 - Soluk gri gövde metni (`#d1d5db`, `#9ca3af`) → beyaz. Bu temada ara gri yok
 - Beyaz zemin (WebView gövdesi, boş grid, önizleme paneli) → `bg`/`surface` ver
+- Metne glow vermek → yalnızca hero sayıda; başlık ve gövdede okunurluğu düşürür
+- Mavi yazının arkasına mavimsi yüzey → zemin nötr kalır
+- 10-13 punto etiket → taban 14, normal metin 16
+- İki duraklı gradient → bantlaşır; en az 11 yakın durak + ScRgb
+- Hücreyi nesnenin nominal ölçüsüne eşitlemek → 20×20 çizim, 24×24 hücre
+- Rengi kontrole inline yazmak → önce token, sonra kontrol (§8.1)
 - Native bırakılan MessageBox, scrollbar, ComboBox popup'ı, sekme başlığı → §8 sızıntı tablosu
 - Panelin/kartın komşusunun çerçevesini ya da glow'unu kesmesi → §8, örtüşme yok
 - Rastgele Tailwind rengi (`text-cyan-400`) → token kullan
@@ -281,6 +387,41 @@ sonra imza**. Destek bağlantısı imzadan koparılıp sola atılmaz — ikisi t
 başlıkları gri değil, `#00F3FF`. Gri bırakılırsa panel çerçevesi renkli, içindeki başlık sönük
 kalıyor ve bölüm başlığı gibi okunmuyor. Bunun **altındaki** "Etiket" rolü (alan üstü küçük
 harf aralıklı yazılar) sönük kalmaya devam eder — hiyerarşiyi ayıran şey o karşıtlık.
+
+## 8.1 Uygulama yöntemi — önce token, sonra kontrol
+
+**Renk ve ölçü değişikliğini tek tek kontrollere dağıtma.** Önce merkezî bir semantik token
+oluştur ya da mevcut olanı değiştir; kontrol o tokena bakar. Inline hex, inline font ailesi
+ve tekrar eden margin yalnızca gerçekten **tek bir bileşene** ait bir özel durumsa yazılır —
+"şimdilik buraya yazayım" diye başlayan her değer, altı ay sonra tema değiştirilemez hâle
+getiren şeydir.
+
+Yüzey tonu tek kaynaktan gelir (`SurfaceToneColor` benzeri bir token). Aynı rengi iki yerde
+tanımlamak, ikisinin ayrışması demektir.
+
+**XAML/CSS değişikliğinden sonra kaynağın diff'ini oku.** Stil dosyaları geneldir; bir
+`TargetType` düzenlemesi hiç dokunmadığın ekranı bozar. Değişikliğin kapsamını diff'te gör,
+sonra teslim et.
+
+## 8.2 Doğrulama — çalışan uygulamaya bakmadan "tamam" yok
+
+Derlemenin geçmesi arayüzün doğru olduğunu göstermez. Arayüz işi **gözle** doğrulanır:
+
+1. Derle ve testleri koştur.
+2. Uygulamayı **gerçekten aç** ve ekran görüntüsü al.
+3. **Yakaladığın pencerenin süreç yolunun bu depodaki çalıştırılabilir dosya olduğunu
+   doğrula.** Başka bir uygulamanın ya da eski bir kurulumun penceresine bakıp "düzelmiş"
+   demek en sık yapılan hata. Görüntünün gerçekten bu projenin arayüzü olduğunu görmeden
+   testi geçmiş sayma.
+4. Şunları tek tek gez: **hedef çalışma alanı ve minimum pencere boyutu** · her sekme ·
+   **hover, focus, selected, disabled ve açık dropdown** durumları · panellerin alt kenarı ·
+   dört kenarı kapanan çerçeveler · slider merkezleri · buton aralıkları · **TR başlangıç ve
+   EN geçişi**.
+5. Metin kesilmesi, gereksiz kaydırma çubuğu, native görünüm ve **bir piksellik fark**
+   hatadır — not düşülüp geçilmez, düzeltilir.
+
+Hata ve boş durum ekranları da bu listeye dahildir; mutlu yolda görünmedikleri için en çok
+onlar atlanıyor.
 
 ## 9. Etki raporu — arayüz işinin sonunda zorunlu
 

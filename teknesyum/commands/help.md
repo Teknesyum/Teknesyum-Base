@@ -1,5 +1,5 @@
 ---
-description: Adamantium Base neyi ne zaman yapar — tek ekran
+description: Teknesyum Base neyi ne zaman yapar — tek ekran
 ---
 
 Kullanıcı ne olduğunu soruyor. **Dosya okuma, tarama yapma, ajan açma.** Aşağıdakini

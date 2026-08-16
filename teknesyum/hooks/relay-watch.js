@@ -144,7 +144,7 @@ function calisanKapat(live, type) {
 // bildiririz: görev verildi, ajan bitti, oturum açıldı. TEKNESYUM_SESSIZ=1 kapatır.
 function duyur(mesaj) {
   if (process.env.TEKNESYUM_SESSIZ) return;
-  try { process.stdout.write(JSON.stringify({ systemMessage: 'Adamantium ▸ ' + mesaj })); } catch {}
+  try { process.stdout.write(JSON.stringify({ systemMessage: 'Teknesyum ▸ ' + mesaj })); } catch {}
 }
 
 function gecen(start) {

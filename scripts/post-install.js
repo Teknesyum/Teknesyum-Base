@@ -10,7 +10,7 @@ const path = require('path');
 const https = require('https');
 
 const HOME = process.env.CLAUDE_HOME || path.join(os.homedir(), '.claude');
-const RAW = 'https://raw.githubusercontent.com/Teknesyum/claude-code-adamantium-base/main';
+const RAW = 'https://raw.githubusercontent.com/Teknesyum/teknesyum-base/main';
 const SL = path.join(HOME, 'teknesyum-statusline.js');
 const yapilan = [];
 const atlanan = [];
@@ -115,7 +115,7 @@ dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. \`/rule\` il
   if (!varMi('typescript-language-server --version')) eksik.push('typescript-language-server  (npm i -g typescript typescript-language-server)  → TS tip zekâsı');
   if (!varMi('graphify --version')) eksik.push('graphify  (uv tool install graphifyy)  → büyük kod tabanı indeksleme');
 
-  console.log('\n  Teknesyum — Claude Code Adamantium Base\n');
+  console.log('\n  Teknesyum — Claude Code Teknesyum Base\n');
   for (const y of yapilan) console.log('  ✓ ' + y);
   for (const a of atlanan) console.log('  · ' + a);
   if (eksik.length) {

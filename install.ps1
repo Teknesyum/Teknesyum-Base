@@ -1,8 +1,8 @@
 # Teknesyum — Claude Code Adamantium Base
-# Kurulum:  irm https://raw.githubusercontent.com/Teknesyum/claude-code-adamantium-base/main/install.ps1 | iex
+# Kurulum:  irm https://raw.githubusercontent.com/Teknesyum/teknesyum-base/main/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
-$repo = 'Teknesyum/claude-code-adamantium-base'
+$repo = 'Teknesyum/teknesyum-base'
 $raw  = "https://raw.githubusercontent.com/$repo/main"
 
 Write-Host ""

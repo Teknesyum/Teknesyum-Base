@@ -33,7 +33,7 @@ Sınıflandırmayı **sessizce yap, kararı tek satır bildir** — kullanıcı 
 davrandığını görsün, gerekçeni değil:
 
 ```
-Adamantium ▸ ölçü: 6 dosya / tek yetenek → oturum içi röle · 3 sözleşme · builder/sonnet
+Teknesyum ▸ ölçü: 6 dosya / tek yetenek → oturum içi röle · 3 sözleşme · builder/sonnet
 ```
 
 Soru ve tek satırlık düzeltmede bu satırı yazma; kurulan hiçbir şey yok.

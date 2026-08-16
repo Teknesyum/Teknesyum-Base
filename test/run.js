@@ -133,7 +133,7 @@ ol('SessionStart röle durumunu ve sözleşme sayacını bildirir', () => {
   const { p } = proje(2, 1);
   const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(true));
   const m = JSON.parse(r.out).systemMessage;
-  icerir(m, 'Adamantium ▸');
+  icerir(m, 'Teknesyum ▸');
   icerir(m, '1/3 bitti');
   icerir(m, '2 açık');
   icerir(m, 'sürdürüyorum');

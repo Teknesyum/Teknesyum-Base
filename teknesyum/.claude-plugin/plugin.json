@@ -1,6 +1,6 @@
 {
   "name": "teknesyum",
-  "displayName": "Adamantium Base",
+  "displayName": "Teknesyum Base",
   "version": "2.0.0",
   "description": "Neon arayüz standardı + çok ajanlı iş rölesi. Kullanıcı ne istediğini söyler; iş büyüklüğü, ajan dağılımı, model ve denetim otomatik kurulur.",
   "author": {
@@ -8,7 +8,7 @@
     "url": "https://github.com/Teknesyum"
   },
   "homepage": "https://github.com/sponsors/Teknesyum",
-  "repository": "https://github.com/Teknesyum/claude-code-adamantium-base",
+  "repository": "https://github.com/Teknesyum/teknesyum-base",
   "license": "MIT",
   "keywords": ["orchestration", "multi-agent", "design-system", "turkish", "neon"]
 }

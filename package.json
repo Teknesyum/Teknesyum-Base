@@ -1,8 +1,8 @@
 {
-  "name": "claude-code-adamantium-base",
+  "name": "teknesyum-base",
   "version": "2.0.0",
   "private": true,
-  "description": "Test harness for the Adamantium Base plugin — hooks, statusline, packaging",
+  "description": "Test harness for the Teknesyum Base plugin — hooks, statusline, packaging",
   "scripts": {
     "test": "node test/run.js"
   },

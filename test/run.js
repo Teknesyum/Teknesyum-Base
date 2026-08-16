@@ -73,7 +73,7 @@ ol('.lsp.json geçerli ve boşluksuz komut kullanıyor', () => {
 
 ol('hooks.json olayları bağlıyor ve koruma Bash\'i kapsıyor', () => {
   const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8')).hooks;
-  for (const e of ['PreToolUse', 'PostToolUse', 'SessionStart', 'SubagentStart', 'SubagentStop']) {
+  for (const e of ['PreToolUse', 'PostToolUse', 'SessionStart', 'SubagentStart', 'SubagentStop', 'UserPromptSubmit']) {
     if (!h[e]) throw new Error(e + ' bağlı değil');
   }
   const koru = h.PreToolUse.find((x) => /contract-guard/.test(JSON.stringify(x)));
@@ -137,6 +137,21 @@ ol('SessionStart röle durumunu ve sözleşme sayacını bildirir', () => {
   icerir(m, '1/3 bitti');
   icerir(m, '2 açık');
   icerir(m, 'sürdürüyorum');
+});
+
+ol('UserPromptSubmit her istekte ölçü satırını zorunlu kılar', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'şunu yap' }, konfig(true));
+  const o = JSON.parse(r.out);
+  esit(o.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
+  icerir(o.hookSpecificOutput.additionalContext, 'ölçü:');
+  icerir(o.hookSpecificOutput.additionalContext, 'ajan gerekmedi');
+});
+
+ol('UserPromptSubmit röle kurulu olmayan klasörde iz bırakmaz', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'x' }, konfig(true));
+  if (fs.existsSync(path.join(p, '.claude'))) throw new Error('boş klasörde .claude açıldı');
 });
 
 ol('röle kurulu değilse ve makine bağlıysa açılışta susar', () => {

@@ -36,7 +36,15 @@ davrandığını görsün, gerekçeni değil:
 Teknesyum ▸ ölçü: 6 dosya / tek yetenek → oturum içi röle · 3 sözleşme · builder/sonnet
 ```
 
-Soru ve tek satırlık düzeltmede bu satırı yazma; kurulan hiçbir şey yok.
+**Bu satır iş talebinde zorunlu — ajan açmadığında da yaz.** Kullanıcı eklentinin ölçtüğünü
+görmeli; sessizlik "devrede değil" demektir.
+
+```
+Teknesyum ▸ ölçü: tek dosya / gözle doğrulanabilir → ajan gerekmedi, kendim yapıyorum
+Teknesyum ▸ ölçü: sıfırdan proje / 3 yetenek → görev paketi · 8 sözleşme
+```
+
+Salt soru, açıklama veya sohbette yazma; ölçülecek iş yok.
 
 Kararsızsan küçük tarafı seç. Röle kurmanın kendi maliyeti var; sonradan büyütmek,
 gereksiz kurulmuş röleyi taşımaktan ucuz. **Çok oturumlu kararı ise ilk mesajda verilir** —

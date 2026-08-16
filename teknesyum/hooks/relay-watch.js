@@ -12,6 +12,7 @@ function run(j) {
   const root = findRelay(j.cwd || process.cwd());
 
   if (j.hook_event_name === 'SessionStart') return acilis(root);
+  if (j.hook_event_name === 'UserPromptSubmit') return hatirlat();
 
   // Röle kurulu projede izler proje içinde durur (/report oradan okur). Kurulu değilse
   // — üst klasörde, rastgele bir dizinde açılmış oturumda — oturuma özel genel dizine
@@ -145,6 +146,22 @@ function calisanKapat(live, type) {
 function duyur(mesaj) {
   if (process.env.TEKNESYUM_SESSIZ) return;
   try { process.stdout.write(JSON.stringify({ systemMessage: 'Teknesyum ▸ ' + mesaj })); } catch {}
+}
+
+// Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını
+// göremiyordu. Ölçüyü model yapar, ama ölçüldüğünü söylemesi artık zorunlu.
+function hatirlat() {
+  if (process.env.TEKNESYUM_SESSIZ) return;
+  const metin =
+    'Teknesyum Base: bu bir iş talebiyse relay skill §1 ile ölç ve cevabının ilk satırı ' +
+    '`Teknesyum ▸ ölçü: <büyüklük> → <karar>` olsun. Ajan açmıyorsan da yaz, gerekçesiyle ' +
+    '(örn. `Teknesyum ▸ ölçü: tek dosya / gözle doğrulanabilir → ajan gerekmedi`). ' +
+    'Salt soru, açıklama veya sohbetse satırı hiç yazma.';
+  try {
+    process.stdout.write(JSON.stringify({
+      hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
+    }));
+  } catch {}
 }
 
 function gecen(start) {

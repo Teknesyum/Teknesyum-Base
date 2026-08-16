@@ -251,6 +251,14 @@ Teknesyum ▸ görev veriliyor · builder · sonnet · tab component
 Teknesyum ▸ bitti · builder · 4 dk
 ```
 
+Every work request also gets a sizing verdict — including the requests that need no agent
+at all, so silence never means "is this thing even loaded?":
+
+```
+Teknesyum ▸ ölçü: tek dosya / gözle doğrulanabilir → ajan gerekmedi, kendim yapıyorum
+Teknesyum ▸ ölçü: sıfırdan proje / 3 yetenek → görev paketi · 8 sözleşme
+```
+
 Set `TEKNESYUM_SESSIZ=1` to silence them.
 
 ### Tests

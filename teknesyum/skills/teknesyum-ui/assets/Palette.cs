@@ -13,10 +13,10 @@ public static class Palette
     public static readonly Color Surface    = ColorTranslator.FromHtml("#08090A");
     public static readonly Color AppBg      = ColorTranslator.FromHtml("#050507");
 
-    public static readonly Color TextBody   = ColorTranslator.FromHtml("#D1D5DB");
-    public static readonly Color TextDim    = ColorTranslator.FromHtml("#9CA3AF");
-    public static readonly Color TextLabel  = ColorTranslator.FromHtml("#6B7280");
-    public static readonly Color TextHint   = ColorTranslator.FromHtml("#4B5563");
+    public static readonly Color TextBody   = ColorTranslator.FromHtml("#FFFFFF");
+    public static readonly Color TextDim    = ColorTranslator.FromHtml("#FFFFFF");
+    public static readonly Color TextLabel  = ColorTranslator.FromHtml("#00F3FF");
+    public static readonly Color TextHint   = ColorTranslator.FromHtml("#71717A");
 
     public static readonly Font  H2         = new("Segoe UI", 13.5f, FontStyle.Bold);
     public static readonly Font  H3         = new("Segoe UI", 10.5f, FontStyle.Bold);

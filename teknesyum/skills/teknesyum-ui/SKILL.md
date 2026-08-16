@@ -33,11 +33,22 @@ neon-blue    #00f3ff   birincil. eylem, aktif durum, sayısal vurgu, başlık
 neon-pink    #ff00ea   ikincil. uyarı, ters/negatif eylem, kritik değer
 neon-purple  #b026ff   üçüncül. mod anahtarları, scrollbar, ikincil buton
 success      #34d399   yalnızca "tamamlandı"
-surface      #08090a   panel zemini (95% opak)
-text         #d1d5db gövde · #9ca3af başlık-alt · #6b7280 etiket · #4b5563 ipucu
+bg           #000000   uygulama zemini — tam siyah, koyu gri değil
+surface      #0a0a0c   panel zemini (95% opak), zeminden ancak çerçevesiyle ayrılır
+text         #ffffff   okunması gereken HER şey — gövde, başlık, tablo, değer, etiket metni
+label        #00f3ff   etiket ve bölüm başlığı (küçük, uppercase, tracking'li)
+disabled     #71717a   YALNIZCA devre dışı kontrol. Tek gri budur.
 ```
 
 Bir ekranda **mavi baskın, pembe vurgu, mor seyrek**. Üçünü eşit kullanma.
+
+**Kontrast pazarlık konusu değil.** Zemin tam siyah, yazı tam beyaz. `#d1d5db`, `#9ca3af`,
+`#6b7280` gibi ara griler bu temada **yok**: koyu zeminde soluk gri yazı, tasarım değil
+okunmayan yazıdır. Kullanıcının bakması gereken bir şeyi soluklaştırarak hiyerarşi kurma —
+hiyerarşi **boyut, ağırlık, tracking ve neon renk** ile kurulur, parlaklık düşürerek değil.
+Metin/zemin kontrastı **7:1 altına inemez** (beyaz/siyah 21:1, neon-blue/siyah 12:1).
+Tek istisna gerçekten devre dışı olan kontroldür; o da griliğe ek olarak ayrıca belli edilir
+(ikon, imleç, tooltip) — çünkü renk körü kullanıcı grinin anlamını göremez.
 
 Glow şart: renkli metin `drop-shadow(0 0 5px <renk>)`, dolgulu buton
 `box-shadow: 0 0 20px <renk>40`, çerçeveli kutu `inset 0 0 8px <renk>`. Glow'suz neon yok.
@@ -54,14 +65,19 @@ süre**. Sayıyı sans ile yazma.
 | Rol | Boyut | Ağırlık | Tracking | Renk |
 |---|---|---|---|---|
 | Panel başlığı (h2) | 18px | 700 | 0.1em | neon-blue + glow |
-| Bölüm başlığı (h3) | 14px | 700 | 0.1em UPPERCASE | `#9ca3af` |
-| Etiket | 10px | 700 | 0.15em UPPERCASE | `#6b7280` |
-| Gövde | 13px | 400 | 0 | `#d1d5db` |
+| Bölüm başlığı (h3) | 14px | 700 | 0.1em UPPERCASE | neon-blue |
+| Etiket | 10px | 700 | 0.15em UPPERCASE | neon-blue |
+| Gövde | 13px | 400 | 0 | `#ffffff` |
 | Mono değer | 14px | 700 | 0 | neon-pink |
 | Hero sayı | 24px | 900 | 0 | neon-blue + glow |
-| İpucu | 10px | 400 | 0 | `#4b5563` |
+| İpucu | 10px | 400 | 0 | `#ffffff` |
 
 Ölçek 10 → 13 → 14 → 18 → 24. Ara boyut ekleme.
+
+Etiket ile gövdeyi ayıran şey artık parlaklık değil: etiket **küçük, kalın, harf aralıklı
+ve mavi**; gövde **büyük, normal ağırlıkta ve beyaz**. İpucu da beyaz kalır — yalnızca
+küçülür. Bir bilgiyi göstermeye değer bulduysan okunacak kadar parlak yaz; değmiyorsa
+ekrandan kaldır. Soluk yazı, silinmemiş içeriğin bahanesidir.
 
 ## 4. İmza bloğu
 
@@ -95,6 +111,8 @@ Geçiş: `200ms` mikro, `300ms` renk/glow, `500ms` panel aç-kapa. Hover `scale(
 
 ## 6. Sık yapılan hatalar
 
+- Soluk gri gövde metni (`#d1d5db`, `#9ca3af`) → beyaz. Bu temada ara gri yok
+- Native bırakılan MessageBox, scrollbar, ComboBox popup'ı, sekme başlığı → §8 sızıntı tablosu
 - Panelin/kartın komşusunun çerçevesini ya da glow'unu kesmesi → §8, örtüşme yok
 - Rastgele Tailwind rengi (`text-cyan-400`) → token kullan
 - Sayıyı sans font ile yazmak → mono
@@ -111,6 +129,31 @@ pencere çerçevesi ve başlık çubuğu, `locale/` klasörü. Web/React işinde
 
 Bunlar her yeni arayüzde başlangıç hâlidir. Aksini yapmak için gerekçe gerekir, uygulamak için değil.
 
+**Tema uygulamanın tamamını kaplar. Yarısı neon, yarısı native olan arayüz yoktur.**
+Kullanıcı temayı ekranın bütününde görür; tek bir sistem grisi kutu, geri kalan her şeyin
+özenini siler — "yarım kalmış program" hissi tam olarak buradan gelir. Sızıntı hep aynı
+yerlerden olur, teslimden önce **hepsi tek tek gezilir**:
+
+| Sızıntı | Nerede unutulur | Ne yapılır |
+|---|---|---|
+| Başlık çubuğu | pencere | aşağıdaki madde |
+| Scrollbar | liste, metin kutusu | web `::-webkit-scrollbar` · WPF `ScrollBar` şablonu · WinForms `DarkMode_Explorer` (`desktop.md` §7) |
+| MessageBox / uyarı | hata yolları | tema panelinden kendi modalını çiz; `MessageBox.Show` kullanma |
+| Dosya/klasör seçici | aç-kaydet | sistem diyaloğu kalır (OS'un işi), ama **koyu mod bayrağı** açılır |
+| ComboBox açılır listesi | ayar ekranı | popup şablonu da temalanır; sadece kapalı hâli değil |
+| CheckBox / RadioButton | form | kutucuk ve tik işareti kendi çizilir, native glif bırakılmaz |
+| ProgressBar | ilerleme | dolgu neon + glow, kanal `surface` |
+| Tooltip | her yer | zemin `surface`, çerçeve `neon-blue/30`, yazı beyaz |
+| Sağ tık menüsü | metin kutusu, liste | kendi `ContextMenu` şablonun |
+| Tab başlıkları | TabControl | WPF/WinForms varsayılan gri sekme kabul edilmez |
+| Metin imleci ve seçim rengi | girdi alanları | seçim `neon-blue/30`, caret neon-blue |
+| Odak çerçevesi | klavye gezinme | noktalı native çerçeve yerine neon glow — **kaldırma, değiştir** |
+| Devre dışı görünüm | pasif düğme | `disabled` tokenı + imleç; sistemin gri gölgesi değil |
+
+**Ölçüt:** ekranı gezerken "bu kutu Windows'a mı ait?" diye düşündüren bir öğe kalmışsa
+tema tamamlanmamıştır. Aynı ölçüt hata ve boş durum ekranları için de geçerlidir — en çok
+oralar unutulur, çünkü mutlu yolda hiç görünmezler.
+
 **Sistem başlık çubuğu kaldırılır, yerine tema panelinden bir şerit çizilir.** İşletim
 sisteminin açık gri min/büyüt/kapat bandı neon pencerenin tepesinde temaya ait olmayan bir
 yabancı cisimdir. Her stack'te karşılığı var, üçü de zorunlu:
@@ -124,7 +167,7 @@ yabancı cisimdir. Her stack'te karşılığı var, üçü de zorunlu:
 
 Çizilen şerit: yükseklik **32–40px**, zemin `surface`, altında `1px` `neon-blue/20` çizgi.
 Solda ikon + uygulama adı (14px/700/`0.1em`, odaklıyken neon-blue + glow, odak dışıyken
-`#6b7280`). Sağda üç düğme, ikon **10–12px** ve `stroke="currentColor"` SVG/Path — emoji
+beyaz). Sağda üç düğme, ikon **10–12px** ve `stroke="currentColor"` SVG/Path — emoji
 veya harf (`X`, `—`) kullanma. Hover: kapat **neon-pink**, diğerleri **neon-blue**, ikisi de
 glow'lu; dolgu gelmez. Dosya yolu, sürüm, config yolu başlık şeridine yazılmaz — o bilgi
 ilgili panele veya alt bilgiye gider.
@@ -185,18 +228,15 @@ kendi çizmeyen bir denetime yarı saydam renk verme.
 
 **Başlık çubuğu düğmeleri görünür boyutta ve beyaz çizilir.** Kapat/büyüt/küçült simgeleri harf
 değil çizgidir; 12pt altında kenar yumuşatma onları griye çevirir ve kullanıcı "sönük" görür.
-Tıklama alanı **52×36px**, simge yazı tipi **12pt**, duruk renk `#F3F4F6` (`TextStrong`).
+Tıklama alanı **52×36px**, simge yazı tipi **12pt**, duruk renk `#FFFFFF`.
 Renk yalnız hover'da neona döner: büyüt/küçült neon-blue, kapat neon-pink.
-
-**Paletteki `TextStrong` (`#F3F4F6`)** gövde metninden bir kademe parlak; başlık çubuğu simgeleri
-ve öne çıkması gereken tekil işaretler için. Gövde metni yine `TextBody` (`#D1D5DB`).
 
 **Alt bilgi şeridi tek satır ve mümkün olan en kısa.** Etiket yazı tipi + alt uzantısı kadar
 yükseklik (ölçülen: 18px), üstündeki düğme sırasına yapışık. İçerik: solda durum noktası,
 durum metni, sürüm ve dil anahtarı; **sağda destek bağlantısı ile imza yan yana, önce destek
 sonra imza**. Destek bağlantısı imzadan koparılıp sola atılmaz — ikisi tek bir künye okunur.
 **Bağlantı ve değer metinleri neon-blue**, yalnız durum noktası anlamına göre renklenir
-(kurulu `#34D399`, değil `#4B5563`).
+(kurulu `#34D399`, değil `#FF00EA`).
 
 **Panel başlıkları neon-blue çizilir.** `GÜVENLİK` / `DAVRANIŞ` / `AYRINTILAR` gibi bölüm
 başlıkları gri değil, `#00F3FF`. Gri bırakılırsa panel çerçevesi renkli, içindeki başlık sönük

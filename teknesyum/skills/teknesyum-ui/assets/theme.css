@@ -20,10 +20,10 @@
   --tk-surface: #08090a;
   --tk-glass: rgba(10, 10, 15, 0.85);
 
-  --tk-text: #d1d5db;
-  --tk-text-dim: #9ca3af;
-  --tk-text-label: #6b7280;
-  --tk-text-hint: #4b5563;
+  --tk-text: #ffffff;
+  --tk-text-dim: #ffffff;
+  --tk-text-label: #00f3ff;
+  --tk-text-hint: #71717a;
 
   --tk-r-box: 16px;
   --tk-r-btn: 12px;
@@ -39,7 +39,7 @@ body {
   margin: 0;
   font-family: var(--font-sans, 'Segoe UI', system-ui, sans-serif);
   color: var(--tk-text);
-  background: #050507;
+  background: #000000;
 }
 
 /* --- tipografi --- */

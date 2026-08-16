@@ -104,6 +104,19 @@ Bunun içine hiçbir açıklama, gerekçe, konuşma özeti koyma. Araca özel ko
 `/hat`) kullanma — paket başka bir araçta da çalışabilmeli. Paketi çalıştıracak araç proje
 kökünden başlamıyorsa tam yolu ver.
 
+**Paket gövdesi sohbete basılmaz — tavan 3 satır.** Bu kural bir kez ihlal edildi ve
+kullanıcı 120 satırlık bir bloğu elle taşımak zorunda kaldı; artık `Stop` hook'u denetliyor.
+Kod bloğu ≥25 satırsa ve içinde hem `# GÖREV` benzeri bir başlık hem `Depo:`/`Yığın:`
+alanı varsa cevap engellenir, paketi dosyaya yazman istenir. Kaçış yolu arama — dosya
+zaten daha iyi bir taşıyıcı:
+
+| | Sohbete basılan paket | Dosyaya yazılan paket |
+|---|---|---|
+| Kullanıcının işi | 120 satır kopyala-yapıştır | tek satır |
+| Alıcının okuduğu | yapıştırılan kadarı | dosyanın tamamı |
+| Güncelleme | eski blok elde kalır | dosya yerinde değişir |
+| Kayıt | sohbette kaybolur | depoda, `git`'te |
+
 Bağımlılığı açık olan paketin satırını **basma**; hangi paket bitince açılacağını yaz.
 
 ## 6. Toplama

@@ -13,6 +13,7 @@ function run(j) {
 
   if (j.hook_event_name === 'SessionStart') return acilis(root);
   if (j.hook_event_name === 'UserPromptSubmit') return hatirlat();
+  if (j.hook_event_name === 'Stop') return paketDenetle(j);
 
   // Röle kurulu projede izler proje içinde durur (/report oradan okur). Kurulu değilse
   // — üst klasörde, rastgele bir dizinde açılmış oturumda — oturuma özel genel dizine
@@ -162,6 +163,58 @@ function hatirlat() {
       hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
     }));
   } catch {}
+}
+
+// Ölçüldü: kural multi-session.md §5'te yazılıydı ve yine de sohbete 120 satırlık paket
+// basıldı. Yazılı kural yeterli değilse kapıya bekçi konur — paket dosyaya, kullanıcıya
+// tek satır. Yalnızca iki işaret birden varsa tetiklenir; normal kod bloğu dokunulmaz.
+const PAKET_BASLIK = /^#{1,3}[ \t]*(GÖREV|GOREV|TASK)\b/im;
+const PAKET_ALAN = /^[ \t]*(Depo|Repo|Yığın|Yigin|Stack|Kabuk|Shell)[ \t]*:/im;
+
+function paketDenetle(j) {
+  if (j.stop_hook_active) return;
+  const metin = sonMesaj(j.transcript_path);
+  if (!metin) return;
+  for (const blok of metin.match(/```[\s\S]*?```/g) || []) {
+    if (blok.split('\n').length < 25) continue;
+    if (!PAKET_BASLIK.test(blok) || !PAKET_ALAN.test(blok)) continue;
+    return process.stdout.write(JSON.stringify({
+      decision: 'block',
+      reason:
+        'Teknesyum: görev paketini sohbete basma. Paket dosyaya yazılır, kullanıcıya ' +
+        'tek satır verilir (multi-session.md §5). Paketi `.claude/relay/G<n>.md` altına ' +
+        'yaz, sonra sadece şunu bas: "`.claude/relay/G<n>.md` oku ve içindeki görevi ' +
+        'eksiksiz uygula." Paketi çalıştıracak taraf dosyayı kendi okur; kullanıcının ' +
+        '120 satır kopyalaması gerekmez.',
+    }));
+  }
+}
+
+function sonMesaj(tp) {
+  if (!tp) return null;
+  let ham;
+  try {
+    const fd = fs.openSync(tp, 'r');
+    const boy = fs.fstatSync(fd).size;
+    const bas = Math.max(0, boy - 262144);
+    const buf = Buffer.alloc(boy - bas);
+    fs.readSync(fd, buf, 0, buf.length, bas);
+    fs.closeSync(fd);
+    ham = buf.toString('utf8');
+  } catch { return null; }
+  const satir = ham.split('\n').filter(Boolean);
+  for (let i = satir.length - 1; i >= 0; i--) {
+    let o;
+    try { o = JSON.parse(satir[i]); } catch { continue; }
+    if (!o.message || o.message.role !== 'assistant') continue;
+    const ic = o.message.content;
+    if (typeof ic === 'string') return ic;
+    if (Array.isArray(ic)) {
+      const t = ic.filter((p) => p && p.type === 'text').map((p) => p.text).join('\n');
+      if (t) return t;
+    }
+  }
+  return null;
 }
 
 function gecen(start) {

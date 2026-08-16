@@ -123,6 +123,19 @@ Kullanıcıya verdiğin ise tek satırdır:
 .claude/relay/G2.md oku ve içindeki görevi eksiksiz uygula.
 ```
 
+**Paketin gövdesini sohbete basmak yasak.** Ne kod bloğunda, ne "kolaylık olsun diye"
+özet hâlinde. Sebep: paketi çalıştıracak taraf bir dosya sistemi görüyor — dosyayı senden
+daha ucuza, daha eksiksiz ve daha doğru okur. Kullanıcıyı 120 satırlık bir bloğu
+kopyalayıp yapıştıran ara katman yapmak, dosyanın var oluş sebebini iptal eder.
+
+Kullanıcıya giden metin **en fazla 3 satır**: dosya yolu, "oku ve uygula", gerekiyorsa
+proje kökü. Gerekçe, mimari özeti, uyarı listesi — hepsi **dosyanın içinde**. Bu kuralı
+bir `Stop` hook'u denetliyor; paketi sohbete basarsan cevabın engellenir.
+
+Tek istisna: paketi çalıştıracak araç **dosya okuyamıyorsa** (tarayıcıdaki bir sohbet
+penceresi). O zaman da gövdeyi kendiliğinden basma — kullanıcıya sor: "Bu paketi
+çalıştıracak araç yerel dosya okuyabiliyor mu?"
+
 Kullanıcı yeni bir oturum açıp bunu yapıştırır, başka bir şey anlatmaz. Bitip döndüğünde
 **ayrı bir komut bekleme**: paketleri ve `git status`'u sen okur, alan ihlali arar,
 `auditor`'ye doğrulatır, imzaları sonraki paketlere taşır, sonraki satırları basarsın.

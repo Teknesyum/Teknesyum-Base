@@ -251,8 +251,10 @@ installed version at render time and stays correct across updates.
 ### Hooks
 
 - `contract-guard.js` — enforces the completion gate on `Write`, `Edit` and `Bash`
-- `relay-watch.js` — writes agent traces (`SubagentStart` / `PostToolUse` / `SubagentStop`)
-  and narrates what the base is doing (`SessionStart` / dispatch / agent finish)
+- `relay-watch.js` — writes agent traces (`SubagentStart` / `PostToolUse` / `SubagentStop`),
+  narrates what the base is doing (`SessionStart` / dispatch / agent finish), requires a
+  sizing verdict on every request (`UserPromptSubmit`), and refuses to let a task packet be
+  dumped into the chat instead of written to a file (`Stop`)
 
 ### Visible steering
 
@@ -281,7 +283,7 @@ Set `TEKNESYUM_SESSIZ=1` to silence them.
 node test/run.js
 ```
 
-44 checks driving the real hooks and the real statusline with real payloads: the
+47 checks driving the real hooks and the real statusline with real payloads: the
 announcements, the trace files, the completion gate (including shell bypasses and relative
 Windows paths), concurrent hook processes writing the same file, and the packaging
 invariants — no `hooks` key in the manifest, a valid `.lsp.json`, the auditor's tool list,

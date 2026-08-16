@@ -73,7 +73,7 @@ ol('.lsp.json geçerli ve boşluksuz komut kullanıyor', () => {
 
 ol('hooks.json olayları bağlıyor ve koruma Bash\'i kapsıyor', () => {
   const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8')).hooks;
-  for (const e of ['PreToolUse', 'PostToolUse', 'SessionStart', 'SubagentStart', 'SubagentStop', 'UserPromptSubmit']) {
+  for (const e of ['PreToolUse', 'PostToolUse', 'SessionStart', 'SubagentStart', 'SubagentStop', 'UserPromptSubmit', 'Stop']) {
     if (!h[e]) throw new Error(e + ' bağlı değil');
   }
   const koru = h.PreToolUse.find((x) => /contract-guard/.test(JSON.stringify(x)));
@@ -152,6 +152,43 @@ ol('UserPromptSubmit röle kurulu olmayan klasörde iz bırakmaz', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'x' }, konfig(true));
   if (fs.existsSync(path.join(p, '.claude'))) throw new Error('boş klasörde .claude açıldı');
+});
+
+function transcript(metin) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tr-'));
+  const f = path.join(d, 'oturum.jsonl');
+  fs.writeFileSync(f, [
+    JSON.stringify({ message: { role: 'user', content: 'paketi ver' } }),
+    JSON.stringify({ message: { role: 'assistant', content: [{ type: 'text', text: metin }] } }),
+  ].join('\n') + '\n');
+  return f;
+}
+
+const PAKET_BLOK = '```\n# GÖREV: VidShrink v0.2\n\nDepo: C:/x/vidshrink\n' +
+  'Yığın: .NET 8 / WPF\n' + '- madde\n'.repeat(25) + '```';
+
+ol('sohbete basılan görev paketi Stop hook\'unda engellenir', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop',
+    transcript_path: transcript('İşte paket:\n\n' + PAKET_BLOK) }, konfig(true));
+  const o = JSON.parse(r.out);
+  esit(o.decision, 'block');
+  icerir(o.reason, '.claude/relay/G');
+});
+
+ol('normal kod bloğu ve tek satırlık teslim engellenmez', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const bos = (m) => calistir(IZLE, { ...ort(p), hook_event_name: 'Stop',
+    transcript_path: transcript(m) }, konfig(true)).out;
+  esit(bos('`.claude/relay/G2.md` oku ve içindeki görevi eksiksiz uygula.'), '', 'tek satır');
+  esit(bos('```js\n' + 'const a = 1;\n'.repeat(40) + '```'), '', 'uzun kod bloğu');
+  esit(bos('```\n# GÖREV: kısa\nDepo: x\n```'), '', 'kısa blok');
+});
+
+ol('Stop döngüye girmez (stop_hook_active)', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  esit(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop', stop_hook_active: true,
+    transcript_path: transcript('İşte paket:\n\n' + PAKET_BLOK) }, konfig(true)).out, '');
 });
 
 ol('röle kurulu değilse ve makine bağlıysa açılışta susar', () => {

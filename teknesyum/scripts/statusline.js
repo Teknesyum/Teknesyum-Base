@@ -45,7 +45,10 @@ function calisanlar(live) {
   if (!live) return [];
   try {
     const l = JSON.parse(fs.readFileSync(path.join(live, '_calisanlar.json'), 'utf8'));
-    return Array.isArray(l) ? l : [];
+    if (!Array.isArray(l)) return [];
+    // Oturum ajan çalışırken düşerse SubagentStop hiç gelmez ve kayıt sonsuza kadar
+    // "çalışıyor" görünür. 2 saati geçeni düşür — hiçbir ajan o kadar sürmüyor.
+    return l.filter((c) => Date.now() - (c.bas || 0) < 2 * 60 * 60 * 1000);
   } catch { return []; }
 }
 

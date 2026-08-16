@@ -174,11 +174,18 @@ decision comes to you. No job moves forward while a critical finding is open.
 |---|---|---|
 | `usta` | Writes code — modules, algorithms, endpoints, refactors, tests | sonnet |
 | `usta-arayuz` | Writes UI; theme standard preloaded into its context | sonnet |
-| `denetci` | Verifies acceptance criteria — **has no Write/Edit tools** | sonnet |
+| `denetci` | Verifies acceptance criteria — **cannot write or run anything** | sonnet |
 | `kayitci` | Mechanical bulk work — naming, formatting, documentation | haiku |
 
 Role determines the kind of work, model determines the weight; they are separate axes.
 The model is chosen at call time.
+
+The auditor's restriction is enforced by the harness, not by its prompt: it holds
+`Read`, `Grep`, `Glob` and `LSP` — no `Write`, no `Edit`, and **no `Bash`**, since a shell
+is a write tool. Evidence that needs a command (tests, build, `git diff --name-only`) is
+run by the manager and pasted into the audit request; anything not supplied comes back
+marked `? unproven` rather than silently passing. A test asserts the tool list, so the
+guarantee cannot quietly erode.
 
 ### Commands
 
@@ -216,6 +223,18 @@ Adamantium ▸ bitti · usta · 4 dk
 ```
 
 Set `TEKNESYUM_SESSIZ=1` to silence them.
+
+### Tests
+
+```bash
+node test/calistir.js
+```
+
+21 checks driving the real hooks and the real statusline with real payloads: the
+announcements, the trace files, the write protection on completed contracts, the
+packaging invariants (no `hooks` key in the manifest, valid `.lsp.json`, the auditor's
+tool list), and the four regressions that shipped before the suite existed. Runs on
+plain Node with no dependencies; CI runs it on every push.
 
 ### Code intelligence
 

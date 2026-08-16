@@ -22,7 +22,7 @@ function run(j) {
   try { fs.mkdirSync(live, { recursive: true }); } catch { return; }
   if (!root) supur();
 
-  iz(live, j);
+  if (process.env.TEKNESYUM_TANI) iz(live, j);
 
   // ÖLÇÜLDÜ: alt ajanın içindeki araç kullanımları PostToolUse hook'unu tetiklemiyor
   // (12 olayın 12'si ana oturum, `ptu_ajanli: 0`). Bu yüzden adım sayacı kurulamaz.
@@ -155,7 +155,7 @@ function acilis(root) {
   const biten = say(path.join(root, 'contracts', 'done'));
   if (!acik && !biten) return duyur('röle kurulu · sözleşme yok');
   duyur('röle kurulu · sözleşme ' + biten + '/' + (acik + biten) + ' bitti' +
-    (acik ? ' · ' + acik + ' açık → /durum' : ''));
+    (acik ? ' · ' + acik + ' açık' : ''));
 }
 
 function say(dir) {

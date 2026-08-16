@@ -26,8 +26,9 @@ kendiliğinden yazar. Her dosyada: `contract` (ajanın okuduğu sözleşmeden ba
 
 `stop_reason`: `end_turn` normal bitiş · başka her değer **ölüm** · `null` çalışıyor.
 
-`_hook-tani.json` teşhis sayacıdır — `toplam` hook'un kaç kez ateşlendiğini, `ajanli`
-kaçında `agent_id` geldiğini sayar. Yoksa hook hiç çalışmamıştır.
+`_hook-tani.json` teşhis sayacıdır ve **normalde yazılmaz**. Hook'un ateşleyip
+ateşlemediğinden şüpheleniyorsan `TEKNESYUM_TANI=1` ile oturum aç; dosya o zaman
+her olayda güncellenir (`toplam`, olay dağılımı, alan listesi).
 
 ## 2. Sözleşme formatı
 
@@ -93,6 +94,12 @@ Her turda `tur:` artır. Tur 3'te hâlâ çözülmüyorsa sorun genelde ajanın 
 **Açık kritik bulgu varken bir sonraki göreve geçme.**
 
 Tek satırlık, gözle doğrulanabilir düzeltmelerde denetçi ajanı harcama — grep'le kontrol et.
+
+**Denetçi komut çalıştıramaz** — `Bash`'i yok, kabuktan dosya değiştirebileceği için
+alındı. Kanıtı sen üretirsin: dağıtmadan önce `git diff --name-only` ve sözleşmenin
+**Doğrulama** satırındaki komutu **sen çalıştır**, çıktıyı denetim isteğine yapıştır.
+Yapıştırmadığın kriteri denetçi `? kanıtsız` işaretler; o işaret sende iş kalmış demektir,
+denetçide değil.
 
 ## 5. Düşen ajan
 

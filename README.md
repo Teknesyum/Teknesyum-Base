@@ -28,6 +28,15 @@ approves its own work; and it produces a differently-styled UI in every project.
 | **Interruption** | Hit the limit, start over | Every agent's trace is on disk; the next session picks the work back up on its own |
 | **UI** | A different look every time | Same palette, same type scale, same signature |
 
+### What this is not
+
+An opinionated working protocol, not a security boundary. Two things here are mechanical —
+hooks run as processes and cannot be talked out of it: the `done/` seal check and the
+auditor's tool list. Everything else — sizing the work, splitting it into contracts,
+assigning file ownership, choosing models — is the model following `SKILL.md`. That makes
+it automatic, not deterministic. Treat it as a discipline that holds most of the time and
+is auditable when it doesn't, not as a system that cannot be circumvented.
+
 **There is no workflow to learn.** Five slash commands exist and all five are optional —
 a project can be finished start to finish without typing any of them.
 
@@ -110,8 +119,12 @@ For large jobs every task is a file:
     └── done/            completed ones (write-protected)
 ```
 
-Every contract declares what it owns (`owns`). **Two contracts can never own the same
-file** — that is the only guarantee parallel work has.
+Every contract declares what it owns (`owns`). **Two contracts are never given the same
+file** — that is the discipline parallel work rests on. Be precise about what backs it:
+ownership is assigned by the manager when contracts are written and checked against
+`git status` when they close. No hook rejects a stray write to a file outside a contract's
+`owns` set. If you want a hard wall instead of a rule, set `worktree_isolation : on` and
+each agent works in its own git worktree, where the file system does the enforcing.
 
 ### The completion gate
 
@@ -127,7 +140,8 @@ diff: <the range the auditor was shown>
 verification: npm test → exit 0
 ```
 
-A hook enforces the gate instead of trusting it. An unsealed file cannot land in `done/`
+A hook enforces the gate instead of trusting it, and it checks all four fields — a bare
+`audit: passed` with the rest left at `—` is refused. An unsealed file cannot land in `done/`
 through `Write`, and cannot get there through the shell either — redirects, `mv`,
 `Move-Item`, `cp` and deletions targeting `done/` are refused unless the source already
 carries the seal. Reading is untouched. Without this, an agent that finished badly could
@@ -267,7 +281,7 @@ Set `TEKNESYUM_SESSIZ=1` to silence them.
 node test/run.js
 ```
 
-41 checks driving the real hooks and the real statusline with real payloads: the
+44 checks driving the real hooks and the real statusline with real payloads: the
 announcements, the trace files, the completion gate (including shell bypasses and relative
 Windows paths), concurrent hook processes writing the same file, and the packaging
 invariants — no `hooks` key in the manifest, a valid `.lsp.json`, the auditor's tool list,

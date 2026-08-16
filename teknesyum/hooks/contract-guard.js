@@ -13,7 +13,16 @@ process.stdin.on('end', () => {
 // Yol göreli de gelebilir (`.claude/relay/contracts/done/T1.md`). Başında `/` arayan
 // eski desen bu biçimi kaçırıyordu — sınır `(^|/)` ile yazılır.
 const DONE = /(^|\/)\.claude\/relay\/contracts\/done\//i;
-const MUHUR = /audit:\s*(passed|gecti)/i;
+// Mühür tek satır değil: `audit: passed` yazmak ucuz, denetçi kimliği + diff + doğrulama
+// kanıtı yazmak değil. Dördü birden dolu olmadan done/ kapısı açılmaz. Alan `—` ise boş sayılır.
+const MUHUR = /^audit:[ \t]*(passed|gecti)[ \t]*$/im;
+const alan = (ad) => new RegExp('^' + ad + ':[ \\t]*(?![—\\-]?[ \\t]*$)\\S', 'im');
+const KANIT = ['auditor_id', 'diff', 'verification'].map(alan);
+
+function muhurlu(metin) {
+  const s = String(metin);
+  return MUHUR.test(s) && KANIT.every((r) => r.test(s));
+}
 const YAZMA_FIILI = /(^|[\s;|&])(mv|move-item|cp|copy-item|rm|remove-item|del|erase|touch|tee|sed\s+-i|set-content|add-content|out-file|new-item)\b|>>?/i;
 
 function karar(j) {
@@ -25,9 +34,10 @@ function karar(j) {
     if (!hedef || !DONE.test(norm(hedef))) return;
     // Write mührü taşıyorsa denetimden geçmiş sözleşmenin yerleşmesidir; Edit hiçbir
     // koşulda meşru değil — bitmiş sözleşme değiştirilmez.
-    if (arac === 'Write' && MUHUR.test(String(t.content || ''))) return;
+    if (arac === 'Write' && muhurlu(t.content || '')) return;
     return engelle(
       'contracts/done/ denetimden geçmiş sözleşmeler içindir, salt okunur.',
+      'Mühür dört alan ister: audit: passed · auditor_id · diff · verification.',
       'Sözleşme yeniden açılacaksa T0 dosyayı contracts/ altına geri taşır ve status: open yapar.'
     );
   }
@@ -41,12 +51,12 @@ function karar(j) {
   // dosyada mühür varsa geçir. Komuttan kaynak çıkaramıyorsak kapalı tarafa düş.
   for (const aday of yollar(komut)) {
     if (DONE.test(norm(aday))) continue;
-    try { if (MUHUR.test(fs.readFileSync(aday, 'utf8'))) return; } catch {}
+    try { if (muhurlu(fs.readFileSync(aday, 'utf8'))) return; } catch {}
   }
   return engelle(
     'contracts/done/ altına kabuktan yazma engellendi.',
-    'Sözleşme oraya ancak denetçi GEÇTİ verdikten ve T0 sözleşmeye `audit: passed` mührünü',
-    'işledikten sonra taşınır. Denetim atlanamaz.'
+    'Sözleşme oraya ancak denetçi GEÇTİ verdikten ve T0 dört alanlı mührü — audit: passed ·',
+    'auditor_id · diff · verification — işledikten sonra taşınır. Denetim atlanamaz.'
   );
 }
 

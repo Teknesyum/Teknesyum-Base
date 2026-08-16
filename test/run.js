@@ -322,6 +322,9 @@ ol('röle yoksa iz genel dizine düşer, proje kirletilmez', () => {
 
 console.log('\nKoruma — done/ kapısı');
 
+const MUHURLU = '---\nstatus: done\naudit: passed\nauditor_id: a4f21c9\n' +
+  'diff: 3 dosya / +88 -12\nverification: npm test 43/43\n---\n';
+
 ol('done/ altına Edit engellenir', () => {
   const r = calistir(KORU, { tool_name: 'Edit',
     tool_input: { file_path: '/p/.claude/relay/contracts/done/T1.md' } });
@@ -340,7 +343,17 @@ ol('mühürsüz Write engellenir, mühürlü Write geçer', () => {
       content: '---\nstatus: done\n---\n' } }).kod, 2, 'mühürsüz');
   esit(calistir(KORU, { tool_name: 'Write',
     tool_input: { file_path: '/p/.claude/relay/contracts/done/T1.md',
-      content: '---\nstatus: done\naudit: passed\n---\n' } }).kod, 0, 'mühürlü');
+      content: MUHURLU } }).kod, 0, 'mühürlü');
+});
+
+ol('yarım mühür geçmez: dört alanın hepsi dolu olmalı', () => {
+  const yaz = (c) => calistir(KORU, { tool_name: 'Write',
+    tool_input: { file_path: '/p/.claude/relay/contracts/done/T1.md', content: c } }).kod;
+  esit(yaz('---\nstatus: done\naudit: passed\n---\n'), 2, 'tek satır mühür');
+  esit(yaz(MUHURLU.replace('auditor_id: a4f21c9', 'auditor_id: —')), 2, 'kimlik boş');
+  esit(yaz(MUHURLU.replace('diff: 3 dosya / +88 -12', 'diff:')), 2, 'diff boş');
+  esit(yaz(MUHURLU.replace(/verification: .*/, 'verification: -')), 2, 'doğrulama tire');
+  esit(yaz(MUHURLU.replace('audit: passed', 'audit: —')), 2, 'denetim yok');
 });
 
 ol('mühürlü dosyaya bile Edit yasak (bitmiş sözleşme değişmez)', () => {
@@ -368,7 +381,7 @@ ol('kabuktan done/ okuma serbest', () => {
 ol('mühürlü sözleşmenin kabuktan taşınması geçer', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-muhur-'));
   const src = path.join(p, 'T1.md');
-  fs.writeFileSync(src, '---\nstatus: done\naudit: passed\nverification: npm test → exit 0\n---\n');
+  fs.writeFileSync(src, MUHURLU);
   esit(calistir(KORU, { tool_name: 'Bash',
     tool_input: { command: 'mv ' + src.replace(/\\/g, '/') + ' /p/.claude/relay/contracts/done/T1.md' },
   }).kod, 0);

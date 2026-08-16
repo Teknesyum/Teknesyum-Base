@@ -42,17 +42,19 @@ dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. \`/rule\` il
 (async () => {
   fs.mkdirSync(HOME, { recursive: true });
 
-  // 1. statusline betiği
-  const yerel = path.join(__dirname, '..', 'teknesyum', 'scripts', 'statusline.js');
+  // 1. statusline köprüsü. Buraya statusline.js'in kopyası YAZILMAZ: kopya donar, eklenti
+  // güncellendiğinde eski sürüm çalışmaya devam eder. bridge.js sürüm taşımaz, çalışma
+  // anında en yeni plugin cache klasörünü bulur.
+  const yerel = path.join(__dirname, '..', 'teknesyum', 'scripts', 'bridge.js');
   if (fs.existsSync(yerel)) {
     fs.copyFileSync(yerel, SL);
-    yapilan.push('statusline betiği kopyalandı');
+    yapilan.push('statusline köprüsü kuruldu');
   } else {
     try {
-      await indir(RAW + '/teknesyum/scripts/statusline.js', SL);
-      yapilan.push('statusline betiği indirildi');
+      await indir(RAW + '/teknesyum/scripts/bridge.js', SL);
+      yapilan.push('statusline köprüsü indirildi');
     } catch (e) {
-      atlanan.push('statusline betiği alınamadı: ' + e.message);
+      atlanan.push('statusline köprüsü alınamadı: ' + e.message);
     }
   }
 
@@ -115,7 +117,7 @@ dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. \`/rule\` il
   if (!varMi('typescript-language-server --version')) eksik.push('typescript-language-server  (npm i -g typescript typescript-language-server)  → TS tip zekâsı');
   if (!varMi('graphify --version')) eksik.push('graphify  (uv tool install graphifyy)  → büyük kod tabanı indeksleme');
 
-  console.log('\n  Teknesyum — Claude Code Teknesyum Base\n');
+  console.log('\n  Teknesyum Base\n');
   for (const y of yapilan) console.log('  ✓ ' + y);
   for (const a of atlanan) console.log('  · ' + a);
   if (eksik.length) {

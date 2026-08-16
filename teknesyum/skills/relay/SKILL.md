@@ -65,9 +65,15 @@ Kullanıcı o sırada başka bir iş verirse yeni iş önceliklidir; açık söz
 
 Yazma işine başlamadan önce, sırayla kontrol et:
 
-1. **Git yok mu?** Dosya değiştirecek her işten önce `git init` + `git add -A` +
-   "guvenlik noktasi" commit'i at. Kullanıcıya haber ver, izin isteme. Repo varsa ve
-   ağaç kirliyse dokunma — kirli olduğunu söyle.
+1. **Git yok mu?** Dosya değiştirecek her işten önce `git init` + "guvenlik noktasi"
+   commit'i at. Kullanıcıya haber ver, izin isteme. Repo varsa ve ağaç kirliyse
+   dokunma — kirli olduğunu söyle.
+   **`git add -A` demeden önce ne ekleyeceğine bak.** `.gitignore` yoksa önce onu yaz:
+   `node_modules/`, `dist/`, `build/`, `bin/`, `obj/`, `.env*`, `*.key`, `*.pem`,
+   `*.pfx`, `*.mp4`, `*.zip`. Ardından `git status --short` çıktısında sır adayı
+   (`.env`, `secrets`, `*.key`, kimlik dosyası) veya 10 MB üstü dosya kalıyorsa
+   **onları ekleme, kullanıcıya tek satır sor.** Güvenlik noktası kod içindir;
+   kullanıcının sırlarını versiyonlamak senin işin değil.
 2. **Kod tabanı yabancı ve büyük mü?** (~60+ kaynak dosya, mimarisini bilmiyorsun ve
    iş birden çok modüle dokunacak) → `graphify-out/` yoksa **önce `/graphify .` çalıştır**,
    sonra dosya okumak yerine grafiği sorgula. Küçük projede kurma, `Explore`+`Grep` yeter.

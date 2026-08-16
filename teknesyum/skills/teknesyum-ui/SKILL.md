@@ -253,7 +253,7 @@ Seçili ve seçili olmayan hâlin **dört kenarı da** canlı görüntüde doğr
 taşıyan panele sabit `Height` verilmez; alt kenarı yiyen şey odur.
 
 **Bilgi rozeti** — teknik/kritik ayarın yanında **12×12** boyutunda, üst simge konumunda,
-metinden **12 DIP** uzakta `?`. Tooltip ayrıntılı ve **iki dilli**. Hover'da yalnızca
+metinden **6 DIP** uzakta `?`. Tooltip ayrıntılı ve **iki dilli**. Hover'da yalnızca
 **rengi** değişir: glow yok, büyüme yok, kayma yok.
 
 **Pencere düğmeleri** — 42×30 DIP. Küçült simgesi 10×2 DIP düz çizgi. Sıra: destek

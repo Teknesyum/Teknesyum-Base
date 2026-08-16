@@ -58,6 +58,10 @@ da ekler, uzun işte gürültü yapar · `sessiz` yalnızca brifing, sapma ve ka
 
 `onay_kapisi` ile karıştırma: o **beklemeyi**, bu **anlatmayı** yönetir.
 
+**Hook bildirimleri** bu düğmeden bağımsızdır. `Adamantium ▸ …` satırlarını hook basar:
+oturum açılışı, her görev dağıtımı, her ajan bitişi. Modelin unutabileceği bir şey değil,
+ölçülmüş olaydan gelir. Kapatmak için ortam değişkeni: `TEKNESYUM_SESSIZ=1`.
+
 ## Kural
 
 Kullanılmayan düğmeyi sil. Dokuz düğme anlaşılır, otuz düğme anlaşılmaz.

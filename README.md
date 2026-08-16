@@ -202,6 +202,20 @@ and never for the model, so its **token cost is zero**.
 
 - `koru-sozlesme.js` — blocks writes to completed contracts at the harness level
 - `relay-izle.js` — writes agent traces to disk (`SubagentStart` / `PostToolUse` / `SubagentStop`)
+  and prints what the base is doing (`SessionStart` / dispatch / agent finish)
+
+### Visible steering
+
+You cannot see inside the agents, so the base narrates itself. One line per real event,
+emitted by the hook rather than promised by the model:
+
+```
+Adamantium ▸ röle kurulu · sözleşme 4/7 bitti · 3 açık → /durum
+Adamantium ▸ görev veriliyor · usta · sonnet · tab component
+Adamantium ▸ bitti · usta · 4 dk
+```
+
+Set `TEKNESYUM_SESSIZ=1` to silence them.
 
 ### Code intelligence
 
@@ -289,7 +303,7 @@ transparent fill, colored border, colored label, vector icon. Remove it with
 Claude Code's own measurement:
 
 ```
-Skills (8) · Agents (4) · Hooks (4)
+Skills (8) · Agents (4) · Hooks (5)
 Always-on:  ~1,211 tokens     added to each session
 ```
 

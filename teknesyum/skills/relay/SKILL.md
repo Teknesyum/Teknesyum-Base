@@ -27,6 +27,15 @@ Davranış düğmeleri `AYAR.md`'de. Projede `.claude/relay/AYAR.md` varsa o ön
 | ≥3 bağımsız parça veya ≥5 dosya, tek yetenek alanı | **Oturum içi röle** — §3 |
 | Sıfırdan proje · ≥3 bağımsız yetenek alanı · bağlam dolacak | **Görev paketi** — §3.1 |
 
+Sınıflandırmayı **sessizce yap, kararı tek satır bildir** — kullanıcı hangi kurala göre
+davrandığını görsün, gerekçeni değil:
+
+```
+Adamantium ▸ ölçü: 6 dosya / tek yetenek → oturum içi röle · 3 sözleşme · usta/sonnet
+```
+
+Soru ve tek satırlık düzeltmede bu satırı yazma; kurulan hiçbir şey yok.
+
 Kararsızsan küçük tarafı seç. Röle kurmanın kendi maliyeti var; sonradan büyütmek,
 gereksiz kurulmuş röleyi taşımaktan ucuz. **Çok oturumlu kararı ise ilk mesajda verilir** —
 yarıda geçiş planı baştan yazdırır.

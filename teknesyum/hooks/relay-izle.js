@@ -11,6 +11,8 @@ process.stdin.on('end', () => {
 function run(j) {
   const root = findRelay(j.cwd || process.cwd());
 
+  if (j.hook_event_name === 'SessionStart') return acilis(root);
+
   // Röle kurulu projede izler proje içinde durur (/durum, /devam oradan okur).
   // Kurulu değilse — üst klasörde, rastgele bir dizinde açılmış oturumda — oturuma
   // özel genel dizine yazarız. Kullanıcının klasör ayarlamasını beklemeyiz.
@@ -27,7 +29,16 @@ function run(j) {
   // Ölçülebilen tek şey ajanın başlaması ve bitmesi: başlangıcı ana oturumdaki
   // Agent çağrısından, bitişi SubagentStop'tan alıyoruz.
   if (j.hook_event_name === 'PreToolUse') {
-    if (/^(Agent|Task)$/.test(j.tool_name || '')) calisanEkle(live, j);
+    if (/^(Agent|Task)$/.test(j.tool_name || '')) {
+      const n = calisanEkle(live, j);
+      const t = j.tool_input || {};
+      const rol = String(t.subagent_type || '?').replace(/^teknesyum:/, '');
+      const tanim = String(t.description || '').slice(0, 60);
+      duyur(
+        'görev veriliyor · ' + rol + (t.model ? ' · ' + t.model : '') +
+        (tanim ? ' · ' + tanim : '') + (n > 1 ? '   [' + n + ' ajan çalışıyor]' : '')
+      );
+    }
     return;
   }
 
@@ -82,14 +93,17 @@ function run(j) {
       break;
     }
 
-    case 'SubagentStop':
-      calisanKapat(live, j.agent_type);
+    case 'SubagentStop': {
+      const c = calisanKapat(live, j.agent_type);
+      const rol = String((c && c.tip) || j.agent_type || 'ajan').replace(/^teknesyum:/, '');
+      duyur('bitti · ' + rol + (c ? ' · ' + gecen(c.bas) : ''));
       // Ölçüldü: bu olayın payload'ında `stop_reason` alanı YOK. Eksikliği ölüm sanma —
       // aksi halde normal biten her ajan statusline'da ⨯ görünür.
       s.stop_reason = j.stop_reason || 'end_turn';
       s.ended = now;
       if (j.last_assistant_message) s.son_soz = String(j.last_assistant_message).slice(0, 300);
       break;
+    }
   }
 
   try { fs.writeFileSync(file, JSON.stringify(s, null, 2)); } catch {}
@@ -107,6 +121,7 @@ function calisanEkle(live, j) {
     bas: Date.now(),
   });
   try { fs.writeFileSync(f, JSON.stringify(l)); } catch {}
+  return l.length;
 }
 
 // agent_id ile Agent çağrısını birbirine bağlayan alan yok; tip eşleşmesiyle kapat,
@@ -117,8 +132,34 @@ function calisanKapat(live, tip) {
   if (!Array.isArray(l) || !l.length) return;
   let i = tip ? l.findIndex((x) => x.tip === tip) : -1;
   if (i < 0) i = 0;
-  l.splice(i, 1);
+  const [c] = l.splice(i, 1);
   try { fs.writeFileSync(f, JSON.stringify(l)); } catch {}
+  return c || null;
+}
+
+// Kullanıcı ajanların içini göremez. Base'in devreye girdiği her anı tek satır
+// bildiririz: görev verildi, ajan bitti, oturum açıldı. TEKNESYUM_SESSIZ=1 kapatır.
+function duyur(mesaj) {
+  if (process.env.TEKNESYUM_SESSIZ) return;
+  try { process.stdout.write(JSON.stringify({ systemMessage: 'Adamantium ▸ ' + mesaj })); } catch {}
+}
+
+function gecen(bas) {
+  const s = Math.max(0, Math.round((Date.now() - bas) / 1000));
+  return s < 60 ? s + ' sn' : Math.round(s / 60) + ' dk';
+}
+
+function acilis(root) {
+  if (!root) return;
+  const acik = say(path.join(root, 'contracts'));
+  const biten = say(path.join(root, 'contracts', 'done'));
+  if (!acik && !biten) return duyur('röle kurulu · sözleşme yok');
+  duyur('röle kurulu · sözleşme ' + biten + '/' + (acik + biten) + ' bitti' +
+    (acik ? ' · ' + acik + ' açık → /durum' : ''));
+}
+
+function say(dir) {
+  try { return fs.readdirSync(dir).filter((f) => /\.md$/i.test(f)).length; } catch { return 0; }
 }
 
 // Ana oturumun transcript dosyası session_id ile aynı adı taşır; alt ajanınki taşımaz.

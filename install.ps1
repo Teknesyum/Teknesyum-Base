@@ -1,4 +1,4 @@
-# Teknesyum — Claude Code Adamantium Base
+# Teknesyum Base
 # Kurulum:  irm https://raw.githubusercontent.com/Teknesyum/teknesyum-base/main/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
@@ -6,7 +6,7 @@ $repo = 'Teknesyum/teknesyum-base'
 $raw  = "https://raw.githubusercontent.com/$repo/main"
 
 Write-Host ""
-Write-Host "  Teknesyum - Claude Code Adamantium Base" -ForegroundColor Cyan
+Write-Host "  Teknesyum Base" -ForegroundColor Cyan
 Write-Host ""
 
 if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {

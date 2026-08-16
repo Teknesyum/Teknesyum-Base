@@ -32,7 +32,7 @@ function calistir(script, yuk, ek) {
 }
 
 function proje(sozlesme, biten) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-test-'));
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-test-'));
   const relay = path.join(p, '.claude', 'relay');
   fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
   for (let i = 0; i < sozlesme; i++) fs.writeFileSync(path.join(relay, 'contracts', 'T' + i + '.md'), '#');
@@ -45,7 +45,7 @@ const ort = (p) => ({ cwd: p, session_id: 'oturum-1', transcript_path: '/x/oturu
 // Açılış bildirimi kullanıcının ~/.claude'una bakar; test makineden bağımsız olsun diye
 // sahte bir config dizini kurup CLAUDE_CONFIG_DIR ile gösteriyoruz.
 function konfig(kurulu) {
-  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-cfg-'));
+  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
   if (kurulu) {
     fs.writeFileSync(path.join(c, 'teknesyum-statusline.js'), '//');
     fs.writeFileSync(path.join(c, 'settings.json'), JSON.stringify({
@@ -140,12 +140,12 @@ ol('SessionStart röle durumunu ve sözleşme sayacını bildirir', () => {
 });
 
 ol('röle kurulu değilse ve makine bağlıysa açılışta susar', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-bos-'));
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
   esit(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(true)).out, '');
 });
 
 ol('statusline bağlı değilse açılışta kurulumu hatırlatır', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-bos-'));
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
   const m = JSON.parse(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(false)).out);
   icerir(m.systemMessage, 'kurulum eksik');
 });
@@ -253,8 +253,8 @@ ol('aynı tipten iki ajanda süre uydurulmaz', () => {
 console.log('\nİz');
 
 ol('genel iz temizliği az sayıda klasörde de çalışır', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-bos-'));
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-cfg-'));
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
   const kok = path.join(cfg, 'teknesyum', 'live');
   const bayat = path.join(kok, 'eski-oturum');
   fs.mkdirSync(bayat, { recursive: true });
@@ -297,8 +297,8 @@ ol('SubagentStop stop_reason yokken ölüm sayılmaz', () => {
 });
 
 ol('röle yoksa iz genel dizine düşer, proje kirletilmez', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-bos-'));
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-cfg-'));
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
   calistir(IZLE, { ...ort(p), hook_event_name: 'SubagentStop', agent_id: 'a1',
     agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl' }, { CLAUDE_CONFIG_DIR: cfg });
   esit(fs.existsSync(path.join(p, '.claude')), false, 'proje kirlenmiş');
@@ -351,7 +351,7 @@ ol('kabuktan done/ okuma serbest', () => {
 });
 
 ol('mühürlü sözleşmenin kabuktan taşınması geçer', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-muhur-'));
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-muhur-'));
   const src = path.join(p, 'T1.md');
   fs.writeFileSync(src, '---\nstatus: done\naudit: passed\nverification: npm test → exit 0\n---\n');
   esit(calistir(KORU, { tool_name: 'Bash',

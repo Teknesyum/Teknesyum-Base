@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Teknesyum — Claude Code Adamantium Base
+# Teknesyum Base
 # Kurulum:  curl -fsSL https://raw.githubusercontent.com/Teknesyum/teknesyum-base/main/install.sh | bash
 set -e
 
 REPO="Teknesyum/teknesyum-base"
 RAW="https://raw.githubusercontent.com/$REPO/main"
 
-printf '\n  Teknesyum - Claude Code Adamantium Base\n\n'
+printf '\n  Teknesyum Base\n\n'
 
 if ! command -v claude >/dev/null 2>&1; then
   printf '  Claude Code bulunamadi. Once kur: https://claude.com/code\n'

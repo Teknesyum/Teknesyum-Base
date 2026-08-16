@@ -79,6 +79,32 @@ ve mavi**; gövde **büyük, normal ağırlıkta ve beyaz**. İpucu da beyaz kal
 küçülür. Bir bilgiyi göstermeye değer bulduysan okunacak kadar parlak yaz; değmiyorsa
 ekrandan kaldır. Soluk yazı, silinmemiş içeriğin bahanesidir.
 
+## 3.1 Arayüz dili — Türkçe, ama koda gömülü değil
+
+**Arayüz metinleri Türkçe yazılır.** Varsayılan kaynak dil budur; `~/.claude/teknesyum.json`
+içindeki `dil` alanı başka bir şey diyorsa o geçerlidir. **Depoya giden README ve teknik
+doküman İngilizce kalır** — bunlar farklı iki şey: kullanıcının okuduğu yüz Türkçe,
+geliştiricinin okuduğu belge İngilizce.
+
+**Hiçbir arayüz metni koda gömülmez.** Her projede kökte `locale/` klasörü olur; bu web,
+React, Electron, WPF ve WinForms için ayrımsız geçerlidir (masaüstü ayrıntısı:
+`references/desktop.md` §9, şablonlar: `assets/locale/`).
+
+```
+locale/
+  tr.json      kaynak dil, tam ve eksiksiz
+  en.json      çeviri
+  README.md    çevirmene tek sayfa
+```
+
+Düz JSON, tek seviye, anahtar `alan.nesne.durum` kalıbında (`btn.addExtension`,
+`status.installed`). **Ölçüt şudur:** dili bilen ama projeyi bilmeyen biri tek dosyayı
+kopyalayıp çevirebiliyorsa doğru; koda girip string aramak gerekiyorsa yanlış. Yeni dil
+eklemek bir dosya kopyalamaktan ibaret olmalı — kod değişikliği gerekiyorsa tasarım hatalıdır.
+
+Anahtar bulunamazsa uygulama çökmez: kaynak dile düşer ve bunu bir kez loglar. Sayı, tarih
+ve dosya boyutu biçimlendirmesi de dile bağlıdır, elle `ToString()` ile kurulmaz.
+
 ## 4. İmza bloğu
 
 Varsayılan **açık**. Her projede tam olarak bir tane, **ayarlar veya hakkında bölümünün

@@ -76,6 +76,40 @@ görmek isteyene bakar, sürdürmeyi o başlatmaz.
 Devam etmeden önce tek satır bildir: kaç sözleşme açık, hangisinden devam ediyorsun.
 Kullanıcı o sırada başka bir iş verirse yeni iş önceliklidir; açık sözleşmeyi hatırlat, bırak.
 
+## 1.2 Proje düzeni — kök sade kalır
+
+**Kökte gereksiz dosya durmaz.** Kullanıcı klasörü açtığında ne yapacağını görmeli, neyi
+göz ardı edeceğini değil. Kural: **kökte klasörler, çalıştırılabilir dosya ve teknik
+zorunluluklar** durur — başka bir şey değil.
+
+```
+<proje>/
+  src/          kaynak kod
+  docs/         insanın okuduğu her belge — plan, yol haritası, karar günlüğü,
+                görev paketleri, ajanların birbirine bıraktığı notlar, rapor
+  locale/       arayüz metinleri (tr.json kaynak, en.json çeviri)
+  settings/     yapılandırma dosyaları, şema, varsayılan profiller
+  tools/        yanına gömülen dış ikililer (ffmpeg gibi)
+  tests/        testler
+  .claude/      makine alanı — röle durumu, sözleşmeler (gizli, karışıklık sayılmaz)
+  README.md     tek doküman istisnası, İngilizce
+  <ad>.exe / <ad>.sln / package.json    yığının zorunlu kıldığı kök dosyalar
+```
+
+Kökte `NOTLAR.md`, `plan-v2.md`, `todo.txt`, `ayarlar.json`, dağınık betikler **olmaz**;
+`docs/` veya `settings/` altına taşınır. Yeni bir dosyayı köke koymak üzereyken önce sor:
+*bunun bir klasörü var mı, yoksa açmam mı gerekiyor?* Yığının dayattığı kök dosyaları
+(`*.sln`, `package.json`, `*.csproj`, `.gitignore`) taşımaya çalışma — onlar zorunluluk.
+
+**Ajanlar arası iletişim ve belgeler `docs/` altındadır.** Sözleşmenin canlı durumu
+(`status`, izler, mühür) `.claude/relay/` içinde kalır çünkü orayı hook denetliyor ve
+yol değişirse koruma çalışmaz; ama insanın okuyacağı her şey — paket, plan, karar
+gerekçesi, dalga raporu — `docs/` altına yazılır ve orada kalır. Ölçüt: **kullanıcı
+projeyi altı ay sonra açtığında `docs/`'u okuyarak ne olduğunu anlayabilmeli.**
+
+Mevcut projede kök zaten dağınıksa kendiliğinden toplama — tek satırla bildir, kullanıcı
+isterse `scribe`'a temizlik sözleşmesi yaz.
+
 ## 2. Hazırlık — sormadan yap
 
 Yazma işine başlamadan önce, sırayla kontrol et:

@@ -323,19 +323,40 @@ Default palette — a neon triad on a dark ground:
 | Secondary | `#ff00ea` | Warnings, destructive actions, critical values |
 | Tertiary | `#b026ff` | Mode switches, scrollbars, secondary buttons |
 | Success | `#34d399` | "Completed", and nothing else |
-| Surface | `#08090a` | Panels |
+| Ground | `#000000` | The window itself — true black |
+| Text | `#ffffff` | Anything meant to be read |
+
+Contrast is not negotiable: mid greys (`#d1d5db`, `#9ca3af`, `#6b7280`) are not in this
+palette. Hierarchy comes from size, weight, tracking and neon color — never from dimming
+text toward the background. The floor is 7:1.
 
 Typography: **Segoe UI** for text, **Consolas** for every number, key, code fragment and
 duration. Scale 10 → 13 → 14 → 18 → 24, nothing in between.
 
 The rules forbid inventing colors and dimensions: radius is one of four values, spacing one
-of five, neon text is never left without a glow, numbers are never set in a sans font.
+of five, neon text is never left without a glow, numbers are never set in a sans font, and
+nothing may cover a neighbour's outline or clip its glow.
 
 Supported stacks: Tailwind v4, plain CSS, React, Electron, WPF (XAML), WinForms, ANSI
-console. Desktop UI carries extra hard rules — nothing may be clipped, no button strip may
-drop an element, no system title bar is left in default light chrome, native scrollbars are
-darkened. UI strings never live in code: every project keeps a `locale/` folder a
-translator can work in without opening a source file.
+console. **The theme covers the whole application** — a checklist walks the places a native
+grey box usually survives: scrollbars, message boxes, combo box popups, checkboxes,
+tooltips, context menus, tab headers, focus rings, disabled states. Desktop UI carries
+extra hard rules on top: nothing may be clipped, no button strip may drop an element, the
+system title bar is replaced by a themed strip.
+
+### Project layout
+
+The base also has an opinion about where things live, because a root directory full of
+loose notes is the first thing that makes a project unreadable:
+
+```
+src/  docs/  locale/  settings/  tools/  tests/  .claude/  README.md  <the executable>
+```
+
+`docs/` holds every document a human reads — plan, roadmap, decision log, task packets,
+notes agents leave each other. `.claude/relay/` holds live contract state, because a hook
+guards that path. UI strings never live in code: `locale/tr.json` is the source, adding a
+language is copying one file, and a translator never opens a source file.
 
 ### Customization
 

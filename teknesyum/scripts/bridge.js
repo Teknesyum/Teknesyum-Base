@@ -37,7 +37,7 @@ function karsilastir(a, b) {
 
 const hedef = enYeni();
 if (!hedef) {
-  process.stdout.write('teknesyum: eklenti bulunamadı — /kurulum çalıştır');
+  process.stdout.write('teknesyum: eklenti bulunamadı — /setup çalıştır');
   process.exit(0);
 }
 require(hedef);

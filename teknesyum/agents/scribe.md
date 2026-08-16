@@ -1,5 +1,5 @@
 ---
-name: kayitci
+name: scribe
 description: Relay mekanik işçisi. Karar gerektirmeyen toplu işler için kullan - CLAUDE.md yönlendirici dosyalarını doldurma, isim değiştirme, biçimlendirme, metin/çeviri düzenleme, envanter çıkarma, tekrarlı düzeltme. Kod mantığına dokunmaz.
 model: haiku
 effort: low

@@ -13,11 +13,11 @@ function run(j) {
 
   if (j.hook_event_name === 'SessionStart') return acilis(root);
 
-  // Röle kurulu projede izler proje içinde durur (/raporver, /devam oradan okur).
-  // Kurulu değilse — üst klasörde, rastgele bir dizinde açılmış oturumda — oturuma
-  // özel genel dizine yazarız. Kullanıcının klasör ayarlamasını beklemeyiz.
+  // Röle kurulu projede izler proje içinde durur (/report oradan okur). Kurulu değilse
+  // — üst klasörde, rastgele bir dizinde açılmış oturumda — oturuma özel genel dizine
+  // yazarız. Kullanıcının klasör ayarlamasını beklemeyiz.
   const live = root
-    ? path.join(root, 'canli')
+    ? izYolu(root)
     : path.join(genelKok(), safe(j.session_id || 'oturum'));
   try { fs.mkdirSync(live, { recursive: true }); } catch { return; }
   if (!root) supur();
@@ -66,7 +66,7 @@ function run(j) {
   s.agent_id = agentId;
   s.agent_type = j.agent_type || s.agent_type;
   s.last_seen = now;
-  s.kimlik = j.agent_id ? 'agent_id' : 'transcript';
+  s.identity = j.agent_id ? 'agent_id' : 'transcript';
 
   switch (j.hook_event_name) {
     case 'SubagentStart':
@@ -95,13 +95,13 @@ function run(j) {
 
     case 'SubagentStop': {
       const c = calisanKapat(live, j.agent_type);
-      const rol = String((c && c.tip) || j.agent_type || 'ajan').replace(/^teknesyum:/, '');
-      duyur('bitti · ' + rol + (c ? ' · ' + (c.belirsiz ? 'süre belirsiz' : gecen(c.bas)) : ''));
+      const rol = String((c && c.type) || j.agent_type || 'ajan').replace(/^teknesyum:/, '');
+      duyur('bitti · ' + rol + (c ? ' · ' + (c.ambiguous ? 'süre belirsiz' : gecen(c.start)) : ''));
       // Ölçüldü: bu olayın payload'ında `stop_reason` alanı YOK. Eksikliği ölüm sanma —
       // aksi halde normal biten her ajan statusline'da ⨯ görünür.
       s.stop_reason = j.stop_reason || 'end_turn';
       s.ended = now;
-      if (j.last_assistant_message) s.son_soz = String(j.last_assistant_message).slice(0, 300);
+      if (j.last_assistant_message) s.last_word = String(j.last_assistant_message).slice(0, 300);
       break;
     }
   }
@@ -109,16 +109,16 @@ function run(j) {
   yaz(file, s);
 }
 
-const CALISAN = '_calisanlar.json';
+const CALISAN = '_running.json';
 
 function calisanEkle(live, j) {
   const f = path.join(live, CALISAN);
   const l = read(f) || [];
   const t = j.tool_input || {};
   l.push({
-    tip: t.subagent_type || '?',
-    tanim: String(t.description || '').slice(0, 60),
-    bas: Date.now(),
+    type: t.subagent_type || '?',
+    desc: String(t.description || '').slice(0, 60),
+    start: Date.now(),
   });
   yaz(f, l);
   return l.length;
@@ -126,18 +126,18 @@ function calisanEkle(live, j) {
 
 // Stop olayını başlangıç kaydına bağlayan bir kimlik alanı yok; eşleştirme tipten
 // yapılıyor. Aynı tipten birden çok ajan açıksa hangisinin bittiği bilinemez —
-// o durumda süre uydurulmaz, `belirsiz` döner. Yanlış süre, süresizlikten kötüdür.
-function calisanKapat(live, tip) {
+// o durumda süre uydurulmaz, `ambiguous` döner. Yanlış süre, süresizlikten kötüdür.
+function calisanKapat(live, type) {
   const f = path.join(live, CALISAN);
   const l = read(f);
   if (!Array.isArray(l) || !l.length) return null;
-  const ayni = tip ? l.filter((x) => x.tip === tip).length : 0;
-  let i = tip ? l.findIndex((x) => x.tip === tip) : -1;
+  const ayni = type ? l.filter((x) => x.type === type).length : 0;
+  let i = type ? l.findIndex((x) => x.type === type) : -1;
   if (i < 0) i = 0;
   const [c] = l.splice(i, 1);
   yaz(f, l);
   if (!c) return null;
-  return ayni > 1 ? { ...c, belirsiz: true } : c;
+  return ayni > 1 ? { ...c, ambiguous: true } : c;
 }
 
 // Kullanıcı ajanların içini göremez. Base'in devreye girdiği her anı tek satır
@@ -147,15 +147,15 @@ function duyur(mesaj) {
   try { process.stdout.write(JSON.stringify({ systemMessage: 'Adamantium ▸ ' + mesaj })); } catch {}
 }
 
-function gecen(bas) {
-  const s = Math.max(0, Math.round((Date.now() - bas) / 1000));
+function gecen(start) {
+  const s = Math.max(0, Math.round((Date.now() - start) / 1000));
   return s < 60 ? s + ' sn' : Math.round(s / 60) + ' dk';
 }
 
 // stdout tek JSON taşır — açılışta söylenecek her şey tek satırda birleşir.
 function acilis(root) {
   const parca = [];
-  if (kurulumEksik()) parca.push('kurulum eksik · "kurulum" de, gerekeni sorarım');
+  if (kurulumEksik()) parca.push('kurulum eksik · /setup çalıştır, gerekeni sorarım');
   if (root) {
     const acik = say(path.join(root, 'contracts'));
     const biten = say(path.join(root, 'contracts', 'done'));
@@ -229,10 +229,19 @@ function iz(live, j) {
   yaz(f, d);
 }
 
+// 2.0.0'da `canli/` → `live/` oldu. Eski klasörü olan projede oraya yazmaya devam
+// ederiz; yoksa yeni adı kullanırız. Kimsenin izi kaybolmaz.
+function izYolu(root) {
+  const yeni = path.join(root, 'live');
+  const eski = path.join(root, 'canli');
+  if (!fs.existsSync(yeni) && fs.existsSync(eski)) return eski;
+  return yeni;
+}
+
 function genelKok() {
   const ev = process.env.CLAUDE_CONFIG_DIR ||
     path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
-  return path.join(ev, 'teknesyum', 'canli');
+  return izYolu(path.join(ev, 'teknesyum'));
 }
 
 // Röle kurulu olmayan oturumların izleri kalıcı değil; bir günü geçeni at.
@@ -240,7 +249,7 @@ function supur() {
   const kok = genelKok();
   let l = [];
   try { l = fs.readdirSync(kok); } catch { return; }
-  // İzler `son_soz` alanında ajan çıktısı taşıyor. Eskiden temizlik 12 klasör
+  // İzler `last_word` alanında ajan çıktısı taşıyor. Eskiden temizlik 12 klasör
   // birikmeden başlamıyordu; az oturum açan kullanıcıda hiç çalışmıyordu.
   const sinir = Date.now() - 24 * 60 * 60 * 1000;
   for (const d of l) {

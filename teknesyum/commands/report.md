@@ -5,35 +5,35 @@ allowed-tools: Read, Glob, Bash
 
 `.claude/relay/` oku. Yoksa tek satır: "röle kurulu değil — iş verdiğinde kendiliğinden kurulur." Dur.
 
-Sadece şunları oku: `canli/*.json`, `contracts/*.md` frontmatter'ları, `contracts/done/`
+Sadece şunları oku: `live/*.json`, `contracts/*.md` frontmatter'ları, `contracts/done/`
 dosya listesi, `LOG.md` son 10 satır. Sözleşme gövdelerini açma — `active` olanın
 Kayıt noktası hariç.
 
 Bağımlılıkları çöz: `done/`'a bakarak hangi `open` sözleşmelerin başlayabileceğini
 hesapla, HAZIR işaretle.
 
-Ajan barı: `steps / tur_tavani` oranı. Tavanlar — usta 60, usta-arayuz 60, denetci 30,
-kayitci 40. `stop_reason` `null` ise çalışıyor, `end_turn` ise bitti, başka değer ise ÖLÜ.
+Ajan barı: `steps / tur_tavani` oranı. Tavanlar — builder 60, ui-builder 60, auditor 30,
+scribe 40. `stop_reason` `null` ise çalışıyor, `end_turn` ise bitti, başka değer ise ÖLÜ.
 
 Şu formatta bas, başka hiçbir şey yazma:
 
 ```
 PROJE  ████████████░░░░░░░░  7/12
 
-  ✓ T1  Solver çekirdeği          usta/opus
-  ✓ T2  Vektör matrisi            usta/sonnet
-  ▸ T3  Makro motoru              usta/opus       tur 2
-  ● T4  Ayarlar paneli            usta-arayuz     HAZIR (T3 bitti)
-  ⏸ T5  Paketleme                 kayitci         bekliyor: T4
-  ⨯ T6  İkon üretimi              kayitci         engelli: kaynak görsel yok
+  ✓ T1  Solver çekirdeği          builder/opus
+  ✓ T2  Vektör matrisi            builder/sonnet
+  ▸ T3  Makro motoru              builder/opus       tur 2
+  ● T4  Ayarlar paneli            ui-builder     HAZIR (T3 bitti)
+  ⏸ T5  Paketleme                 scribe         bekliyor: T4
+  ⨯ T6  İkon üretimi              scribe         engelli: kaynak görsel yok
 
 AJANLAR
-  ⚙ T3  usta          ███████░░░░░  34/60   Edit macro.cjs            2 dk önce
-  ⨯ T4  usta-arayuz   ██░░░░░░░░░░   9/60   ÖLDÜ: max_tokens          8 dk önce
+  ⚙ T3  builder          ███████░░░░░  34/60   Edit macro.cjs            2 dk önce
+  ⨯ T4  ui-builder   ██░░░░░░░░░░   9/60   ÖLDÜ: max_tokens          8 dk önce
         son: "Tema tokenları yazıldı, panel entegrasyonu kaldı"
         dokundu: src/theme/tokens.ts, src/App.tsx
 
-SON     T3 kaldi · tur 1, kabul 2
+SON     T3 failed · round 1, kabul 2
 KALAN   5 sözleşme · 2 paralel yürüyebilir
 RİSK    T6 engelli — kaynak görsel yok, senden gelmesi lazım
 ```
@@ -50,8 +50,8 @@ sırayı değiştirmek) en alta tek satır ekle. Yoksa ekleme.
 
 Argüman: $ARGUMENTS
 
-Sözleşme simgeleri: ✓ done · ▸ active · ● hazır · ⏸ bekliyor · ⨯ blocked
+Sözleşme simgeleri: ✓ done · ▸ active · ● hazır · ⏸ waiting · ⨯ blocked
 Ajan simgeleri: ⚙ çalışıyor · ✓ bitti · ⨯ ölü
 
-Ölü ajan varsa listenin altına tek satır ekle: `→ /devam ile kurtarılabilir`.
+Ölü ajan varsa listenin altına tek satır ekle: `→ /report ile kurtarılabilir`.
 Ajan yoksa AJANLAR bölümünü hiç basma.

@@ -37,15 +37,21 @@ function izDizini(dir, sessionId) {
   if (!sessionId) return null;
   const ev = process.env.CLAUDE_CONFIG_DIR ||
     path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
-  const g = path.join(ev, 'teknesyum', 'canli', String(sessionId).replace(/[^a-zA-Z0-9._-]/g, '_'));
-  return fs.existsSync(g) ? g : null;
+  const ad = String(sessionId).replace(/[^a-zA-Z0-9._-]/g, '_');
+  for (const k of ['live', 'canli']) {
+    const g = path.join(ev, 'teknesyum', k, ad);
+    if (fs.existsSync(g)) return g;
+  }
+  return null;
 }
 
 function releKoku(start) {
   let d = path.resolve(start || '.');
   for (let i = 0; i < 6; i++) {
-    const c = path.join(d, '.claude', 'relay', 'canli');
+    const c = path.join(d, '.claude', 'relay', 'live');
     if (fs.existsSync(c)) return c;
+    const eski = path.join(d, '.claude', 'relay', 'canli');
+    if (fs.existsSync(eski)) return eski;
     const up = path.dirname(d);
     if (up === d) break;
     d = up;
@@ -58,11 +64,11 @@ function releKoku(start) {
 function calisanlar(live) {
   if (!live) return [];
   try {
-    const l = JSON.parse(fs.readFileSync(path.join(live, '_calisanlar.json'), 'utf8'));
+    const l = JSON.parse(fs.readFileSync(path.join(live, '_running.json'), 'utf8'));
     if (!Array.isArray(l)) return [];
     // Oturum ajan çalışırken düşerse SubagentStop hiç gelmez ve kayıt sonsuza kadar
     // "çalışıyor" görünür. 2 saati geçeni düşür — hiçbir ajan o kadar sürmüyor.
-    return l.filter((c) => Date.now() - (c.bas || 0) < 2 * 60 * 60 * 1000);
+    return l.filter((c) => Date.now() - (c.start || 0) < 2 * 60 * 60 * 1000);
   } catch { return []; }
 }
 
@@ -72,10 +78,10 @@ function sure(ms) {
 }
 
 function calisanSatiri(c) {
-  const ad = (c.tip || '?').replace(/^teknesyum:/, '');
+  const ad = (c.type || '?').replace(/^teknesyum:/, '');
   return C.blue + '⚙ ' + C.r + C.dim + ad + C.r + ' ' + C.hint +
-         (c.belirsiz ? '—' : sure(c.bas)) +
-         (c.tanim ? ' · ' + kisalt(c.tanim, 34) : '') + C.r;
+         (c.ambiguous ? '—' : sure(c.start)) +
+         (c.desc ? ' · ' + kisalt(c.desc, 34) : '') + C.r;
 }
 
 function ajanlar(live) {
@@ -87,7 +93,7 @@ function ajanlar(live) {
       try { out.push(JSON.parse(fs.readFileSync(path.join(live, f), 'utf8'))); } catch {}
     }
   } catch { return []; }
-  // Ölü ajan `/devam` çağırır; dünkü ölü ajan için çağırmaz. Bir günü geçen izi gösterme,
+  // Ölü ajan `/report` çağırır; dünkü ölü ajan için çağırmaz. Bir günü geçen izi gösterme,
   // yoksa kapanmış bir işin kalıntısı statusline'da kalıcı olur.
   out = out.filter((a) => !olu(a) || taze(a.last_seen));
   const rank = (a) => (a.stop_reason === null ? 0 : olu(a) ? 1 : 2);
@@ -117,17 +123,17 @@ function ajanSatiri(a) {
   const ad = (a.contract ? a.contract + ' ' : '') + (a.agent_type || '?').replace(/^teknesyum:/, '');
   const ikon = olu(a) ? C.pink + '⨯' : C.ok + '✓';
   let s = ikon + ' ' + C.r + C.dim + ad + C.r;
-  if (olu(a)) s += ' ' + C.pink + (OLUM_SEBEBI[a.stop_reason] || 'durdu') + ' → /devam' + C.r;
-  else if (a.son_soz) s += ' ' + C.hint + kisalt(a.son_soz, 40) + C.r;
+  if (olu(a)) s += ' ' + C.pink + (OLUM_SEBEBI[a.stop_reason] || 'durdu') + C.r;
+  else if (a.last_word) s += ' ' + C.hint + kisalt(a.last_word, 40) + C.r;
   return s;
 }
 
 function kisalt(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
 function relay(dir) {
-  const canli = releKoku(dir);
-  const base = canli
-    ? path.join(path.dirname(canli), 'contracts')
+  const live = releKoku(dir);
+  const base = live
+    ? path.join(path.dirname(live), 'contracts')
     : path.join(dir, '.claude', 'relay', 'contracts');
   if (!fs.existsSync(base)) return null;
   const md = (d) => {

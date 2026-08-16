@@ -13,7 +13,7 @@ process.stdin.on('end', () => {
 // Yol göreli de gelebilir (`.claude/relay/contracts/done/T1.md`). Başında `/` arayan
 // eski desen bu biçimi kaçırıyordu — sınır `(^|/)` ile yazılır.
 const DONE = /(^|\/)\.claude\/relay\/contracts\/done\//i;
-const MUHUR = /denetim:\s*gecti/i;
+const MUHUR = /audit:\s*(passed|gecti)/i;
 const YAZMA_FIILI = /(^|[\s;|&])(mv|move-item|cp|copy-item|rm|remove-item|del|erase|touch|tee|sed\s+-i|set-content|add-content|out-file|new-item)\b|>>?/i;
 
 function karar(j) {
@@ -45,7 +45,7 @@ function karar(j) {
   }
   return engelle(
     'contracts/done/ altına kabuktan yazma engellendi.',
-    'Sözleşme oraya ancak denetçi GEÇTİ verdikten ve T0 sözleşmeye `denetim: gecti` mührünü',
+    'Sözleşme oraya ancak denetçi GEÇTİ verdikten ve T0 sözleşmeye `audit: passed` mührünü',
     'işledikten sonra taşınır. Denetim atlanamaz.'
   );
 }

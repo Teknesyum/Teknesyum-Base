@@ -1,6 +1,6 @@
 /**
  * Teknesyum imza bloğu. Ayarlar / Hakkında bölümünün en altına koyulur.
- * Metin ve linkler ~/.claude/teknesyum-ui.json ile değiştirilebilir (/uiayar).
+ * Metin ve linkler ~/.claude/teknesyum-ui.json ile değiştirilebilir (/uisetup).
  */
 
 const GITHUB = 'https://github.com/Teknesyum';

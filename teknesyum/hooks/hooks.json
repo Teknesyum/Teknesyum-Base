@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/koru-sozlesme.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/contract-guard.js\""
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-izle.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-watch.js\""
           }
         ]
       }
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-izle.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-watch.js\""
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-izle.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-watch.js\""
           }
         ]
       }
@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-izle.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-watch.js\""
           }
         ]
       }
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-izle.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-watch.js\""
           }
         ]
       }

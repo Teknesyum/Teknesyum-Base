@@ -1,10 +1,10 @@
 {
   "name": "claude-code-adamantium-base",
-  "version": "1.14.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Test harness for the Adamantium Base plugin — hooks, statusline, packaging",
   "scripts": {
-    "test": "node test/calistir.js"
+    "test": "node test/run.js"
   },
   "license": "MIT"
 }

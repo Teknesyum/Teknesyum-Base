@@ -55,7 +55,7 @@ curl -fsSL https://raw.githubusercontent.com/Teknesyum/claude-code-adamantium-ba
 /plugin install teknesyum@teknesyum
 ```
 ```
-/teknesyum:kurulum
+/teknesyum:setup
 ```
 
 **Restart Claude Code after installing.**
@@ -69,9 +69,10 @@ session start and offers to run it.
 `typescript-language-server` (TS type intelligence), `graphify` (large-codebase indexing).
 Anything missing is reported during install; none of it is mandatory.
 
-> The plugin's user-facing text, agent prompts and commands are written in **Turkish**.
-> The tooling itself is language-agnostic — it writes code and UI in whatever language
-> your project uses.
+> Command names, agent roles and contract fields are **English**. What the base *writes
+> back to you* — reports, explanations, agent output — follows the language you pick
+> during setup; it is stored in `~/.claude/teknesyum.json` and defaults to Turkish.
+> Agent prompts themselves are Turkish. The tooling is language-agnostic about your code.
 
 ---
 
@@ -130,7 +131,7 @@ For large jobs, every task is written to a file:
 .claude/relay/
 ├── PLAN.md              task graph, dependencies
 ├── LOG.md               one-line event log
-├── canli/               agent traces — written by a hook, not by the model
+├── live/               agent traces — written by a hook, not by the model
 └── contracts/
     ├── T3.md            open contracts
     └── done/            completed ones (write-protected)
@@ -147,10 +148,10 @@ That transition belongs to the manager alone, after the auditor returns a pass, 
 requires a seal written into the contract's frontmatter:
 
 ```yaml
-denetim: gecti
-denetci_id: <the auditing agent>
+audit: passed
+auditor_id: <the auditing agent>
 diff: <the range the auditor was shown>
-dogrulama: npm test → exit 0
+verification: npm test → exit 0
 ```
 
 A hook enforces the gate rather than trusting it: an unsealed file cannot land in `done/`
@@ -161,22 +162,22 @@ badly could declare itself done and drop out of the audit queue entirely.
 
 ### Surviving interruptions
 
-When an agent starts and when it ends is written to `canli/` **by a hook** — it does not
+When an agent starts and when it ends is written to `live/` **by a hook** — it does not
 depend on the model cooperating:
 
 ```json
 {
-  "contract": "T3", "agent_type": "usta",
+  "contract": "T3", "agent_type": "builder",
   "stop_reason": "max_tokens",
-  "son_soz": "Theme tokens written, panel integration still pending."
+  "last_word": "Theme tokens written, panel integration still pending."
 }
 ```
 
 Any `stop_reason` other than `end_turn` means the agent died. It is first revived with
 its own context; if that fails, a handover brief for a fresh agent is built from this
 file. This happens on its own: when a session opens with contracts still in flight, the
-base reads the traces and picks the work back up without being asked. `/devam` is only
-there for when you want to trigger it by hand.
+base reads the traces and picks the work back up without being asked. There is no resume
+command to remember.
 
 Two limits worth knowing, both measured rather than assumed. A subagent's own tool calls
 usually do not reach the hook layer — they did in one worktree-isolated run and in none of
@@ -184,7 +185,7 @@ the others — so there is no dependable per-agent progress counter. The statusl
 which agents are running and for how long, not how far along they are, and when two agents
 of the same role are open it says so instead of guessing which one just finished. And when
 the session was opened somewhere without a relay directory, traces go to a per-session
-folder under `~/.claude/teknesyum/canli/` instead, so tracking works with no setup at all.
+folder under `~/.claude/teknesyum/live/` instead, so tracking works with no setup at all.
 
 ### Fix loop
 
@@ -200,10 +201,10 @@ decision comes to you. No job moves forward while a critical finding is open.
 
 | Agent | Job | Default model |
 |---|---|---|
-| `usta` | Writes code — modules, algorithms, endpoints, refactors, tests | sonnet |
-| `usta-arayuz` | Writes UI; theme standard preloaded into its context | sonnet |
-| `denetci` | Verifies acceptance criteria — **cannot write or run anything** | sonnet |
-| `kayitci` | Mechanical bulk work — naming, formatting, documentation | haiku |
+| `builder` | Writes code — modules, algorithms, endpoints, refactors, tests | sonnet |
+| `ui-builder` | Writes UI; theme standard preloaded into its context | sonnet |
+| `auditor` | Verifies acceptance criteria — **cannot write or run anything** | sonnet |
+| `scribe` | Mechanical bulk work — naming, formatting, documentation | haiku |
 
 Role determines the kind of work, model determines the weight; they are separate axes.
 The model is chosen at call time.
@@ -219,17 +220,22 @@ guarantee cannot quietly erode.
 
 | Command | What it does |
 |---|---|
-| `/raporver` | Contract progress, running agents, what is left |
-| `/devam` | Resumes an interrupted session by hand — normally automatic |
-| `/huyekle` | Records a permanent rule in the right layer |
-| `/uiayar` | Configures or disables the UI standard |
-| `/kurulum` | Inspects the machine, wires up what it can, asks about the rest |
+| `/report` | Contract progress, running agents, what is left |
+| `/rule` | Records a permanent rule in the right layer |
+| `/setup` | Inspects the machine, wires up what it can, asks about the rest |
+| `/uisetup` | Configures or disables the UI standard |
+| `/help` | What the base does and when, on one screen |
+
+There is no command for resuming interrupted work and none for setting a relay up —
+both happen on their own. Five commands is the whole surface, and you can finish a
+project without typing any of them.
 
 ### Statusline
 
 A multi-line statusline showing context usage, **your plan limits** (5-hour and weekly),
 contract progress, and the agents running right now with their elapsed time. Dead agents
-are labelled in plain language with the command that revives them. It is rendered for you
+are labelled in plain language — there is no command to type; they get picked back up
+on the next session. It is rendered for you
 and never for the model, so its **token cost is zero**.
 
 `settings.json` points at a small bridge in your config directory rather than at the
@@ -239,8 +245,8 @@ the newest installed version at render time and stays correct across updates.
 
 ### Hooks
 
-- `koru-sozlesme.js` — enforces the completion gate on `Write`, `Edit` and `Bash`
-- `relay-izle.js` — writes agent traces to disk (`SubagentStart` / `PostToolUse` / `SubagentStop`)
+- `contract-guard.js` — enforces the completion gate on `Write`, `Edit` and `Bash`
+- `relay-watch.js` — writes agent traces to disk (`SubagentStart` / `PostToolUse` / `SubagentStop`)
   and prints what the base is doing (`SessionStart` / dispatch / agent finish)
 
 ### Visible steering
@@ -250,8 +256,8 @@ emitted by the hook rather than promised by the model:
 
 ```
 Adamantium ▸ röle kurulu · sözleşme 4/7 bitti · 3 açık
-Adamantium ▸ görev veriliyor · usta · sonnet · tab component
-Adamantium ▸ bitti · usta · 4 dk
+Adamantium ▸ görev veriliyor · builder · sonnet · tab component
+Adamantium ▸ bitti · builder · 4 dk
 ```
 
 Set `TEKNESYUM_SESSIZ=1` to silence them.
@@ -259,7 +265,7 @@ Set `TEKNESYUM_SESSIZ=1` to silence them.
 ### Tests
 
 ```bash
-node test/calistir.js
+node test/run.js
 ```
 
 36 checks driving the real hooks and the real statusline with real payloads. They cover
@@ -324,13 +330,13 @@ translator can work in without opening a source file.
 ### Customization
 
 ```
-/uiayar                      show current settings
-/uiayar kapat                disable the UI standard entirely
-/uiayar palet #ff6b00        change the primary color
-/uiayar font Inter           change the default font
-/uiayar imza kapat           remove the signature block
-/uiayar not <text>           write your own rule — yours wins on conflict
-/uiayar sifirla              restore defaults
+/uisetup                      show current settings
+/uisetup kapat                disable the UI standard entirely
+/uisetup palet #ff6b00        change the primary color
+/uisetup font Inter           change the default font
+/uisetup imza kapat           remove the signature block
+/uisetup not <text>           write your own rule — yours wins on conflict
+/uisetup sifirla              restore defaults
 ```
 
 Settings live in `~/.claude/teknesyum-ui.json`; only fields you change are written, the
@@ -345,8 +351,8 @@ is followed.
 A small, right-aligned signature is added to the bottom of the settings/about section of
 generated UIs: a GitHub link and a support link. The support button is **outlined** —
 transparent fill, colored border, colored label, vector icon. Remove it with
-`/uiayar imza kapat`, or point it at your own account with
-`/uiayar imza github <url>`.
+`/uisetup imza kapat`, or point it at your own account with
+`/uisetup imza github <url>`.
 
 ---
 
@@ -371,19 +377,19 @@ only the conclusion comes back to the main session.
 
 ## Settings
 
-Behavior knobs live in `skills/relay/AYAR.md`:
+Behavior knobs live in `skills/relay/SETTINGS.md`:
 
 | Knob | Default | What it controls |
 |---|---|---|
-| `soru_esigi` | `kritik` | When an agent stops to ask you something |
-| `onay_kapisi` | `yok` | Whether the plan is submitted for approval |
-| `denetim` | `her-sozlesme` | When the auditor runs |
-| `duzeltme_tavani` | `5` | After how many rounds the decision comes to you |
-| `model_tirmanisi` | `acik` | Whether round 3 escalates to a stronger model |
-| `paralel_genislik` | `2` | Cap on concurrent agents |
-| `worktree_izolasyonu` | `kapali` | Whether agents work in an isolated repo copy |
+| `ask_threshold` | `kritik` | When an agent stops to ask you something |
+| `approval_gate` | `yok` | Whether the plan is submitted for approval |
+| `audit` | `her-sozlesme` | When the auditor runs |
+| `fix_ceiling` | `5` | After how many rounds the decision comes to you |
+| `model_escalation` | `acik` | Whether round 3 escalates to a stronger model |
+| `parallel_width` | `2` | Cap on concurrent agents |
+| `worktree_isolation` | `kapali` | Whether agents work in an isolated repo copy |
 
-Per-project override: `<project>/.claude/relay/AYAR.md`.
+Per-project override: `<project>/.claude/relay/SETTINGS.md`.
 
 ---
 

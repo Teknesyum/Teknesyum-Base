@@ -46,7 +46,7 @@ tek satırlık kullanım örnekleri koy, dur.
 - **`kapat`** → `"kapali": true`. Skill artık hiçbir renk/ölçü dayatmaz; projenin kendi
   tarzıyla devam edilir.
 - **`ac`** → `"kapali": false`.
-- **`durum`** → mevcut ayarı ve hangi dosyadan geldiğini göster.
+- **`status`** → mevcut ayarı ve hangi dosyadan geldiğini göster.
 - **`palet <renk...>`** → verilen rengi/renkleri güncelle. Hex doğrula. Sadece söylenen
   alanı değiştir, diğerlerine dokunma.
 - **`font <isim>`** → `tipografi.sans` güncelle. "mono" geçiyorsa `tipografi.mono`.

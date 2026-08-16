@@ -1,5 +1,5 @@
 ---
-name: usta-arayuz
+name: ui-builder
 description: Relay arayüz işçisi. Kullanıcı arayüzü üreten sözleşmeler için kullan - bileşen, panel, pencere, sayfa, CSS, XAML, tema. Teknesyum neon tema standardı context'ine önyüklüdür, ayrıca yüklemesi gerekmez. Sözleşme dosyasının yolunu ver.
 model: sonnet
 effort: medium
@@ -28,6 +28,6 @@ Arayüz kuralları — istisnasız:
 - Kod yorumu yazma.
 
 Devam ettirildiysen: bağlamın duruyor, sözleşmeyi baştan okuma. Açık maddeleri kapat,
-`tur:` alanını artır.
+`round:` alanını artır.
 
 Rapor kısa: değişen dosyalar + tek paragraf.

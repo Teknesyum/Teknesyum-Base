@@ -6,5 +6,5 @@
   "sponsorAktif": true,
   "imzaMetni": "by Teknesyum",
   "destekMetni": "Buy me a coffee",
-  "_not": "Bu dosya varsayılandır. Kullanıcı ~/.claude/teknesyum-ui.json ile ezer; /uiayar komutu onu düzenler."
+  "_not": "Bu dosya varsayılandır. Kullanıcı ~/.claude/teknesyum-ui.json ile ezer; /uisetup komutu onu düzenler."
 }

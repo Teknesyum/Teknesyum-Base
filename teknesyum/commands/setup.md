@@ -17,6 +17,7 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 | Statusline köprüsü | `~/.claude/teknesyum-statusline.js` var mı | kur |
 | settings.json bağı | `statusLine.command` köprüyü gösteriyor mu | bağla |
 | Bayat kopya | `~/.claude/statusline.js` var mı | sil |
+| Çıktı dili | `~/.claude/teknesyum.json` → `dil` | sor, yaz |
 | Huy dosyası | `~/.claude/HUYLAR.md` + `CLAUDE.md`'de `@HUYLAR.md` | oluştur |
 | Sıkıştırma penceresi | `settings.json` → `autoCompactWindow` | yoksa `250000` |
 | Dil sunucusu | `typescript-language-server --version` | kurulum komutunu bildir |
@@ -24,7 +25,7 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 
 ## Sormadan yapılacaklar
 
-1. **Köprü.** Plugin'deki `scripts/kopru.js` dosyasını `~/.claude/teknesyum-statusline.js`
+1. **Köprü.** Plugin'deki `scripts/bridge.js` dosyasını `~/.claude/teknesyum-statusline.js`
    yoluna kopyala (varsa üzerine yaz — köprü sürümden bağımsızdır, tazelenmesi zararsız).
    `settings.json`'a bağla:
 
@@ -43,7 +44,7 @@ gerektireni sor — hepsini tek mesajda, numaralı.
    # Huylar
 
    Tekrar eden takıntılar ve daha önce canımı yakmış şeyler. **30 satır tavanı** —
-   dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. `/huyekle` ile eklenir.
+   dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. `/rule` ile eklenir.
 
    - Kodda yorum istemiyorum; açıkça istemediysem yazma.
    - Rutin onay sorma. Geri dönüşü zor olmayan her şeyi yap, sonucunu bildir.
@@ -59,6 +60,10 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 
 Karar kullanıcınındır, varsayma. Hepsini tek mesajda, numaralı sor:
 
+- **Çıktı dili.** `~/.claude/teknesyum.json` içinde `dil` yoksa sor: "Raporlar, açıklamalar
+  ve ajan çıktıları hangi dilde olsun?" Cevabı ISO kodu olarak yaz — `{"dil": "tr"}`.
+  Komut adlarının İngilizce olması dili belirlemez; `/report` diyen kullanıcı Türkçe
+  rapor bekliyor olabilir. Dosya varsa bir daha sorma.
 - `statusLine` **başka bir şeye** işaret ediyorsa: üzerine yazayım mı?
 - `typescript-language-server` yoksa: `npm i -g typescript-language-server typescript@5`
   çalıştırayım mı? (Global paket kurulumu — kendi başına yapma.)

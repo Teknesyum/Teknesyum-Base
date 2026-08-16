@@ -1,6 +1,6 @@
 ---
 name: teknesyum-ui
-description: Neon arayüz standardı. Herhangi bir kullanıcı arayüzü, panel, pencere, sayfa, bileşen veya CSS/XAML yazarken ya da mevcut bir arayüzü değiştirirken kullan. Renk paleti, tipografi ölçeği, başlık hiyerarşisi, bileşen kalıpları ve imza/sponsor bloğunu içerir. Web, React, Electron ve WPF/WinForms projelerinin hepsini kapsar. Ayarları /uiayar komutuyla değiştirilir veya tamamen kapatılır.
+description: Neon arayüz standardı. Herhangi bir kullanıcı arayüzü, panel, pencere, sayfa, bileşen veya CSS/XAML yazarken ya da mevcut bir arayüzü değiştirirken kullan. Renk paleti, tipografi ölçeği, başlık hiyerarşisi, bileşen kalıpları ve imza/sponsor bloğunu içerir. Web, React, Electron ve WPF/WinForms projelerinin hepsini kapsar. Ayarları /uisetup komutuyla değiştirilir veya tamamen kapatılır.
 ---
 
 # Neon UI standardı
@@ -103,7 +103,7 @@ Geçiş: `200ms` mikro, `300ms` renk/glow, `500ms` panel aç-kapa. Hover `scale(
 
 ## 7. Masaüstü ve dil yamaları
 
-WinForms/WPF işinde **`references/masaustu.md`** zorunlu: taşma/kırpılma kuralları,
+WinForms/WPF işinde **`references/desktop.md`** zorunlu: taşma/kırpılma kuralları,
 pencere çerçevesi ve başlık çubuğu, `locale/` klasörü. Web/React işinde açma.
 
 ## 8. Varsayılanlar — tartışılmadan uygulanır

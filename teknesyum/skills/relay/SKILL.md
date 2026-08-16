@@ -15,7 +15,9 @@ Tek istisna: tek satırlık, gözle doğrulanabilir düzeltme.
 **Kullanıcıya iş büyüklüğünü, hangi ajanı, hangi modeli, indeks gerekip gerekmediğini
 SORMA.** Bunlar senin kararın. O sadece ne istediğini söyler.
 
-Davranış düğmeleri `AYAR.md`'de. Projede `.claude/relay/AYAR.md` varsa o öncelikli.
+Davranış düğmeleri `SETTINGS.md`'de. Projede `.claude/relay/SETTINGS.md` varsa o öncelikli.
+
+**Çıktı dili:** `~/.claude/teknesyum.json` içindeki `dil` alanı ne diyorsa o dilde yaz; dosya yoksa Türkçe. Komut ve alan adlarının İngilizce olması çıktı dilini değiştirmez.
 
 ## 1. Sınıflandır — sessizce
 
@@ -31,7 +33,7 @@ Sınıflandırmayı **sessizce yap, kararı tek satır bildir** — kullanıcı 
 davrandığını görsün, gerekçeni değil:
 
 ```
-Adamantium ▸ ölçü: 6 dosya / tek yetenek → oturum içi röle · 3 sözleşme · usta/sonnet
+Adamantium ▸ ölçü: 6 dosya / tek yetenek → oturum içi röle · 3 sözleşme · builder/sonnet
 ```
 
 Soru ve tek satırlık düzeltmede bu satırı yazma; kurulan hiçbir şey yok.
@@ -43,9 +45,10 @@ yarıda geçiş planı baştan yazdırır.
 ## 1.1 Oturum açılışı — sorma, sürdür
 
 Oturum açıldığında `.claude/relay/contracts/` altında `open` veya `active` sözleşme,
-ya da `canli/`'de son görülmesi 30 dakikayı aşmış ajan varsa: kullanıcı bir şey demeden
-**durumu okuyup kaldığın yerden devam et.** "Devam edeyim mi" diye sorma, `/devam`
-beklemem — o komut yalnızca elle çağırmak isteyene kalır.
+ya da `live/`'de son görülmesi 30 dakikayı aşmış ajan varsa: kullanıcı bir şey demeden
+**durumu okuyup kaldığın yerden devam et.** "Devam edeyim mi" diye sorma, komut bekleme —
+kullanıcı "devam" dese de demese de sürdürmek senin işin. `/report` yalnızca durumu
+görmek isteyene bakar, sürdürmeyi o başlatmaz.
 
 Devam etmeden önce tek satır bildir: kaç sözleşme açık, hangisinden devam ediyorsun.
 Kullanıcı o sırada başka bir iş verirse yeni iş önceliklidir; açık sözleşmeyi hatırlat, bırak.
@@ -61,16 +64,16 @@ Yazma işine başlamadan önce, sırayla kontrol et:
    iş birden çok modüle dokunacak) → `graphify-out/` yoksa **önce `/graphify .` çalıştır**,
    sonra dosya okumak yerine grafiği sorgula. Küçük projede kurma, `Explore`+`Grep` yeter.
 3. **Yönlendirici `CLAUDE.md` var mı?** Yoksa ve proje ≥5 kaynak dosyaysa iş bitiminde
-   `kayitci`'ye yazdır.
-4. **Arayüz işi var mı?** `teknesyum-ui` devreye girer; sözleşmenin rolü `usta-arayuz`.
+   `scribe`'ye yazdır.
+4. **Arayüz işi var mı?** `teknesyum-ui` devreye girer; sözleşmenin rolü `ui-builder`.
 
 ## 3. Tam röle
 
-Mekanizmanın tamamı: **`references/protokol.md`** — dizin yapısı, sözleşme formatı,
+Mekanizmanın tamamı: **`references/protocol.md`** — dizin yapısı, sözleşme formatı,
 düzeltme döngüsü, düşen ajan kurtarma, LOG. Röle kuracaksan onu oku.
 
 Özet akış: `PLAN.md` yaz → sözleşmeleri üret → bağımlılığı bitenleri dağıt →
-her sözleşmeyi `denetci`'ye doğrulat → kaldıysa düzeltme döngüsü → `LOG.md`'ye satır.
+her sözleşmeyi `auditor`'ye doğrulat → kaldıysa düzeltme döngüsü → `LOG.md`'ye satır.
 
 **Planlamayı asla delege etme.** Soğuk başlayan ajan daha kötü plan yapar.
 
@@ -93,9 +96,9 @@ Kullanıcıya verdiğin ise tek satırdır:
 
 Kullanıcı yeni bir oturum açıp bunu yapıştırır, başka bir şey anlatmaz. Bitip döndüğünde
 **ayrı bir komut bekleme**: paketleri ve `git status`'u sen okur, alan ihlali arar,
-`denetci`'ye doğrulatır, imzaları sonraki paketlere taşır, sonraki satırları basarsın.
+`auditor`'ye doğrulatır, imzaları sonraki paketlere taşır, sonraki satırları basarsın.
 
-Kural seti ve paket formatı: **`references/cok-oturum.md`**. Bu yola gireceksen onu oku.
+Kural seti ve paket formatı: **`references/multi-session.md`**. Bu yola gireceksen onu oku.
 
 ## 4. Kim yapacak: rol × model
 
@@ -103,17 +106,17 @@ Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `mod
 
 | Rol | Ne yapar | Varsayılan |
 |---|---|---|
-| `usta` | kod yazar — modül, algoritma, endpoint, refactor, test | sonnet |
-| `usta-arayuz` | arayüz yazar; `teknesyum-ui` context'ine önyüklü | sonnet |
-| `denetci` | kabul kriterlerini doğrular, **kod yazamaz** | sonnet |
-| `kayitci` | mekanik toplu iş — CLAUDE.md, isim, biçim | haiku |
+| `builder` | kod yazar — modül, algoritma, endpoint, refactor, test | sonnet |
+| `ui-builder` | arayüz yazar; `teknesyum-ui` context'ine önyüklü | sonnet |
+| `auditor` | kabul kriterlerini doğrular, **kod yazamaz** | sonnet |
+| `scribe` | mekanik toplu iş — CLAUDE.md, isim, biçim | haiku |
 | `Explore` | geniş arama (yerleşik, devam ettirilemez) | — |
 
 **opus**: mimari kararı taşıyan, algoritmik, belirsiz, zor hata ayıklama.
 **sonnet**: bilinen kalıpla iş — varsayılan.
 **haiku**: kalıbı birebir belli, kararsız iş.
 
-Şüphedeysen bir alt basamağı seç ve kabul kriterini sıkılaştır. `denetci`'yi güvenlik,
+Şüphedeysen bir alt basamağı seç ve kabul kriterini sıkılaştır. `auditor`'yi güvenlik,
 veri kaybı veya mimari sınır içeren işlerde opus'a çıkar.
 
 ## 5. Delege etme eşiği
@@ -144,7 +147,7 @@ Sözleşme boyutu: **3-8 dosya, tek tutarlı yetenek.** Gerçek projede 5-9 söz
 ## 7. Kullanıcıya ne söylersin
 
 Kullanıcı ajanların içini göremez; **rapor vermezsen süreci yönetemez.** Onay bekleme,
-ama körlemede bırakma. Zorunlu anlar (tam biçimi `references/protokol.md` §8):
+ama körlemede bırakma. Zorunlu anlar (tam biçimi `references/protocol.md` §8):
 
 | Ne zaman | Ne yazarsın |
 |---|---|
@@ -157,5 +160,5 @@ ama körlemede bırakma. Zorunlu anlar (tam biçimi `references/protokol.md` §8
 Tek sözleşmelik işte tablo kurma; aynı bilgiyi iki satırda ver.
 
 Bunlar **durum bildirimidir, düzyazı özet değildir** — tablo, madde, tek satırlık olay.
-Bitmiş işi tekrar anlatma. Sıklığı `bilgilendirme` düğmesi belirler; sapma bildirimi
+Bitmiş işi tekrar anlatma. Sıklığı `briefing` düğmesi belirler; sapma bildirimi
 hiçbir ayarda kapanmaz.

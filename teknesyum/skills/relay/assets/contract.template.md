@@ -1,18 +1,18 @@
 ---
 id: T<n>
 title: <kısa başlık>
-rol: usta | usta-arayuz | kayitci
+role: builder | ui-builder | scribe
 model: haiku | sonnet | opus
 depends: []
 owns: []
-yan_etki: []
+side_effects: []
 status: open
-tur: 0
+round: 0
 agent_id: —
-denetim: —
-denetci_id: —
+audit: —
+auditor_id: —
 diff: —
-dogrulama: —
+verification: —
 ---
 ## Amaç
 <tek paragraf: ne yapılacak, neden gerekli>
@@ -39,7 +39,7 @@ henüz başlanmadı
 <!--
 status: open → active → submitted → done
 `submitted`'a kadar ajan yürütür. Sonrası T0'ındır: denetçi GEÇTİ derse T0 mührü
-(`denetim: gecti`, `denetci_id`, `diff`, `dogrulama`) işler ve dosyayı done/'a taşır.
+(`audit: passed`, `auditor_id`, `diff`, `verification`) işler ve dosyayı done/'a taşır.
 Mühürsüz dosyanın done/ altına girmesini hook engeller. Ajan done/'a taşımaz.
 -->
 

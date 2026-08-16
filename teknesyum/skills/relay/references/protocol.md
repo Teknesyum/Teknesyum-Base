@@ -7,9 +7,9 @@
 ```
 .claude/relay/
 ├── PLAN.md            Görev grafiği + bağımlılıklar. Nadiren değişir.
-├── AYAR.md            (opsiyonel) proje bazlı düğme ezmesi
+├── SETTINGS.md            (opsiyonel) proje bazlı düğme ezmesi
 ├── LOG.md             Append-only, tek satırlık olaylar.
-├── canli/             Ajan izleri — HOOK yazar, model değil. Elle dokunma.
+├── live/             Ajan izleri — HOOK yazar, model değil. Elle dokunma.
 │   └── <agent_id>.json
 └── contracts/
     ├── T2.md          AÇIK sözleşmeler
@@ -24,7 +24,7 @@
 ```
 open ──► active ──► submitted ──► done          (dosya done/ altına taşınır)
            ▲            │
-           └────────────┘  denetim: kaldi
+           └────────────┘  audit: failed
 ```
 
 | Geçiş | Yapan | Koşul |
@@ -42,23 +42,23 @@ engeller; kabuk üzerinden kopyalama, yönlendirme ve taşıma da kapsam içinde
 **Mühür**, T0'ın `done/`'a taşımadan önce sözleşme frontmatter'ına işlediği dört alandır:
 
 ```yaml
-denetim: gecti
-denetci_id: <denetçi ajanın ID'si>
+audit: passed
+auditor_id: <denetçi ajanın ID'si>
 diff: <denetime verilen git diff'in başlangıç..bitiş hash'i>
-dogrulama: <çalıştırılan komut> → exit <kod>
+verification: <çalıştırılan komut> → exit <kod>
 ```
 
 `diff` alanı "denetlenen kod ile teslim edilen kod aynı mı" sorusunu ölçülebilir yapar:
 mühürden sonra `owns` dosyalarında değişiklik olduysa sözleşme yeniden denetlenir.
-`dogrulama: —` bırakıp `denetim: gecti` yazma; kanıtsız mühür mührün kendisini değersizleştirir.
+`verification: —` bırakıp `audit: passed` yazma; kanıtsız mühür mührün kendisini değersizleştirir.
 
-`owns` kontrolü de bu kapıda yapılır: `canli/<agent_id>.json` içindeki `files` listesi
-`owns` ∪ `yan_etki` kümesini aşıyorsa mühür işlenmez.
+`owns` kontrolü de bu kapıda yapılır: `live/<agent_id>.json` içindeki `files` listesi
+`owns` ∪ `side_effects` kümesini aşıyorsa mühür işlenmez.
 
-**`canli/` neden var:** kayıt noktası ajanın yazmasına bağlıydı, ajan ölünce yazılmıyordu.
-`relay-izle.js` hook'u `SubagentStart` / `PostToolUse` / `SubagentStop` olaylarında
+**`live/` neden var:** kayıt noktası ajanın yazmasına bağlıydı, ajan ölünce yazılmıyordu.
+`relay-watch.js` hook'u `SubagentStart` / `PostToolUse` / `SubagentStop` olaylarında
 kendiliğinden yazar. Her dosyada: `contract` (ajanın okuduğu sözleşmeden bağlanır),
-`last_action`, `files`, `last_seen`, `stop_reason`, `son_soz`.
+`last_action`, `files`, `last_seen`, `stop_reason`, `last_word`.
 
 `stop_reason`: `end_turn` normal bitiş · başka her değer **ölüm** · `null` çalışıyor.
 
@@ -72,18 +72,18 @@ her olayda güncellenir (`toplam`, olay dağılımı, alan listesi).
 ---
 id: T2
 title: Form validasyonu
-rol: usta | usta-arayuz | kayitci
+role: builder | ui-builder | scribe
 model: haiku | sonnet | opus
 depends: [T1]
 owns: [src/components/Form.tsx, src/lib/validate.ts]
-yan_etki: []
+side_effects: []
 status: open | active | submitted | blocked | done
-tur: 0
+round: 0
 agent_id: —
-denetim: —          # gecti | kaldi — mührü YALNIZ T0 işler
-denetci_id: —
+audit: —          # passed | failed — mührü YALNIZ T0 işler
+auditor_id: —
 diff: —             # denetime verilen aralık: <baslangic>..<bitis>
-dogrulama: —        # <komut> → exit <kod>
+verification: —        # <komut> → exit <kod>
 ---
 ## Amaç            tek paragraf: ne, neden
 ## Kabul kriteri   ölçülebilir maddeler
@@ -97,20 +97,20 @@ dogrulama: —        # <komut> → exit <kod>
 pazarlığa kapalı. Sahiplik düzeltme turunda da geçerlidir: düzeltme başka bir sözleşmenin
 dosyasına düşüyorsa düzeltmeyi kendi `owns`una yönlendir.
 
-`yan_etki`: ajanın yazmadığı ama çalıştırdığı aracın değiştireceği dosyalar
+`side_effects`: ajanın yazmadığı ama çalıştırdığı aracın değiştireceği dosyalar
 (`package-lock.json`, biçimlendirici çıktısı, derleme artefaktı). Kümeleri kesişen
 sözleşmeleri paralel çalıştırma.
 
-**T0 her sözleşme kapanışında `git status --porcelain` çalıştırır.** `owns` ∪ `yan_etki`
-dışında değişen dosya varsa `done` olamaz: LOG'a `sahipsiz` satırı, dosyayı kümeye ekle
+**T0 her sözleşme kapanışında `git status --porcelain` çalıştırır.** `owns` ∪ `side_effects`
+dışında değişen dosya varsa `done` olamaz: LOG'a `unowned` satırı, dosyayı kümeye ekle
 veya değişikliği geri al.
 
 `agent_id` devam ettirme için kritik — ajan bitince dönen ID'yi buraya yaz.
 
 ## 3. Akış
 
-**T0:** `PLAN.md` → sözleşmeler → dağıt (paralel tavanı `paralel_genislik`) → Çıktı'yı oku
-→ `denetim` ayarına göre `denetci`'ye doğrulat → kaldıysa §4 → `LOG.md`.
+**T0:** `PLAN.md` → sözleşmeler → dağıt (paralel tavanı `parallel_width`) → Çıktı'yı oku
+→ `audit` ayarına göre `auditor`'ye doğrulat → kaldıysa §4 → `LOG.md`.
 
 **Ajan:** sözleşmeyi oku → `status: active` → sadece `owns`'a yaz → kayıt noktasını güncelle
 → Çıktı + `status: submitted` → LOG satırı. **Burada durur.**
@@ -123,18 +123,18 @@ konuşma özeti koyma, sözleşmenin yolunu ver.
 
 ## 4. Düzeltme döngüsü
 
-`denetci` KALDI derse, `duzeltme_tavani` kadar tur:
+`auditor` KALDI derse, `fix_ceiling` kadar tur:
 
 | Tur | Ne yapılır |
 |---|---|
 | 1-3 | **Aynı ajanı devam ettir** — `SendMessage` ile `agent_id`'ye. Bağlamı korur. |
-| 4-5 | **Taze ajan.** `model_tirmanisi: acik` ise bir üst modele çık. |
+| 4-5 | **Taze ajan.** `model_escalation: acik` ise bir üst modele çık. |
 
 Model tırmanışı **4. turda, taze ajanla** olur. Üçüncü turda mevcut ajanı modelini
 değiştirerek devam ettiremezsin; devam ettirme bağlamı korur, model değiştirmez.
 | tavan | Dur. Açık bulguları kullanıcıya özetle, kararı o versin. |
 
-Her turda `tur:` artır. Tur 3'te hâlâ çözülmüyorsa sorun genelde ajanın değil
+Her turda `round:` artır. Tur 3'te hâlâ çözülmüyorsa sorun genelde ajanın değil
 **sözleşmenin**: kabul kriteri ölçülemez veya bağlam eksiktir.
 
 **Açık kritik bulgu varken bir sonraki göreve geçme.**
@@ -149,55 +149,55 @@ denetçide değil.
 
 ## 5. Düşen ajan
 
-Üçüncü hal: **öldü.** `canli/<agent_id>.json` içinde `stop_reason` `end_turn` dışındaysa
+Üçüncü hal: **öldü.** `live/<agent_id>.json` içinde `stop_reason` `end_turn` dışındaysa
 ajan ölmüştür. Sözleşme `active` ama ajanı ölü — kurtar:
 
-1. `LOG.md`: `T<n> olu · <stop_reason>`
+1. `LOG.md`: `T<n> dead · <stop_reason>`
 2. `SendMessage` ile `agent_id`'ye yaz, dirilt.
-3. Yanıt yoksa **taze ajan**. Devir teslim metnini `canli/`'den kur: `last_action`,
-   `files`, `son_soz` + varsa sözleşmenin Kayıt noktası.
-   `tur:` artırma — bu kesinti kurtarması, düzeltme turu değil.
+3. Yanıt yoksa **taze ajan**. Devir teslim metnini `live/`'den kur: `last_action`,
+   `files`, `last_word` + varsa sözleşmenin Kayıt noktası.
+   `round:` artırma — bu kesinti kurtarması, düzeltme turu değil.
 4. İki kurtarma da başarısızsa `status: blocked`, kullanıcıya söyle.
 
-**Denetçi ölürse denetimi atlama.** Denetimsiz `done` yasak; taze `denetci` ata.
+**Denetçi ölürse denetimi atlama.** Denetimsiz `done` yasak; taze `auditor` ata.
 Ajan `done/`'a taşımayı denemişse hook zaten engellemiştir — LOG'a `mühürsüz taşıma
 denemesi` satırı at ve sözleşmeyi `submitted`'da bırak.
 
-`canli/` boşsa (hook çalışmamışsa) geri düş: notification, `git status` ve diskteki
+`live/` boşsa (hook çalışmamışsa) geri düş: notification, `git status` ve diskteki
 dosyalar durumu anlatır. Bilgi kaybı olmadan kurtarılabilir ama otomatik değildir.
 
 ## 6. Oturum kesilince
 
 Yeni oturum sırayla okur, başka hiçbir şey:
 
-1. `canli/*.json` — **önce burası.** Hook yazdı, ajanın iş birliğine bağlı değil.
+1. `live/*.json` — **önce burası.** Hook yazdı, ajanın iş birliğine bağlı değil.
 2. `LOG.md` son 15 satır
 3. Açık sözleşmelerin frontmatter'ı (`done/` değil)
-4. `active` olanın Kayıt noktası — `canli/`'yi tamamlar, yerine geçmez
+4. `active` olanın Kayıt noktası — `live/`'yi tamamlar, yerine geçmez
 
 Sonra: `stop_reason: null` → `SendMessage` ile yokla · ölü → §5 · ajan yok, bağımlılığı
 karşılanmış `open` var → dağıt.
 
 `PLAN.md`'yi ancak yeni görev üretecekse oku. Sözleşme `done/`'a taşınınca ilgili
-`canli/<agent_id>.json` dosyasını sil.
+`live/<agent_id>.json` dosyasını sil.
 
 ## 7. LOG formatı
 
 ```
 2026-08-11 14:22 T0  plan: 8 sozlesme, T1->T2, T3 paralel
 2026-08-11 14:31 T1  done   · src/LockSolver.ts + testler yesil
-2026-08-11 14:48 T2  kaldi  · tur 1, kabul 2 karsilanmadi
-2026-08-11 14:55 T4  olu    · max_tokens, SendMessage ile dirildi
-2026-08-11 14:58 T4  sahipsiz · package-lock.json, yan_etki'ye eklendi
+2026-08-11 14:48 T2  failed · round 1, kabul 2 karsilanmadi
+2026-08-11 14:55 T4  dead   · max_tokens, SendMessage ile dirildi
+2026-08-11 14:58 T4  unowned · package-lock.json, side_effects'ye eklendi
 ```
 
-Etiketler: `plan` `done` `kaldi` `olu` `sahipsiz` `blocked`.
+Etiketler: `plan` `done` `failed` `dead` `unowned` `blocked`.
 
 ## 8. Kullanıcıya raporlama
 
 Kullanıcı ajanların içini göremez. Rapor vermezsen sistem ona kara kutu gibi görünür ve
-yönetemez. **Aşağıdaki altı an zorunludur**, `onay_kapisi: yok` olsa bile — o düğme
-*onay beklemeyi* kapatır, *bilgilendirmeyi* değil.
+yönetemez. **Aşağıdaki altı an zorunludur**, `approval_gate: yok` olsa bile — o düğme
+*onay beklemeyi* kapatır, *briefingyi* değil.
 
 Her rapor dört soruyu cevaplar: **neredeyiz · ne oldu · sırada ne var · senden bir şey
 gerekiyor mu.** Cevap yoksa satırı yazma.
@@ -213,11 +213,11 @@ Plan: <tek cümle, işin tamamı>
 
 Tablonun altına üç satır: **paralel çalışacaklar**, **bilerek kapsam dışı bıraktıklarım**,
 **gördüğüm risk**. Sonra tek satır: neyi şimdi değiştirebileceği (sıralama, kapsam,
-`paralel_genislik`). `onay_kapisi: yok` ise beklemeden başla — ama brifingi yaz.
+`parallel_width`). `approval_gate: yok` ise beklemeden başla — ama brifingi yaz.
 
 ### 8.2 Dalga başlarken
 
-Aynı anda başlayan ajanlar tek satırda: `▸ T3 usta-arayuz · T4 usta — paralel, owns kesişmiyor`.
+Aynı anda başlayan ajanlar tek satırda: `▸ T3 ui-builder · T4 builder — paralel, owns kesişmiyor`.
 
 ### 8.3 Sözleşme kapanınca
 
@@ -244,8 +244,8 @@ yapılmayanlar ve sebebi, önerilen sonraki adım.
 ### Biçim kuralı
 
 Rapor **yapılandırılmış durum bildirimidir, düzyazı özet değildir.** Tablo, madde, tek
-satırlık olay. Bitmiş işi tekrar anlatma; anlatılacak şey değişimdir. `bilgilendirme: sessiz`
-ayarında yalnızca 8.1, 8.5 ve 8.6 kalır — diğerlerini kullanıcı `/raporver` ile ister.
+satırlık olay. Bitmiş işi tekrar anlatma; anlatılacak şey değişimdir. `briefing: sessiz`
+ayarında yalnızca 8.1, 8.5 ve 8.6 kalır — diğerlerini kullanıcı `/report` ile ister.
 
 ## 9. Yönlendirici CLAUDE.md
 

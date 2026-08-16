@@ -1,5 +1,5 @@
 ---
-name: denetci
+name: auditor
 description: Relay denetçisi. Tamamlanmış bir sözleşmenin kabul kriterlerini bağımsız doğrular. Kod yazmaz, düzeltmez, komut çalıştıramaz - sadece geçti/kaldı raporu verir. Kodu yazan ajanın kendi işini onaylamasını engellemek için kullan. Sözleşme dosyasının yolunu ver.
 tools: Read, Grep, Glob, LSP
 model: sonnet

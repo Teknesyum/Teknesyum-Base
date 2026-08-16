@@ -52,7 +52,7 @@ baslik: Arayüz katmanı
 model_onerisi: sonnet
 depends: [G1]
 yazilabilir: [src/components/, src/theme/]
-durum: bekliyor | acik | teslim | kabul
+status: waiting | open | submitted | accepted
 ---
 # G2 — Arayüz katmanı
 
@@ -81,7 +81,7 @@ Dar. 3-5 tespit + bağımlı olduğun paketin ürettiği imzalar. Kod yapıştı
 ## Bitince
 1. Bu dosyanın altına `## Rapor` bölümü ekle: ne yapıldı, değişen dosyaların tam listesi,
    yapılmayan madde ve sebebi, sonraki paketlerin kullanacağı imzalar, varsayımlar.
-2. Frontmatter'da `durum: teslim` yap. **`kabul` yazma** — paketi çalıştıran taraf
+2. Frontmatter'da `status: submitted` yap. **`accepted` yazma** — paketi çalıştıran taraf
    kendi işini kabul edemez; o kararı ana oturum denetimden sonra verir.
 3. Kullanıcıya tek cümle: "G2 teslim edildi." 
 ```
@@ -110,21 +110,21 @@ Bağımlılığı açık olan paketin satırını **basma**; hangi paket bitince
 
 Kullanıcı "bitti" diye döndüğünde ayrı bir komut bekleme, sen topla:
 
-1. `.claude/relay/G*.md` içindeki `durum` ve `## Rapor` bölümlerini oku. `teslim`
+1. `.claude/relay/G*.md` içindeki `status` ve `## Rapor` bölümlerini oku. `submitted`
    paketler denetlenmeden `kabul` olmaz; `bitti` yazan eski paket varsa onu da denetle.
 2. `git status --porcelain` — her değişen dosyayı paketlerin `yazilabilir` kümesiyle eşle.
-   Dışarı taşan varsa `LOG.md`'ye `sahipsiz` satırı, kullanıcıya bildir, düzeltmeyi hangi
+   Dışarı taşan varsa `LOG.md`'ye `unowned` satırı, kullanıcıya bildir, düzeltmeyi hangi
    pakete vereceğine karar ver. **Sessizce geçme.**
-3. `denetim` ayarına göre `denetci` ajanını **ana oturumda** çalıştır. Paket kendi işini
-   onaylamış sayılmaz. Kaldıysa `protokol.md` §4 — düzeltme paketin `## Görev` bölümüne
+3. `audit` ayarına göre `auditor` ajanını **ana oturumda** çalıştır. Paket kendi işini
+   onaylamış sayılmaz. Kaldıysa `protocol.md` §4 — düzeltme paketin `## Görev` bölümüne
    yazılır ve satır yeniden verilir.
 4. Rapordaki imzaları bağımlı paketlerin `## Bağlam` bölümüne taşı. Atlanırsa sonraki
    paket imzayı uydurur.
-5. Dalga raporu ver (`protokol.md` §8.4) ve açılabilir paketlerin satırlarını bas.
+5. Dalga raporu ver (`protocol.md` §8.4) ve açılabilir paketlerin satırlarını bas.
 
 ## 7. Kesinti
 
 Paket düşerse yalnız o paket kaybolur. Kullanıcı aynı satırı yeni bir oturumda yapıştırır;
-paket `## Rapor` bölümü ve `durum` alanı üzerinden kaldığı yerden devam eder.
+paket `## Rapor` bölümü ve `status` alanı üzerinden kaldığı yerden devam eder.
 
-Ana oturum düşerse yeni oturumda `/devam`: paket durumları + `LOG.md` + raporlar okunur.
+Ana oturum düşerse yeni oturumda `/report`: paket durumları + `LOG.md` + raporlar okunur.

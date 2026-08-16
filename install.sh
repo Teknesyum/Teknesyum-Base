@@ -26,5 +26,5 @@ if command -v node >/dev/null 2>&1; then
   node "$TMP"
   rm -f "$TMP"
 else
-  printf '  Node.js yok - statusline atlandi. Claude Code icinde /teknesyum:kurulum calistir.\n'
+  printf '  Node.js yok - statusline atlandi. Claude Code icinde /teknesyum:setup calistir.\n'
 fi

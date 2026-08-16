@@ -27,5 +27,5 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
     node $tmp
     Remove-Item $tmp -ErrorAction SilentlyContinue
 } else {
-    Write-Host "  Node.js yok - statusline atlandi. Claude Code icinde /teknesyum:kurulum calistir." -ForegroundColor Yellow
+    Write-Host "  Node.js yok - statusline atlandi. Claude Code icinde /teknesyum:setup calistir." -ForegroundColor Yellow
 }

@@ -4,8 +4,8 @@ const os = require('os');
 const path = require('path');
 
 const KOK = path.join(__dirname, '..', 'teknesyum');
-const IZLE = path.join(KOK, 'hooks', 'relay-izle.js');
-const KORU = path.join(KOK, 'hooks', 'koru-sozlesme.js');
+const IZLE = path.join(KOK, 'hooks', 'relay-watch.js');
+const KORU = path.join(KOK, 'hooks', 'contract-guard.js');
 const DURUM = path.join(KOK, 'scripts', 'statusline.js');
 
 let gecti = 0;
@@ -37,7 +37,7 @@ function proje(sozlesme, biten) {
   fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
   for (let i = 0; i < sozlesme; i++) fs.writeFileSync(path.join(relay, 'contracts', 'T' + i + '.md'), '#');
   for (let i = 0; i < biten; i++) fs.writeFileSync(path.join(relay, 'contracts', 'done', 'D' + i + '.md'), '#');
-  return { p, live: path.join(relay, 'canli') };
+  return { p, live: path.join(relay, 'live') };
 }
 
 const ort = (p) => ({ cwd: p, session_id: 'oturum-1', transcript_path: '/x/oturum-1.jsonl' });
@@ -76,35 +76,38 @@ ol('hooks.json olayları bağlıyor ve koruma Bash\'i kapsıyor', () => {
   for (const e of ['PreToolUse', 'PostToolUse', 'SessionStart', 'SubagentStart', 'SubagentStop']) {
     if (!h[e]) throw new Error(e + ' bağlı değil');
   }
-  const koru = h.PreToolUse.find((x) => /koru-sozlesme/.test(JSON.stringify(x)));
+  const koru = h.PreToolUse.find((x) => /contract-guard/.test(JSON.stringify(x)));
   icerir(koru.matcher, 'Bash');
 });
 
 ol('statusline köprüsü sürümden bağımsız', () => {
-  const k = fs.readFileSync(path.join(KOK, 'scripts', 'kopru.js'), 'utf8');
+  const k = fs.readFileSync(path.join(KOK, 'scripts', 'bridge.js'), 'utf8');
   if (/\d+\.\d+\.\d+/.test(k.replace(/\\d\+\\\.\\d\+\\\.\\d\+/g, ''))) {
     throw new Error('köprüde sabit sürüm var');
   }
-  icerir(fs.readFileSync(path.join(KOK, 'commands', 'kurulum.md'), 'utf8'), 'kopru.js');
+  icerir(fs.readFileSync(path.join(KOK, 'commands', 'setup.md'), 'utf8'), 'bridge.js');
 });
 
 ol('komut kümesi beş komut ve eski adlar hiçbir yerde geçmiyor', () => {
   const v = fs.readdirSync(path.join(KOK, 'commands')).filter((f) => f.endsWith('.md')).sort();
-  esit(v.join(','), 'devam.md,huyekle.md,kurulum.md,raporver.md,uiayar.md');
+  esit(v.join(','), 'help.md,report.md,rule.md,setup.md,uisetup.md');
   const yuru = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) =>
-    e.name === 'node_modules' || e.name === '.git' ? []
+    e.name === 'node_modules' || e.name.startsWith('.') ? []
       : e.isDirectory() ? yuru(path.join(d, e.name)) : [path.join(d, e.name)]);
   for (const f of yuru(path.join(__dirname, '..'))) {
-    if (!/\.(md|js|json|tsx)$/.test(f) || /calistir\.js$/.test(f)) continue;
+    if (!/\.(md|js|json|tsx)$/.test(f) || f === __filename) continue;
     const s = fs.readFileSync(f, 'utf8');
-    for (const eski of ['/iskele', '/durum', '/teknesyumui', '/huy ', '/huy\n']) {
+    for (const eski of ['/iskele', '/durum', '/teknesyumui', '/huyekle', '/uiayar',
+                        '/raporver', '/kurulum', '/devam', 'relay-izle', 'koru-sozlesme',
+                        'kopru.js', 'protokol.md', 'AYAR.md', 'cok-oturum.md',
+                        'teknesyum:usta', 'teknesyum:denetci', 'teknesyum:kayitci']) {
       if (s.includes(eski)) throw new Error(path.basename(f) + ' hâlâ "' + eski.trim() + '" içeriyor');
     }
   }
 });
 
 ol('kurulum komutu tarar, kararı belliyi yapar, kalanını sorar', () => {
-  const s = fs.readFileSync(path.join(KOK, 'commands', 'kurulum.md'), 'utf8');
+  const s = fs.readFileSync(path.join(KOK, 'commands', 'setup.md'), 'utf8');
   icerir(s, 'Sormadan yapılacaklar');
   icerir(s, 'Sorulacaklar');
   icerir(s, 'allowed-tools');
@@ -117,7 +120,7 @@ ol('relay oturum açılışında sormadan sürdürür', () => {
 });
 
 ol('denetçinin yazma veya çalıştırma aracı yok', () => {
-  const md = fs.readFileSync(path.join(KOK, 'agents', 'denetci.md'), 'utf8');
+  const md = fs.readFileSync(path.join(KOK, 'agents', 'auditor.md'), 'utf8');
   const tools = (md.match(/^tools:\s*(.+)$/m) || [])[1] || '';
   for (const yasak of ['Write', 'Edit', 'Bash', 'NotebookEdit']) {
     if (new RegExp('\\b' + yasak + '\\b').test(tools)) throw new Error(yasak + ' hâlâ verilmiş: ' + tools);
@@ -159,11 +162,11 @@ ol('görev dağıtımı rol, model ve açıklamayı bildirir', () => {
   const { p } = proje(1, 0);
   const r = calistir(IZLE, {
     ...ort(p), hook_event_name: 'PreToolUse', tool_name: 'Agent',
-    tool_input: { subagent_type: 'teknesyum:usta', model: 'sonnet', description: 'tab bileseni' },
+    tool_input: { subagent_type: 'teknesyum:builder', model: 'sonnet', description: 'tab bileseni' },
   });
   const m = JSON.parse(r.out).systemMessage;
   icerir(m, 'görev veriliyor');
-  icerir(m, 'usta');
+  icerir(m, 'builder');
   icerir(m, 'sonnet');
   icerir(m, 'tab bileseni');
   if (m.includes('teknesyum:')) throw new Error('rol öneki temizlenmemiş');
@@ -173,7 +176,7 @@ ol('ikinci ajanda kaç ajanın çalıştığı yazılır', () => {
   const { p } = proje(1, 0);
   const yuk = {
     ...ort(p), hook_event_name: 'PreToolUse', tool_name: 'Agent',
-    tool_input: { subagent_type: 'usta', description: 'a' },
+    tool_input: { subagent_type: 'builder', description: 'a' },
   };
   calistir(IZLE, yuk);
   icerir(JSON.parse(calistir(IZLE, yuk).out).systemMessage, '[2 ajan çalışıyor]');
@@ -183,15 +186,15 @@ ol('ajan bitişi süreyle bildirilir', () => {
   const { p } = proje(1, 0);
   calistir(IZLE, {
     ...ort(p), hook_event_name: 'PreToolUse', tool_name: 'Agent',
-    tool_input: { subagent_type: 'usta', description: 'a' },
+    tool_input: { subagent_type: 'builder', description: 'a' },
   });
   const r = calistir(IZLE, {
-    ...ort(p), hook_event_name: 'SubagentStop', agent_id: 'a1', agent_type: 'usta',
+    ...ort(p), hook_event_name: 'SubagentStop', agent_id: 'a1', agent_type: 'builder',
     agent_transcript_path: '/x/a1.jsonl',
   });
   const m = JSON.parse(r.out).systemMessage;
   icerir(m, 'bitti');
-  icerir(m, 'usta');
+  icerir(m, 'builder');
   icerir(m, 'sn');
 });
 
@@ -199,7 +202,7 @@ ol('PostToolUse sessizdir (her araç çağrısında bildirim olmaz)', () => {
   const { p } = proje(1, 0);
   esit(calistir(IZLE, {
     ...ort(p), hook_event_name: 'PostToolUse', tool_name: 'Edit',
-    agent_id: 'a1', agent_type: 'usta', agent_transcript_path: '/x/a1.jsonl',
+    agent_id: 'a1', agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl',
     tool_input: { file_path: path.join(p, 'src', 'A.jsx') },
   }).out, '');
 });
@@ -214,19 +217,19 @@ console.log('\nEşzamanlılık');
 ol('paralel hook süreçleri birbirinin kaydını silmez', () => {
   const { p, live } = proje(1, 0);
   const yuk = (n) => JSON.stringify({ ...ort(p), hook_event_name: 'PreToolUse', tool_name: 'Agent',
-    tool_input: { subagent_type: 'usta', description: 'is-' + n } });
+    tool_input: { subagent_type: 'builder', description: 'is-' + n } });
   const cocuk = [];
   for (let n = 0; n < 8; n++) {
     cocuk.push(spawnSync(process.execPath, [IZLE], { input: yuk(n), encoding: 'utf8' }));
   }
-  const l = JSON.parse(fs.readFileSync(path.join(live, '_calisanlar.json'), 'utf8'));
+  const l = JSON.parse(fs.readFileSync(path.join(live, '_running.json'), 'utf8'));
   if (!Array.isArray(l)) throw new Error('liste bozulmuş');
   if (l.length < 1) throw new Error('kayıtların tamamı kaybolmuş');
 });
 
 ol('yazma atomik: yarım JSON okunmaz', () => {
   const { p, live } = proje(1, 0);
-  const ek = { agent_id: 'a1', agent_type: 'usta', agent_transcript_path: '/x/a1.jsonl' };
+  const ek = { agent_id: 'a1', agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl' };
   for (let n = 0; n < 20; n++) {
     calistir(IZLE, { ...ort(p), ...ek, hook_event_name: 'PostToolUse', tool_name: 'Read',
       tool_input: { file_path: path.join(p, 'src', 'f' + n + '.js') } });
@@ -239,11 +242,11 @@ ol('yazma atomik: yarım JSON okunmaz', () => {
 ol('aynı tipten iki ajanda süre uydurulmaz', () => {
   const { p } = proje(1, 0);
   const y = { ...ort(p), hook_event_name: 'PreToolUse', tool_name: 'Agent',
-    tool_input: { subagent_type: 'usta', description: 'a' } };
+    tool_input: { subagent_type: 'builder', description: 'a' } };
   calistir(IZLE, y);
   calistir(IZLE, y);
   const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SubagentStop',
-    agent_id: 'a1', agent_type: 'usta', agent_transcript_path: '/x/a1.jsonl' });
+    agent_id: 'a1', agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl' });
   icerir(JSON.parse(r.out).systemMessage, 'süre belirsiz');
 });
 
@@ -252,21 +255,21 @@ console.log('\nİz');
 ol('genel iz temizliği az sayıda klasörde de çalışır', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-bos-'));
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-cfg-'));
-  const kok = path.join(cfg, 'teknesyum', 'canli');
+  const kok = path.join(cfg, 'teknesyum', 'live');
   const bayat = path.join(kok, 'eski-oturum');
   fs.mkdirSync(bayat, { recursive: true });
   fs.writeFileSync(path.join(bayat, 'a1.json'), '{}');
   const gun = Date.now() - 30 * 60 * 60 * 1000;
   fs.utimesSync(bayat, gun / 1000, gun / 1000);
   calistir(IZLE, { ...ort(p), hook_event_name: 'SubagentStop', agent_id: 'a2',
-    agent_type: 'usta', agent_transcript_path: '/x/a2.jsonl' }, { CLAUDE_CONFIG_DIR: cfg });
+    agent_type: 'builder', agent_transcript_path: '/x/a2.jsonl' }, { CLAUDE_CONFIG_DIR: cfg });
   esit(fs.existsSync(bayat), false, '30 saatlik iz hâlâ duruyor');
 });
 
 ol('teşhis dosyası varsayılanda yazılmaz, TEKNESYUM_TANI=1 ile yazılır', () => {
   const { p, live } = proje(1, 0);
   const yuk = { ...ort(p), hook_event_name: 'PostToolUse', tool_name: 'Read',
-    agent_id: 'a1', agent_type: 'usta', agent_transcript_path: '/x/a1.jsonl', tool_input: {} };
+    agent_id: 'a1', agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl', tool_input: {} };
   calistir(IZLE, yuk);
   esit(fs.existsSync(path.join(live, '_hook-tani.json')), false, 'bayraksız');
   calistir(IZLE, yuk, { TEKNESYUM_TANI: '1' });
@@ -275,7 +278,7 @@ ol('teşhis dosyası varsayılanda yazılmaz, TEKNESYUM_TANI=1 ile yazılır', (
 
 ol('ajan izine değişen dosya ve sözleşme numarası işlenir', () => {
   const { p, live } = proje(1, 0);
-  const ek = { agent_id: 'a1', agent_type: 'usta', agent_transcript_path: '/x/a1.jsonl' };
+  const ek = { agent_id: 'a1', agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl' };
   calistir(IZLE, { ...ort(p), ...ek, hook_event_name: 'PostToolUse', tool_name: 'Read',
     tool_input: { file_path: path.join(p, '.claude', 'relay', 'contracts', 'T3.md') } });
   calistir(IZLE, { ...ort(p), ...ek, hook_event_name: 'PostToolUse', tool_name: 'Edit',
@@ -289,7 +292,7 @@ ol('ajan izine değişen dosya ve sözleşme numarası işlenir', () => {
 ol('SubagentStop stop_reason yokken ölüm sayılmaz', () => {
   const { p, live } = proje(1, 0);
   calistir(IZLE, { ...ort(p), hook_event_name: 'SubagentStop', agent_id: 'a1',
-    agent_type: 'usta', agent_transcript_path: '/x/a1.jsonl' });
+    agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl' });
   esit(JSON.parse(fs.readFileSync(path.join(live, 'a1.json'), 'utf8')).stop_reason, 'end_turn');
 });
 
@@ -297,9 +300,9 @@ ol('röle yoksa iz genel dizine düşer, proje kirletilmez', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-bos-'));
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-cfg-'));
   calistir(IZLE, { ...ort(p), hook_event_name: 'SubagentStop', agent_id: 'a1',
-    agent_type: 'usta', agent_transcript_path: '/x/a1.jsonl' }, { CLAUDE_CONFIG_DIR: cfg });
+    agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl' }, { CLAUDE_CONFIG_DIR: cfg });
   esit(fs.existsSync(path.join(p, '.claude')), false, 'proje kirlenmiş');
-  esit(fs.existsSync(path.join(cfg, 'teknesyum', 'canli', 'oturum-1', 'a1.json')), true);
+  esit(fs.existsSync(path.join(cfg, 'teknesyum', 'live', 'oturum-1', 'a1.json')), true);
 });
 
 console.log('\nKoruma — done/ kapısı');
@@ -322,13 +325,13 @@ ol('mühürsüz Write engellenir, mühürlü Write geçer', () => {
       content: '---\nstatus: done\n---\n' } }).kod, 2, 'mühürsüz');
   esit(calistir(KORU, { tool_name: 'Write',
     tool_input: { file_path: '/p/.claude/relay/contracts/done/T1.md',
-      content: '---\nstatus: done\ndenetim: gecti\n---\n' } }).kod, 0, 'mühürlü');
+      content: '---\nstatus: done\naudit: passed\n---\n' } }).kod, 0, 'mühürlü');
 });
 
 ol('mühürlü dosyaya bile Edit yasak (bitmiş sözleşme değişmez)', () => {
   esit(calistir(KORU, { tool_name: 'Edit',
     tool_input: { file_path: '/p/.claude/relay/contracts/done/T1.md',
-      new_string: 'denetim: gecti' } }).kod, 2);
+      new_string: 'audit: passed' } }).kod, 2);
 });
 
 ol('kabuktan done/ altına yazma engellenir', () => {
@@ -350,7 +353,7 @@ ol('kabuktan done/ okuma serbest', () => {
 ol('mühürlü sözleşmenin kabuktan taşınması geçer', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'adamantium-muhur-'));
   const src = path.join(p, 'T1.md');
-  fs.writeFileSync(src, '---\nstatus: done\ndenetim: gecti\ndogrulama: npm test → exit 0\n---\n');
+  fs.writeFileSync(src, '---\nstatus: done\naudit: passed\nverification: npm test → exit 0\n---\n');
   esit(calistir(KORU, { tool_name: 'Bash',
     tool_input: { command: 'mv ' + src.replace(/\\/g, '/') + ' /p/.claude/relay/contracts/done/T1.md' },
   }).kod, 0);
@@ -363,11 +366,11 @@ ol('açık sözleşmeye yazma serbest', () => {
 
 ol('sözleşme şablonu mühür alanlarını taşıyor', () => {
   const t = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'assets', 'contract.template.md'), 'utf8');
-  for (const alan of ['denetim:', 'denetci_id:', 'diff:', 'dogrulama:']) icerir(t, alan);
+  for (const alan of ['audit:', 'auditor_id:', 'diff:', 'verification:']) icerir(t, alan);
 });
 
 ol('hiçbir ajan sözleşmeyi done/ altına taşımakla görevlendirilmemiş', () => {
-  for (const a of ['usta.md', 'usta-arayuz.md', 'kayitci.md']) {
+  for (const a of ['builder.md', 'ui-builder.md', 'scribe.md']) {
     const md = fs.readFileSync(path.join(KOK, 'agents', a), 'utf8');
     const gorev = md.split('\n').filter((l) => /^\d+\./.test(l.trim())).join('\n');
     if (/status:\s*done/.test(gorev)) throw new Error(a + ': ajana `status: done` yazdırılıyor');
@@ -381,51 +384,51 @@ console.log('\nStatusline');
 ol('çalışan ajan ve sözleşme ilerlemesi basılır', () => {
   const { p } = proje(2, 1);
   calistir(IZLE, { ...ort(p), hook_event_name: 'PreToolUse', tool_name: 'Agent',
-    tool_input: { subagent_type: 'teknesyum:denetci', description: 'T3 dogrulama' } });
+    tool_input: { subagent_type: 'teknesyum:auditor', description: 'T3 dogrulama' } });
   const r = calistir(DURUM, { cwd: p, session_id: 'oturum-1',
     model: { display_name: 'Opus' }, workspace: { current_dir: p } });
-  icerir(r.out, 'denetci');
+  icerir(r.out, 'auditor');
   icerir(r.out, '1/3');
 });
 
 ol('bayat çalışan kaydı gösterilmez (oturum ajan çalışırken düşerse)', () => {
   const { p, live } = proje(1, 0);
   fs.mkdirSync(live, { recursive: true });
-  fs.writeFileSync(path.join(live, '_calisanlar.json'), JSON.stringify([
-    { tip: 'usta', tanim: 'bayat', bas: Date.now() - 3 * 60 * 60 * 1000 },
-    { tip: 'denetci', tanim: 'taze', bas: Date.now() },
+  fs.writeFileSync(path.join(live, '_running.json'), JSON.stringify([
+    { type: 'builder', desc: 'bayat', start: Date.now() - 3 * 60 * 60 * 1000 },
+    { type: 'auditor', desc: 'taze', start: Date.now() },
   ]));
   const r = calistir(DURUM, { cwd: p, session_id: 'oturum-1',
     model: { display_name: 'Opus' }, workspace: { current_dir: p } });
-  icerir(r.out, 'denetci');
+  icerir(r.out, 'auditor');
   if (r.out.includes('bayat')) throw new Error('3 saatlik kayıt hâlâ çalışıyor görünüyor');
 });
 
 ol('alt çizgili kayıtlar ajan sanılmaz (hayalet ⨯ satırı)', () => {
   const { p, live } = proje(1, 0);
   fs.mkdirSync(live, { recursive: true });
-  fs.writeFileSync(path.join(live, '_calisanlar.json'), '[]');
+  fs.writeFileSync(path.join(live, '_running.json'), '[]');
   fs.writeFileSync(path.join(live, '_hook-tani.json'), '{"toplam":3}');
   const r = calistir(DURUM, { cwd: p, session_id: 'oturum-1',
     model: { display_name: 'Opus' }, workspace: { current_dir: p } });
   if (/⨯/.test(r.out)) throw new Error('hayalet ölü ajan satırı: ' + r.out);
 });
 
-ol('dünkü ölü ajan artık /devam çağırmaz', () => {
+ol('dünkü ölü ajan gösterilmez', () => {
   const { p, live } = proje(1, 0);
   fs.mkdirSync(live, { recursive: true });
   const eski = new Date(Date.now() - 30 * 60 * 60 * 1000).toISOString().replace('T', ' ').slice(0, 19);
   const yeni = new Date().toISOString().replace('T', ' ').slice(0, 19);
   fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify(
-    { agent_id: 'a1', agent_type: 'usta', stop_reason: 'unknown', last_seen: eski }));
+    { agent_id: 'a1', agent_type: 'builder', stop_reason: 'unknown', last_seen: eski }));
   let r = calistir(DURUM, { cwd: p, session_id: 'oturum-1',
     model: { display_name: 'Opus' }, workspace: { current_dir: p } });
-  if (r.out.includes('/devam')) throw new Error('30 saatlik ölü ajan hâlâ gösteriliyor');
+  if (r.out.includes('builder')) throw new Error('30 saatlik ölü ajan hâlâ gösteriliyor');
   fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify(
-    { agent_id: 'a1', agent_type: 'usta', stop_reason: 'max_tokens', last_seen: yeni }));
+    { agent_id: 'a1', agent_type: 'builder', stop_reason: 'max_tokens', last_seen: yeni }));
   r = calistir(DURUM, { cwd: p, session_id: 'oturum-1',
     model: { display_name: 'Opus' }, workspace: { current_dir: p } });
-  icerir(r.out, '/devam', 'taze ölü ajan');
+  icerir(r.out, 'bağlamı doldu', 'taze ölü ajan');
 });
 
 ol('alt klasörden açılan oturumda röle bulunur', () => {
@@ -433,11 +436,11 @@ ol('alt klasörden açılan oturumda röle bulunur', () => {
   const alt = path.join(p, 'src', 'backend');
   fs.mkdirSync(alt, { recursive: true });
   calistir(IZLE, { ...ort(alt), hook_event_name: 'PreToolUse', tool_name: 'Agent',
-    tool_input: { subagent_type: 'usta', description: 'derin' } });
+    tool_input: { subagent_type: 'builder', description: 'derin' } });
   const r = calistir(DURUM, { cwd: alt, session_id: 'oturum-1',
     model: { display_name: 'Opus' }, workspace: { current_dir: alt } });
   icerir(r.out, '1/3', 'sözleşme ilerlemesi');
-  icerir(r.out, 'usta', 'çalışan ajan');
+  icerir(r.out, 'builder', 'çalışan ajan');
 });
 
 ol('bozuk girdide çökmez', () => {

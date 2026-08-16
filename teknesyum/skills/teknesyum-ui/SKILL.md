@@ -95,6 +95,7 @@ Geçiş: `200ms` mikro, `300ms` renk/glow, `500ms` panel aç-kapa. Hover `scale(
 
 ## 6. Sık yapılan hatalar
 
+- Panelin/kartın komşusunun çerçevesini ya da glow'unu kesmesi → §8, örtüşme yok
 - Rastgele Tailwind rengi (`text-cyan-400`) → token kullan
 - Sayıyı sans font ile yazmak → mono
 - Glow'suz neon renk → ölü görünür
@@ -139,10 +140,33 @@ kaybolmalarının sebebi: `references/desktop.md` §8. **Teslimden önce dördü
 **Büyütülmüş pencere kare kalır:** ekran kenarında yuvarlatılmış köşe arkadaki masaüstünü
 gösterir. Bu yüzden köşe bölgesi her yeniden boyutlandırmada yeniden hesaplanır.
 
-**Tablo içeriği ortalanır.** Başlık satırı da, hücreler de yatayda ortalı
-(`MiddleCenter` / `text-align: center`). Sola dayalı sütun karışımı ızgarayı dağınık gösteriyor;
-tek hizada okunuyor. Sütun genişliği içeriği ortalanmış hâlde sığdıracak kadar geniş olmalı —
-ortalanmış metin kırpılırsa iki yanından birden kaybeder ve okunmaz olur (§7).
+**Hiçbir öğe bir başkasının anahattını kapatmaz.** Neon temada bir öğeyi öğe yapan şey
+anahattıdır: çerçevesi ve onu saran glow halesi. Kenarının bir milimetresi komşu panelin
+altında kalan düğme, kırık çizilmiş bir düğmedir — kullanıcı sebebini bilmeden "bir şey
+bozuk" diye görür. Kural üç yerde birden tutulur:
+
+- **Örtüşme yok.** Panel, kart ve düğme dikdörtgenleri birbirine değmez, üst üste binmez.
+  Negatif margin, mutlak konumlandırmayla komşunun üstüne taşma ve "nasılsa görünmüyor"
+  diyerek bırakılan `z-index` yarışı — üçü de yasak. Bilinçli katman (açılır menü, modal,
+  tooltip) istisnadır; onlar zaten üstte durmak için vardır ve altındakini **tamamen**
+  örter, kenarını yalamaz.
+- **Glow'a pay bırakılır.** `box-shadow: 0 0 20px` bir öğeyi her yönde ~20px büyütür.
+  Kabın padding'i ya da kardeşler arası boşluk bundan küçükse hale komşunun altında kesilir
+  ve renk yarım kalır. Glow'lu öğenin çevresinde **en az 24px** boşluk bulunur (aralık
+  merdiveninin üst basamağı, §5) — bu yüzden panel padding'i 24px.
+- **Kap kırpmaz.** `overflow: hidden`, WPF `ClipToBounds="True"`, WinForms'ta kabın
+  sınırına dayanmış çocuk denetim — hepsi glow'u keser. Kırpma gerçekten gerekiyorsa
+  (kaydırılan liste) glow'lu öğe kabın kenarına yaslanmaz, iç boşluk içinde durur.
+
+**Doğrulama gözle yapılır:** ekran görüntüsünü aç ve her düğmenin çerçevesini dört yanından
+takip et. Kesilen tek kenar varsa kural çiğnenmiştir.
+
+**Tablo ve ızgara içeriği ortalanır.** Başlık satırı da, hücreler de yatayda ortalı
+(`MiddleCenter` / `text-align: center`); dikeyde de satır yüksekliğinin ortasında durur.
+Sola dayalı ve ortalı sütunların karışması ızgarayı dağınık gösteriyor, tek hizada okunuyor.
+Sütun genişliği içeriği **ortalanmış hâlde** sığdıracak kadar geniş olmalı: ortalanmış metin
+kırpılırsa iki yanından birden kaybeder ve okunmaz olur (§7). Aynı şey rozet, çip ve durum
+göstergesi için de geçerli — hücreye ortalanır, sola yapıştırılmaz.
 
 **Kendi başlık çubuğunu çizen pencere, işletim sisteminin davranışlarını geri takar.** Çerçevesiz
 pencere kenardan boyutlandırmayı, kenara yaslamayı (Aero Snap) ve başlığa çift tıkla ekranı

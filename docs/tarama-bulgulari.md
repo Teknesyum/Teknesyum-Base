@@ -408,3 +408,42 @@ boyutu biçimlendirmesiydi; onu `Intl` API'si kütüphanesiz yapıyor.
 JS/TS: `i18next` + `react-i18next`, düz JSON, ICU eklentisi yok.
 WPF/WinForms: kendi JSON yükleyicimiz, `.resx` yok.
 Sayı, tarih, dosya boyutu: `Intl` (JS) / `CultureInfo` (.NET) — elle biçimlendirme yok.
+
+---
+
+## D9 — Test ve görsel doğrulama
+
+§8.2 "çalışan uygulamaya bakmadan tamam yok" diyor. Bu durak, o bakışı otomatikleştirecek
+aracı arıyor.
+
+### FlaUI — **alındı, WPF/WinForms tarafında**
+
+MIT. Windows UI Automation'ı ince bir katmanla sarıyor; UIA2 ve UIA3 destekliyor
+(WPF için UIA3). Şubat 2025'te v5.0.0. xUnit veya NUnit ile birlikte kullanılıyor.
+
+Neden önemli: §8.2'nin en zor maddesini — "yakaladığın pencerenin süreç yolunun bu
+depodaki çalıştırılabilir dosya olduğunu doğrula" — elle yapmak yerine testle yapmayı
+mümkün kılıyor. Pencereyi süreç kimliğinden bulur, denetimleri ağaçtan okur.
+
+Sınırı da net: **görsel gerileme testi ve erişilebilirlik denetimi yok.** Ekran
+görüntüsü karşılaştırmasını kendimiz kurmalıyız.
+
+### Playwright — **alındı, Electron/web tarafında**
+
+Apache-2.0. Electron uygulamasını doğrudan sürebiliyor; ekran görüntüsü karşılaştırması
+(`toHaveScreenshot`) çekirdeğinde. Erişilebilirlik denetimi de var.
+
+Bu, `teknesyum-ui` için doğrudan karşılık: **tema ihlalleri görsel gerileme testiyle
+yakalanabilir.** Beyaz zemin sızıntısı, kırpılan sekme, kaybolan odak halkası — hepsi
+piksel farkı olarak görünür.
+
+### Kurulmayan
+
+Cypress, Selenium: Playwright'ın kapsadığı alanı daha dar yapıyorlar.
+Ticari görsel gerileme servisleri (Chromatic vb.): yerel karşılaştırma yeterli,
+buluta ekran görüntüsü göndermenin gereği yok.
+
+### Karar
+
+WPF: `FlaUI` + `xUnit`. Electron/web: `Playwright`, ekran görüntüsü karşılaştırması açık.
+Her ikisi de `tests/` altında (relay §1.2).

@@ -158,6 +158,22 @@ tipik olarak %20-30 uzundur), sonra dil değiştirilip İngilizce hâli de gözl
 Bir dilde sığıp diğerinde kırpılan etiket, iki dilde de hatalıdır — kontrol genişliği uzun
 olana göre kurulur.
 
+## 3.2 Metin yazımı — duvar değil, blok
+
+**Düz yazı duvarı yasak.** Arayüzde görünen her açıklama, yardım metni, tooltip gövdesi,
+onboarding ekranı, hata açıklaması ve `README` niteliğindeki panel metni bloklara ayrılır.
+
+Paragraf **2-4 satır**. Beş satırı geçen paragraf ikiye bölünür veya listeye çevrilir.
+
+Paragraflar arasında boş satır bırakılır: dikey yer varsa **iki**, dar bir panelde
+veya tooltip içinde **bir**. Sıfır asla.
+
+Üç maddeden fazla art arda bilgi varsa cümleye değil **listeye** yazılır. Bir paragrafta
+tek fikir bulunur; "ayrıca", "bunun yanında" ile eklenen ikinci fikir yeni paragraftır.
+
+Ölçüt: kullanıcı metne bakınca **nereden okumaya başlayacağını** bir bakışta görmeli.
+Gözü kaydıracak bir boşluk yoksa metin okunmaz, atlanır.
+
 ## 4. İmza bloğu
 
 Varsayılan **açık**. Her projede tam olarak bir tane, **ayarlar veya hakkında bölümünün
@@ -259,6 +275,78 @@ metinden **6 DIP** uzakta `?`. Tooltip ayrıntılı ve **iki dilli**. Hover'da y
 **Pencere düğmeleri** — 42×30 DIP. Küçült simgesi 10×2 DIP düz çizgi. Sıra: destek
 bağlantısı, GitHub/imza, küçült, büyüt, kapat.
 
+## 5.4 Hareket — ölçülü, iptal edilebilir, kapatılabilir
+
+Bu temada animasyon **süs değil geri bildirimdir**: kullanıcıya bir şeyin değiştiğini,
+nereden nereye gittiğini ve sistemin çalıştığını söyler. Söyleyeceği bir şey yoksa animasyon
+konmaz.
+
+**Süre ve yumuşatma tokendır.** Rastgele `0.3s` yazılmaz.
+
+```
+--tk-t-instant   90ms    renk, opaklık, hover
+--tk-t-fast     160ms    açılan menü, tooltip, çip
+--tk-t-base     240ms    panel, diyalog, sekme geçişi
+--tk-t-slow     360ms    sayfa/görünüm değişimi — üst sınır
+--tk-e-out      cubic-bezier(0.2, 0, 0, 1)      giren şey
+--tk-e-in       cubic-bezier(0.4, 0, 1, 1)      çıkan şey
+--tk-e-spring   cubic-bezier(0.34, 1.36, 0.64, 1)  yalnızca basma geri bildirimi
+```
+
+360 ms'yi geçen hiçbir arayüz hareketi yok. Kullanıcı ikinci kez gördüğünde beklemeye
+başlıyorsa animasyon uzundur.
+
+**Yalnızca `opacity` ve `transform` animasyonlanır.** `width`, `height`, `top`, `left`,
+`margin`, `box-shadow`, `filter` animasyonu yerleşimi yeniden hesaplattırır; kare düşer,
+zayıf makinede takılma görünür. Boyut değişimi gerekiyorsa `scale` ile yapılır.
+
+**Geçiş (`transition`) tercih edilir, keyframe değil.** Sebep: geçiş yarıda iptal edilebilir.
+Kullanıcı açılmakta olan paneli kapatırsa panel bulunduğu yerden geri döner; keyframe
+animasyonu ise başa sarar ve sıçrar. Keyframe yalnızca gerçekten döngüsel olan şey içindir
+(yükleniyor göstergesi).
+
+**`prefers-reduced-motion` zorunludur, sonradan eklenmez.** Ayar açıkken konum ve ölçek
+animasyonları kapanır, **opaklık geçişleri kalır** — arayüz cansızlaşmaz ama baş döndürmez.
+Web'de tek blok yeter; WPF'te `SystemParameters.ClientAreaAnimation` okunur.
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--tk-t-instant) !important;
+  }
+}
+```
+
+**Mikro etkileşim tavanları** — abartı buradan başlar, sınırlar kesindir:
+
+| Durum | İzin verilen | Yasak |
+|---|---|---|
+| Hover | `scale(1.02)`, glow opaklığı `/20`→`/30`, renk | 1.05+ büyüme, kayma, dönme |
+| Basma | `scale(0.98)`, 90 ms | zıplama, `spring` yankısı |
+| Odak | halka **anında** belirir | halkayı yumuşatarak geciktirmek |
+| Giriş | 8 DIP kayma + opaklık, 240 ms | 40 DIP uçuş, dönerek gelme |
+| Liste | 40 ms kademe, **en çok 6 eleman** | 20 elemanı tek tek düşürmek |
+
+**Giriş animasyonu bir kez oynar** — bileşen ilk kez göründüğünde. Her `render`'da, her
+sekme dönüşünde, her veri tazelemesinde tekrar oynayan giriş animasyonu hatadır: kullanıcı
+aynı ekranı ikinci kez görüyordur ve beklemek zorunda kalır.
+
+**Sonsuz döngü yasak.** Nefes alan arka planlar, sürekli dönen çizgiler, kayan gradient
+duvarlar bu temada yok. Tek istisna **süreç göstergesidir** — gerçekten bir iş yürürken
+çalışır, iş bitince durur. Yükleme iskeleti (`skeleton`) parıltısı da buna dahildir:
+döngü ≥ 1.4 s ve kontrastı düşük olur.
+
+**Hareket, tıklanacak şeyi kaçırmaz.** Kullanıcı bir düğmeye giderken düğme yer değiştiriyorsa
+animasyon zarar veriyordur. Yerleşim animasyonu yalnızca kullanıcı eylemiyle başlar, kendi
+kendine değil; açılan panel komşularını itmez, üstlerine biner.
+
+**WPF karşılıkları** — `Storyboard` yalnızca `RenderTransform` ve `Opacity` üzerinde çalışır,
+`Width`/`Height` üzerinde değil. Yumuşatma `PowerEase`/`CubicEase` ile `EasingMode="EaseOut"`.
+Storyboard'lar `Freeze()` edilir. Sürekli çalışan `DispatcherTimer` tabanlı animasyon yok;
+pencere gizliyken animasyon durdurulur.
+
 ## 6. Sık yapılan hatalar
 
 - Soluk gri gövde metni (`#d1d5db`, `#9ca3af`) → beyaz. Bu temada ara gri yok
@@ -283,6 +371,11 @@ bağlantısı, GitHub/imza, küçült, büyüt, kapat.
 - Glow'suz neon renk → ölü görünür
 - Başlıkta tracking unutmak
 - Etiketi UPPERCASE veya Title Case yazmak → ilki büyük gerisi küçük (§3)
+- Beş satırlık paragraf, boşluksuz açıklama metni → 2-4 satırlık bloklar (§3.2)
+- `width`/`height`/`box-shadow` animasyonu → `transform` + `opacity` (§5.4)
+- Her render'da tekrar oynayan giriş animasyonu → yalnızca ilk görünüşte
+- `prefers-reduced-motion` yok → erişilebilirlik hatası, sürüm çıkmaz
+- Nefes alan arka plan, sonsuz dönen süs → yalnızca gerçek süreç göstergesi
 - İmza bloğunu ana ekrana koymak → ayarların altına
 
 ## 7. Masaüstü ve dil yamaları

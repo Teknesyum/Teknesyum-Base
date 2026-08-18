@@ -11,7 +11,7 @@
   <SolidColorBrush x:Key="NeonPurple"  Color="#FFB026FF"/>
   <SolidColorBrush x:Key="NeonSuccess" Color="#FF34D399"/>
   <SolidColorBrush x:Key="Surface"     Color="#F208090A"/>
-  <SolidColorBrush x:Key="AppBg"       Color="#FF050507"/>
+  <SolidColorBrush x:Key="AppBg"       Color="#FF000000"/>
 
   <SolidColorBrush x:Key="TextBody"  Color="#FFFFFFFF"/>
   <SolidColorBrush x:Key="TextDim"   Color="#FFFFFFFF"/>
@@ -105,5 +105,13 @@
       </Setter.Value>
     </Setter>
   </Style>
+
+  <!-- hareket -->
+  <Duration x:Key="TInstant">0:0:0.09</Duration>
+  <Duration x:Key="TFast">0:0:0.16</Duration>
+  <Duration x:Key="TBase">0:0:0.24</Duration>
+  <Duration x:Key="TSlow">0:0:0.36</Duration>
+  <CubicEase x:Key="EOut" EasingMode="EaseOut"/>
+  <CubicEase x:Key="EIn" EasingMode="EaseIn"/>
 
 </ResourceDictionary>

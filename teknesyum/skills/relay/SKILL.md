@@ -182,6 +182,44 @@ Kullanıcı yeni bir oturum açıp bunu yapıştırır, başka bir şey anlatmaz
 
 Kural seti ve paket formatı: **`references/multi-session.md`**. Bu yola gireceksen onu oku.
 
+## 3.2 Rota — uzun iş kaldığı yerden devam eder
+
+Tek istekte bitmeyecek her iş **önce rotasını çizer, sonra başlar.** Uzun araştırma, çok
+dalgalı taşıma, sürüm yükseltme, büyük yeniden düzenleme — hepsi buraya girer.
+
+Rota `docs/ROTA-<is-adi>.md` dosyasıdır. İşe başlamadan yazılır, boş bırakılmaz.
+
+```markdown
+# Rota: <iş adı>
+
+**Kaldığım yer:** D4 (sürüyor)          <- her turda güncellenen tek satır
+**Amaç:** <bir cümle>
+
+| # | Durak | Durum | Bulgu |
+|---|---|---|---|
+| D1 | ... | bitti | docs/... §1 |
+| D2 | ... | bitti | docs/... §2 |
+| D3 | ... | sürüyor | — |
+| D4 | ... | bekliyor | — |
+```
+
+Durum yalnızca üç değer alır: `bekliyor`, `sürüyor`, `bitti`. Ara ifade yok.
+
+**Her durak bitince rota güncellenir ve commit atılır.** Bulgu rotanın içine değil, ayrı
+bir çıktı dosyasına yazılır; rota yalnızca nerede olduğunu söyler. Rota şişerse işini
+yapmıyor demektir.
+
+**Oturum açılışında rota da okunur.** `docs/ROTA-*.md` içinde `sürüyor` veya `bekliyor`
+durak varsa kullanıcı bir şey demeden oradan devam edilir (§1.1 ile aynı düstur).
+Kullanıcıya tek satır: hangi duraktasın, kaç durak kaldı.
+
+**Rota ile sözleşme farklı şeylerdir.** Sözleşme işi *dağıtmak* içindir; rota tek bir
+tarafın *uzun yürüyüşü* içindir. İkisi birlikte de kullanılır: rotanın bir durağı bir
+sözleşme dalgası olabilir.
+
+İş bittiğinde rota silinmez; son hâli `docs/` altında kalır — altı ay sonra neyin neden
+incelendiğini o anlatır.
+
 ## 4. Kim yapacak: rol × model
 
 Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `model` parametresiyle yaz.

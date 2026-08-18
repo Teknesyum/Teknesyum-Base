@@ -96,7 +96,7 @@ function ajanlar(live) {
   // Ölü ajan `/report` çağırır; dünkü ölü ajan için çağırmaz. Bir günü geçen izi gösterme,
   // yoksa kapanmış bir işin kalıntısı statusline'da kalıcı olur.
   out = out.filter((a) => !olu(a) || taze(a.last_seen));
-  const rank = (a) => (a.stop_reason === null ? 0 : olu(a) ? 1 : 2);
+  const rank = (a) => (olu(a) ? 1 : a.stop_reason === null ? 0 : 2);
   return out.sort((a, b) => rank(a) - rank(b) || (b.last_seen || '').localeCompare(a.last_seen || ''));
 }
 
@@ -106,7 +106,18 @@ function taze(iso) {
 }
 
 function olu(a) {
-  return a.stop_reason !== null && a.stop_reason !== 'end_turn';
+  if (a.stop_reason !== null && a.stop_reason !== 'end_turn') return true;
+  // ÖLÇÜLDÜ: arka planda düşen ajan `SubagentStop` üretmiyor — kayıt sonsuza kadar
+  // `stop_reason: null` kalıyor ve ölü ajan "çalışıyor" görünüyor. On dakikadır olay
+  // gelmeyen ve bitmemiş ajanı kayıp say.
+  return a.stop_reason === null && !a.ended && sessiz(a.last_seen);
+}
+
+const SESSIZLIK = 10 * 60 * 1000;
+
+function sessiz(iso) {
+  const t = Date.parse(String(iso || '').replace(' ', 'T') + 'Z');
+  return !isNaN(t) && Date.now() - t > SESSIZLIK;
 }
 
 const OLUM_SEBEBI = {
@@ -119,11 +130,14 @@ const OLUM_SEBEBI = {
   canceled: 'iptal edildi',
 };
 
+// `stop_reason` hiç gelmediyse ölüm sebebi de yok; satırda bunu söyleriz.
+const KAYIP = 'yanıt yok';
+
 function ajanSatiri(a) {
   const ad = (a.contract ? a.contract + ' ' : '') + (a.agent_type || '?').replace(/^teknesyum:/, '');
   const ikon = olu(a) ? C.pink + '⨯' : C.ok + '✓';
   let s = ikon + ' ' + C.r + C.dim + ad + C.r;
-  if (olu(a)) s += ' ' + C.pink + (OLUM_SEBEBI[a.stop_reason] || 'durdu') + C.r;
+  if (olu(a)) s += ' ' + C.pink + (a.stop_reason === null ? KAYIP : (OLUM_SEBEBI[a.stop_reason] || 'durdu')) + C.r;
   else if (a.last_word) s += ' ' + C.hint + kisalt(a.last_word, 40) + C.r;
   return s;
 }

@@ -348,6 +348,49 @@ ol('SubagentStop stop_reason yokken ölüm sayılmaz', () => {
   esit(JSON.parse(fs.readFileSync(path.join(live, 'a1.json'), 'utf8')).stop_reason, 'end_turn');
 });
 
+ol('birlestirme onceki ajanin yasam dongusu alanlarini tasimaz', () => {
+  const { p, live } = proje(1, 0);
+  fs.mkdirSync(live, { recursive: true });
+  fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify({
+    agent_id: 'a1', agent_type: 'builder', started: '2026-01-01 08:00:00',
+    last_seen: '2026-01-01 08:05:00', steps: 7, last_action: 'Bash', files: ['x.cs'],
+    stop_reason: 'end_turn', ended: '2026-01-01 08:05:00', last_word: 'eski ajan',
+  }));
+  calistir(IZLE, { ...ort(p), hook_event_name: 'SubagentStart', agent_id: 'a2',
+    agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl' });
+  const s = JSON.parse(fs.readFileSync(path.join(live, 'a2.json'), 'utf8'));
+  esit(s.steps, 7);
+  if (s.ended) throw new Error('onceki ajanin ended alani tasindi');
+  if (s.last_word) throw new Error('onceki ajanin last_word alani tasindi');
+});
+
+ol('bitmis sayilan ajandan yeni olay gelirse kayit geri acilir', () => {
+  const { p, live } = proje(1, 0);
+  fs.mkdirSync(live, { recursive: true });
+  fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify({
+    agent_id: 'a1', agent_type: 'builder', started: '2026-01-01 08:00:00',
+    last_seen: '2026-01-01 08:05:00', steps: 3, last_action: 'Bash', files: [],
+    stop_reason: 'end_turn', ended: '2026-01-01 08:05:00',
+  }));
+  calistir(IZLE, { ...ort(p), hook_event_name: 'PostToolUse', agent_id: 'a1',
+    agent_type: 'builder', tool_name: 'Bash', tool_input: {} });
+  const s = JSON.parse(fs.readFileSync(path.join(live, 'a1.json'), 'utf8'));
+  esit(s.ended, null);
+  esit(s.stop_reason, null);
+});
+
+ol('TEKNESYUM_TANI olay gunlugu yazar, varsayilanda yazmaz', () => {
+  const { p, live } = proje(1, 0);
+  const yuk = { ...ort(p), hook_event_name: 'PostToolUse', agent_id: 'a1',
+    agent_type: 'builder', tool_name: 'Bash', tool_input: {} };
+  calistir(IZLE, yuk);
+  if (fs.existsSync(path.join(live, '_hook-tani.log'))) throw new Error('varsayilanda gunluk yazildi');
+  calistir(IZLE, yuk, { TEKNESYUM_TANI: '1' });
+  const g = fs.readFileSync(path.join(live, '_hook-tani.log'), 'utf8');
+  icerir(g, 'id:a1', 'gunluk kimligi');
+  icerir(g, 'PostToolUse', 'gunluk olayi');
+});
+
 ol('röle yoksa iz genel dizine düşer, proje kirletilmez', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
@@ -494,6 +537,21 @@ ol('dünkü ölü ajan gösterilmez', () => {
   r = calistir(DURUM, { cwd: p, session_id: 'oturum-1',
     model: { display_name: 'Opus' }, workspace: { current_dir: p } });
   icerir(r.out, 'bağlamı doldu', 'taze ölü ajan');
+});
+
+ol('susmus ajan kayip gosterilir', () => {
+  const { p, live } = proje(1, 0);
+  fs.mkdirSync(live, { recursive: true });
+  const eski = new Date(Date.now() - 20 * 60 * 1000).toISOString().replace('T', ' ').slice(0, 19);
+  const yeni = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  const dur = () => calistir(DURUM, { cwd: p, session_id: 'oturum-1',
+    model: { display_name: 'Opus' }, workspace: { current_dir: p } });
+  fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify(
+    { agent_id: 'a1', agent_type: 'builder', stop_reason: null, last_seen: eski }));
+  icerir(dur().out, 'yanıt yok', '20 dakikadir susan ajan');
+  fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify(
+    { agent_id: 'a1', agent_type: 'builder', stop_reason: null, last_seen: yeni }));
+  if (dur().out.includes('yanıt yok')) throw new Error('taze ajan kayip sayildi');
 });
 
 ol('alt klasörden açılan oturumda röle bulunur', () => {

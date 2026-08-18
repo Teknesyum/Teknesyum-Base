@@ -14,6 +14,8 @@ hesapla, HAZIR işaretle.
 
 Ajan barı: `steps / tur_tavani` oranı. Tavanlar — builder 60, ui-builder 60, auditor 30,
 scribe 40. `stop_reason` `null` ise çalışıyor, `end_turn` ise bitti, başka değer ise ÖLÜ.
+`stop_reason` `null` ama `ended` yok ve `last_seen` 10 dakikadan eskiyse **KAYIP** —
+arka planda düşmüş, yoklama yapma.
 
 Şu formatta bas, başka hiçbir şey yazma:
 

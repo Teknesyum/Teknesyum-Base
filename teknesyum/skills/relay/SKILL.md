@@ -178,11 +178,14 @@ Yazma işine başlamadan önce, sırayla kontrol et:
    biçimlendirmeyi modele değil `biome check --write`'a yaptır. Model gerekmeyen yerde
    model kullanmak token israfıdır — aynı düstur `sed`, `rg` ve IDE refactor için de geçerli.
 6. **Yeni depo mu açıyorsun?** Ad **ilki büyük, gerisi küçük**: `Vidshrink`, `Runly`,
-   `Lockpicker`. Tire, alt çizgi, camelCase ve BÜYÜK HARF yok; birden çok kelime
-   gerekiyorsa bitişik yazılır ve yalnızca ilk harf büyür (`Teknesyumbase`), ikinci
-   kelimenin baş harfi büyütülmez. Kısaltma tek başına adsa olduğu gibi kalır (`API`).
-   Aynı kural GitHub deposu, yerel proje klasörü ve çözüm/proje adı için geçerlidir —
-   üçü aynı yazılır. Var olan deponun adını kendiliğinden değiştirme, tek satırla söyle.
+   `Lockpicker`. Alt çizgi, camelCase ve BÜYÜK HARF yok. Tek kelimede yalnızca ilk harf
+   büyür. Birden çok kelime gerekiyorsa **her kelimenin ilk harfi büyür ve kelimeler
+   bitişik yazılır**: `TeknesyumBase`, `VidShrink`. Kısaltma tek başına adsa olduğu gibi
+   kalır (`API`).
+
+   **GitHub deposunda istisna var:** orada kelimeler arasına ayırıcı konabilir —
+   `Teknesyum-Base` geçerlidir. Yerel klasör ve çözüm/proje adı bitişik kalır
+   (`TeknesyumBase`). Var olan deponun adını kendiliğinden değiştirme, tek satırla söyle.
 7. **Sürüm çıkıyor mu?** Kökte `CHANGELOG.md` tutulur, `Keep a Changelog` biçiminde:
    sürüm başlığı + `Eklendi` / `Değişti` / `Düzeltildi` başlıkları. Commit mesajlarından
    otomatik üretilmez — o listeler kullanıcıya bir şey anlatmaz. `changesets` veya

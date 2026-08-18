@@ -67,6 +67,9 @@ function run(j) {
 
   s.agent_id = agentId;
   s.agent_type = j.agent_type || s.agent_type;
+  // Bitmiş sayılan bir ajandan yeni olay geliyorsa bitmemiştir. Kaydı geri aç;
+  // aksi halde `ended` sabit kalır, `last_seen` ilerler ve kayıt kendiyle çelişir.
+  if (s.ended && j.hook_event_name !== 'SubagentStop') { s.ended = null; s.stop_reason = null; }
   s.last_seen = now;
   s.identity = j.agent_id ? 'agent_id' : 'transcript';
 
@@ -102,7 +105,9 @@ function run(j) {
       // Ölçüldü: bu olayın payload'ında `stop_reason` alanı YOK. Eksikliği ölüm sanma —
       // aksi halde normal biten her ajan statusline'da ⨯ görünür.
       s.stop_reason = j.stop_reason || 'end_turn';
-      s.ended = now;
+      // `ended` başlangıçtan önce olamaz. Olduysa kayıt karışmıştır; uydurma yerine
+      // alanı boş bırak — yanlış zaman, zamansızlıktan kötüdür.
+      s.ended = (s.started && now < s.started) ? null : now;
       if (j.last_assistant_message) s.last_word = String(j.last_assistant_message).slice(0, 300);
       break;
     }
@@ -293,7 +298,16 @@ function birlestir(live, hedef, gecici) {
     for (const f of g.files || []) if (!h.files.includes(f)) h.files.push(f);
     yaz(hedef, h);
   } else if (g && !h) {
-    yaz(hedef, g);
+    // ÖLÇÜLDÜ (aee32fa5b45ba552b): geçici dosya olduğu gibi kopyalanınca önceki ajanın
+    // `ended`/`stop_reason`/`last_word` alanları yeni ajana geçti; kayıtta `ended`
+    // `started`'dan ÖNCE göründü. Birleştirme yalnızca iş alanlarını taşır, yaşam
+    // döngüsü alanlarını asla.
+    yaz(hedef, {
+      steps: g.steps || 0,
+      contract: g.contract || null,
+      last_action: g.last_action || '—',
+      files: g.files || [],
+    });
   }
   try { fs.unlinkSync(gf); } catch {}
 }
@@ -315,6 +329,27 @@ function iz(live, j) {
     d.ptu_ajanli = (d.ptu_ajanli || 0) + (j.agent_id || j.agent_transcript_path ? 1 : 0);
   }
   yaz(f, d);
+  izSatiri(live, j, ev, now);
+}
+
+// Sayaç "hook ateşledi mi" sorusunu cevaplıyor ama "ajan neden yarım kesildi"
+// sorusunu cevaplamıyor: sıra kayboluyor. Zaman damgalı tek satırlık günlük,
+// hangi ajanın hangi olaydan sonra sustuğunu gösterir.
+function izSatiri(live, j, ev, now) {
+  const kimlik = j.agent_id ? 'id:' + j.agent_id
+    : transcriptKimligi(j) ? 'tr:' + transcriptKimligi(j)
+    : '-';
+  const alan = [];
+  for (const k of Object.keys(j)) {
+    const v = j[k];
+    if (v === null || ['string', 'number', 'boolean'].includes(typeof v)) {
+      const t = String(v);
+      // Uzun metin (transcript, mesaj gövdesi) günlüğü boğar; kısa skalerler yeter.
+      if (t.length <= 60) alan.push(k + '=' + t);
+    }
+  }
+  const satir = [now, ev, kimlik, (j.tool_name || ''), alan.join(' ')].join(' | ') + '\n';
+  try { fs.appendFileSync(path.join(live, '_hook-tani.log'), satir); } catch {}
 }
 
 // 2.0.0'da `canli/` → `live/` oldu. Eski klasörü olan projede oraya yazmaya devam

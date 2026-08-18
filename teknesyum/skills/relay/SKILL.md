@@ -129,7 +129,10 @@ Yazma işine başlamadan önce, sırayla kontrol et:
 3. **Yönlendirici `CLAUDE.md` var mı?** Yoksa ve proje ≥5 kaynak dosyaysa iş bitiminde
    `scribe`'ye yazdır.
 4. **Arayüz işi var mı?** `teknesyum-ui` devreye girer; sözleşmenin rolü `ui-builder`.
-5. **Yeni depo mu açıyorsun?** Ad **ilki büyük, gerisi küçük**: `Vidshrink`, `Runly`,
+5. **Deterministik araç kuruldu mu?** Yeni JS/TS projesinde `biome.json` yaz; iş bitiminde
+   biçimlendirmeyi modele değil `biome check --write`'a yaptır. Model gerekmeyen yerde
+   model kullanmak token israfıdır — aynı düstur `sed`, `rg` ve IDE refactor için de geçerli.
+6. **Yeni depo mu açıyorsun?** Ad **ilki büyük, gerisi küçük**: `Vidshrink`, `Runly`,
    `Lockpicker`. Tire, alt çizgi, camelCase ve BÜYÜK HARF yok; birden çok kelime
    gerekiyorsa bitişik yazılır ve yalnızca ilk harf büyür (`Teknesyumbase`), ikinci
    kelimenin baş harfi büyütülmez. Kısaltma tek başına adsa olduğu gibi kalır (`API`).

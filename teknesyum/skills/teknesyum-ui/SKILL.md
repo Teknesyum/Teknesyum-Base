@@ -26,6 +26,25 @@ Projeye özel ezme: `<proje>/.claude/teknesyum-ui.json`. O varsa kullanıcı gen
 | WPF / .NET | `assets/Theme.xaml` | `Themes/Theme.xaml`, `App.xaml` MergedDictionaries |
 | WinForms / CLI | `assets/Palette.cs` | proje köküne |
 
+**Varsayılan bağımlılıklar.** Yeni projede bunlar sorulmadan kurulur; hepsi izin veren
+lisansta ve hepsi `prefers-reduced-motion` farkında.
+
+| Yığın | Paket | Ne için |
+|---|---|---|
+| React / Electron | `motion` | bileşen animasyonu, `useReducedMotion` |
+| React / Electron | `@formkit/auto-animate` | liste, tablo, bildirim — üç satırlık iş |
+| React / Electron | `@base-ui-components/react` | erişilebilir davranış katmanı |
+| JS / TS | `biome` | lint + biçim, tek ikili tek yapılandırma |
+| JS / TS | `i18next` + `react-i18next` | `locale/*.json` sözlüğü |
+| Electron | `electron-vite`, `electron-builder` | derleme ve paketleme |
+| WPF / .NET | — | `WindowChrome` ve `Storyboard` yerleşik, paket gerekmez |
+| WPF / .NET | `Velopack` | kurulum ve otomatik güncelleme (dağıtılacaksa) |
+
+Görünüm bizim, davranış onların: Base UI odak yönetimi, klavye gezinmesi ve `aria`
+tarafını verir, tek bir rengi belirlemez. Hazır tema kütüphanesi (WPF UI, MahApps,
+HandyControl, MUI) **kurulmaz** — kendi görsel kimliğini dayatır, §8'in tema bütünlüğü
+kuralıyla çatışır.
+
 ## 2. Palet (varsayılan)
 
 ```
@@ -254,6 +273,15 @@ Koyu temada iki durak arasındaki geçiş, 8-bit çıktıda görünür şeritler
 
 Merkezî değerler. Projeye özel ezme gerekirse tokenı değiştir, kontrolü değil.
 
+**Hedef boyutu — en az 24×24.** Tıklanabilir her şey (ikon düğmesi, kapat çarpısı, sekme,
+onay kutusu hücresi, satır içi eylem) en az 24×24 DIP alan kaplar. Görünen simge daha
+küçük olabilir; tıklanan alan olamaz. Bu WCAG 2.2 §2.5.8'in AA tabanıdır, tercih değil.
+
+**Odak halkası — 2 DIP, 3:1 kontrast, anında.** Kontrolün çevresinde en az 2 DIP
+kalınlığında ve zeminle 3:1 kontrast taşıyan bir halka belirir. 1 DIP'lik normal
+konturumuz odak için yetmez; odak ayrı ve daha kalındır. Yumuşatılarak geciktirilmez
+(WCAG 2.2 §2.4.13).
+
 **Scrollbar** — native olamaz. Yol **10 DIP** ve koyu; thumb neon-blue, hover'da neon-pink,
 sürüklerken neon-purple. Ok düğmeleri yok.
 
@@ -337,6 +365,11 @@ aynı ekranı ikinci kez görüyordur ve beklemek zorunda kalır.
 duvarlar bu temada yok. Tek istisna **süreç göstergesidir** — gerçekten bir iş yürürken
 çalışır, iş bitince durur. Yükleme iskeleti (`skeleton`) parıltısı da buna dahildir:
 döngü ≥ 1.4 s ve kontrastı düşük olur.
+
+**Sürükleyerek yapılan her işin tek dokunuşluk alternatifi olur.** Dosya bırakma alanı
+varsa "Dosya seç" düğmesi de olur; sıra değiştirme sürüklemeyle yapılıyorsa yukarı/aşağı
+düğmesi de bulunur. WCAG 2.2 §2.5.7; el titremesi olan ve işaretçi hassasiyeti düşük
+kullanıcılar sürükleyemez.
 
 **Hareket, tıklanacak şeyi kaçırmaz.** Kullanıcı bir düğmeye giderken düğme yer değiştiriyorsa
 animasyon zarar veriyordur. Yerleşim animasyonu yalnızca kullanıcı eylemiyle başlar, kendi

@@ -275,3 +275,57 @@ sunucu kurmadan yapıyor.
 
 Karar: MCP ayak izi dar kalır. Belge sorgulama için hâlihazırda kurulu olan tek sunucu
 yeterli.
+
+---
+
+## D6 — Claude Code eklenti ekosistemi
+
+Ekosistem 2026 ortasında 9000+ üçüncü parti kayda ulaştı; Anthropic dizininde ~100
+birinci parti ve ortak eklenti var. En çok kurulanlar: Frontend Design, Superpowers,
+Context7.
+
+### Superpowers (obra) — **en yakın akrabamız, iki fikri alınabilir**
+
+Bizimkiyle aynı iddiada: beceri çerçevesi + yazılım geliştirme yöntemi. 750k+ kurulum.
+
+Öne çıkan iki mekanizma:
+
+**Beyin fırtınası kilidi.** Kod yazmayı, bağlam keşfi ve tasarım onayı tamamlanana kadar
+**engelliyor.** Bizde buna karşılık gelen şey yok: relay ölçüyor ve dağıtıyor ama
+"önce netleştir" aşamasını zorlamıyor.
+
+**Dört fazlı hata ayıklama.** Düzeltmeden önce kök neden araştırmasını zorunlu kılıyor.
+Bizde `builder` doğrudan düzeltmeye giriyor.
+
+Alınacak: ikisi de fikir olarak alınmaya değer, ama **bizim ölçü satırımızın tersine
+çalışmamak şartıyla.** Kullanıcının açık tercihi rutin onay sormamak; beyin fırtınası
+kilidi her işe uygulanırsa o tercihi çiğner. Doğru uygulama: **yalnızca "sıfırdan proje"
+ölçüsünde devreye giren bir netleştirme adımı.**
+
+Alınmayacak: TDD zorunluluğu (kırmızı-yeşil döngüsü) — kullanıcının yığını ve iş tipi
+buna uymuyor, her değişiklikte test yazdırmak yavaşlatır.
+
+### Frontend Design (Anthropic) — **çakışma riski, kurulmamalı**
+
+En çok kurulan eklenti. Arayüz tasarımı yönlendirmesi yapıyor — yani `teknesyum-ui` ile
+**aynı işi** yapıyor, farklı bir estetikle.
+
+İkisi birlikte kuruluysa hangisinin kazanacağı belirsiz; melez arayüz çıkar. §8'in
+"tema bütünlüğü" kuralı bunu zaten yasaklıyor.
+
+Karar: kurulmaz. `teknesyum-ui` bu alanı kaplıyor.
+
+### Context7 — **zaten kurulu, yeterli**
+
+Belge sorgulama. Kütüphane sürümüne uygun güncel doküman çekiyor, ezberden API uydurmayı
+engelliyor. Bu oturumda da kullanıldı.
+
+### LSP / kod zekâsı eklentileri — **bizde zaten var**
+
+`.lsp.json` ile bağlı. Tanıma gitme, referans bulma, tip hatası görme.
+
+### Ekosistemden çıkan yapısal ders
+
+Kurulum sayıları şunu söylüyor: en çok kurulan eklentiler **tek bir şeyi iyi yapanlar**
+değil, **yöntem dayatanlar** (Superpowers, Frontend Design). Teknesyum Base doğru
+kategoride; eksiği yöntemin görünürlüğüydü, o da ölçü satırı ve etki raporuyla kapandı.

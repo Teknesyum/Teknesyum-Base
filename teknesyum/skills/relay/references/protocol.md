@@ -69,17 +69,17 @@ Kayıp ajan ölü ajan gibi ele alınır (§5) — yoklamayla vakit kaybetme.
 
 **Kayıtta tutarsızlık varsa kayıt karışmıştır.** `ended` `started`'dan önceyse veya
 `last_seen` `ended`'den sonraysa iki ajanın izi birbirine geçmiştir; o kayda güvenme,
-teşhis günlüğüne bak.
+debug günlüğüne bak.
 
-## 1.1 Teşhis modu
+## 1.1 Debug modu
 
-Normalde hiçbir teşhis dosyası yazılmaz. Şüphe varsa `TEKNESYUM_TANI=1` ile oturum aç;
+Normalde hiçbir debug dosyası yazılmaz. Şüphe varsa `TEKNESYUM_DEBUG=1` ile oturum aç;
 iki dosya oluşur:
 
 | Dosya | Ne söyler |
 |---|---|
-| `_hook-tani.json` | Sayaç: toplam olay, olay dağılımı, `agent_id` gelen olay oranı, olay başına alan listesi |
-| `_hook-tani.log` | Zaman damgalı olay günlüğü: `zaman \| olay \| kimlik \| araç \| kısa alanlar` |
+| `_hook-debug.json` | Sayaç: toplam olay, olay dağılımı, `agent_id` gelen olay oranı, olay başına alan listesi |
+| `_hook-debug.log` | Zaman damgalı olay günlüğü: `zaman \| olay \| kimlik \| araç \| kısa alanlar` |
 
 Sayaç "hook ateşledi mi" sorusunu cevaplar; günlük **"ajan hangi olaydan sonra sustu"**
 sorusunu cevaplar. Yarım kesilen ajanı ararken günlükte o ajanın `id:`/`tr:` kimliğini

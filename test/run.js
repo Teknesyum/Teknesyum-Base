@@ -26,7 +26,7 @@ function icerir(s, p, not) {
 function calistir(script, yuk, ek) {
   const r = spawnSync(process.execPath, [script], {
     input: JSON.stringify(yuk), encoding: 'utf8',
-    env: { ...process.env, TEKNESYUM_SESSIZ: '', TEKNESYUM_TANI: '', ...(ek || {}) },
+    env: { ...process.env, TEKNESYUM_SESSIZ: '', TEKNESYUM_DEBUG: '', ...(ek || {}) },
   });
   return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
 }
@@ -318,14 +318,14 @@ ol('genel iz temizliği az sayıda klasörde de çalışır', () => {
   esit(fs.existsSync(bayat), false, '30 saatlik iz hâlâ duruyor');
 });
 
-ol('teşhis dosyası varsayılanda yazılmaz, TEKNESYUM_TANI=1 ile yazılır', () => {
+ol('debug dosyası varsayılanda yazılmaz, TEKNESYUM_DEBUG=1 ile yazılır', () => {
   const { p, live } = proje(1, 0);
   const yuk = { ...ort(p), hook_event_name: 'PostToolUse', tool_name: 'Read',
     agent_id: 'a1', agent_type: 'builder', agent_transcript_path: '/x/a1.jsonl', tool_input: {} };
   calistir(IZLE, yuk);
-  esit(fs.existsSync(path.join(live, '_hook-tani.json')), false, 'bayraksız');
-  calistir(IZLE, yuk, { TEKNESYUM_TANI: '1' });
-  esit(fs.existsSync(path.join(live, '_hook-tani.json')), true, 'bayraklı');
+  esit(fs.existsSync(path.join(live, '_hook-debug.json')), false, 'bayraksız');
+  calistir(IZLE, yuk, { TEKNESYUM_DEBUG: '1' });
+  esit(fs.existsSync(path.join(live, '_hook-debug.json')), true, 'bayraklı');
 });
 
 ol('ajan izine değişen dosya ve sözleşme numarası işlenir', () => {
@@ -379,14 +379,14 @@ ol('bitmis sayilan ajandan yeni olay gelirse kayit geri acilir', () => {
   esit(s.stop_reason, null);
 });
 
-ol('TEKNESYUM_TANI olay gunlugu yazar, varsayilanda yazmaz', () => {
+ol('TEKNESYUM_DEBUG olay gunlugu yazar, varsayilanda yazmaz', () => {
   const { p, live } = proje(1, 0);
   const yuk = { ...ort(p), hook_event_name: 'PostToolUse', agent_id: 'a1',
     agent_type: 'builder', tool_name: 'Bash', tool_input: {} };
   calistir(IZLE, yuk);
-  if (fs.existsSync(path.join(live, '_hook-tani.log'))) throw new Error('varsayilanda gunluk yazildi');
-  calistir(IZLE, yuk, { TEKNESYUM_TANI: '1' });
-  const g = fs.readFileSync(path.join(live, '_hook-tani.log'), 'utf8');
+  if (fs.existsSync(path.join(live, '_hook-debug.log'))) throw new Error('varsayilanda gunluk yazildi');
+  calistir(IZLE, yuk, { TEKNESYUM_DEBUG: '1' });
+  const g = fs.readFileSync(path.join(live, '_hook-debug.log'), 'utf8');
   icerir(g, 'id:a1', 'gunluk kimligi');
   icerir(g, 'PostToolUse', 'gunluk olayi');
 });
@@ -516,7 +516,7 @@ ol('alt çizgili kayıtlar ajan sanılmaz (hayalet ⨯ satırı)', () => {
   const { p, live } = proje(1, 0);
   fs.mkdirSync(live, { recursive: true });
   fs.writeFileSync(path.join(live, '_running.json'), '[]');
-  fs.writeFileSync(path.join(live, '_hook-tani.json'), '{"toplam":3}');
+  fs.writeFileSync(path.join(live, '_hook-debug.json'), '{"toplam":3}');
   const r = calistir(DURUM, { cwd: p, session_id: 'oturum-1',
     model: { display_name: 'Opus' }, workspace: { current_dir: p } });
   if (/⨯/.test(r.out)) throw new Error('hayalet ölü ajan satırı: ' + r.out);

@@ -24,7 +24,7 @@ function run(j) {
   try { fs.mkdirSync(live, { recursive: true }); } catch { return; }
   if (!root) supur();
 
-  if (process.env.TEKNESYUM_TANI) iz(live, j);
+  if (process.env.TEKNESYUM_DEBUG) iz(live, j);
 
   // ÖLÇÜLDÜ: alt ajanın araç kullanımları hook'a çoğunlukla ulaşmıyor — worktree
   // izolasyonlu bir koşuda ulaştı (16 adım), diğerlerinde hiç. Güvenilir adım sayacı
@@ -313,7 +313,7 @@ function birlestir(live, hedef, gecici) {
 }
 
 function iz(live, j) {
-  const f = path.join(live, '_hook-tani.json');
+  const f = path.join(live, '_hook-debug.json');
   let d = read(f) || { toplam: 0, ajanli: 0, olaylar: {}, ilk: null, son: null, ornek_alanlar: null };
   d.toplam++;
   if (j.agent_id) d.ajanli++;
@@ -349,7 +349,7 @@ function izSatiri(live, j, ev, now) {
     }
   }
   const satir = [now, ev, kimlik, (j.tool_name || ''), alan.join(' ')].join(' | ') + '\n';
-  try { fs.appendFileSync(path.join(live, '_hook-tani.log'), satir); } catch {}
+  try { fs.appendFileSync(path.join(live, '_hook-debug.log'), satir); } catch {}
 }
 
 // 2.0.0'da `canli/` → `live/` oldu. Eski klasörü olan projede oraya yazmaya devam

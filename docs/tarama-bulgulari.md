@@ -119,3 +119,44 @@ Alınmayacak: kodun kendisi — §5.4'e uydurmak yeniden yazmakla aynı maliyett
 
 Katman sırası: **Base UI (davranış) → teknesyum tokenları (görünüm) → motion +
 auto-animate (hareket)**. Bileşen kaynakları bu üçlünün üstüne fikir verir, kod vermez.
+
+---
+
+## D3 — Erişilebilirlik ve hareket standartları
+
+### WCAG 2.2 — **alındı, ölçüler sertleşiyor**
+
+W3C tavsiyesi (Ekim 2023), dokuz yeni ölçüt. Üçü doğrudan bizim standardı ilgilendiriyor.
+
+**2.5.8 Hedef boyutu (AA): en az 24×24 CSS piksel.** §5.3'te onay kutusu hücresini
+24×24 yapmıştık — sezgiyle konan bu ölçü meğer standardın kendisiymiş. Artık kural tüm
+tıklanabilir hedefler için geçerli: ikon düğmesi, kapat çarpısı, sekme, satır içi
+bağlantı.
+
+**2.4.13 Odak görünümü (AAA): odak halkası, kontrolün çevresinde 2 CSS piksel kalınlığında
+bir çerçeve alanı kadar olmalı ve 3:1 kontrast taşımalı.** Bizim 1 DIP konturumuz odak
+için yetmiyor — odak halkası ayrı ve daha kalın olmalı.
+
+**2.5.7 Sürükleme hareketleri (AA): sürükleyerek yapılan her işin tek dokunuşluk bir
+alternatifi olmalı.** Dosya sürükle-bırak alanı olan her arayüzde "Dosya seç" düğmesi
+zorunlu — bu bizde zaten alışkanlık, artık kural.
+
+Alınmayacak: WCAG'in tamamına AAA uyum hedefi. AA taban, AAA yalnızca odak görünümünde.
+
+### Material Design 3 — **kısmen alındı, çapraz doğrulama**
+
+Süre belirteçleri: short1 50 ms, short2 100 ms, medium1 250 ms, medium2 300 ms,
+long1 450 ms, long2 500 ms. Yumuşatma iki aile: `Emphasized` ve `Standard`.
+
+Bizim ölçeğimiz (90/160/240/360) M3'ün kısa-orta bandına oturuyor; 450-500 ms bandını
+bilinçli olarak almıyoruz — o band mobil sayfa geçişi içindir, masaüstü aracında uzun.
+
+Alınacak tek fikir: **giren ve çıkan hareket farklı eğri kullanır** (decelerate / accelerate).
+Bu bizde zaten `--tk-e-out` ve `--tk-e-in` olarak var; M3 bunu doğruluyor.
+
+Alınmayacak: `Emphasized` ailesinin abartılı ivmelenmesi ve M3'ün renk/şekil sistemi.
+
+### Karar
+
+§5.3'e hedef boyutu tabanı (24×24) ve odak halkası kuralı (2 px, 3:1) girer.
+§5.4'e sürükleme alternatifi kuralı girer.

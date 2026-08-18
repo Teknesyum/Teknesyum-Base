@@ -1,6 +1,6 @@
 # Rota: kütüphane ve ekosistem taraması
 
-**Kaldığım yer:** D2 (sürüyor)
+**Kaldığım yer:** D3 (sürüyor)
 **Amaç:** Teknesyum Base'i güçlendirecek kütüphane, standart ve eklentileri tarayıp
 alınabilir olanları standarda katmak, kurulması gerekenleri kullanıcıya bildirmek.
 
@@ -9,8 +9,8 @@ alınabilir olanları standarda katmak, kurulması gerekenleri kullanıcıya bil
 | # | Durak | Durum | Bulgu |
 |---|---|---|---|
 | D1 | Animasyon ve etkileşim kütüphaneleri | bitti | tarama-bulgulari.md §D1 |
-| D2 | Bileşen kaynakları ve lisansları | sürüyor | — |
-| D3 | Erişilebilirlik ve hareket standartları | bekliyor | — |
+| D2 | Bileşen kaynakları ve lisansları | bitti | tarama-bulgulari.md §D2 |
+| D3 | Erişilebilirlik ve hareket standartları | sürüyor | — |
 | D4 | Masaüstü: WPF / Electron tema ve iskelet | bekliyor | — |
 | D5 | Ajan sistemi: SDK, MCP, hafıza, orkestrasyon | bekliyor | — |
 | D6 | Claude Code eklenti ekosistemi | bekliyor | — |

@@ -329,3 +329,40 @@ engelliyor. Bu oturumda da kullanıldı.
 Kurulum sayıları şunu söylüyor: en çok kurulan eklentiler **tek bir şeyi iyi yapanlar**
 değil, **yöntem dayatanlar** (Superpowers, Frontend Design). Teknesyum Base doğru
 kategoride; eksiği yöntemin görünürlüğüydü, o da ölçü satırı ve etki raporuyla kapandı.
+
+---
+
+## D7 — Deterministik araçlar
+
+Kullanıcının duruşu net: **model gerekmiyorsa model kullanma.** Bu durak, angarya işi
+modelden alıp araca vermeyi arıyor.
+
+### Biome — **alındı, yeni JS/TS projesinde varsayılan**
+
+MIT. Rust tabanlı, tek ikili, tek yapılandırma dosyası. Hem linter hem biçimlendirici —
+ESLint + Prettier ikilisinin yerini alıyor. 472 kural; JS, TS, JSX, CSS, JSON, GraphQL,
+HTML kapsıyor. ESLint'e göre 50-100 kat hızlı.
+
+Alınacak: sıfırdan kurulan her JS/TS/React/Electron projesinde varsayılan.
+Tek dosya (`biome.json`), tek komut, kök kalabalığı yok — relay §1.2 ile uyumlu.
+
+Alınmayacak: mevcut, ESLint eklentilerine gömülü projelerde zorla geçiş.
+
+### Oxlint — **koşullu**
+
+Biome'un ~2 katı hızlı, 787 kural, Vite 8'in varsayılan linteri. Ama yalnızca linter;
+biçimlendirici değil.
+
+Alınacak: yalnızca büyük ve ESLint'e bağımlı bir kod tabanında ön denetim katmanı olarak.
+Küçük projede iki araç kurmanın anlamı yok.
+
+### Bunlar niye önemli
+
+Ajan bir dosyayı yazdıktan sonra biçim düzeltmesini modele yaptırmak token israfı.
+`biome format --write` deterministik, anlık ve bedava. Aynı mantık `sed`, `rg` ve
+IDE refactor için de geçerli — kullanıcının çalışma stili kuralı bunu zaten söylüyor.
+
+### Karar
+
+`teknesyum-ui` §1 kurulum tablosuna ve relay §2 hazırlık listesine girer:
+yeni JS/TS projesinde `biome.json` kurulur, iş bitiminde `biome check --write` çalışır.

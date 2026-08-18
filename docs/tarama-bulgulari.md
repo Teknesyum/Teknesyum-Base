@@ -160,3 +160,51 @@ Alınmayacak: `Emphasized` ailesinin abartılı ivmelenmesi ve M3'ün renk/şeki
 
 §5.3'e hedef boyutu tabanı (24×24) ve odak halkası kuralı (2 px, 3:1) girer.
 §5.4'e sürükleme alternatifi kuralı girer.
+
+---
+
+## D4 — Masaüstü: WPF ve Electron
+
+### WPF UI (lepo), HandyControl, MahApps.Metro — **alınmadı, gerekçesi önemli**
+
+Üçü de açık kaynak ve olgun. Sundukları şey **hazır bir görsel kimlik**: WPF UI Fluent
+(Windows 11), MahApps Metro, HandyControl kendi dili.
+
+Sorun tam da bu. Bizim kimliğimiz var; bu kütüphanelerden birini almak, tema tutarlılığını
+onların kurallarına devretmek demek. §8'in "projenin bir kısmı neon bir kısmı native
+olmasın" kuralıyla doğrudan çatışıyor: kütüphanenin kendi denetimleri neon olmaz,
+bizimkiler Fluent olmaz, ortaya melez çıkar.
+
+Alınacak tek şey **fikir**: üçü de native `ScrollBar`, `ComboBox` popup'ı ve `MessageBox`
+gibi sızıntı noktalarını şablonla değiştiriyor. §8'in sızıntı tablosu zaten aynı listeyi
+tutuyor; onların şablon yapısı bize hangi denetimlerin gerçekten yeniden şablon istediğini
+gösteren bir kontrol listesi olarak yarıyor.
+
+**Yeniden değerlendirme koşulu:** bir gün yüksek kontrast modu veya ekran okuyucu desteği
+gerekirse WPF UI'ın erişilebilirlik altyapısı bakılmaya değer.
+
+### WPF'te bize gereken şey kütüphane değil
+
+Özel başlık çubuğu için `WindowChrome` .NET'in içinde. Animasyon için `Storyboard` yeterli.
+Yeni bağımlılık gerekmiyor; §5.4'ün WPF karşılıkları bunu zaten söylüyor.
+
+### Electron: electron-vite + electron-builder — **alındı**
+
+`electron-vite` Vite tabanlı derleme; ana süreç, ön yükleyici ve arayüz üçünü tek
+yapılandırmayla derliyor. `electron-builder` kurulum paketi, kod imzalama ve otomatik
+güncelleme sağlıyor; Windows, macOS, Linux.
+
+Electron Forge resmî iskele aracı ve şablon sunuyor. İkisi arasında seçim: **Forge şablon
+verir, electron-vite hız verir.** Bizim projelerde arayüz React + Vite olduğu için
+electron-vite doğal taraf.
+
+Alınacak: yeni Electron projesinde varsayılan iskele `electron-vite`, paketleme
+`electron-builder`. Bu §1 kurulum tablosuna girer.
+
+Alınmayacak: Forge'un kendi şablonları — proje düzeni kuralımız (relay §1.2) ile
+çakışıyor, kökü kalabalıklaştırıyor.
+
+### Karar
+
+Masaüstünde tema kütüphanesi alınmıyor, iskele araçları alınıyor. Sebep aynı cümlede:
+**görünüm bizim, altyapı onların.**

@@ -345,6 +345,13 @@ Sözleşme boyutu: **3-8 dosya, tek tutarlı yetenek.** Gerçek projede 5-9 söz
   taşınır ve `SKILL.md`'de tek satırlık işaretçi bırakılır. Taşınacak olan seçilirken
   ölçüt "önemli mi" değil **"her işte gerekli mi"**: masaüstüne özel kural, web işinde
   bağlam yakar.
+- **Kırpma dürüst yapılır.** Bir çıktıyı, dosyayı veya arama sonucunu kısaltarak
+  aktarıyorsan **neyin düştüğünü ve tamamına nasıl bakılacağını** yaz: `[ilk 40 satır ·
+  312 satır atlandı · tamamı: dosya:1-352]`. Sessiz kırpma en pahalı token tasarrufudur —
+  eksik bilgiyle yazılan kod ikinci kez yazılır.
+- **Optimizasyonun tabanı vardır.** Küçük işi optimize etmek, optimizasyonun kendisinden
+  ucuza gelmez: 3 satırlık dosyayı grep'lemek, 20 karakterlik düzenlemeyi ajanla yapmak,
+  tek dosyalık işe rota kurmak. Kazanç kurulum maliyetinden küçükse **doğrudan yap**.
 - **Bilgi tekrar ediyorsa hafızaya yazılır, oturuma değil.** Üçüncü kez açıklanan şey
   kalıcı hafızaya gider; ilgili notlar birbirine `[[ad]]` ile bağlanır. Ayrı bir not
   uygulaması (Obsidian vb.) kurulmaz — hafıza zaten markdown, bağlar zaten çalışıyor.
@@ -363,6 +370,11 @@ ama körlemede bırakma. Zorunlu anlar (tam biçimi `references/protocol.md` §8
 | Bitince | Sözleşme tablosu, toplam değişiklik, denetimde yakalananlar, yapılmayanlar ve sebebi |
 
 Tek sözleşmelik işte tablo kurma; aynı bilgiyi iki satırda ver.
+
+**Sayı verirken ölçüsünü de ver.** "%40 hızlandı", "yarı yarıya küçüldü" gibi rakamlar
+neyle, nerede, hangi girdide ölçüldüğü yazılmadan söylenmez. Ölçmediysen "ölçmedim" de.
+Ölçünün kapsamadığı maliyet varsa (başka bir modele giden çağrı, ek disk, ek gecikme)
+onu da yaz — kapsamı söylenmemiş kazanç rakamı yanıltıcıdır.
 
 Bunlar **durum bildirimidir, düzyazı özet değildir** — tablo, madde, tek satırlık olay.
 Bitmiş işi tekrar anlatma. Sıklığı `briefing` düğmesi belirler; sapma bildirimi

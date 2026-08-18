@@ -1,5 +1,5 @@
 ---
-description: Yeni bir huy/kural kaydeder — doğru katmana yazar
+description: Yeni bir kural kaydeder — doğru katmana yazar
 argument-hint: <kural veya takıldığın şey>
 allowed-tools: Read, Edit, Write
 ---

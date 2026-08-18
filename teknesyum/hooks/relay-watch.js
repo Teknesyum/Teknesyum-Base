@@ -12,7 +12,7 @@ function run(j) {
   const root = findRelay(j.cwd || process.cwd());
 
   if (j.hook_event_name === 'SessionStart') return acilis(root);
-  if (j.hook_event_name === 'UserPromptSubmit') return hatirlat();
+  if (j.hook_event_name === 'UserPromptSubmit') return hatirlat(j);
   if (j.hook_event_name === 'Stop') return paketDenetle(j);
 
   // Röle kurulu projede izler proje içinde durur (/report oradan okur). Kurulu değilse
@@ -151,18 +151,36 @@ function duyur(mesaj) {
 
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını
 // göremiyordu. Ölçüyü model yapar, ama ölçüldüğünü söylemesi artık zorunlu.
-function hatirlat() {
+function hatirlat(j) {
   if (process.env.TEKNESYUM_SESSIZ) return;
+  // ÖLÇÜLDÜ: metin her istekte ~90 token yazıyordu ve geçmişte kalıcı. 60 mesajlık
+  // oturumda 5000+ token, hepsi aynı cümlenin kopyası. Kural bir kez okunduğunda
+  // geçmişte duruyor; ikinci kopyası bilgi taşımıyor. İlk iki istekte yazılır.
+  if (sayacGecti(j)) return;
   const metin =
-    'Teknesyum Base: bu bir iş talebiyse relay skill §1 ile ölç ve cevabının ilk satırı ' +
-    '`Teknesyum ▸ ölçü: <büyüklük> → <karar>` olsun. Ajan açmıyorsan da yaz, gerekçesiyle ' +
-    '(örn. `Teknesyum ▸ ölçü: tek dosya / gözle doğrulanabilir → ajan gerekmedi`). ' +
-    'Salt soru, açıklama veya sohbetse satırı hiç yazma.';
+    'Teknesyum Base: iş talebiyse relay §1 ile ölç, ilk satır ' +
+    '`Teknesyum ▸ ölçü: <büyüklük> → <karar>`. Ajan açmasan da yaz (örn. ' +
+    '`tek dosya → ajan gerekmedi`). Salt soru/sohbette satırı yazma.';
   try {
     process.stdout.write(JSON.stringify({
       hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
     }));
   } catch {}
+}
+
+// Oturum başına kaç kez yazdığımızı sayar. Sayaç dosyası oturuma özel; `supur()`
+// bir günü geçenleri zaten atıyor.
+function sayacGecti(j) {
+  const id = safe((j && j.session_id) || 'oturum');
+  const dosya = path.join(genelKok(), id + '.hatirlatma');
+  let n = 0;
+  try { n = parseInt(fs.readFileSync(dosya, 'utf8'), 10) || 0; } catch {}
+  if (n >= 2) return true;
+  try {
+    fs.mkdirSync(path.dirname(dosya), { recursive: true });
+    fs.writeFileSync(dosya, String(n + 1));
+  } catch {}
+  return false;
 }
 
 // Ölçüldü: kural multi-session.md §5'te yazılıydı ve yine de sohbete 120 satırlık paket

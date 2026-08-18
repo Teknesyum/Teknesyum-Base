@@ -59,46 +59,36 @@ label        #00f3ff   etiket ve bölüm başlığı (kalın, tracking'li — up
 disabled     #71717a   YALNIZCA devre dışı kontrol. Tek gri budur.
 ```
 
-Bir ekranda **mavi baskın, pembe vurgu, mor seyrek**. Üçünü eşit kullanma. Pembe ve morun
-asıl yeri **durum**tur: hover, focus, seçim, sürükleme. Kalıcı pembe metin, bilinçli ve
-tekil bir marka vurgusu değilse kullanılmaz.
+Bir ekranda **mavi baskın, pembe vurgu, mor seyrek**. Pembe ve morun asıl yeri
+**durum**tur: hover, focus, seçim, sürükleme. Kalıcı pembe metin, bilinçli marka vurgusu
+değilse kullanılmaz.
 
-**Zemin nötrdür — metnin rengiyle akraba olamaz.** Mavi yazının arkasına mavimsi koyu
-yüzey konmaz: iki renk aynı aileden olunca kontrast sayı olarak yeterli görünse bile göz
-ayırt edemez, yazı yüzeye gömülür. Zemin ve panel tonu **nötr kömür/siyah** kalır; renk
-yalnızca yazıda, çerçevede ve durum vurgusunda bulunur. Aynı sebeple pembe metnin arkasına
-morumsu yüzey konmaz.
+**Zemin nötrdür — metnin rengiyle akraba olamaz.** Mavi yazının arkasına mavimsi yüzey,
+pembe yazının arkasına morumsu yüzey konmaz; kontrast sayıca yetse bile göz ayırt edemez.
+Renk yalnızca yazıda, çerçevede ve durum vurgusunda bulunur.
 
 **Kontrast pazarlık konusu değil.** Zemin tam siyah, yazı tam beyaz. `#d1d5db`, `#9ca3af`,
-`#6b7280` gibi ara griler bu temada **yok**: koyu zeminde soluk gri yazı, tasarım değil
-okunmayan yazıdır. Kullanıcının bakması gereken bir şeyi soluklaştırarak hiyerarşi kurma —
-hiyerarşi **boyut, ağırlık, tracking ve neon renk** ile kurulur, parlaklık düşürerek değil.
-Metin/zemin kontrastı **7:1 altına inemez** (beyaz/siyah 21:1, neon-blue/siyah 12:1).
-Tek istisna gerçekten devre dışı olan kontroldür; o da griliğe ek olarak ayrıca belli edilir
-(ikon, imleç, tooltip) — çünkü renk körü kullanıcı grinin anlamını göremez.
+`#6b7280` gibi ara griler yok — koyu zeminde soluk gri, tasarım değil okunmayan yazıdır.
+Hiyerarşi **boyut, ağırlık, tracking ve neon renkle** kurulur, parlaklık düşürerek değil.
+Metin/zemin kontrastı **7:1 altına inemez**. Tek istisna devre dışı kontrol; o da griliğe
+ek bir işaretle belli edilir (ikon, imleç, tooltip) — renk körü kullanıcı griyi göremez.
 
-**Beyaz zemin kullanma.** Beyaz burada **yazının rengidir, zeminin değil.** Koyu bir arayüzün
-ortasındaki beyaz kutu göz kamaştırır: kullanıcı karanlık ortamda çalışıyordur, gözü siyah
-zemine uyum sağlamıştır, beyaz panel her açılışında acıtır. Sızdığı yerler bellidir —
-`WebView`/`iframe` varsayılan gövdesi, PDF ve rapor önizlemesi, boş `DataGridView`, yazdırma
-görünümü, yüklenmemiş `<img>` kutusu, üçüncü parti denetimlerin varsayılanı, `MessageBox`.
-Hepsinin zemini açıkça `bg`/`surface` verilir; "varsayılanı ne ise" bırakılmaz.
+**Beyaz zemin kullanma.** Beyaz burada yazının rengidir, zeminin değil. Sızdığı yerler
+bellidir: `WebView`/`iframe` gövdesi, PDF ve rapor önizlemesi, boş `DataGridView`, yazdırma
+görünümü, yüklenmemiş `<img>`, üçüncü parti denetim varsayılanı, `MessageBox`. Hepsine
+açıkça `bg`/`surface` verilir.
 
-Beyaz dolgu yalnızca **küçük ve amaçlı** olduğunda geçerlidir: bir ikonun içi, bir grafikteki
-veri noktası, bir imleç. Ölçü, avuç içi kadar alan — panel, satır, sekme ya da diyalog zemini
-asla. İçeriğin kendisi beyaz zeminliyse (kullanıcının PDF'i, dış web sayfası) onu bir
-`surface` çerçeve içine al ve kenarlarına pay bırak; ekranın kenarına dayanmasın.
+Beyaz dolgu yalnızca **avuç içi kadar** alanda geçerli: ikon içi, veri noktası, imleç.
+Panel, satır, sekme veya diyalog zemini asla. İçeriğin kendisi beyaz zeminliyse (kullanıcının
+PDF'i, dış sayfa) `surface` çerçeve içine alınır, kenara dayanmaz.
 
-Glow **kutuya** uygulanır, **metne değil**: dolgulu buton `box-shadow: 0 0 20px <renk>40`,
-çerçeveli kutu `inset 0 0 8px <renk>`, ikon `drop-shadow(0 0 5px <renk>)`. Glow'suz neon
-yüzey yok.
+Glow **kutuya** uygulanır: dolgulu buton `box-shadow: 0 0 20px <renk>40`, çerçeveli kutu
+`inset 0 0 8px <renk>`, ikon `drop-shadow(0 0 5px <renk>)`. Glow'suz neon yüzey yok.
 
-**Metne glow verilmez.** Sahada ölçüldü: harflerin etrafındaki hale kenarları yumuşatıyor,
-küçük punto ve ince gövdeli yazıda okunurluğu düşürüyor, ekran görüntüsünde metin bulanık
-çıkıyor. Neon etkisi zaten rengin kendisinden geliyor. Tek istisna **hero sayı** (24px+,
-900 ağırlık) — orada harf o kadar kalın ki hale gövdeyi yemiyor. Başlık, etiket, gövde,
-bağlantı, tablo değeri: glow yok. **Okunurluk gösterişten üstündür**; bu skill'de ikisi
-çatıştığında kazanan hep okunurluktur.
+**Metne glow verilmez.** Ölçüldü: hale kenarları yumuşatıyor, küçük puntoda okunurluğu
+düşürüyor, ekran görüntüsünde bulanık çıkıyor. Neon etkisi zaten renkten geliyor. Tek
+istisna **hero sayı** (24px+, 900) — harf yeterince kalın. Başlık, etiket, gövde, bağlantı,
+tablo değeri: glow yok. **Okunurluk gösterişten üstündür.**
 
 Opaklık merdiveni — sadece bunlar: dolgu `/10`, hover `/20`, aktif `/30`, çerçeve `/30`,
 güçlü çerçeve `/50-60`.
@@ -472,21 +462,8 @@ Derlemenin geçmesi arayüzün doğru olduğunu göstermez. Arayüz işi **gözl
 Hata ve boş durum ekranları da bu listeye dahildir; mutlu yolda görünmedikleri için en çok
 onlar atlanıyor.
 
-**Görüntüyü nasıl alacaksın.** `SetForegroundWindow` güvenilir değildir — pencereyi öne
-getirmediği hâlde başarı döner, sen de yanlış pencerenin görüntüsüne bakarsın. Pencereyi
-arka planda da çizen `PrintWindow(hwnd, hdc, 2)` kullan; pencereyi süreç yolu **ve** başlığı
-ile eşleştir:
-
-```powershell
-Add-Type -AssemblyName System.Drawing
-$p = Get-Process VidShrink.App | Where-Object { $_.MainWindowHandle -ne 0 }
-# PrintWindow(hwnd, hdc, PW_RENDERFULLCONTENT=2) -> Bitmap -> Save
-```
-
-**Bir DIP'lik anahat 1:1 görüntüde ayırt edilmez.** Şüpheli kenarı kırp ve **en az 4×
-en yakın komşu (nearest-neighbour)** ile büyüterek bak; bulanıklaştıran ölçekleme yarım
-çizgiyi tam çizgi gibi gösterir. Sekme şeridinin sağ ucu, panellerin alt kenarı ve onay
-kutusu satırı bu büyütmeyle tek tek gezilir.
+Ekran görüntüsünün nasıl alınacağı ve bir DIP'lik farkın nasıl büyütülerek
+görüleceği: `references/desktop.md` §11.
 
 ## 9. Etki raporu — arayüz işinin sonunda zorunlu
 

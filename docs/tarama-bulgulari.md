@@ -596,3 +596,87 @@ Alınmayacak: üç aracın da kurulumu, Conventional Commits zorunluluğu.
 Yeni bir araç çıkmadı; çıkan şey ölçü. D13'teki skill tavanı ve §0'daki takas kalıbı bu
 durağın çıktısı sayılır. **Durma ölçütü devreye girdi: D14 ve D15 standarda birer satır
 ekledi ama yeni bağımlılık getirmedi — tarama burada kapanıyor.**
+
+---
+
+# Ek inceleme: ashlr-plugin
+
+Kullanıcı isteği üzerine depo indirilip kaynak düzeyinde incelendi (`ashlrai/ashlr-plugin`
+22 MB / 667 TS dosyası, `ashlrai/ashlr-core-efficiency` 3.5 MB / 63 TS dosyası, ikisi de MIT).
+
+## −%57 nereden geliyor?
+
+Üç mekanizmadan:
+
+**1. `snipCompact` — ortayı atma.** `context.ts:234`. 2000 karakteri geçen çıktının ilk
+800 + son 800 karakteri tutulur, ortası `[... truncated ...]` ile silinir. Ölçülen `read`
+tasarrufu −%82'nin gövdesi bu.
+
+**2. AST iskeleti.** Büyük kaynak dosyalarda yalnızca imzalar döner, gövdeler atılır.
+
+**3. LLM özetleme.** 16 kB üstü dosyalar **Haiku 4.5'e ayrı bir API çağrısıyla** özetletilir
+(`_llm-providers/anthropic.ts`).
+
+## Mantıklı mı? Kısmen — ama rakam kapsamı gizliyor
+
+**Kritik bulgu: ölçüm yalnızca aracın *döndürdüğü* baytı sayıyor.** `docs/benchmarks.md`
+kendisi söylüyor: "calling the handler functions directly — no MCP layer, no Claude Code
+in the loop."
+
+Yani özetleyicinin **girdi** tokenları — ki bu dosyanın tamamıdır — hesaba katılmıyor.
+Gerçek tablo şu: ana bağlama %57 daha az token giriyor, ama dosyanın tamamı yine okunuyor,
+sadece başka bir modele.
+
+**İkinci bulgu — kimlik bilgisi.** `ANTHROPIC_API_KEY` yoksa
+`~/.claude/.credentials.json` içindeki `claudeAiOauth.accessToken` okunuyor
+(`anthropic.ts:33-39`). Yani API anahtarı olmayan bir Claude Pro kullanıcısında bu
+çağrılar **abonelik kotasından** gidiyor. Kullanıcı %57 tasarruf ettiğini sanırken
+kotasının bir kısmını yan kanaldan harcıyor. Kod açık, gizli bir şey yok — ama başlıktaki
+rakam bunu kapsamıyor.
+
+**Üçüncü bulgu — MCP maliyeti.** Sekiz araç (`ashlr__read/grep/edit/multi_edit/write/
+websearch/task_list/notebook_edit`) her oturumda şema olarak bağlama giriyor. Küçük ve orta
+projede kazanç bu sabit gideri karşılamıyor.
+
+**Dördüncü — sessiz kayıp.** Kaynak dosyanın ortasını atmak kod işinde en kötü kırpma
+biçimi: kod tam olarak ortadadır. `bypassSummary:true` çıkışı var ama modelin neyi
+kaçırdığını bilmesi gerekiyor.
+
+Deponun kendisi bu konuda dürüst: `docs/benchmarks.md` rakamın neyi **kapsamadığını**
+tek tek yazıyor, kendi deposundaki −%74'ü "temsili değil" diye başlıktan çıkarmış.
+Sorun ölçümde değil, başlıkta.
+
+## Karar: kurulmadı — dört mekanizma alındı
+
+**Alınmayanlar:** MCP araç değişimi, ortayı atan kırpma, kaynak dosyanın LLM'e
+özetletilmesi, `~/.claude/.credentials.json` üzerinden yan çağrı.
+
+**Alınanlar (kural olarak, bağımlılık olarak değil):**
+
+| Alınan | Nereye | Ne der |
+|---|---|---|
+| Confidence badge | `relay` §6 | Kırpma dürüst yapılır: ne düştü, tamamına nasıl bakılır |
+| `ASHLR_EDIT_MIN_CHARS` dersi | `relay` §6 | Optimizasyonun tabanı var; kazanç kurulumdan küçükse doğrudan yap |
+| Ölçüm dürüstlüğü | `relay` §7 | Sayı verirken ölçüsünü ve kapsamadığını da ver |
+| Ucuzdan pahalıya katman sırası | `relay` §2, §6 | Deterministik önce, model en son |
+
+## Bizim kendi ölçümümüz
+
+Aynı gözle kendi eklentimize bakıldı. İki gerçek israf bulundu:
+
+**1. Her istekte tekrarlanan hatırlatma.** `relay-watch.js` `UserPromptSubmit` kancasında
+~330 karakter enjekte ediyordu — **her mesajda**. 60 mesajlık oturumda 5000+ token, hepsi
+aynı cümlenin kopyası. Kural bir kez okununca geçmişte duruyor; ikinci kopya bilgi
+taşımıyor. Artık oturum başına **iki kez** yazılıyor ve metin kısaltıldı (~330 → ~200
+karakter). Oturum başına kazanç: **~5000 token.**
+
+**2. Skill şişmesi.** `teknesyum-ui/SKILL.md` her etkinleşmede tamamen bağlama giriyordu.
+
+| Dosya | Oturum başı | Şimdi |
+|---|---|---|
+| `teknesyum-ui/SKILL.md` | 41.6 kB | **27.2 kB** (−%35) |
+| `relay/SKILL.md` | 19.0 kB | 21.4 kB (yeni kural eklendi) |
+
+Masaüstü varsayılanları ve ekran görüntüsü mekaniği `references/desktop.md` §10-11'e,
+yerleşim ve piksel disiplini `references/layout.md`'ye taşındı; palet bölümünün düzyazısı
+sıkıştırıldı. Web/React işinde masaüstü kuralları artık bağlam yakmıyor.

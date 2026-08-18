@@ -276,3 +276,20 @@ başlıkları gri değil, `#00F3FF`. Gri bırakılırsa panel çerçevesi renkli
 kalıyor ve bölüm başlığı gibi okunmuyor. Bunun **altındaki** "Etiket" rolü (alan üstü küçük
 harf aralıklı yazılar) sönük kalmaya devam eder — hiyerarşiyi ayıran şey o karşıtlık.
 
+## 11. Ekran görüntüsü ve piksel doğrulaması
+
+**Görüntüyü nasıl alacaksın.** `SetForegroundWindow` güvenilir değildir — pencereyi öne
+getirmediği hâlde başarı döner, sen de yanlış pencerenin görüntüsüne bakarsın. Pencereyi
+arka planda da çizen `PrintWindow(hwnd, hdc, 2)` kullan; pencereyi süreç yolu **ve** başlığı
+ile eşleştir:
+
+```powershell
+Add-Type -AssemblyName System.Drawing
+$p = Get-Process VidShrink.App | Where-Object { $_.MainWindowHandle -ne 0 }
+# PrintWindow(hwnd, hdc, PW_RENDERFULLCONTENT=2) -> Bitmap -> Save
+```
+
+**Bir DIP'lik anahat 1:1 görüntüde ayırt edilmez.** Şüpheli kenarı kırp ve **en az 4×
+en yakın komşu (nearest-neighbour)** ile büyüterek bak; bulanıklaştıran ölçekleme yarım
+çizgiyi tam çizgi gibi gösterir. Sekme şeridinin sağ ucu, panellerin alt kenarı ve onay
+kutusu satırı bu büyütmeyle tek tek gezilir.

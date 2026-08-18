@@ -18,7 +18,7 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 | settings.json bağı | `statusLine.command` köprüyü gösteriyor mu | bağla |
 | Bayat kopya | `~/.claude/statusline.js` var mı | sil |
 | Çıktı dili | `~/.claude/teknesyum.json` → `dil` | sor, yaz |
-| Huy dosyası | `~/.claude/HUYLAR.md` + `CLAUDE.md`'de `@HUYLAR.md` | oluştur |
+| Kural dosyası | `~/.claude/RULES.md` + `CLAUDE.md`'de `@RULES.md` | oluştur |
 | Sıkıştırma penceresi | `settings.json` → `autoCompactWindow` | yoksa `250000` |
 | Dil sunucusu | `typescript-language-server --version` | kurulum komutunu bildir |
 | TypeScript sürümü | `npm ls -g --depth=0` → **5.x olmalı** | 7.x ise uyar |
@@ -37,20 +37,20 @@ gerektireni sor — hepsini tek mesajda, numaralı.
    güncellemede kırılır. Elle kopya da alma — güncellemeler kullanıcıya hiç ulaşmaz.
    `~/.claude/statusline.js` diye eski bir kopya varsa sil; o bayat bir sürümdür.
 
-2. **Huy dosyası.** `~/.claude/HUYLAR.md` yoksa oluştur, `~/.claude/CLAUDE.md`'nin ilk
-   satırlarına `@HUYLAR.md` ekle:
+2. **Kural dosyası.** `~/.claude/RULES.md` yoksa oluştur, `~/.claude/CLAUDE.md`'nin ilk
+   satırlarına `@RULES.md` ekle:
 
    ```markdown
-   # Huylar
+   # Rules
 
-   Tekrar eden takıntılar ve daha önce canımı yakmış şeyler. **30 satır tavanı** —
-   dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. `/rule` ile eklenir.
+   Recurring preferences and things that have burned me before. **30-line ceiling** — when it
+   is full, don't append; delete the weakest line or merge two. Added with `/rule`.
 
-   - Kodda yorum istemiyorum; açıkça istemediysem yazma.
-   - Rutin onay sorma. Geri dönüşü zor olmayan her şeyi yap, sonucunu bildir.
-   - Uzun özet çıkarma. Ne değişti, nerede — o kadar.
-   - Renk/ölçü uydurma. `teknesyum-ui` tokenları dışına çıkma.
-   - İşi yarıda bırakma; kapsamı kendi kendine daraltma.
+   - No comments in code. Don't write them unless I explicitly ask.
+   - Don't ask for routine approval. Do anything reversible, then report the result.
+   - No long summaries, no walls of prose. What changed, where — that's it.
+   - Don't invent colors or measurements. Stay inside the `teknesyum-ui` tokens.
+   - Don't leave work half done and don't narrow the scope on your own.
    ```
 
 3. **`autoCompactWindow`** anahtarı yoksa `250000` ekle. **Varsa dokunma** — kullanıcının

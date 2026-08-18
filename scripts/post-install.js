@@ -27,16 +27,16 @@ function indir(url, hedef) {
   });
 }
 
-const HUYLAR = `# Huylar
+const RULES = `# Rules
 
-Tekrar eden takıntılar ve daha önce canımı yakmış şeyler. **30 satır tavanı** —
-dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. \`/rule\` ile eklenir.
+Recurring preferences and things that have burned me before. **30-line ceiling** — when it
+is full, don't append; delete the weakest line or merge two. Added with \`/rule\`.
 
-- Kodda yorum istemiyorum; açıkça istemediysem yazma.
-- Rutin onay sorma. Geri dönüşü zor olmayan her şeyi yap, sonucunu bildir.
-- Uzun özet çıkarma. Ne değişti, nerede — o kadar.
-- Renk/ölçü uydurma. \`teknesyum-ui\` tokenları dışına çıkma.
-- İşi yarıda bırakma; kapsamı kendi kendine daraltma.
+- No comments in code. Don't write them unless I explicitly ask.
+- Don't ask for routine approval. Do anything reversible, then report the result.
+- No long summaries, no walls of prose. What changed, where — that's it.
+- Don't invent colors or measurements. Stay inside the \`teknesyum-ui\` tokens.
+- Don't leave work half done and don't narrow the scope on your own.
 `;
 
 (async () => {
@@ -94,20 +94,20 @@ dolduğunda yeni satır ekleme, en zayıfını sil veya birleştir. \`/rule\` il
 
   if (sDegisti) fs.writeFileSync(sp, JSON.stringify(s, null, 2));
 
-  // 3. HUYLAR.md
-  const hp = path.join(HOME, 'HUYLAR.md');
+  // 3. RULES.md
+  const hp = path.join(HOME, 'RULES.md');
   if (!fs.existsSync(hp)) {
-    fs.writeFileSync(hp, HUYLAR);
-    yapilan.push('HUYLAR.md oluşturuldu');
+    fs.writeFileSync(hp, RULES);
+    yapilan.push('RULES.md oluşturuldu');
   } else {
-    atlanan.push('HUYLAR.md zaten var, korundu');
+    atlanan.push('RULES.md zaten var, korundu');
   }
 
   const cp = path.join(HOME, 'CLAUDE.md');
   let c = fs.existsSync(cp) ? fs.readFileSync(cp, 'utf8') : '';
-  if (!/@HUYLAR\.md/.test(c)) {
-    fs.writeFileSync(cp, '@HUYLAR.md\n' + c);
-    yapilan.push('CLAUDE.md\'ye @HUYLAR.md eklendi');
+  if (!/@RULES\.md/.test(c)) {
+    fs.writeFileSync(cp, '@RULES.md\n' + c);
+    yapilan.push('CLAUDE.md\'ye @RULES.md eklendi');
   }
 
   // 4. opsiyonel bağımlılıklar

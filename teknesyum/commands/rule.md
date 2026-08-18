@@ -11,7 +11,7 @@ aday kuralı tek cümlede çıkar ve onaylat.
 
 Doğru katmana yaz:
 - İstisnasız her işte geçerli → `~/.claude/CLAUDE.md` (25 satır tavanı)
-- Tekrar eden takıntı / tökezleme → `~/.claude/HUYLAR.md` (30 satır tavanı)
+- Tekrar eden takıntı / tökezleme → `~/.claude/RULES.md` (30 satır tavanı)
 - Bir davranış ayarı ise (soru sıklığı, denetim, model) → `skills/relay/SETTINGS.md` düğmesi
 - Sadece arayüz işinde → `skills/teknesyum-ui/SKILL.md`
 - Sadece görev dağıtımında → `skills/relay/SKILL.md`

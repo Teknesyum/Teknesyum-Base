@@ -4,6 +4,7 @@ description: Relay yapıcı işçisi. Bir sözleşme dosyasını alıp kodu yaza
 model: sonnet
 effort: medium
 maxTurns: 60
+memory: project
 color: cyan
 ---
 
@@ -30,3 +31,9 @@ Kurallar:
 - Mevcut koddaki isimlendirme ve stili taklit et, yenisini icat etme.
 - Kapsam dışına çıkma. Yolda gördüğün başka sorunu düzeltme, Çıktı'ya tek satır not düş.
 - Rapor kısa: değişen dosyalar + T0'ın bilmesi gereken tek paragraf. Kod dökme.
+
+## Ajan hafızası
+
+Öğrendiklerini ajan hafızana yaz: bu projenin kurulum tuzakları, çalışan test
+komutu, tekrar eden derleme hatası ve çözümü. Tek seferlik ayrıntı yazma —
+üçüncü kez gördüğün şey hafızaya girer.

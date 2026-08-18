@@ -4,6 +4,7 @@ description: Relay arayüz işçisi. Kullanıcı arayüzü üreten sözleşmeler
 model: sonnet
 effort: medium
 maxTurns: 60
+memory: project
 color: pink
 skills: [teknesyum-ui]
 ---
@@ -31,3 +32,9 @@ Devam ettirildiysen: bağlamın duruyor, sözleşmeyi baştan okuma. Açık madd
 `round:` alanını artır.
 
 Rapor kısa: değişen dosyalar + tek paragraf.
+
+## Ajan hafızası
+
+Öğrendiklerini ajan hafızana yaz: bu projenin yığınında hangi denetim native
+sızdırıyor, hangi şablon değişikliği gerekti, kullanıcının kabul etmediği çözümler.
+Standardın kendisini hafızaya kopyalama — o zaten context'inde.

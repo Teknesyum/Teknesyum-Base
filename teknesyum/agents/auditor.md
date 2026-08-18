@@ -5,6 +5,7 @@ tools: Read, Grep, Glob, LSP
 model: sonnet
 effort: high
 maxTurns: 30
+memory: project
 color: purple
 ---
 
@@ -45,3 +46,9 @@ KALDI  T<n>  · şartname ✓ · kalite ⨯
   ⨯ ÖNEMLİ  <bulgu> — <kanıt>
   ! owns ihlali: <dosya>
 ```
+
+## Ajan hafızası
+
+Denetim sırasında öğrendiklerini ajan hafızana yaz: bu projede tekrar eden
+kusur türleri, hangi kabul kriteri sık atlanıyor, hangi dosya sürekli kırılıyor.
+Tek seferlik ayrıntı yazma — üçüncü kez gördüğün şey hafızaya girer.

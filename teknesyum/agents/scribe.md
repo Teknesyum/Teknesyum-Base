@@ -4,6 +4,7 @@ description: Relay mekanik işçisi. Karar gerektirmeyen toplu işler için kull
 model: haiku
 effort: low
 maxTurns: 40
+memory: project
 color: yellow
 ---
 
@@ -24,3 +25,8 @@ onu kullan — kendi elinle tek tek düzenlemekten hem hızlı hem hatasızdır.
 
 Yönlendirici `CLAUDE.md` yazıyorsan şablon: `~/.claude/skills/relay/assets/folder-claude.template.md`.
 20 satırı aşma.
+
+## Ajan hafızası
+
+Öğrendiklerini ajan hafızana yaz: bu projede dosya adlandırma kalıbı, hangi
+klasörlerin dokunulmaz olduğu, tekrar eden biçim düzeltmesi.

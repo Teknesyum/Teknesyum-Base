@@ -208,3 +208,70 @@ Alınmayacak: Forge'un kendi şablonları — proje düzeni kuralımız (relay �
 
 Masaüstünde tema kütüphanesi alınmıyor, iskele araçları alınıyor. Sebep aynı cümlede:
 **görünüm bizim, altyapı onların.**
+
+---
+
+## D5 — Ajan sistemi: SDK, hafıza, MCP
+
+### Ajan hafızası (`memory:` alanı) — **alındı, en değerli bulgu**
+
+Claude Code v2.1.33 (Şubat 2026) ile her adlandırılmış alt ajan **kalıcı, markdown tabanlı
+bir bilgi deposu** alabiliyor. Frontmatter'a tek satır:
+
+```yaml
+memory: project
+```
+
+Kapsam üç değerden biri:
+
+| Değer | Yer |
+|---|---|
+| `user` | `~/.claude/agent-memory/<ajan>/` |
+| `project` | `.claude/agent-memory/<ajan>/` |
+| `local` | `.claude/agent-memory-local/<ajan>/` |
+
+Bu, alt ajanların en büyük zaafını kapatıyor: **alt ajan sıfırdan başlar, koordinatörle
+veya birbiriyle hafıza paylaşmaz.** Her seferinde aynı tuzağa düşüyorlardı.
+
+Uygulandı: dört ajanın (`auditor`, `builder`, `scribe`, `ui-builder`) hepsine
+`memory: project` verildi ve her birine ne yazacağını söyleyen kısa bir bölüm eklendi.
+Ortak kural: **üçüncü kez görülen şey hafızaya girer, tek seferlik ayrıntı girmez.**
+
+### Frontmatter'da kullanmadığımız alanlar
+
+Tarama sırasında çıkan tam liste: `tools`, `disallowedTools`, `model`, `permissionMode`,
+`maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`,
+`isolation`, `color`, `initialPrompt`.
+
+Bizde kullanılmayan ve değerli olabilecekler:
+
+- **`hooks`** — ajana özel yaşam döngüsü kancası. `builder`'a "yazdığın her dosyadan sonra
+  formatla" gibi bir kural ajanın kendi tanımına gömülebilir. İleride.
+- **`isolation: worktree`** — SETTINGS'te var ama ajan tanımında sabitlenmiyor; paralel
+  çalışan `builder` için tanımın kendisine yazmak daha güvenli olabilir.
+- **`Agent(type)`** araç sözdizimi — bir ajanın başka ajan açmasına izin verir. Şu an
+  bilinçli olarak kapalı: iş dağıtımı T0'ın işi.
+
+### Mimari kural — dört katmanın hangisini ne zaman
+
+Taramanın en net cümlesi şu: **kural zorlanacaksa hook veya izin; bağlamsal bilgiyse
+skill; devir sınırıysa alt ajan; her zaman geçerli kısa yönlendirmeyse CLAUDE.md.**
+
+Teknesyum Base dördünü de kullanıyor ve dağılımı doğru: `done/` mührü hook'ta (zorlanıyor),
+tema bilgisi skill'de (bağlamsal), rol ayrımı ajanlarda (devir sınırı), yönlendirme
+CLAUDE.md'de.
+
+### MCP sunucuları — **eklenmiyor**
+
+Sequential Thinking, ByteRover/Cipher, Basic Memory gibi "ajana hafıza ve muhakeme veren"
+sunucular incelendi.
+
+Sequential Thinking'in yaptığı iş — düşünceyi numaralı adımlara bölmek, geri dönüp
+düzeltmek — Claude'un kendi genişletilmiş düşünmesiyle çakışıyor. İkinci bir katman
+token harcar, yeni yetenek getirmez.
+
+Hafıza sunucuları ise artık gereksiz: ajan hafızası bunu yerel dosya sistemiyle,
+sunucu kurmadan yapıyor.
+
+Karar: MCP ayak izi dar kalır. Belge sorgulama için hâlihazırda kurulu olan tek sunucu
+yeterli.

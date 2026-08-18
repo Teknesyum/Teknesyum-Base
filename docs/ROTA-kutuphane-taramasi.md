@@ -1,6 +1,6 @@
 # Rota: kütüphane ve ekosistem taraması
 
-**Kaldığım yer:** D8 (sürüyor)
+**Kaldığım yer:** D9 (sürüyor)
 **Amaç:** Teknesyum Base'i güçlendirecek kütüphane, standart ve eklentileri tarayıp
 alınabilir olanları standarda katmak, kurulması gerekenleri kullanıcıya bildirmek.
 
@@ -15,8 +15,8 @@ alınabilir olanları standarda katmak, kurulması gerekenleri kullanıcıya bil
 | D5 | Ajan sistemi: SDK, MCP, hafıza, orkestrasyon | bitti | tarama-bulgulari.md §D5 |
 | D6 | Claude Code eklenti ekosistemi | bitti | tarama-bulgulari.md §D6 |
 | D7 | Deterministik araçlar (lint, format, ast) | bitti | tarama-bulgulari.md §D7 |
-| D8 | i18n ve yerelleştirme altyapısı | sürüyor | — |
-| D9 | Test ve görsel doğrulama | bekliyor | — |
+| D8 | i18n ve yerelleştirme altyapısı | bitti | tarama-bulgulari.md §D8 |
+| D9 | Test ve görsel doğrulama | sürüyor | — |
 | D10 | Paketleme ve dağıtım | bekliyor | — |
 
 ## Kurallar

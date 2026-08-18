@@ -366,3 +366,45 @@ IDE refactor için de geçerli — kullanıcının çalışma stili kuralı bunu
 
 `teknesyum-ui` §1 kurulum tablosuna ve relay §2 hazırlık listesine girer:
 yeni JS/TS projesinde `biome.json` kurulur, iş bitiminde `biome check --write` çalışır.
+
+---
+
+## D8 — i18n ve yerelleştirme
+
+Ölçütümüz §3.1'de yazılı: **dili bilen ama projeyi bilmeyen biri tek dosyayı kopyalayıp
+çevirebilmeli.** Kütüphaneler bu ölçüte göre elendi.
+
+### i18next — **alındı, JS/TS yığınında varsayılan**
+
+MIT. `i18next` 15.1 kB + `react-i18next` 7.1 kB. Düz JSON dosyası kullanıyor; bizim
+`locale/tr.json` yapımızla birebir örtüşüyor.
+
+Belirleyici üstünlük: **React dışında da çalışıyor.** Electron ana süreci, CLI çıktısı ve
+arayüz aynı sözlüğü paylaşabiliyor. Lingui ve react-intl React'e bağlı.
+
+Alınmayacak: `i18next-icu` eklentisi. Türkçe'de tekil/çoğul kuralı tek biçimli;
+ICU'nun getirdiği karmaşıklığın karşılığı yok.
+
+### Lingui — **alınmadı**
+
+10.4 kB ile daha hafif ve ICU'yu çekirdekte taşıyor. Ama mesajları koda gömüp
+çıkarıyor (`extract`) ve PO dosyalarıyla çalışıyor.
+
+Bu, "hiçbir arayüz metni koda gömülmez" kuralımızın tam tersi. Çevirmenin PO araçları
+kurması gerekmesi de tek dosya ölçütünü bozuyor.
+
+### react-intl / FormatJS — **alınmadı**
+
+ICU uyumu ve tarih/sayı biçimlendirmesi güçlü. Bize gereken tek şey sayı ve dosya
+boyutu biçimlendirmesiydi; onu `Intl` API'si kütüphanesiz yapıyor.
+
+### WPF tarafı
+
+`.resx` kullanılmıyor. Sebep: ikili araç gerektiriyor, çevirmen açamıyor, tek dosya
+ölçütünü bozuyor. Aynı `locale/*.json` dosyaları okunur, basit bir sözlük yükleyici yeter.
+
+### Karar
+
+JS/TS: `i18next` + `react-i18next`, düz JSON, ICU eklentisi yok.
+WPF/WinForms: kendi JSON yükleyicimiz, `.resx` yok.
+Sayı, tarih, dosya boyutu: `Intl` (JS) / `CultureInfo` (.NET) — elle biçimlendirme yok.

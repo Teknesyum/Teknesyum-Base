@@ -342,10 +342,43 @@ döngü ≥ 1.4 s ve kontrastı düşük olur.
 animasyon zarar veriyordur. Yerleşim animasyonu yalnızca kullanıcı eylemiyle başlar, kendi
 kendine değil; açılan panel komşularını itmez, üstlerine biner.
 
+React/Electron tarafında varsayılan animasyon kütüphanesi **`motion`** (eski adıyla
+Framer Motion): `useReducedMotion` ve iptal edilebilir geçişler hazır gelir. Süre ve eğri
+değerleri yine yukarıdaki tokenlardan okunur, bileşen içinde sayı yazılmaz.
+
 **WPF karşılıkları** — `Storyboard` yalnızca `RenderTransform` ve `Opacity` üzerinde çalışır,
 `Width`/`Height` üzerinde değil. Yumuşatma `PowerEase`/`CubicEase` ile `EasingMode="EaseOut"`.
 Storyboard'lar `Freeze()` edilir. Sürekli çalışan `DispatcherTimer` tabanlı animasyon yok;
 pencere gizliyken animasyon durdurulur.
+
+## 5.5 Tanıtım sayfası istisnası
+
+Uygulama içinde yasak olan gösterişli efektler **tanıtım/indirme sayfasında serbesttir**:
+WebGL arka plan, parçacık alanı, 3D hover, özel imleç, kaydırmaya bağlı animasyon.
+
+Sebep açık: tanıtım sayfası bir kez bakılan yerdir, uygulama her gün açılan yer. Orada
+etkileyici olan, burada üçüncü açılışta rahatsız eder.
+
+Sınırlar burada da geçerli: `prefers-reduced-motion` yine zorunlu, ilk boyama efektle
+geciktirilmez, sayfa efektler yüklenmeden okunabilir olur, mobilde ağır efekt kapatılır.
+
+Bu istisna **yalnızca ayrı bir tanıtım sitesi/sayfası içindir.** Uygulamanın kendi
+karşılama ekranı, hakkında penceresi veya ilk açılış turu bu istisnaya girmez.
+
+## 5.6 Dış kaynak kullanımı — önce lisans
+
+Hazır bileşen kütüphanelerinden yararlanmak serbest, ama **kopyalamadan önce lisansa
+bakılır.** Sıra şudur:
+
+1. Lisans izin veriyorsa (MIT, Apache-2.0, BSD, CC0) bileşen alınır. Alındığı gibi
+   bırakılmaz: renkleri tokenlara çevrilir, animasyonu §5.4 tavanlarına indirilir,
+   metni `locale/` altına taşınır.
+2. Lisans izin vermiyorsa veya belirsizse **birebir kopyalanmaz.** Fikir alınır, kendi
+   uygulaması yazılır. Sınıf adları, yapı ve ölçüler kendimizindir.
+3. Her iki durumda da kaynak `docs/licenses.md` dosyasına satır olarak yazılır:
+   bileşen adı, kaynak URL, lisans, alınma tarihi.
+
+Lisansı olmayan depo "serbest" demek değildir — telif varsayılan olarak sahibindedir.
 
 ## 6. Sık yapılan hatalar
 

@@ -23,10 +23,17 @@ function icerir(s, p, not) {
   if (!String(s).includes(p)) throw new Error((not ? not + ': ' : '') + '"' + p + '" yok — gelen: ' + s);
 }
 
+// Testler kullanıcının gerçek `~/.claude` klasörünü okumamalı. Okurlarsa makinedeki
+// bir ayar (örn. `debug: true`) testi geçirir ya da düşürür; sonuç makineye bağlı olur.
+const BOS_CFG = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-cfg-'));
+
 function calistir(script, yuk, ek) {
   const r = spawnSync(process.execPath, [script], {
     input: JSON.stringify(yuk), encoding: 'utf8',
-    env: { ...process.env, TEKNESYUM_SESSIZ: '', TEKNESYUM_DEBUG: '', ...(ek || {}) },
+    env: {
+      ...process.env, TEKNESYUM_SESSIZ: '', TEKNESYUM_DEBUG: '',
+      CLAUDE_CONFIG_DIR: BOS_CFG, ...(ek || {}),
+    },
   });
   return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
 }

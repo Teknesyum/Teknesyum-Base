@@ -32,17 +32,26 @@ Alınacak: liste, tablo satırı, bildirim yığını, akordeon gibi yerlerde va
 
 Alınmayacak: sayfa geçişi ve karmaşık koreografide kullanılması — orası `motion`'ın işi.
 
-### GSAP — **alınmadı**
+### GSAP — **alındı, tanıtım sayfası aracı olarak** *(karar düzeltildi)*
 
 v3.13'ten (Nisan 2025) beri eklentileri dahil tamamen ücretsiz ve ticari kullanıma açık.
-Güçlü, ama ağırlık merkezi "hareketin ürünün kimliği olduğu" siteler: kaydırma tabanlı
-editoryal sayfalar, ödül avcısı portfolyolar.
+ScrollTrigger, SplitText, MorphSVG, Flip — hepsi serbest. Lisans engeli yok.
 
-Bizim ürünlerimiz her gün açılan masaüstü araçları. §5.4'ün 360 ms tavanı ve
-"söyleyeceği bir şey yoksa animasyon yok" düsturu GSAP'ın getirdiği gücü zaten
-kullanılamaz kılıyor.
+İlk taramada "alınmadı" yazılmıştı; bu yanlıştı. Doğru cevap "alınmadı" değil **"başka
+yere alındı"**: `teknesyum-ui` §5.5 tanıtım sayfası istisnasının resmî aracı GSAP'tır.
 
-Alınacak: yok. Tanıtım sayfası istisnasında (§5.5) kullanılabilir, standarda girmiyor.
+Ayrım boyut değil **iş tanımı**. `motion` bir bileşenin durum değişimini animasyona
+bağlar; hover, focus, açıl-kapan gibi şeyler yarıda kesilebilir olmak zorundadır.
+`gsap` bir **sahneyi** zaman çizelgesiyle yönetir: şu 0.3'te girer, bu 0.5'te döner,
+kaydırma %40'a gelince şu başlar.
+
+Uygulama arayüzünde sahne yoktur, durum vardır — kullanıcı her an her yere tıklayabilir.
+Tanıtım sayfasında ise sahne vardır: kullanıcı yukarıdan aşağı akar.
+
+Alınacak: tanıtım sayfasında GSAP + ScrollTrigger serbest, `prefers-reduced-motion`
+yine zorunlu.
+
+Alınmayacak: uygulama içinde kullanılması. Orada `motion` var.
 
 ### Karar
 
@@ -385,13 +394,29 @@ arayüz aynı sözlüğü paylaşabiliyor. Lingui ve react-intl React'e bağlı.
 Alınmayacak: `i18next-icu` eklentisi. Türkçe'de tekil/çoğul kuralı tek biçimli;
 ICU'nun getirdiği karmaşıklığın karşılığı yok.
 
-### Lingui — **alınmadı**
+### Lingui — **alınmadı** *(gerekçe netleştirildi)*
 
-10.4 kB ile daha hafif ve ICU'yu çekirdekte taşıyor. Ama mesajları koda gömüp
-çıkarıyor (`extract`) ve PO dosyalarıyla çalışıyor.
+10.4 kB ile i18next'ten (22.2 kB) hafif ve ICU'yu çekirdekte taşıyor. Teknik olarak iyi.
 
-Bu, "hiçbir arayüz metni koda gömülmez" kuralımızın tam tersi. Çevirmenin PO araçları
-kurması gerekmesi de tek dosya ölçütünü bozuyor.
+**"Mesajı koda gömüp çıkarmak" ne demek?** Lingui'nin çalışma biçimi şudur: metni doğrudan
+bileşenin içine yazarsın —
+
+```jsx
+<button>{t`Dosya seç`}</button>
+```
+
+Sonra `lingui extract` komutunu çalıştırırsın; araç bütün dosyaları tarar, bu metinleri
+toplayıp bir katalog dosyası üretir. Çevirmen o kataloğu çevirir, `lingui compile` ile
+geri derlenir.
+
+Yani metnin **aslı kodda durur**, katalog ondan türetilir. Bizim kurulumda tersi:
+metnin aslı `locale/tr.json` içindedir, kod ondan `t('btn.selectFile')` diye okur.
+
+Karşılığı yeterli mi? Hayır. Kazanç ~12 kB; bedeli her projeye iki komutluk bir derleme
+adımı, yeni metin ekleyince katalog senkronu ve "tek dosyayı kopyala çevir" ölçütünün
+kaybı. §0 kalıbıyla: **tekrar eden bedel, tek seferlik kazanç → alınmaz.**
+
+Bu karar 12 kB uğruna değişmez; ama i18next'in bakımı düşerse yeniden bakılır.
 
 ### react-intl / FormatJS — **alınmadı**
 
@@ -479,3 +504,95 @@ Electron tarafında kurulum, kod imzalama ve otomatik güncelleme aynı araçta.
 
 .NET masaüstü: `Velopack`. Electron: `electron-builder`. Güncellenmeyecek tek seferlik
 araç: `Inno Setup` veya tek dosya yayını.
+
+---
+
+# İkinci dalga (D11-D15)
+
+İlk on durak bittikten sonra kullanıcının "bu 10 tanesinde kalmalı mıyız" sorusu üzerine
+açıldı. Durma ölçütü rotaya yazıldı: art arda iki durak standarda tek satır eklemezse dal
+kapanır.
+
+## D11 — Bağlantılı not / bilgi tabanı
+
+**Soru:** Obsidian benzeri bir hafıza katmanı kurmalı mıyız? (kullanıcı iki kez sordu)
+
+**Cevap: hayır, çünkü zaten var.**
+
+2026'nın en çok konuşulan deseni Karpathy'nin **LLM Wiki**'si: ajanın kendi tuttuğu,
+birbirine bağlı kalıcı markdown wiki'si. Her seferinde yeniden arama (RAG) yerine, bilgi
+bir kez yazılır ve büyütülür.
+
+Bizde bu desenin üç parçası da çalışıyor:
+
+| Parça | Bizdeki karşılığı |
+|---|---|
+| Kalıcı markdown notlar | `~/.claude/projects/<proje>/memory/*.md` |
+| İndeks | `MEMORY.md`, oturum açılışında yükleniyor |
+| Bağlar | `[[not-adı]]` sözdizimi |
+| Ajan hafızası | dört ajanda `memory: project` |
+
+**Alınacak:** "üçüncü kez açıklanan şey kalıcı hafızaya gider, notlar `[[ad]]` ile
+bağlanır" kuralı `relay` §6'ya yazıldı.
+
+**Alınmayacak:** Obsidian uygulaması, graph-RAG MCP'si, vektör veritabanı. Not sayısı
+yüzlerle ölçülmüyor; arama sorunu yok. Kurulacak her MCP her oturumda araç tanımı olarak
+token yer — §0 kalıbıyla tekrar eden bedel, tek seferlik kazanç.
+
+## D12 — Statik analiz: ölü kod ve bağımlılık
+
+### knip — **alındı** (MIT)
+
+Kullanılmayan dosya, export, bağımlılık ve `package.json` girdisini **tek geçişte** bulur;
+`--fix` ile temizler. ~150 eklentiyle çoğu projede sıfır yapılandırma. Vercel bununla
+300 bin satır silmiş. `ts-prune` bakım modunda, halefi bu.
+
+Bizim düsturla birebir örtüşüyor: **model gerekmeyen yerde model kullanma.** Ölü kodu
+LLM'e aratmak hem pahalı hem güvenilmez; knip derleyici grafiğinden okur.
+
+Alınacak: `relay` §2 madde 8 — ~30+ kaynak dosyalı JS/TS projesinde çalıştırılır.
+
+Alınmayacak: küçük projeye kurulması, CI zorunluluğu hâline getirilmesi.
+
+## D13 — Claude Code eklenti ekosistemi, ikinci dalga
+
+Ekosistem 2026'da 400+ eklenti / 3000+ skill ölçeğine çıkmış. Tarama sonucu: **kurulacak
+yeni bir eklenti yok**, ama bir ölçü alındı.
+
+**Skill mimarisi ölçüsü.** Etkin uygulama şu: skill meta verisi tarama sırasında ~100
+token, açıldığında **5k token altı**, ayrıntı yan dosyada. Kendi skill'lerimizi ölçtük:
+
+| Dosya | Önce | Sonra |
+|---|---|---|
+| `teknesyum-ui/SKILL.md` | 41.6 kB | 28.9 kB |
+| `relay/SKILL.md` | 19.0 kB | 21.4 kB |
+
+`teknesyum-ui`'den masaüstü varsayılanları `references/desktop.md` §10'a, yerleşim ve
+piksel disiplini yeni `references/layout.md`'ye taşındı. Web işinde artık masaüstü kuralları
+bağlama girmiyor.
+
+Alınacak: `relay` §6'ya **~30 kB skill tavanı** kuralı; ölçüt "önemli mi" değil "her işte
+gerekli mi".
+
+**ashlr-plugin** — Read/Grep/Edit/Bash araçlarını token açısından ucuz sürümleriyle
+değiştirdiğini, bağımsız ölçümde %57 azalma sağladığını söylüyor. Bizde **RTK** zaten
+kabuk çıktısını filtreliyor; ikisi çakışıyor olabilir. Kurulmadı, kullanıcıya soruldu.
+
+## D14 — Sürüm ve değişiklik günlüğü
+
+`semantic-release` commit mesajlarından otomatik changelog üretir; çıkan liste kullanıcıya
+bir şey anlatmaz. `changesets` her değişiklik için ayrı dosya ister — çok paketli, çok
+geliştiricili depolar için. `release-please` PR tabanlı, aynı şekilde ekip için.
+
+Üçü de tek bakımcılı depoda kurulum maliyetini çıkarmıyor.
+
+Alınacak: araç değil **alışkanlık** — kökte elle yazılan `CHANGELOG.md`, `Keep a Changelog`
+biçiminde (`relay` §2 madde 7).
+
+Alınmayacak: üç aracın da kurulumu, Conventional Commits zorunluluğu.
+
+## D15 — Bağlam mühendisliği
+
+Yeni bir araç çıkmadı; çıkan şey ölçü. D13'teki skill tavanı ve §0'daki takas kalıbı bu
+durağın çıktısı sayılır. **Durma ölçütü devreye girdi: D14 ve D15 standarda birer satır
+ekledi ama yeni bağımlılık getirmedi — tarama burada kapanıyor.**

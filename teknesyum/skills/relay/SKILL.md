@@ -19,6 +19,33 @@ Davranış düğmeleri `SETTINGS.md`'de. Projede `.claude/relay/SETTINGS.md` var
 
 **Çıktı dili:** `~/.claude/teknesyum.json` içindeki `dil` alanı ne diyorsa o dilde yaz; dosya yoksa Türkçe. Komut ve alan adlarının İngilizce olması çıktı dilini değiştirmez.
 
+## 0. İlke sırası ve takas
+
+Üç ilke var: **token tasarrufu**, **kullanıcı rahatlığı**, **kod verimliliği**. Çoğu kararda
+üçü aynı yönü gösterir. Göstermediğinde sıra şudur:
+
+**Kullanıcı rahatlığı > kod verimliliği > token tasarrufu.**
+
+Bu sıra "token'ı boşver" demek değil; **token, hedef değil bütçedir.** Bir harcamayı
+savunabiliyorsan yap, savunamıyorsan yapma.
+
+Takası şu üç soruyla ölç:
+
+1. **Ne kadar token yiyor?** Tek seferlik mi, her oturumda tekrar mı?
+2. **Karşılığında ne alıyorum?** Bir kez alınan bilgi mi, her seferinde kazanılan zaman mı?
+3. **Yanlış giderse maliyeti ne?** Geri alınabilir mi, yoksa baştan mı yazılır?
+
+Karar kalıbı: **tek seferlik harcama + tekrar eden kazanç = al.** Tekrar eden harcama +
+tek seferlik kazanç = alma.
+
+Örnek: bir kütüphanenin 20 kB'ı sonsuza kadar taşınır ama elle yazılacak 300 satırı ve
+onun hatalarını siler — alınır. Her istekte 500 token yiyen bir düşünme katmanı, zaten
+yapılan bir işi tekrar eder — alınmaz.
+
+**Karşılığı yeterince değerliyse kural bozulur.** Bu skill'deki hiçbir kural, kendisinden
+daha değerli bir kazancın önünde durmaz. Ama bozarken üç şey zorunlu: ne bozduğunu söyle,
+neden bozduğunu tek cümleyle yaz, kullanıcıya bildir.
+
 ## 1. Sınıflandır — sessizce
 
 | Ölçü | Ne yap |
@@ -110,6 +137,24 @@ projeyi altı ay sonra açtığında `docs/`'u okuyarak ne olduğunu anlayabilme
 Mevcut projede kök zaten dağınıksa kendiliğinden toplama — tek satırla bildir, kullanıcı
 isterse `scribe`'a temizlik sözleşmesi yaz.
 
+## 1.3 Netleştirme — yalnızca sıfırdan projede
+
+Ölçü **sıfırdan proje** çıktıysa, tek kod satırı yazılmadan önce **bir tur** netleştirme
+yapılır. Sadece o ölçüde; küçük işte yapılmaz.
+
+Sebebi token ekonomisi: yanlış anlaşılmış bir mimariyi üç dalga sonra sökmek, baştan dört
+soru sormaktan kat kat pahalıdır.
+
+Kural, kullanıcının "rutin onay sorma" tercihini çiğnememek için sıkı:
+
+- **Tek tur.** Sorular bir kerede sorulur, cevap gelince bir daha sorulmaz.
+- **En çok dört soru**, hepsi aynı blokta, her birinde **önerilen seçenek işaretli**.
+- Kullanıcı "hepsi önerilen" derse tur biter.
+- Yalnızca **farklı cevabın farklı iş çıkardığı** şeyler sorulur. Varsayılanı olan hiçbir
+  şey sorulmaz.
+
+Netleştirme turu bittiğinde kararlar `docs/PLAN.md` başına yazılır; bir daha sorulmaz.
+
 ## 2. Hazırlık — sormadan yap
 
 Yazma işine başlamadan önce, sırayla kontrol et:
@@ -138,6 +183,35 @@ Yazma işine başlamadan önce, sırayla kontrol et:
    kelimenin baş harfi büyütülmez. Kısaltma tek başına adsa olduğu gibi kalır (`API`).
    Aynı kural GitHub deposu, yerel proje klasörü ve çözüm/proje adı için geçerlidir —
    üçü aynı yazılır. Var olan deponun adını kendiliğinden değiştirme, tek satırla söyle.
+7. **Sürüm çıkıyor mu?** Kökte `CHANGELOG.md` tutulur, `Keep a Changelog` biçiminde:
+   sürüm başlığı + `Eklendi` / `Değişti` / `Düzeltildi` başlıkları. Commit mesajlarından
+   otomatik üretilmez — o listeler kullanıcıya bir şey anlatmaz. `changesets` veya
+   `semantic-release` kurulmaz; tek bakımcılı depoda kurulum maliyeti kazancından fazla.
+8. **JS/TS projesi büyüdü mü?** (~30+ kaynak dosya) `knip` çalıştır: kullanılmayan dosya,
+   export ve bağımlılığı tek geçişte bulur, `--fix` ile temizler. Ölü kodu modele
+   aratmak token israfıdır. Küçük projede kurma.
+
+## 2.1 Hata ayıklama — belirtiyi değil nedeni düzelt
+
+**Açıklayamadığın bir belirtiyi yamama.** Neden çalışmadığını anlamadan yapılan düzeltme,
+hatayı taşır: bir yerde susar, başka yerde çıkar.
+
+Dört adım, sırayla:
+
+1. **Üret.** Hatayı kendin gör. Üretemiyorsan önce üretmenin yolunu bul; kullanıcının
+   ekran görüntüsü kanıt değil, ipucudur.
+2. **Yerini bul.** Hangi satır, hangi koşul. Tahminle daraltma — log, breakpoint,
+   `git log -S`, ikili arama.
+3. **Nedeni düzelt.** Belirtiyi susturan `try/catch`, `if (x == null) return`, gecikme
+   ekleme gibi çözümler yasak. Bunlar hatayı gizler.
+4. **Doğrula ve kardeşini ara.** Aynı hata başka nerede var? Aynı kalıp başka dosyada
+   tekrarlanıyorsa orayı da düzelt.
+
+Üçüncü adımda nedeni bulamadıysan **dur ve söyle.** "Muhtemelen şuydu" diyerek yamamak,
+kullanıcının bir daha aynı hatayı yaşaması demektir.
+
+Bu akış token yer — okuma, üretme, doğrulama. Karşılığı şudur: yanlış yama, aynı hatayı
+ikinci kez ayıklamak ve arada kırılan şeyi bulmak toplamda kat kat pahalıdır (§0).
 
 ## 3. Tam röle
 
@@ -266,6 +340,14 @@ Sözleşme boyutu: **3-8 dosya, tek tutarlı yetenek.** Gerçek projede 5-9 söz
 - Geniş arama → `Explore`. Ana oturumda 40 dosya açma.
 - Doğrulamada tüm dosyayı okuma; kabul kriterine karşılık gelen satırı grep'le.
 - Ajan raporu kısa: değişen dosyalar + tek paragraf.
+- **Skill dosyası şişmez.** Bir `SKILL.md` her etkinleşmede tamamen bağlama girer; yan
+  dosyalar yalnızca okunduğunda girer. Tavan **~30 kB**; aşan bölüm `references/` altına
+  taşınır ve `SKILL.md`'de tek satırlık işaretçi bırakılır. Taşınacak olan seçilirken
+  ölçüt "önemli mi" değil **"her işte gerekli mi"**: masaüstüne özel kural, web işinde
+  bağlam yakar.
+- **Bilgi tekrar ediyorsa hafızaya yazılır, oturuma değil.** Üçüncü kez açıklanan şey
+  kalıcı hafızaya gider; ilgili notlar birbirine `[[ad]]` ile bağlanır. Ayrı bir not
+  uygulaması (Obsidian vb.) kurulmaz — hafıza zaten markdown, bağlar zaten çalışıyor.
 
 ## 7. Kullanıcıya ne söylersin
 

@@ -157,3 +157,122 @@ Kurallar:
 2. **Yerleşim en uzun dile göre ölçülür.** İngilizce ve Almanca metinler Türkçeden uzun olur;
    sabit genişlikli düğme ve sütunlar bu yüzden kırpar. §7 doğrulaması **her dil için** yapılır:
    ekran görüntüsünü al, dosyayı aç, bak.
+
+## 10. Masaüstü varsayılanları — tartışılmadan uygulanır
+
+Bunlar her yeni arayüzde başlangıç hâlidir. Aksini yapmak için gerekçe gerekir, uygulamak için değil.
+
+**Tema uygulamanın tamamını kaplar. Yarısı neon, yarısı native olan arayüz yoktur.**
+Kullanıcı temayı ekranın bütününde görür; tek bir sistem grisi kutu, geri kalan her şeyin
+özenini siler — "yarım kalmış program" hissi tam olarak buradan gelir. Sızıntı hep aynı
+yerlerden olur, teslimden önce **hepsi tek tek gezilir**:
+
+| Sızıntı | Nerede unutulur | Ne yapılır |
+|---|---|---|
+| Başlık çubuğu | pencere | aşağıdaki madde |
+| Scrollbar | liste, metin kutusu | web `::-webkit-scrollbar` · WPF `ScrollBar` şablonu · WinForms `DarkMode_Explorer` (`desktop.md` §7) |
+| MessageBox / uyarı | hata yolları | tema panelinden kendi modalını çiz; `MessageBox.Show` kullanma |
+| Dosya/klasör seçici | aç-kaydet | sistem diyaloğu kalır (OS'un işi), ama **koyu mod bayrağı** açılır |
+| ComboBox açılır listesi | ayar ekranı | popup şablonu da temalanır; sadece kapalı hâli değil |
+| CheckBox / RadioButton | form | kutucuk ve tik işareti kendi çizilir, native glif bırakılmaz |
+| ProgressBar | ilerleme | dolgu neon + glow, kanal `surface` |
+| Tooltip | her yer | zemin `surface`, çerçeve `neon-blue/30`, yazı beyaz |
+| Sağ tık menüsü | metin kutusu, liste | kendi `ContextMenu` şablonun |
+| Tab başlıkları | TabControl | WPF/WinForms varsayılan gri sekme kabul edilmez |
+| Metin imleci ve seçim rengi | girdi alanları | seçim `neon-blue/30`, caret neon-blue |
+| Odak çerçevesi | klavye gezinme | noktalı native çerçeve yerine neon glow — **kaldırma, değiştir** |
+| Devre dışı görünüm | pasif düğme | `disabled` tokenı + imleç; sistemin gri gölgesi değil |
+
+**Ölçüt:** ekranı gezerken "bu kutu Windows'a mı ait?" diye düşündüren bir öğe kalmışsa
+tema tamamlanmamıştır. Aynı ölçüt hata ve boş durum ekranları için de geçerlidir — en çok
+oralar unutulur, çünkü mutlu yolda hiç görünmezler.
+
+**Sistem başlık çubuğu kaldırılır, yerine tema panelinden bir şerit çizilir.** İşletim
+sisteminin açık gri min/büyüt/kapat bandı neon pencerenin tepesinde temaya ait olmayan bir
+yabancı cisimdir. Her stack'te karşılığı var, üçü de zorunlu:
+
+| Stack | Native çubuğu kaldır | Yerine |
+|---|---|---|
+| WPF | `WindowStyle="None"` + `WindowChrome` | `Border` + `Grid` başlık şeridi |
+| WinForms | `FormBorderStyle.None` | özel caption paneli |
+| Electron | `frame: false` (veya `titleBarStyle: 'hidden'`) | `-webkit-app-region: drag` şerit |
+| Web / PWA | — | uygulanmaz, atla |
+
+Çizilen şerit: yükseklik **32–40px**, zemin `surface`, altında `1px` `neon-blue/20` çizgi.
+Solda ikon + uygulama adı (14px/700/`0.1em`, odaklıyken neon-blue + glow, odak dışıyken
+beyaz). Sağda üç düğme, ikon **10–12px** ve `stroke="currentColor"` SVG/Path — emoji
+veya harf (`X`, `—`) kullanma. Hover: kapat **neon-pink**, diğerleri **neon-blue**, ikisi de
+glow'lu; dolgu gelmez. Dosya yolu, sürüm, config yolu başlık şeridine yazılmaz — o bilgi
+ilgili panele veya alt bilgiye gider.
+
+**Native çubuğu kaldırmak işletim sistemi davranışlarını da kaldırır; hepsi geri takılır:**
+sürükleyerek taşıma, başlığa çift tıkla büyüt/geri al, Aero Snap, kenardan boyutlandırma,
+`Alt`+`F4`, büyütüldüğünde görev çubuğunun altına girmeme. Mekaniği ve WinForms/WPF'te
+kaybolmalarının sebebi: `references/desktop.md` §8. **Teslimden önce dördü de fiilen denenir.**
+
+**Pencere köşeleri yuvarlatılır.** Keskin dikdörtgen pencere neon temayla uyuşmuyor; yarıçap
+**12px**. Çerçevesiz pencerede (§8) işletim sistemi yuvarlatma uygulamaz — şekli kendin kırp
+(WinForms `Region`, WPF `Border.CornerRadius` + `WindowChrome`, web `border-radius`).
+**Büyütülmüş pencere kare kalır:** ekran kenarında yuvarlatılmış köşe arkadaki masaüstünü
+gösterir. Bu yüzden köşe bölgesi her yeniden boyutlandırmada yeniden hesaplanır.
+
+**Hiçbir öğe bir başkasının anahattını kapatmaz.** Neon temada bir öğeyi öğe yapan şey
+anahattıdır: çerçevesi ve onu saran glow halesi. Kenarının bir milimetresi komşu panelin
+altında kalan düğme, kırık çizilmiş bir düğmedir — kullanıcı sebebini bilmeden "bir şey
+bozuk" diye görür. Kural üç yerde birden tutulur:
+
+- **Örtüşme yok.** Panel, kart ve düğme dikdörtgenleri birbirine değmez, üst üste binmez.
+  Negatif margin, mutlak konumlandırmayla komşunun üstüne taşma ve "nasılsa görünmüyor"
+  diyerek bırakılan `z-index` yarışı — üçü de yasak. Bilinçli katman (açılır menü, modal,
+  tooltip) istisnadır; onlar zaten üstte durmak için vardır ve altındakini **tamamen**
+  örter, kenarını yalamaz.
+- **Glow'a pay bırakılır.** `box-shadow: 0 0 20px` bir öğeyi her yönde ~20px büyütür.
+  Kabın padding'i ya da kardeşler arası boşluk bundan küçükse hale komşunun altında kesilir
+  ve renk yarım kalır. Glow'lu öğenin çevresinde **en az 24px** boşluk bulunur (aralık
+  merdiveninin üst basamağı, §5) — bu yüzden panel padding'i 24px.
+- **Kap kırpmaz.** `overflow: hidden`, WPF `ClipToBounds="True"`, WinForms'ta kabın
+  sınırına dayanmış çocuk denetim — hepsi glow'u keser. Kırpma gerçekten gerekiyorsa
+  (kaydırılan liste) glow'lu öğe kabın kenarına yaslanmaz, iç boşluk içinde durur.
+
+**Doğrulama gözle yapılır:** ekran görüntüsünü aç ve her düğmenin çerçevesini dört yanından
+takip et. Kesilen tek kenar varsa kural çiğnenmiştir.
+
+**Tablo ve ızgara içeriği ortalanır.** Başlık satırı da, hücreler de yatayda ortalı
+(`MiddleCenter` / `text-align: center`); dikeyde de satır yüksekliğinin ortasında durur.
+Sola dayalı ve ortalı sütunların karışması ızgarayı dağınık gösteriyor, tek hizada okunuyor.
+Sütun genişliği içeriği **ortalanmış hâlde** sığdıracak kadar geniş olmalı: ortalanmış metin
+kırpılırsa iki yanından birden kaybeder ve okunmaz olur (§7). Aynı şey rozet, çip ve durum
+göstergesi için de geçerli — hücreye ortalanır, sola yapıştırılmaz.
+
+**Kendi başlık çubuğunu çizen pencere, işletim sisteminin davranışlarını geri takar.** Çerçevesiz
+pencere kenardan boyutlandırmayı, kenara yaslamayı (Aero Snap) ve başlığa çift tıkla ekranı
+kaplamayı kaybeder; hit-test'i doğru yazmak yetmez, pencerenin `WS_THICKFRAME` ve `WS_MAXIMIZEBOX`
+stillerini de taşıması gerekir. Stiller eklenince doğan görünür çerçeve `WM_NCCALCSIZE`'a sıfır
+dönerek yok edilir. Üstelik kenarları `Dock=Fill` bir çocuk denetim kaplıyorsa pencerenin hit-test'i
+oraya hiç ulaşmaz — **üç kenarda 7px tutamak payı bırakılır**. Bu üçü birlikte çalışır; biri
+eksikse üç davranış birden sessizce ölür. Teslimden önce dördü de (yasla, çift tık, kenardan çek,
+`Alt`+`F4`) fiilen denenir.
+
+**Vurgu zeminleri opak verilir.** Bir satırı ya da rozeti neon renkle hafifçe boyamak için
+`rgba(accent, .16)` düşünülür ama bunu doğrudan hücre/satır zeminine yazmak WinForms
+`DataGridView`'da beyaz bir blok üretir: hücre dolgusu alfa kanalını yok sayar. Tint, yüzey
+rengiyle **önceden karıştırılıp opak** verilir. Web/XAML'de alfa çalışır; ölçüt şu — zemin rengini
+kendi çizmeyen bir denetime yarı saydam renk verme.
+
+**Başlık çubuğu düğmeleri görünür boyutta ve beyaz çizilir.** Kapat/büyüt/küçült simgeleri harf
+değil çizgidir; 12pt altında kenar yumuşatma onları griye çevirir ve kullanıcı "sönük" görür.
+Tıklama alanı **52×36px**, simge yazı tipi **12pt**, duruk renk `#FFFFFF`.
+Renk yalnız hover'da neona döner: büyüt/küçült neon-blue, kapat neon-pink.
+
+**Alt bilgi şeridi tek satır ve mümkün olan en kısa.** Etiket yazı tipi + alt uzantısı kadar
+yükseklik (ölçülen: 18px), üstündeki düğme sırasına yapışık. İçerik: solda durum noktası,
+durum metni, sürüm ve dil anahtarı; **sağda destek bağlantısı ile imza yan yana, önce destek
+sonra imza**. Destek bağlantısı imzadan koparılıp sola atılmaz — ikisi tek bir künye okunur.
+**Bağlantı ve değer metinleri neon-blue**, yalnız durum noktası anlamına göre renklenir
+(kurulu `#34D399`, değil `#FF00EA`).
+
+**Panel başlıkları neon-blue çizilir.** `GÜVENLİK` / `DAVRANIŞ` / `AYRINTILAR` gibi bölüm
+başlıkları gri değil, `#00F3FF`. Gri bırakılırsa panel çerçevesi renkli, içindeki başlık sönük
+kalıyor ve bölüm başlığı gibi okunmuyor. Bunun **altındaki** "Etiket" rolü (alan üstü küçük
+harf aralıklı yazılar) sönük kalmaya devam eder — hiyerarşiyi ayıran şey o karşıtlık.
+

@@ -24,7 +24,7 @@ function run(j) {
   try { fs.mkdirSync(live, { recursive: true }); } catch { return; }
   if (!root) supur();
 
-  if (process.env.TEKNESYUM_DEBUG) iz(live, j);
+  if (debugAcik()) iz(live, j);
 
   // ÖLÇÜLDÜ: alt ajanın araç kullanımları hook'a çoğunlukla ulaşmıyor — worktree
   // izolasyonlu bir koşuda ulaştı (16 adım), diğerlerinde hiç. Güvenilir adım sayacı
@@ -310,6 +310,19 @@ function birlestir(live, hedef, gecici) {
     });
   }
   try { fs.unlinkSync(gf); } catch {}
+}
+
+// Oturum uygulamadan açılıyor; kabuk yok, ortam değişkeni geçmiyor. Bu yüzden bayrak
+// ayar dosyasından da okunur: `~/.claude/teknesyum.json` içinde `"debug": true`.
+// Ortam değişkeni terminalden açan için duruyor, ikisinden biri yeter.
+let _debug = null;
+function debugAcik() {
+  if (_debug !== null) return _debug;
+  if (process.env.TEKNESYUM_DEBUG) return (_debug = true);
+  const kok = process.env.CLAUDE_CONFIG_DIR ||
+    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const c = read(path.join(kok, 'teknesyum.json'));
+  return (_debug = !!(c && c.debug));
 }
 
 function iz(live, j) {

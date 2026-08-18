@@ -391,6 +391,18 @@ ol('TEKNESYUM_DEBUG olay gunlugu yazar, varsayilanda yazmaz', () => {
   icerir(g, 'PostToolUse', 'gunluk olayi');
 });
 
+ol('debug ayar dosyasindan da acilir, ortam degiskeni gerekmez', () => {
+  const { p, live } = proje(1, 0);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const yuk = { ...ort(p), hook_event_name: 'PostToolUse', agent_id: 'a1',
+    agent_type: 'builder', tool_name: 'Bash', tool_input: {} };
+  calistir(IZLE, yuk, { CLAUDE_CONFIG_DIR: cfg });
+  esit(fs.existsSync(path.join(live, '_hook-debug.json')), false, 'ayarsiz');
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ debug: true }));
+  calistir(IZLE, yuk, { CLAUDE_CONFIG_DIR: cfg });
+  esit(fs.existsSync(path.join(live, '_hook-debug.json')), true, 'debug:true');
+});
+
 ol('röle yoksa iz genel dizine düşer, proje kirletilmez', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));

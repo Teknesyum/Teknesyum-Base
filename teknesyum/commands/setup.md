@@ -18,6 +18,7 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 | settings.json bağı | `statusLine.command` köprüyü gösteriyor mu | bağla |
 | Bayat kopya | `~/.claude/statusline.js` var mı | sil |
 | Çıktı dili | `~/.claude/teknesyum.json` → `dil` | sor, yaz |
+| Debug izi | `~/.claude/teknesyum.json` → `debug` | sorma, kapalı bırak |
 | Kural dosyası | `~/.claude/RULES.md` + `CLAUDE.md`'de `@RULES.md` | oluştur |
 | Sıkıştırma penceresi | `settings.json` → `autoCompactWindow` | yoksa `250000` |
 | Dil sunucusu | `typescript-language-server --version` | kurulum komutunu bildir |

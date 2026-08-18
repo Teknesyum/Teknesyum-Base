@@ -73,8 +73,14 @@ debug günlüğüne bak.
 
 ## 1.1 Debug modu
 
-Normalde hiçbir debug dosyası yazılmaz. Şüphe varsa `TEKNESYUM_DEBUG=1` ile oturum aç;
-iki dosya oluşur:
+Normalde hiçbir debug dosyası yazılmaz. Açmanın iki yolu var:
+
+- **Ayar dosyası (varsayılan yol):** `~/.claude/teknesyum.json` içine `"debug": true`.
+  Oturum uygulamadan açıldığında kabuk yoktur; kullanıcıya terminal komutu verme,
+  bayrağı kendin yaz. Kapatmak için alanı `false` yap veya sil.
+- **Ortam değişkeni:** `TEKNESYUM_DEBUG=1` — yalnızca terminalden açılan oturumda.
+
+Açıkken iki dosya oluşur:
 
 | Dosya | Ne söyler |
 |---|---|

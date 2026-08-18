@@ -1,6 +1,6 @@
 # Rota: kütüphane ve ekosistem taraması
 
-**Kaldığım yer:** D10 (sürüyor)
+**Kaldığım yer:** tarama bitti — bulgular standarda işleniyor
 **Amaç:** Teknesyum Base'i güçlendirecek kütüphane, standart ve eklentileri tarayıp
 alınabilir olanları standarda katmak, kurulması gerekenleri kullanıcıya bildirmek.
 
@@ -17,7 +17,7 @@ alınabilir olanları standarda katmak, kurulması gerekenleri kullanıcıya bil
 | D7 | Deterministik araçlar (lint, format, ast) | bitti | tarama-bulgulari.md §D7 |
 | D8 | i18n ve yerelleştirme altyapısı | bitti | tarama-bulgulari.md §D8 |
 | D9 | Test ve görsel doğrulama | bitti | tarama-bulgulari.md §D9 |
-| D10 | Paketleme ve dağıtım | sürüyor | — |
+| D10 | Paketleme ve dağıtım | bitti | tarama-bulgulari.md §D10 |
 
 ## Kurallar
 

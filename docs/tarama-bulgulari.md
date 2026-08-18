@@ -447,3 +447,35 @@ buluta ekran görüntüsü göndermenin gereği yok.
 
 WPF: `FlaUI` + `xUnit`. Electron/web: `Playwright`, ekran görüntüsü karşılaştırması açık.
 Her ikisi de `tests/` altında (relay §1.2).
+
+---
+
+## D10 — Paketleme ve dağıtım
+
+### Velopack — **alındı, .NET masaüstünde varsayılan**
+
+Squirrel'in halefi, Rust ile yazılmış. Windows, macOS ve Linux paketi tek çözümden
+çıkıyor. **Delta paketler**: kullanıcı yalnızca değişeni indiriyor. Güncelleme ~2 saniyede
+uygulanıp yeniden başlıyor, UAC istemi çıkmıyor.
+
+Squirrel.Windows artık bakımsız; Velopack ondan göçü kolaylaştırmak için tasarlanmış.
+
+Alınacak: dağıtılacak her .NET masaüstü aracında varsayılan. UAC istemi görmemek ve
+delta indirme, her gün açılan bir araçta doğrudan kullanıcı deneyimi meselesi.
+
+Alınmayacak: dağıtılmayacak, tek makinede kalan iç araçlarda kurulumu — gereksiz katman.
+
+### Inno Setup — **koşullu**
+
+Ücretsiz, olgun, betikle yönetilen kurulum sistemi. Ama **otomatik güncellemesi yok.**
+
+Alınacak: yalnızca tek seferlik kurulan, güncelleme beklenmeyen araçlarda.
+
+### electron-builder — D4'te alındı
+
+Electron tarafında kurulum, kod imzalama ve otomatik güncelleme aynı araçta.
+
+### Karar
+
+.NET masaüstü: `Velopack`. Electron: `electron-builder`. Güncellenmeyecek tek seferlik
+araç: `Inno Setup` veya tek dosya yayını.

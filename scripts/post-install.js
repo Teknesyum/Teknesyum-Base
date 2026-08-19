@@ -9,7 +9,7 @@ const os = require('os');
 const path = require('path');
 const https = require('https');
 
-const HOME = process.env.CLAUDE_HOME || path.join(os.homedir(), '.claude');
+const HOME = process.env.CLAUDE_CONFIG_DIR || process.env.CLAUDE_HOME || path.join(os.homedir(), '.claude');
 const RAW = 'https://raw.githubusercontent.com/Teknesyum/teknesyum-base/main';
 const SL = path.join(HOME, 'teknesyum-statusline.js');
 const yapilan = [];
@@ -70,7 +70,8 @@ is full, don't append; delete the weakest line or merge two. Added with \`/rule\
     if (s.statusLine && s.statusLine.command && !/teknesyum-statusline/.test(s.statusLine.command)) {
       atlanan.push('statusLine zaten tanımlı, dokunulmadı — değiştirmek istersen: ' + SL);
     } else {
-      s.statusLine = { type: 'command', command: 'node "' + SL.replace(/\\/g, '/') + '"' };
+      const node = process.execPath.replace(/\\/g, '/');
+      s.statusLine = { type: 'command', command: '"' + node + '" "' + SL.replace(/\\/g, '/') + '"' };
       sDegisti = true;
       yapilan.push('statusLine settings.json\'a yazıldı');
     }
@@ -111,11 +112,17 @@ is full, don't append; delete the weakest line or merge two. Added with \`/rule\
   }
 
   // 4. opsiyonel bağımlılıklar
-  const { execSync } = require('child_process');
-  const varMi = (k) => { try { execSync(k, { stdio: 'ignore' }); return true; } catch { return false; } };
+  const { spawnSync } = require('child_process');
+  const varMi = (komut) => {
+    const r = spawnSync(komut, ['--version'], {
+      stdio: 'ignore',
+      shell: process.platform === 'win32',
+    });
+    return !r.error && r.status === 0;
+  };
   const eksik = [];
-  if (!varMi('typescript-language-server --version')) eksik.push('typescript-language-server  (npm i -g typescript typescript-language-server)  → TS tip zekâsı');
-  if (!varMi('graphify --version')) eksik.push('graphify  (uv tool install graphifyy)  → büyük kod tabanı indeksleme');
+  if (!varMi('typescript-language-server')) eksik.push('typescript-language-server  (npm i -g typescript typescript-language-server)  → TS tip zekâsı');
+  if (!varMi('graphify')) eksik.push('graphify  (uv tool install graphifyy)  → büyük kod tabanı indeksleme');
 
   console.log('\n  Teknesyum Base\n');
   for (const y of yapilan) console.log('  ✓ ' + y);

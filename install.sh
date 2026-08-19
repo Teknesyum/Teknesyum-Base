@@ -9,7 +9,7 @@ RAW="https://raw.githubusercontent.com/$REPO/main"
 printf '\n  Teknesyum Base\n\n'
 
 if ! command -v claude >/dev/null 2>&1; then
-  printf '  Claude Code bulunamadi. Once kur: https://claude.com/code\n'
+  printf '  Claude Code bulunamadi. Once kur: curl -fsSL https://claude.ai/install.sh | bash\n'
   exit 1
 fi
 

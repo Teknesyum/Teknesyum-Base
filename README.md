@@ -103,7 +103,7 @@ The decision is announced in one line, so you can see which rule fired without b
 to make the call yourself. Preparation happens without asking too: a missing git repo is
 initialized with a safety commit before any file is touched, a large unfamiliar codebase is
 indexed and then queried instead of read, UI work is routed to an agent with the theme
-standard preloaded, and missing `CLAUDE.md` signposts get written when the job closes.
+standard preloaded, and missing `AGENTS.md` signposts get written when the job closes.
 
 ### Contract layout
 

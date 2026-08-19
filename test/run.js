@@ -1171,6 +1171,73 @@ ol('bozuk json geri döner, tsconfig denetlenmez', () => {
   );
 });
 
+const HARITA = path.join(KOK, 'scripts', 'harita.js');
+
+function haritaProje() {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-harita-'));
+  fs.mkdirSync(path.join(p, 'src'), { recursive: true });
+  fs.mkdirSync(path.join(p, 'node_modules', 'paket'), { recursive: true });
+  fs.writeFileSync(path.join(p, 'node_modules', 'paket', 'index.js'), 'module.exports = 1;');
+  fs.writeFileSync(
+    path.join(p, 'src', 'a.js'),
+    "const b = require('./b');\nconst x = require('lodash');\n"
+  );
+  fs.writeFileSync(path.join(p, 'src', 'b.js'), "import c from './c.js';\nexport default c;\n");
+  fs.writeFileSync(path.join(p, 'src', 'c.js'), 'export default 1;\n');
+  fs.writeFileSync(path.join(p, 'src', 'yalniz.js'), 'const q = 1;\n');
+  return p;
+}
+
+ol('harita ic bagi cozer, dis paketi ayirir', () => {
+  const p = haritaProje();
+  const r = spawnSync(process.execPath, [HARITA, p], { encoding: 'utf8' });
+  esit(r.status, 0, 'harita cikmali');
+  const j = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'harita.json'), 'utf8'));
+  esit(j['src/a.js'].ic[0], 'src/b.js', 'goreli require cozulmeli');
+  esit(j['src/b.js'].ic[0], 'src/c.js', 'import cozulmeli');
+  esit(j['src/a.js'].dis.includes('lodash'), true, 'dis paket ayrilmali');
+  esit(j['node_modules/paket/index.js'], undefined, 'node_modules taranmamali');
+});
+
+ol('harita yetimi ve merkezi isaretler', () => {
+  const p = haritaProje();
+  spawnSync(process.execPath, [HARITA, p], { encoding: 'utf8' });
+  const m = fs.readFileSync(path.join(p, '.claude', 'harita.md'), 'utf8');
+  icerir(m, 'src/yalniz.js', 'yetim listelenmeli');
+  icerir(m, '## Bağlar');
+});
+
+ol('harita donguyu bulur', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dongu-'));
+  fs.writeFileSync(path.join(p, 'a.js'), "require('./b');\n");
+  fs.writeFileSync(path.join(p, 'b.js'), "require('./a');\n");
+  spawnSync(process.execPath, [HARITA, p], { encoding: 'utf8' });
+  icerir(fs.readFileSync(path.join(p, '.claude', 'harita.md'), 'utf8'), '## Döngüler');
+});
+
+ol('harita C# using satirini ad alanina baglar', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cs-'));
+  fs.writeFileSync(path.join(p, 'Model.cs'), 'namespace App.Models;\nclass M {}\n');
+  fs.writeFileSync(
+    path.join(p, 'Svc.cs'),
+    'using App.Models;\nusing System.IO;\nnamespace App.Svc;\n'
+  );
+  spawnSync(process.execPath, [HARITA, p], { encoding: 'utf8' });
+  const j = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'harita.json'), 'utf8'));
+  esit(j['Svc.cs'].ns[0], 'App.Models', 'ic ad alani baglanmali');
+  esit(j['Svc.cs'].dis.includes('System'), true, 'cerceve ad alani dis sayilmali');
+});
+
+ol('yonlendirici sablon AGENTS.md adini tasir', () => {
+  const a = path.join(KOK, 'skills', 'relay', 'assets', 'folder-agents.template.md');
+  esit(fs.existsSync(a), true, 'folder-agents.template.md olmali');
+  icerir(fs.readFileSync(a, 'utf8'), '@AGENTS.md');
+  icerir(
+    fs.readFileSync(path.join(KOK, 'agents', 'scribe.md'), 'utf8'),
+    'folder-agents.template.md'
+  );
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

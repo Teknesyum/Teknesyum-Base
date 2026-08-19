@@ -302,8 +302,14 @@ Rapor **yapılandırılmış durum bildirimidir, düzyazı özet değildir.** Ta
 satırlık olay. Bitmiş işi tekrar anlatma; anlatılacak şey değişimdir. `briefing: sessiz`
 ayarında yalnızca 8.1, 8.5 ve 8.6 kalır — diğerlerini kullanıcı `/report` ile ister.
 
-## 9. Yönlendirici CLAUDE.md
+## 9. Yönlendirici AGENTS.md
 
 Klasörde 5+ kaynak dosya varsa veya klasör mimari sınırsa (main/renderer, core/ui, api/db)
-→ ≤20 satırlık `CLAUDE.md` şart. Şablon: `assets/folder-claude.template.md`.
+→ ≤20 satırlık `AGENTS.md` şart. Şablon: `assets/folder-agents.template.md`.
 20 satırı aşıyorsa fazlasını ayrı referans dosyasına taşı.
+
+**Neden AGENTS.md, neden yanına tek satırlık CLAUDE.md.** Yönlendirici dosyayı Claude Code
+dışındaki araçlar da okuyor (Codex, Cursor, Copilot); `AGENTS.md` hepsinin ortak adı.
+Claude Code'un o dosyayı kendiliğinden bulduğu doğrulanamadı — garanti yol, yanına tek
+satırlık bir `CLAUDE.md` koyup içine `@AGENTS.md` yazmaktır. İçe aktarma sözdizimi
+ölçüldü, çalışıyor. Bilgi tek yerde durur, ikinci dosya bir satırdır.

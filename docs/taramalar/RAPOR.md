@@ -24,15 +24,8 @@ desen taraması).
 
 ## 2. Bilerek alınmayanlar
 
-**Repo map — tree-sitter + PageRank ile otomatik bağlam seçimi (aider).** Kurulum
-maliyeti yüksek, `graphify` skill'i boşluğun büyük kısmını dolduruyor. Karar: graphify
-sembol seviyesinde kalsın, dosya seviyesi PageRank eklenmesin.
-
 **OS seviyesinde sandbox — Seatbelt/Landlock (codex).** Windows'ta karşılığı yok;
 Teknesyum tek platformda çalışıyor. Kanca katmanı sınırın kendisi olarak kalır.
-
-**AGENTS.md'ye geçiş (codex).** Fayda ancak başka araçlarla ortak çalışmada doğar.
-Teknesyum tek araç hedefliyor; `CLAUDE.md` ≤20 satır kuralı aynı işi görüyor.
 
 **Model yeteneğine göre edit formatı — whole/diff/udiff (aider).** Claude Code'un
 `Edit` aracı tek kanal, format seçimi bize açık değil.
@@ -46,6 +39,29 @@ belirsizleşiyor; bmad'in kendi ekosisteminde bu görülüyor.
 
 **Cline Hooks'un kendisi.** macOS/Linux'a bağlı, Windows'ta çalışmıyor. Fikir alındı,
 kod alınmadı.
+
+## 2.1 Sonradan döndüğüm iki karar
+
+**Repo map — reddettim, yanlıştı.** Gerekçem aider'ın tree-sitter + PageRank kurulumunun
+pahalı olmasıydı; asıl soru bu değildi. "Proje kendi içinde nasıl bağlı" sorusu bir kere
+cevaplanır, sonra her iş onu bedavaya kullanır — uzun projede maliyeti düşürür, artırmaz.
+Pahalı olan graphify'ın *semantik* katmanıdır (dosya başına model çağrısı), bağ çıkarmanın
+kendisi değil. 2.20'de `scripts/harita.js` eklendi: import/require/using satırlarından
+deterministik bağ haritası, model çağrısı yok, 123 dosyalık bir projede saniyeler ve
+~9 kB çıktı. Kural: ~30+ kaynak dosyada ya da 3+ modüle dokunan işte önce harita.
+graphify yerini korur — yabancı bir kod tabanını *anlamak* için; harita kendi projende
+*ne neye bağlı* için.
+
+**AGENTS.md — reddettim, yanlıştı.** "Teknesyum tek araç hedefliyor" varsayımı kullanıcının
+gerçeğine uymuyor: Sol ve başka araçlar da aynı depoda çalışıyor. Yönlendirici dosyanın
+ortak adı `AGENTS.md`; Claude Code'un onu kendiliğinden bulduğu doğrulanamadı, o yüzden
+yanına tek satırlık `CLAUDE.md` (`@AGENTS.md`) konur. Bilgi tek yerde, ikinci dosya bir
+satır. 2.20'de tüm şablonlar ve kurallar buna çevrildi.
+
+**Kapatılan depolar da incelenir.** Bir depoyu olduğu gibi almıyoruz; ilham alıyoruz.
+Roo Code'un custom-modes tasarımı ya da Continue'nun bağlam sağlayıcı ayrımı, proje
+kapansa da fikir olarak geçerli. "Terk edilmiş" etiketi *bağımlılık kurma* uyarısıdır,
+*okuma* yasağı değil. Komple alınacak şey ancak `motion` gibi bir kütüphane olabilir.
 
 ## 3. Şüpheliler — senin bilmen gerekenler
 

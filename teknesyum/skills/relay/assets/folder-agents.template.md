@@ -13,3 +13,4 @@
 Girdi: <nereden gelir> · Çıktı: <nereye gider>
 
 <!-- 20 satırı aşma. Fazlası ayrı referans dosyasına. -->
+<!-- Yanına CLAUDE.md koy, tek satır: @AGENTS.md -->

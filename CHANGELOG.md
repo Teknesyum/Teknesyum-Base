@@ -6,6 +6,30 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.20.0] - 2026-08-19
+
+### Added
+
+- `scripts/harita.js` — deterministic dependency map. Reads import/require/using lines
+  straight from source and emits `.claude/harita.md` + `harita.json`: hubs, cycles,
+  orphans, file-to-file edges. No model call, no parser install; a 123-file project
+  takes seconds and produces ~9 kB. C# `using` resolves to a namespace node rather than
+  a single file, because binding a namespace to one file produced fake edges.
+- Rule: at ~30+ source files, or when a job touches 3+ modules, build the map before
+  opening files. `graphify` keeps its place for understanding a foreign codebase; the
+  map answers "what breaks if I touch this" inside your own.
+- Rule: every contract starts on a fresh agent; the one exception is two consecutive
+  contracts over the same files, which continue the same agent. The auditor is never
+  continued.
+- `docs/kararlar/yerel-llm.md` — analysis of running a local model for grunt work.
+
+### Changed
+
+- Folder signposts are now `AGENTS.md`, with a one-line `CLAUDE.md` next to them holding
+  `@AGENTS.md`. The content lives in the file every tool reads; the second file is one
+  line. Template renamed to `folder-agents.template.md`.
+
+
 ## [2.19.0] - 2026-08-19
 
 ### Added

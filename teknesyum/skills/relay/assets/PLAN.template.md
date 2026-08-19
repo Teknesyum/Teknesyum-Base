@@ -24,4 +24,4 @@ T3 ─────────┘
 ## Bitti tanımı
 - [ ] <proje seviyesi kabul kriteri>
 - [ ] İmza/sponsor bloğu ayarlar bölümünde
-- [ ] Kök + alt klasör CLAUDE.md dosyaları güncel
+- [ ] Kök + alt klasör AGENTS.md dosyaları güncel

@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: Relay mekanik işçisi. Karar gerektirmeyen toplu işler için kullan - CLAUDE.md yönlendirici dosyalarını doldurma, isim değiştirme, biçimlendirme, metin/çeviri düzenleme, envanter çıkarma, tekrarlı düzeltme. Kod mantığına dokunmaz.
+description: Relay mekanik işçisi. Karar gerektirmeyen toplu işler için kullan - AGENTS.md yönlendirici dosyalarını doldurma, isim değiştirme, biçimlendirme, metin/çeviri düzenleme, envanter çıkarma, tekrarlı düzeltme. Kod mantığına dokunmaz.
 model: haiku
 effort: low
 maxTurns: 40
@@ -23,7 +23,8 @@ Yasaklar — istisnasız:
 Deterministik bir araç işi görüyorsa (`sed`, prettier, `dotnet format`, IDE refactor)
 onu kullan — kendi elinle tek tek düzenlemekten hem hızlı hem hatasızdır.
 
-Yönlendirici `CLAUDE.md` yazıyorsan şablon: `~/.claude/skills/relay/assets/folder-claude.template.md`.
+Yönlendirici `AGENTS.md` yazıyorsan şablon: `~/.claude/skills/relay/assets/folder-agents.template.md`.
+Yanına tek satırlık `CLAUDE.md` koy, içinde yalnız `@AGENTS.md` olsun.
 20 satırı aşma.
 
 ## Ajan hafızası

@@ -168,11 +168,26 @@ Yazma işine başlamadan önce, sırayla kontrol et:
    (`.env`, `secrets`, `*.key`, kimlik dosyası) veya 10 MB üstü dosya kalıyorsa
    **onları ekleme, kullanıcıya tek satır sor.** Güvenlik noktası kod içindir;
    kullanıcının sırlarını versiyonlamak senin işin değil.
-2. **Kod tabanı yabancı ve büyük mü?** (~60+ kaynak dosya, mimarisini bilmiyorsun ve
-   iş birden çok modüle dokunacak) → `graphify-out/` yoksa **önce `/graphify .` çalıştır**,
-   sonra dosya okumak yerine grafiği sorgula. Küçük projede kurma, `Explore`+`Grep` yeter.
-3. **Yönlendirici `CLAUDE.md` var mı?** Yoksa ve proje ≥5 kaynak dosyaysa iş bitiminde
-   `scribe`'ye yazdır.
+2. **Proje kendi içinde nasıl bağlı, biliyor musun?** ~30+ kaynak dosya varsa ya da iş
+   3+ modüle dokunacaksa **önce haritayı çıkar** — model çağırmayan, saniyeler süren
+   deterministik bir tarama:
+
+   ```
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/harita.js" .
+   ```
+
+   `.claude/harita.md` üretir: merkezler (en çok içeri alınan dosyalar), döngüler,
+   yetimler, dosya→dosya bağlar. Dosya açmadan önce oraya bak; "bunu değiştirirsem ne
+   kırılır" sorusunun cevabı orada, sıfır token maliyetiyle durur. Harita türetilmiş
+   dosyadır — bayatladığını düşünüyorsan yeniden üret, elle düzeltme.
+
+   **`/graphify` bunun yerine geçmez, üstüne biner.** Harita bağı verir, anlamı vermez;
+   graphify semantik topluluk çıkarır ama her dosya için model çağırır. Yabancı bir
+   kod tabanını *anlamak* gerekiyorsa graphify; kendi projende *ne neye bağlı* diye
+   soruyorsan harita. Küçük projede ikisi de gereksiz — `Explore`+`Grep` yeter.
+3. **Yönlendirici `AGENTS.md` var mı?** Yoksa ve proje ≥5 kaynak dosyaysa iş bitiminde
+   `scribe`'ye yazdır. Yanına tek satırlık `CLAUDE.md` — içinde yalnız `@AGENTS.md`.
+   Bilgi `AGENTS.md`'de durur çünkü onu her araç okur; `CLAUDE.md` sadece işaret eder.
 4. **Arayüz işi var mı?** `teknesyum-ui` devreye girer; sözleşmenin rolü `ui-builder`.
 5. **Deterministik araç kuruldu mu?** Yeni JS/TS projesinde `biome.json` yaz; iş bitiminde
    biçimlendirmeyi modele değil `biome check --write`'a yaptır. Model gerekmeyen yerde
@@ -327,7 +342,7 @@ Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `mod
 | `builder` | kod yazar — modül, algoritma, endpoint, refactor, test | sonnet |
 | `ui-builder` | arayüz yazar; `teknesyum-ui` context'ine önyüklü | sonnet |
 | `auditor` | kabul kriterlerini doğrular, **kod yazamaz** | sonnet |
-| `scribe` | mekanik toplu iş — CLAUDE.md, isim, biçim | haiku |
+| `scribe` | mekanik toplu iş — AGENTS.md, isim, biçim | haiku |
 | `Explore` | geniş arama (yerleşik, devam ettirilemez) | — |
 
 **opus**: mimari kararı taşıyan, algoritmik, belirsiz, zor hata ayıklama.
@@ -345,6 +360,16 @@ Alt ajan soğuk başlar; üretken iş başlamadan ~4-15k token yanar. Karar kura
 - Yüksek (keşif, tarama, çok dosyalı refactor) → **delege et.** Ara çıktı alt ajanın
   context'inde ölür, sana sonuç döner. Kazanç budur.
 - Düşük (tek fonksiyon, zaten tasarladığın şeyi yazmak) → **yine de tek ajan aç.**
+
+**Her sözleşme yeni ajanla başlar.** Bu varsayılan ve doğru olan: soğuk bağlam, temiz
+sınır, ajanın önceki işten taşıdığı kör nokta yok. Ajanı "builder-1, builder-2" diye
+numaralamaya gerek yok — `/report` ajanı sözleşme numarasıyla anar, kimlik oradan gelir.
+
+**Tek istisna: art arda gelen ve aynı dosyalara dokunan iki sözleşme.** İkincisi için
+yeni ajan açma, birincisini `SendMessage` ile sürdür. Kazanç ölçülü — soğuk başlangıç
+4-15k token, sürdürmede sıfır. Kayıp da ölçülü: aynı ajan iki işi de kendi bağlamıyla
+görür, ilk işteki yanlış varsayımı ikinciye taşır. Bu yüzden sürdürülen ajanın işini
+**her zaman ayrı bir denetçi** açar; denetçi hiçbir koşulda sürdürülmez.
 
 Buradaki "kendin yap" istisnası §1'deki tek satırlık düzeltmeyle sınırlıdır, bir adım
 ötesine geçmez. Sebep token değil rol: senin yazdığın kodu denetleyecek bağımsız taraf
@@ -373,7 +398,7 @@ Sözleşme boyutu: **3-8 dosya, tek tutarlı yetenek.** Gerçek projede 5-9 söz
 - **Optimizasyonun tabanı vardır.** Küçük işi optimize etmek, optimizasyonun kendisinden
   ucuza gelmez: 3 satırlık dosyayı grep'lemek, 20 karakterlik düzenlemeyi ajanla yapmak,
   tek dosyalık işe rota kurmak. Kazanç kurulum maliyetinden küçükse **doğrudan yap**.
-- **Getirme maliyeti ölçütü.** Kalıcı bir dosyaya (`CLAUDE.md`, hafıza, sözleşme bağlamı)
+- **Getirme maliyeti ölçütü.** Kalıcı bir dosyaya (`AGENTS.md`, hafıza, sözleşme bağlamı)
   bir bilgiyi yazmadan önce sor: bu, gerektiğinde **ucuza türetilebilir mi?** Dosya
   listesi, fonksiyon imzası, bağımlılık sürümü — `grep` bir saniyede bulur, yazılmaz.
   Yazılacak olan yalnızca türetilemeyen şeydir: karar ve gerekçesi, dışarıdan gelen

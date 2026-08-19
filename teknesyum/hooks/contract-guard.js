@@ -5,8 +5,16 @@ let raw = '';
 process.stdin.on('data', (d) => (raw += d));
 process.stdin.on('end', () => {
   let j = {};
-  try { j = JSON.parse(raw); } catch { process.exit(0); }
-  try { karar(j); } catch { process.exit(0); }
+  try {
+    j = JSON.parse(raw);
+  } catch {
+    process.exit(0);
+  }
+  try {
+    karar(j);
+  } catch {
+    process.exit(0);
+  }
   process.exit(0);
 });
 
@@ -23,7 +31,11 @@ function muhurlu(metin) {
   const s = String(metin);
   return MUHUR.test(s) && KANIT.every((r) => r.test(s));
 }
-const YAZMA_FIILI = /(^|[\s;|&])(mv|move-item|cp|copy-item|rm|remove-item|del|erase|touch|tee|sed\s+-i|set-content|add-content|out-file|new-item)\b|>>?/i;
+// ÖLÇÜLDÜ: `>>?` serbest duruyordu ve düzyazıdaki `<sebep>` gibi bir metni yönlendirme
+// sandı — `contracts/done/` sözünü içeren masum bir belge yazımı engellendi. Yönlendirme
+// işareti boşlukla başlar; kelime ortasındaki `>` yönlendirme değildir.
+const YAZMA_FIILI =
+  /(^|[\s;|&])((mv|move-item|cp|copy-item|rm|remove-item|del|erase|touch|tee|sed\s+-i|set-content|add-content|out-file|new-item)\b|>>?)/i;
 
 function karar(j) {
   const arac = j.tool_name || '';
@@ -45,13 +57,20 @@ function karar(j) {
   if (arac !== 'Bash') return;
   const komut = String(t.command || '');
   if (!/contracts[\\/]done/i.test(komut)) return;
-  if (!YAZMA_FIILI.test(komut)) return;  // okuma serbest: cat, ls, grep
+  // Yazma fiili komutun herhangi bir yerinde değil, `done/` yolunun geçtiği parçada
+  // aranır. Zincirin başka bir halkasındaki `rm` bu yolla ilgisizdir.
+  const parca = komut
+    .split(/[\n;]|&&|\|\||\|/)
+    .filter((x) => /contracts[\\/]done/i.test(x) && YAZMA_FIILI.test(x));
+  if (!parca.length) return; // okuma serbest: cat, ls, grep
 
   // Tek meşru yazma: denetimi geçmiş bir sözleşmeyi done/ altına taşımak. Kaynak
   // dosyada mühür varsa geçir. Komuttan kaynak çıkaramıyorsak kapalı tarafa düş.
-  for (const aday of yollar(komut)) {
+  for (const aday of yollar(parca.join(' '))) {
     if (DONE.test(norm(aday))) continue;
-    try { if (muhurlu(fs.readFileSync(aday, 'utf8'))) return; } catch {}
+    try {
+      if (muhurlu(fs.readFileSync(aday, 'utf8'))) return;
+    } catch {}
   }
   return engelle(
     'contracts/done/ altına kabuktan yazma engellendi.',
@@ -66,7 +85,9 @@ function yollar(komut) {
   return out;
 }
 
-function norm(p) { return path.normalize(String(p)).replace(/\\/g, '/'); }
+function norm(p) {
+  return path.normalize(String(p)).replace(/\\/g, '/');
+}
 
 function engelle(...satir) {
   process.stderr.write('ENGELLENDİ: ' + satir.join('\n'));

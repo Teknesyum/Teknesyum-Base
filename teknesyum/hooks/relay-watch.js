@@ -4,7 +4,9 @@ const path = require('path');
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
 process.stdin.on('end', () => {
-  try { run(JSON.parse(raw)); } catch {}
+  try {
+    run(JSON.parse(raw));
+  } catch {}
   process.exit(0);
 });
 
@@ -12,24 +14,55 @@ function run(j) {
   const root = findRelay(j.cwd || process.cwd());
 
   if (j.hook_event_name === 'SessionStart') return acilis(root);
-  if (j.hook_event_name === 'UserPromptSubmit') return hatirlat(j);
+  if (j.hook_event_name === 'UserPromptSubmit') {
+    const k = String(j.prompt || '').match(/^[ ]*\/([a-z0-9:-]+)/i);
+    if (k) kullanimSay('komut:' + k[1].toLowerCase());
+    return hatirlat(j);
+  }
   if (j.hook_event_name === 'Stop') return paketDenetle(j);
+  if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
+  if (j.hook_event_name === 'SessionEnd') return oturumKapat(root, j);
+  if (j.hook_event_name === 'StopFailure') return kesintiYaz(root, j);
 
   // Röle kurulu projede izler proje içinde durur (/report oradan okur). Kurulu değilse
   // — üst klasörde, rastgele bir dizinde açılmış oturumda — oturuma özel genel dizine
   // yazarız. Kullanıcının klasör ayarlamasını beklemeyiz.
-  const live = root
-    ? izYolu(root)
-    : path.join(genelKok(), safe(j.session_id || 'oturum'));
-  try { fs.mkdirSync(live, { recursive: true }); } catch { return; }
+  const live = root ? izYolu(root) : path.join(genelKok(), safe(j.session_id || 'oturum'));
+  try {
+    fs.mkdirSync(live, { recursive: true });
+  } catch {
+    return;
+  }
   if (!root) supur();
 
   if (debugAcik()) iz(live, j);
+
+  if (j.hook_event_name === 'PostToolUse' && /^Skill$/.test(j.tool_name || '')) {
+    const ad = (j.tool_input && (j.tool_input.skill || j.tool_input.name)) || '?';
+    kullanimSay('skill:' + String(ad).toLowerCase());
+  }
+  if (j.hook_event_name === 'SubagentStart') {
+    kullanimSay('ajan:' + String(j.agent_type || '?').replace(/^teknesyum:/, ''));
+  }
 
   // ÖLÇÜLDÜ: alt ajanın araç kullanımları hook'a çoğunlukla ulaşmıyor — worktree
   // izolasyonlu bir koşuda ulaştı (16 adım), diğerlerinde hiç. Güvenilir adım sayacı
   // kurulamaz. Kesin ölçülebilen: başlangıç (ana oturumdaki Agent çağrısı) ve
   // bitiş (SubagentStop).
+  // ÖLÇÜLDÜ: başarısız `Edit` de PostToolUse üretiyordu; adım sayılıyor ve `last_action`
+  // başarılı görünüyordu. Başarısızlık ayrı olayla gelir — adım saymaz, iz bırakır.
+  if (j.hook_event_name === 'PostToolUseFailure') {
+    const kim = j.agent_id || transcriptKimligi(j);
+    if (!kim) return;
+    const f = path.join(live, safe(kim) + '.json');
+    const k = read(f);
+    if (!k) return;
+    k.last_error =
+      (j.tool_name || '?') + ': ' + String(j.error_type || j.error || 'hata').slice(0, 80);
+    yaz(f, k);
+    return;
+  }
+
   if (j.hook_event_name === 'PreToolUse') {
     if (/^(Agent|Task)$/.test(j.tool_name || '')) {
       const n = calisanEkle(live, j);
@@ -37,8 +70,11 @@ function run(j) {
       const rol = String(t.subagent_type || '?').replace(/^teknesyum:/, '');
       const tanim = String(t.description || '').slice(0, 60);
       duyur(
-        'görev veriliyor · ' + rol + (t.model ? ' · ' + t.model : '') +
-        (tanim ? ' · ' + tanim : '') + (n > 1 ? '   [' + n + ' ajan çalışıyor]' : '')
+        'görev veriliyor · ' +
+          rol +
+          (t.model ? ' · ' + t.model : '') +
+          (tanim ? ' · ' + tanim : '') +
+          (n > 1 ? '   [' + n + ' ajan çalışıyor]' : '')
       );
     }
     return;
@@ -53,7 +89,7 @@ function run(j) {
   const file = path.join(live, safe(agentId) + '.json');
   if (j.agent_id) birlestir(live, file, transcriptKimligi(j));
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  let s = read(file) || {
+  const s = read(file) || {
     agent_id: agentId,
     agent_type: j.agent_type || '?',
     contract: null,
@@ -69,7 +105,10 @@ function run(j) {
   s.agent_type = j.agent_type || s.agent_type;
   // Bitmiş sayılan bir ajandan yeni olay geliyorsa bitmemiştir. Kaydı geri aç;
   // aksi halde `ended` sabit kalır, `last_seen` ilerler ve kayıt kendiyle çelişir.
-  if (s.ended && j.hook_event_name !== 'SubagentStop') { s.ended = null; s.stop_reason = null; }
+  if (s.ended && j.hook_event_name !== 'SubagentStop') {
+    s.ended = null;
+    s.stop_reason = null;
+  }
   s.last_seen = now;
   s.identity = j.agent_id ? 'agent_id' : 'transcript';
 
@@ -83,7 +122,7 @@ function run(j) {
       s.steps++;
       const t = j.tool_input || {};
       const target = t.file_path || t.notebook_path || '';
-      const proj = root ? path.dirname(path.dirname(root)) : (j.cwd || process.cwd());
+      const proj = root ? path.dirname(path.dirname(root)) : j.cwd || process.cwd();
       s.last_action = (j.tool_name || '?') + (target ? ' ' + short(target, proj) : '');
 
       if (target) {
@@ -107,7 +146,7 @@ function run(j) {
       s.stop_reason = j.stop_reason || 'end_turn';
       // `ended` başlangıçtan önce olamaz. Olduysa kayıt karışmıştır; uydurma yerine
       // alanı boş bırak — yanlış zaman, zamansızlıktan kötüdür.
-      s.ended = (s.started && now < s.started) ? null : now;
+      s.ended = s.started && now < s.started ? null : now;
       if (j.last_assistant_message) s.last_word = String(j.last_assistant_message).slice(0, 300);
       Object.assign(s, kimlikOku(j));
       break;
@@ -116,7 +155,6 @@ function run(j) {
 
   yaz(file, s);
 }
-
 
 // ÖLÇÜLDÜ: hook yükünde `effort: { level: "high" }` alanı her olayda geliyor ve
 // okunmuyordu. Model yükte yok — ajanın kendi transcript'inin son asistan satırında
@@ -149,12 +187,18 @@ function sonAsistan(tp) {
     fs.readSync(fd, buf, 0, buf.length, bas);
     fs.closeSync(fd);
     ham = buf.toString('utf8');
-  } catch { return null; }
+  } catch {
+    return null;
+  }
   const satir = ham.split('\n');
   for (let i = satir.length - 1; i >= 0; i--) {
     if (!satir[i].includes('"assistant"')) continue;
     let o;
-    try { o = JSON.parse(satir[i]); } catch { continue; }
+    try {
+      o = JSON.parse(satir[i]);
+    } catch {
+      continue;
+    }
     if (!o || o.type !== 'assistant') continue;
     return { model: o.message && o.message.model, effort: o.effort };
   }
@@ -196,7 +240,9 @@ function calisanKapat(live, type) {
 // bildiririz: görev verildi, ajan bitti, oturum açıldı. TEKNESYUM_SESSIZ=1 kapatır.
 function duyur(mesaj) {
   if (process.env.TEKNESYUM_SESSIZ) return;
-  try { process.stdout.write(JSON.stringify({ systemMessage: 'Teknesyum ▸ ' + mesaj })); } catch {}
+  try {
+    process.stdout.write(JSON.stringify({ systemMessage: 'Teknesyum ▸ ' + mesaj }));
+  } catch {}
 }
 
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını
@@ -212,9 +258,11 @@ function hatirlat(j) {
     '`Teknesyum ▸ ölçü: <büyüklük> → <karar>`. Ajan açmasan da yaz (örn. ' +
     '`tek dosya → ajan gerekmedi`). Salt soru/sohbette satırı yazma.';
   try {
-    process.stdout.write(JSON.stringify({
-      hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
-    }));
+    process.stdout.write(
+      JSON.stringify({
+        hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
+      })
+    );
   } catch {}
 }
 
@@ -224,7 +272,9 @@ function sayacGecti(j) {
   const id = safe((j && j.session_id) || 'oturum');
   const dosya = path.join(genelKok(), id + '.hatirlatma');
   let n = 0;
-  try { n = parseInt(fs.readFileSync(dosya, 'utf8'), 10) || 0; } catch {}
+  try {
+    n = parseInt(fs.readFileSync(dosya, 'utf8'), 10) || 0;
+  } catch {}
   if (n >= 2) return true;
   try {
     fs.mkdirSync(path.dirname(dosya), { recursive: true });
@@ -274,26 +324,32 @@ function devirIhlali(metin) {
     const kopya = KOPYA_EMRI.test(metin.slice(Math.max(0, bas - 400), bas));
 
     if (PAKET_BASLIK.test(blok) && PAKET_ALAN.test(blok)) {
-      return 'Teknesyum: görev paketini sohbete basma. Paket dosyaya yazılır, ' +
+      return (
+        'Teknesyum: görev paketini sohbete basma. Paket dosyaya yazılır, ' +
         'kullanıcıya tek satır verilir (multi-session.md §5). Paketi ' +
         '`.claude/relay/G<n>.md` altına yaz, sonra sadece şunu bas: ' +
         '"`.claude/relay/G<n>.md` oku ve içindeki görevi eksiksiz uygula." Paketi ' +
         'çalıştıracak taraf dosyayı kendi okur; kullanıcının 120 satır kopyalaması ' +
-        'gerekmez.';
+        'gerekmez.'
+      );
     }
 
     if (RAPOR_BASLIK.test(blok)) {
-      return 'Teknesyum: raporu sohbete basma. Rapor dosyaya yazılır, kullanıcıya ' +
+      return (
+        'Teknesyum: raporu sohbete basma. Rapor dosyaya yazılır, kullanıcıya ' +
         'en fazla 5 satır verilir (multi-session.md §5.1). Gövdeyi paketin ' +
         '`## Rapor` bölümüne ya da `docs/` altında bir dosyaya yaz, sonra şunu bas: ' +
-        '"<paket> teslim edildi. Rapor: <dosya yolu>." Karşı taraf dosyayı kendi okur.';
+        '"<paket> teslim edildi. Rapor: <dosya yolu>." Karşı taraf dosyayı kendi okur.'
+      );
     }
 
     if (kopya) {
-      return 'Teknesyum: kullanıcıdan uzun bir bloğu kopyalamasını isteme ' +
+      return (
+        'Teknesyum: kullanıcıdan uzun bir bloğu kopyalamasını isteme ' +
         '(multi-session.md §5). Kopyalanabilir metin birkaç satırdır; gövde dosyada ' +
         'durur ve karşı taraf dosyayı kendi okur. Bloğu bir dosyaya yaz, sohbete ' +
-        'yalnızca "<dosya yolu> oku ve uygula" satırını bas.';
+        'yalnızca "<dosya yolu> oku ve uygula" satırını bas.'
+      );
     }
   }
 }
@@ -309,16 +365,25 @@ function sonMesaj(tp) {
     fs.readSync(fd, buf, 0, buf.length, bas);
     fs.closeSync(fd);
     ham = buf.toString('utf8');
-  } catch { return null; }
+  } catch {
+    return null;
+  }
   const satir = ham.split('\n').filter(Boolean);
   for (let i = satir.length - 1; i >= 0; i--) {
     let o;
-    try { o = JSON.parse(satir[i]); } catch { continue; }
+    try {
+      o = JSON.parse(satir[i]);
+    } catch {
+      continue;
+    }
     if (!o.message || o.message.role !== 'assistant') continue;
     const ic = o.message.content;
     if (typeof ic === 'string') return ic;
     if (Array.isArray(ic)) {
-      const t = ic.filter((p) => p && p.type === 'text').map((p) => p.text).join('\n');
+      const t = ic
+        .filter((p) => p && p.type === 'text')
+        .map((p) => p.text)
+        .join('\n');
       if (t) return t;
     }
   }
@@ -338,8 +403,15 @@ function acilis(root) {
     const acik = say(path.join(root, 'contracts'));
     const biten = say(path.join(root, 'contracts', 'done'));
     if (!acik && !biten) parca.push('röle kurulu · sözleşme yok');
-    else parca.push('röle kurulu · sözleşme ' + biten + '/' + (acik + biten) + ' bitti' +
-      (acik ? ' · ' + acik + ' açık · kaldığım yerden sürdürüyorum' : ''));
+    else
+      parca.push(
+        'röle kurulu · sözleşme ' +
+          biten +
+          '/' +
+          (acik + biten) +
+          ' bitti' +
+          (acik ? ' · ' + acik + ' açık · kaldığım yerden sürdürüyorum' : '')
+      );
   }
   if (parca.length) duyur(parca.join('   ·   '));
 }
@@ -347,7 +419,8 @@ function acilis(root) {
 // Plugin kendini kuramaz: statusline kullanıcının settings.json'ına yazılır. Eksikse
 // oturum açılışında bir kez söyleriz — kullanıcının komut ezberlemesini bekleme.
 function kurulumEksik() {
-  const kok = process.env.CLAUDE_CONFIG_DIR ||
+  const kok =
+    process.env.CLAUDE_CONFIG_DIR ||
     path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
   if (!fs.existsSync(path.join(kok, 'teknesyum-statusline.js'))) return true;
   const s = read(path.join(kok, 'settings.json'));
@@ -355,7 +428,11 @@ function kurulumEksik() {
 }
 
 function say(dir) {
-  try { return fs.readdirSync(dir).filter((f) => /\.md$/i.test(f)).length; } catch { return 0; }
+  try {
+    return fs.readdirSync(dir).filter((f) => /\.md$/i.test(f)).length;
+  } catch {
+    return 0;
+  }
 }
 
 // Ana oturumun transcript dosyası session_id ile aynı adı taşır; alt ajanınki taşımaz.
@@ -394,7 +471,9 @@ function birlestir(live, hedef, gecici) {
       files: g.files || [],
     });
   }
-  try { fs.unlinkSync(gf); } catch {}
+  try {
+    fs.unlinkSync(gf);
+  } catch {}
 }
 
 // Oturum uygulamadan açılıyor; kabuk yok, ortam değişkeni geçmiyor. Bu yüzden bayrak
@@ -404,7 +483,8 @@ let _debug = null;
 function debugAcik() {
   if (_debug !== null) return _debug;
   if (process.env.TEKNESYUM_DEBUG) return (_debug = true);
-  const kok = process.env.CLAUDE_CONFIG_DIR ||
+  const kok =
+    process.env.CLAUDE_CONFIG_DIR ||
     path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
   const c = read(path.join(kok, 'teknesyum.json'));
   return (_debug = !!(c && c.debug));
@@ -412,7 +492,14 @@ function debugAcik() {
 
 function iz(live, j) {
   const f = path.join(live, '_hook-debug.json');
-  let d = read(f) || { toplam: 0, ajanli: 0, olaylar: {}, ilk: null, son: null, ornek_alanlar: null };
+  const d = read(f) || {
+    toplam: 0,
+    ajanli: 0,
+    olaylar: {},
+    ilk: null,
+    son: null,
+    ornek_alanlar: null,
+  };
   d.toplam++;
   if (j.agent_id) d.ajanli++;
   const ev = j.hook_event_name || '?';
@@ -434,9 +521,11 @@ function iz(live, j) {
 // sorusunu cevaplamıyor: sıra kayboluyor. Zaman damgalı tek satırlık günlük,
 // hangi ajanın hangi olaydan sonra sustuğunu gösterir.
 function izSatiri(live, j, ev, now) {
-  const kimlik = j.agent_id ? 'id:' + j.agent_id
-    : transcriptKimligi(j) ? 'tr:' + transcriptKimligi(j)
-    : '-';
+  const kimlik = j.agent_id
+    ? 'id:' + j.agent_id
+    : transcriptKimligi(j)
+      ? 'tr:' + transcriptKimligi(j)
+      : '-';
   const alan = [];
   for (const k of Object.keys(j)) {
     const v = j[k];
@@ -446,8 +535,10 @@ function izSatiri(live, j, ev, now) {
       if (t.length <= 60) alan.push(k + '=' + t);
     }
   }
-  const satir = [now, ev, kimlik, (j.tool_name || ''), alan.join(' ')].join(' | ') + '\n';
-  try { fs.appendFileSync(path.join(live, '_hook-debug.log'), satir); } catch {}
+  const satir = [now, ev, kimlik, j.tool_name || '', alan.join(' ')].join(' | ') + '\n';
+  try {
+    fs.appendFileSync(path.join(live, '_hook-debug.log'), satir);
+  } catch {}
 }
 
 // 2.0.0'da `canli/` → `live/` oldu. Eski klasörü olan projede oraya yazmaya devam
@@ -460,7 +551,8 @@ function izYolu(root) {
 }
 
 function genelKok() {
-  const ev = process.env.CLAUDE_CONFIG_DIR ||
+  const ev =
+    process.env.CLAUDE_CONFIG_DIR ||
     path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
   return izYolu(path.join(ev, 'teknesyum'));
 }
@@ -469,14 +561,120 @@ function genelKok() {
 function supur() {
   const kok = genelKok();
   let l = [];
-  try { l = fs.readdirSync(kok); } catch { return; }
+  try {
+    l = fs.readdirSync(kok);
+  } catch {
+    return;
+  }
   // İzler `last_word` alanında ajan çıktısı taşıyor. Eskiden temizlik 12 klasör
   // birikmeden başlamıyordu; az oturum açan kullanıcıda hiç çalışmıyordu.
   const sinir = Date.now() - 24 * 60 * 60 * 1000;
   for (const d of l) {
     const p = path.join(kok, d);
-    try { if (fs.statSync(p).mtimeMs < sinir) fs.rmSync(p, { recursive: true, force: true }); } catch {}
+    try {
+      if (fs.statSync(p).mtimeMs < sinir) fs.rmSync(p, { recursive: true, force: true });
+    } catch {}
   }
+}
+
+// Sıkışma bağlamı yer: açık sözleşmeler ve rota konumu özetin içinde eriyor, model
+// devam ederken neyin açık kaldığını uydurmaya başlıyor. `PostCompact` çıktısı bağlama
+// geri enjekte edilir — disiplin yerine süreç.
+function sikismaSonrasi(root) {
+  if (!root) return;
+  const satir = [];
+  const acik = dosyalar(path.join(root, 'contracts')).filter((f) => f.endsWith('.md'));
+  if (acik.length) {
+    satir.push(
+      'Açık sözleşme: ' +
+        acik.map((f) => f.slice(0, -3)).join(', ') +
+        ' (.claude/relay/contracts/). Durumlarını dosyadan oku, hatırladığını varsayma.'
+    );
+  }
+  const proje = path.dirname(path.dirname(root));
+  for (const f of dosyalar(path.join(proje, 'docs'))) {
+    if (!f.startsWith('ROTA-') || !f.endsWith('.md')) continue;
+    const govde = metin(path.join(proje, 'docs', f));
+    const m = govde && govde.match(/^\*\*Kaldığım yer:\*\*(.*)$/m);
+    satir.push('Rota: docs/' + f + (m ? ' — kaldığın yer:' + m[1].trim() : ''));
+  }
+  const canli = dosyalar(izYolu(root)).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+  const yasayan = canli.map((f) => read(path.join(izYolu(root), f))).filter((a) => a && !a.ended);
+  if (yasayan.length) {
+    satir.push(
+      'Bitmemiş ajan: ' +
+        yasayan.map((a) => a.agent_type).join(', ') +
+        '. /report ile durumlarını doğrula.'
+    );
+  }
+  if (satir.length) process.stdout.write(satir.join(' | '));
+}
+
+// Oturum kapanınca çalışan kaydı silinmezse ajanlar sonsuza kadar "çalışıyor" görünür.
+function oturumKapat(root, j) {
+  if (!root) return;
+  const live = izYolu(root);
+  try {
+    fs.unlinkSync(path.join(live, CALISAN));
+  } catch {}
+  for (const f of dosyalar(live)) {
+    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    const a = read(path.join(live, f));
+    if (!a || a.ended) continue;
+    a.ended = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    a.stop_reason = 'session_end';
+    a.last_error = a.last_error || 'oturum kapandı: ' + (j.reason || 'bilinmiyor');
+    yaz(path.join(live, f), a);
+  }
+}
+
+// StopFailure yalnız API hatasında gelir (rate_limit, overloaded, ...). Çıktısı yok
+// sayılır; tek işi kayıt noktasını mühürlemek — sonraki oturum nerede kesildiğini bilsin.
+function kesintiYaz(root, j) {
+  if (!root) return;
+  const live = izYolu(root);
+  try {
+    fs.mkdirSync(live, { recursive: true });
+  } catch {
+    return;
+  }
+  const f = path.join(live, '_kesinti.json');
+  const l = read(f) || [];
+  l.push({
+    t: new Date().toISOString().replace('T', ' ').slice(0, 19),
+    sebep: String(j.error || j.error_type || 'bilinmiyor').slice(0, 40),
+    oturum: String(j.session_id || '').slice(0, 8),
+  });
+  yaz(f, l.slice(-20));
+}
+
+function dosyalar(d) {
+  try {
+    return fs.readdirSync(d);
+  } catch {
+    return [];
+  }
+}
+function metin(f) {
+  try {
+    return fs.readFileSync(f, 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+// Hangi özellik hiç kullanılmıyor? Sayacı olmayan özellik ölçülemez, ölçülemeyen özellik
+// token yükü olarak kalır. Tek dosya, tek satır artış — sohbete hiçbir şey basmaz.
+function kullanimSay(anahtar) {
+  try {
+    const f = path.join(genelKok(), 'kullanim.json');
+    const d = read(f) || {};
+    const e = d[anahtar] || { n: 0 };
+    e.n++;
+    e.son = new Date().toISOString().slice(0, 10);
+    d[anahtar] = e;
+    yaz(f, d);
+  } catch {}
 }
 
 function findRelay(start) {
@@ -491,7 +689,13 @@ function findRelay(start) {
   return null;
 }
 
-function read(f) { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } }
+function read(f) {
+  try {
+    return JSON.parse(fs.readFileSync(f, 'utf8'));
+  } catch {
+    return null;
+  }
+}
 
 // Paralel ajanlarda birden çok hook süreci aynı dosyaya yazıyor. Doğrudan writeFileSync
 // truncate ile başlar: okuyan taraf yarım JSON yakalayabilir. Geçici dosya + rename
@@ -501,10 +705,20 @@ function yaz(f, veri) {
   try {
     fs.writeFileSync(tmp, JSON.stringify(veri, null, 2));
     fs.renameSync(tmp, f);
-  } catch { try { fs.unlinkSync(tmp); } catch {} }
+  } catch {
+    try {
+      fs.unlinkSync(tmp);
+    } catch {}
+  }
 }
-function norm(p) { return path.normalize(p).replace(/\\/g, '/'); }
-function safe(s) { return String(s).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80); }
+function norm(p) {
+  return path.normalize(p).replace(/\\/g, '/');
+}
+function safe(s) {
+  return String(s)
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .slice(0, 80);
+}
 function short(p, proj) {
   const n = norm(p);
   const pn = norm(proj) + '/';

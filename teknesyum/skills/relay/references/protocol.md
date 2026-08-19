@@ -95,6 +95,28 @@ Kimlik alanı hangi kanaldan geldiğini de söyler: `id:` gerçek `agent_id`, `t
 transcript adından türetilmiş yedek kimlik. Bir ajan boyunca kanal değişiyorsa
 birleştirme devreye girmiştir.
 
+## 1.2 Mekanik ağ — hangi olay neyi kurtarıyor
+
+Kural yazılı olduğu için uygulanmaz; olaya bağlandığı için uygulanır. Bugün bağlı olanlar:
+
+| Olay | Ne yapar |
+|---|---|
+| `Stop` | Devir ihlalini engeller: sohbete basılan paket, sohbete basılan rapor, kopyalanması istenen uzun blok |
+| `PreToolUse` | `contracts/done/` mühür kapısı; alan ihlali |
+| `PostToolUse` | Adım, dokunulan dosya, sözleşme bağı |
+| `PostToolUseFailure` | Başarısız araç adım saymaz; `last_error` yazılır |
+| `SubagentStop` | Ajanın **gerçekte** hangi modelde ve eforda koştuğunu transcript'ten okur |
+| `SessionEnd` | Bitmemiş ajan kaydını mühürler — hayalet "çalışıyor" satırı kalmaz |
+| `StopFailure` | API hatasında (`rate_limit`, `overloaded`) kesinti kaydı açar |
+| `PostCompact` | Sıkışma sonrası açık sözleşmeleri ve rota konumunu bağlama geri verir |
+
+`PostCompact` özellikle önemli: sıkışma bağlam kaybının ikinci yoludur ve model
+"hatırladığını" sanarak devam eder. Çıktısı bağlama enjekte edilir; disiplin değil süreç.
+
+**Beyan ile gerçek ayrışabilir.** Ajan tanımında `model: sonnet` yazması o modelde
+koştuğu anlamına gelmez. `live/*.json` içindeki `model` ve `effort` alanları transcript'ten
+okunur — beyanla uyuşmuyorsa `/report` bunu RİSK olarak basar.
+
 ## 2. Sözleşme formatı
 
 ```markdown

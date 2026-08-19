@@ -24,9 +24,14 @@ function gitBranch(dir) {
     // ÖLÇÜLDÜ: timeout yoktu. Ag surucusunde ya da `.git/index.lock` varken git
     // suresiz bekliyor ve statusline ile birlikte tum satir donuyordu.
     return execSync('git rev-parse --abbrev-ref HEAD', {
-      cwd: dir, stdio: ['ignore', 'pipe', 'ignore'], encoding: 'utf8', timeout: 400,
+      cwd: dir,
+      stdio: ['ignore', 'pipe', 'ignore'],
+      encoding: 'utf8',
+      timeout: 400,
     }).trim();
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 // İzlerin yeri: röle kurulu projede proje içi, değilse oturuma özel genel dizin.
@@ -37,7 +42,8 @@ function izDizini(dir, sessionId) {
   const p = releKoku(dir);
   if (p) return p;
   if (!sessionId) return null;
-  const ev = process.env.CLAUDE_CONFIG_DIR ||
+  const ev =
+    process.env.CLAUDE_CONFIG_DIR ||
     path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
   const ad = String(sessionId).replace(/[^a-zA-Z0-9._-]/g, '_');
   for (const k of ['live', 'canli']) {
@@ -71,7 +77,9 @@ function calisanlar(live) {
     // Oturum ajan çalışırken düşerse SubagentStop hiç gelmez ve kayıt sonsuza kadar
     // "çalışıyor" görünür. 2 saati geçeni düşür — hiçbir ajan o kadar sürmüyor.
     return l.filter((c) => Date.now() - (c.start || 0) < 2 * 60 * 60 * 1000);
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 function sure(ms) {
@@ -81,9 +89,19 @@ function sure(ms) {
 
 function calisanSatiri(c) {
   const ad = (c.type || '?').replace(/^teknesyum:/, '');
-  return C.blue + '⚙ ' + C.r + C.dim + ad + C.r + ' ' + C.hint +
-         (c.ambiguous ? '—' : sure(c.start)) +
-         (c.desc ? ' · ' + kisalt(c.desc, 34) : '') + C.r;
+  return (
+    C.blue +
+    '⚙ ' +
+    C.r +
+    C.dim +
+    ad +
+    C.r +
+    ' ' +
+    C.hint +
+    (c.ambiguous ? '—' : sure(c.start)) +
+    (c.desc ? ' · ' + kisalt(c.desc, 34) : '') +
+    C.r
+  );
 }
 
 function ajanlar(live) {
@@ -92,14 +110,20 @@ function ajanlar(live) {
   try {
     for (const f of fs.readdirSync(live)) {
       if (!f.endsWith('.json') || f.startsWith('_')) continue;
-      try { out.push(JSON.parse(fs.readFileSync(path.join(live, f), 'utf8'))); } catch {}
+      try {
+        out.push(JSON.parse(fs.readFileSync(path.join(live, f), 'utf8')));
+      } catch {}
     }
-  } catch { return []; }
+  } catch {
+    return [];
+  }
   // Ölü ajan `/report` çağırır; dünkü ölü ajan için çağırmaz. Bir günü geçen izi gösterme,
   // yoksa kapanmış bir işin kalıntısı statusline'da kalıcı olur.
   out = out.filter((a) => !olu(a) || taze(a.last_seen));
   const rank = (a) => (olu(a) ? 1 : a.stop_reason === null ? 0 : 2);
-  return out.sort((a, b) => rank(a) - rank(b) || (b.last_seen || '').localeCompare(a.last_seen || ''));
+  return out.sort(
+    (a, b) => rank(a) - rank(b) || (b.last_seen || '').localeCompare(a.last_seen || '')
+  );
 }
 
 function taze(iso) {
@@ -136,19 +160,30 @@ const OLUM_SEBEBI = {
 const KAYIP = 'yanıt yok';
 
 function ajanSatiri(a) {
-  const ad = (a.contract ? a.contract + ' ' : '') + (a.agent_type || '?').replace(/^teknesyum:/, '');
+  const ad =
+    (a.contract ? a.contract + ' ' : '') + (a.agent_type || '?').replace(/^teknesyum:/, '');
   const ikon = olu(a) ? C.pink + '⨯' : C.ok + '✓';
   let s = ikon + ' ' + C.r + C.dim + ad + C.r;
   if (a.model) {
-    s += ' ' + C.hint + String(a.model).replace(/^claude-/, '').replace(/-\d{8}$/, '') +
-      (a.effort ? '·' + a.effort : '') + C.r;
+    s +=
+      ' ' +
+      C.hint +
+      String(a.model)
+        .replace(/^claude-/, '')
+        .replace(/-\d{8}$/, '') +
+      (a.effort ? '·' + a.effort : '') +
+      C.r;
   }
-  if (olu(a)) s += ' ' + C.pink + (a.stop_reason === null ? KAYIP : (OLUM_SEBEBI[a.stop_reason] || 'durdu')) + C.r;
+  if (olu(a))
+    s +=
+      ' ' + C.pink + (a.stop_reason === null ? KAYIP : OLUM_SEBEBI[a.stop_reason] || 'durdu') + C.r;
   else if (a.last_word) s += ' ' + C.hint + kisalt(a.last_word, 40) + C.r;
   return s;
 }
 
-function kisalt(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+function kisalt(s, n) {
+  return s.length > n ? s.slice(0, n - 1) + '…' : s;
+}
 
 function relay(dir) {
   const live = releKoku(dir);
@@ -157,20 +192,29 @@ function relay(dir) {
     : path.join(dir, '.claude', 'relay', 'contracts');
   if (!fs.existsSync(base)) return null;
   const md = (d) => {
-    try { return fs.readdirSync(d).filter((f) => f.endsWith('.md')); }
-    catch { return []; }
+    try {
+      return fs.readdirSync(d).filter((f) => f.endsWith('.md'));
+    } catch {
+      return [];
+    }
   };
   const open = md(base);
   const done = md(path.join(base, 'done'));
   const total = open.length + done.length;
   if (total === 0) return null;
 
-  let active = null, blocked = 0;
+  let active = null,
+    blocked = 0;
   for (const f of open) {
     let head = '';
-    try { head = fs.readFileSync(path.join(base, f), 'utf8').slice(0, 400); } catch { continue; }
+    try {
+      head = fs.readFileSync(path.join(base, f), 'utf8').slice(0, 400);
+    } catch {
+      continue;
+    }
     const st = (head.match(/^status:\s*(\w+)/m) || [])[1];
-    if (st === 'active' && !active) active = (head.match(/^id:\s*(\S+)/m) || [])[1] || f.replace('.md', '');
+    if (st === 'active' && !active)
+      active = (head.match(/^id:\s*(\S+)/m) || [])[1] || f.replace('.md', '');
     if (st === 'blocked') blocked++;
   }
   return { done: done.length, total, active, blocked };
@@ -180,7 +224,9 @@ let raw = '';
 process.stdin.on('data', (d) => (raw += d));
 process.stdin.on('end', () => {
   let j = {};
-  try { j = JSON.parse(raw); } catch {}
+  try {
+    j = JSON.parse(raw);
+  } catch {}
 
   const dir = (j.workspace && j.workspace.current_dir) || j.cwd || process.cwd();
   const model = (j.model && j.model.display_name) || '?';
@@ -210,14 +256,28 @@ process.stdin.on('end', () => {
     const c = v < 60 ? C.ok : v < 85 ? C.pink : C.purple;
     return C.hint + label + ' ' + c + Math.round(v) + '%' + C.r;
   };
-  const t5 = limitTag('5s', fh); if (t5) l2.push(t5);
-  const t7 = limitTag('7g', sd); if (t7) l2.push(t7);
+  const t5 = limitTag('5s', fh);
+  if (t5) l2.push(t5);
+  const t7 = limitTag('7g', sd);
+  if (t7) l2.push(t7);
 
   const r = relay(dir);
   if (r) {
     const pct = Math.round((r.done / r.total) * 100);
-    let s = C.blue + '▸ ' + C.r + C.dim + (r.active || '—') + ' ' + bar(pct, 6) +
-            ' ' + C.dim + r.done + '/' + r.total + C.r;
+    let s =
+      C.blue +
+      '▸ ' +
+      C.r +
+      C.dim +
+      (r.active || '—') +
+      ' ' +
+      bar(pct, 6) +
+      ' ' +
+      C.dim +
+      r.done +
+      '/' +
+      r.total +
+      C.r;
     if (r.blocked) s += ' ' + C.pink + '⨯' + r.blocked + C.r;
     l2.push(s);
   }
@@ -236,8 +296,10 @@ process.stdin.on('end', () => {
   if (!cs.length && !olenler.length) {
     const biten = ags.filter((a) => a.stop_reason && !olu(a));
     const son = biten[0];
-    if (son) satirlar.push('  ' + ajanSatiri(son) +
-      (biten.length > 1 ? C.hint + '  +' + (biten.length - 1) + C.r : ''));
+    if (son)
+      satirlar.push(
+        '  ' + ajanSatiri(son) + (biten.length > 1 ? C.hint + '  +' + (biten.length - 1) + C.r : '')
+      );
   }
 
   process.stdout.write(satirlar.join('\n'));

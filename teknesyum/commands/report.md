@@ -6,7 +6,7 @@ allowed-tools: Read, Glob, Bash
 `.claude/relay/` oku. Yoksa tek satır: "röle kurulu değil — iş verdiğinde kendiliğinden kurulur." Dur.
 
 Sadece şunları oku: `live/*.json`, `contracts/*.md` frontmatter'ları, `contracts/done/`
-dosya listesi, `LOG.md` son 10 satır. Sözleşme gövdelerini açma — `active` olanın
+dosya listesi, `LOG.md` son 10 satır, varsa `live/_kesinti.json`. Sözleşme gövdelerini açma — `active` olanın
 Kayıt noktası hariç.
 
 Bağımlılıkları çöz: `done/`'a bakarak hangi `open` sözleşmelerin başlayabileceğini
@@ -39,6 +39,14 @@ SON     T3 failed · round 1, kabul 2
 KALAN   5 sözleşme · 2 paralel yürüyebilir
 RİSK    T6 engelli — kaynak görsel yok, senden gelmesi lazım
 ```
+
+Ajan satırında `model` alanı varsa rolün yanına yaz — ajan tanımındaki `model:`/`effort:`
+ile uyuşmuyorsa **beyan ile gerçek ayrışmış** demektir, RİSK satırına al. `last_error`
+alanı varsa son araç hatasını da göster.
+
+`live/_kesinti.json` doluysa KALAN'ın altına tek satır: `KESİNTİ  <sebep> · <zaman>`.
+`rate_limit` görürsen "limite çarpıldı, kayıt noktası mühürlü" de — kullanıcı yeni
+oturumda kaldığı yerden devam edebilir.
 
 `KALAN` her zaman basılır. `RİSK` sadece gerçekten engel, ölü ajan, tavana yaklaşan
 düzeltme turu veya sahipsiz dosya varsa basılır — uydurma, yoksa satırı yazma.

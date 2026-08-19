@@ -8,7 +8,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const kok = process.env.CLAUDE_CONFIG_DIR ||
+const kok =
+  process.env.CLAUDE_CONFIG_DIR ||
   path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
 
 const aday = [
@@ -19,7 +20,11 @@ const aday = [
 function enYeni() {
   for (const d of aday) {
     let l = [];
-    try { l = fs.readdirSync(d).filter((x) => /^\d+\.\d+\.\d+$/.test(x)); } catch { continue; }
+    try {
+      l = fs.readdirSync(d).filter((x) => /^\d+\.\d+\.\d+$/.test(x));
+    } catch {
+      continue;
+    }
     l.sort(karsilastir);
     for (const s of l) {
       const p = path.join(d, s, 'scripts', 'statusline.js');

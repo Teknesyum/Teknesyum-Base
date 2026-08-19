@@ -194,6 +194,10 @@ Yazma işine başlamadan önce, sırayla kontrol et:
    export ve bağımlılığı tek geçişte bulur, `--fix` ile temizler. Ölü kodu modele
    aratmak token israfıdır. Küçük projede kurma.
 
+9. **Sözleşme dalgası mı açıyorsun?** Dal adı sözleşme adıyla aynı olsun: `T3-makro-motoru`.
+   Böylece `git log` ile sözleşme izi elle eşleştirilmeden hizalanır; hangi commit hangi
+   sözleşmeye ait, sormaya gerek kalmaz.
+
 ## 2.1 Hata ayıklama — belirtiyi değil nedeni düzelt
 
 **Açıklayamadığın bir belirtiyi yamama.** Neden çalışmadığını anlamadan yapılan düzeltme,
@@ -364,6 +368,11 @@ Sözleşme boyutu: **3-8 dosya, tek tutarlı yetenek.** Gerçek projede 5-9 söz
 - **Optimizasyonun tabanı vardır.** Küçük işi optimize etmek, optimizasyonun kendisinden
   ucuza gelmez: 3 satırlık dosyayı grep'lemek, 20 karakterlik düzenlemeyi ajanla yapmak,
   tek dosyalık işe rota kurmak. Kazanç kurulum maliyetinden küçükse **doğrudan yap**.
+- **Getirme maliyeti ölçütü.** Kalıcı bir dosyaya (`CLAUDE.md`, hafıza, sözleşme bağlamı)
+  bir bilgiyi yazmadan önce sor: bu, gerektiğinde **ucuza türetilebilir mi?** Dosya
+  listesi, fonksiyon imzası, bağımlılık sürümü — `grep` bir saniyede bulur, yazılmaz.
+  Yazılacak olan yalnızca türetilemeyen şeydir: karar ve gerekçesi, dışarıdan gelen
+  kısıt, tekrar eden tercih.
 - **Bilgi tekrar ediyorsa hafızaya yazılır, oturuma değil.** Üçüncü kez açıklanan şey
   kalıcı hafızaya gider; ilgili notlar birbirine `[[ad]]` ile bağlanır. Ayrı bir not
   uygulaması (Obsidian vb.) kurulmaz — hafıza zaten markdown, bağlar zaten çalışıyor.

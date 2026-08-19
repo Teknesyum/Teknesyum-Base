@@ -37,13 +37,45 @@ function muhurlu(metin) {
 const YAZMA_FIILI =
   /(^|[\s;|&])((mv|move-item|cp|copy-item|rm|remove-item|del|erase|touch|tee|sed\s+-i|set-content|add-content|out-file|new-item)\b|>>?)/i;
 
+// ÖLÇÜLDÜ: sözleşme durumu ajanın beyanıyla ilerliyordu; bir düzeltme turunda `submitted`
+// olan sözleşme yeniden `open` yazılıp denetim sırası sıfırlandı. Merdiven tek yönlüdür.
+// `blocked` her iki yönde serbesttir — engel gerçek bir durumdur, kurtarma da öyle.
+const SIRA = { open: 0, active: 1, submitted: 2, accepted: 3, done: 3 };
+const CONTRACTS = /(^|\/)\.claude\/relay\/contracts\/[^/]+\.md$/i;
+
+function durum(metin) {
+  const m = String(metin).match(/^status:[ \t]*([a-z]+)/im);
+  return m ? m[1].toLowerCase() : null;
+}
+
+function gerileme(hedef, yeniMetin) {
+  if (!CONTRACTS.test(norm(hedef))) return;
+  const yeni = durum(yeniMetin);
+  if (yeni === null || SIRA[yeni] === undefined) return;
+  let eski = null;
+  try {
+    eski = durum(fs.readFileSync(hedef, 'utf8'));
+  } catch {
+    return;
+  }
+  if (eski === null || SIRA[eski] === undefined) return;
+  if (SIRA[yeni] >= SIRA[eski]) return;
+  return engelle(
+    'Sözleşme durumu geriye alınamaz: ' + eski + ' -> ' + yeni + '.',
+    'Merdiven tek yönlü: open -> active -> submitted -> done. Tıkandıysan status: blocked yaz,',
+    'gerekçeyi sözleşmeye işle. Turu sıfırlamak denetim sırasını da sıfırlar.'
+  );
+}
+
 function karar(j) {
   const arac = j.tool_name || '';
   const t = j.tool_input || {};
 
   if (/^(Write|Edit|NotebookEdit)$/.test(arac)) {
     const hedef = t.file_path || t.notebook_path || '';
-    if (!hedef || !DONE.test(norm(hedef))) return;
+    if (!hedef) return;
+    gerileme(hedef, arac === 'Write' ? t.content || '' : t.new_string || '');
+    if (!DONE.test(norm(hedef))) return;
     // Write mührü taşıyorsa denetimden geçmiş sözleşmenin yerleşmesidir; Edit hiçbir
     // koşulda meşru değil — bitmiş sözleşme değiştirilmez.
     if (arac === 'Write' && muhurlu(t.content || '')) return;

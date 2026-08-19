@@ -6,6 +6,18 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-08-19
+
+### Added
+
+- Post-write syntax check. After a `.js`/`.json` write the hook parses the file and
+  feeds the parse error straight back, instead of letting a broken file sit until the
+  auditor's turn. ESM sources and comment-bearing `tsconfig`/`.vscode` JSON are exempt.
+- Contract status ladder is now mechanically one-way: `open -> active -> submitted ->
+  done`. Writing a lower status over a higher one is blocked, so a correction round can
+  no longer reset the audit queue. `blocked` stays reachable from and to any state.
+
+
 ## [2.18.0] - 2026-08-19
 
 ### Added

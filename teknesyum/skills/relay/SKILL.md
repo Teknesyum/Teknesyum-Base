@@ -217,6 +217,11 @@ Dört adım, sırayla:
 Üçüncü adımda nedeni bulamadıysan **dur ve söyle.** "Muhtemelen şuydu" diyerek yamamak,
 kullanıcının bir daha aynı hatayı yaşaması demektir.
 
+**Yazdığın dosya ayrıştırılamıyorsa hook seni aynı adımda uyarır.** `.js`/`.json`
+yazımından sonra sözdizimi denetlenir; hata mesajı geri döner. O uyarıyı gördüğünde
+başka işe geçme, önce onu kapat — denetçiye kadar bekleyen bozuk dosya beş on araç
+çağrısı sonra kat kat pahalıya düzelir.
+
 Bu akış token yer — okuma, üretme, doğrulama. Karşılığı şudur: yanlış yama, aynı hatayı
 ikinci kez ayıklamak ve arada kırılan şeyi bulmak toplamda kat kat pahalıdır (§0).
 

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
@@ -12,6 +13,10 @@ process.stdin.on('end', () => {
 
 function run(j) {
   const root = findRelay(j.cwd || process.cwd());
+  if (j.hook_event_name === 'PostToolUse') {
+    const bozuk = sozdizim(j);
+    if (bozuk) process.stdout.write(JSON.stringify({ decision: 'block', reason: bozuk }));
+  }
 
   if (j.hook_event_name === 'SessionStart') return acilis(root);
   if (j.hook_event_name === 'UserPromptSubmit') {
@@ -160,6 +165,59 @@ function run(j) {
 // okunmuyordu. Model yükte yok — ajanın kendi transcript'inin son asistan satırında
 // duruyor. İkisi birlikte "beyan edilen model/efor gerçekten uygulandı mı" sorusunu
 // mekanik olarak cevaplar; ajan tanımındaki `model:`/`effort:` artık doğrulanabilir.
+// ÖLÇÜLDÜ: bozuk yazılan bir dosya, denetçi ajan sırası gelene kadar fark edilmiyordu;
+// arada beş on araç çağrısı daha yapılmış oluyor ve düzeltme pahalıya patlıyordu.
+// Ayrıştırma hatası bir sonraki adımdan önce modele geri veriliyor.
+const DENETLENEN = { '.js': 1, '.cjs': 1, '.mjs': 1, '.json': 1 };
+// `node --check` .js dosyasını CommonJS sayar; ESM kaynakta yanlış alarm verir.
+const ESM_YANILGISI = /Cannot use import statement|Unexpected token 'export'|await is only valid/;
+
+function sozdizim(j) {
+  if (!/^(Write|Edit|NotebookEdit)$/.test(j.tool_name || '')) return '';
+  const t = j.tool_input || {};
+  const f = String(t.file_path || t.notebook_path || '');
+  const uz = path.extname(f).toLowerCase();
+  if (!DENETLENEN[uz]) return '';
+  // jsonc: yorum kabul eden ayar dosyaları JSON.parse'tan geçmez, denetlenmez.
+  if (uz === '.json' && /[/]{1}[.]vscode[/]|(^|[/])tsconfig/i.test(norm(f))) return '';
+  let govde = '';
+  try {
+    govde = fs.readFileSync(f, 'utf8');
+  } catch {
+    return '';
+  }
+  if (uz === '.json') {
+    try {
+      JSON.parse(govde);
+      return '';
+    } catch (e) {
+      return bozukMesaj(f, String(e.message));
+    }
+  }
+  try {
+    execFileSync(process.execPath, ['--check', f], {
+      stdio: ['ignore', 'ignore', 'pipe'],
+      timeout: 5000,
+    });
+    return '';
+  } catch (e) {
+    const h = String((e.stderr && e.stderr.toString()) || e.message || '');
+    if (ESM_YANILGISI.test(h)) return '';
+    return bozukMesaj(f, h);
+  }
+}
+
+function bozukMesaj(f, hata) {
+  const ilk = hata.split('\n').filter(Boolean).slice(0, 5).join('\n');
+  return (
+    'Az önce yazdığın dosya ayrıştırılamıyor: ' +
+    f +
+    '\n' +
+    ilk +
+    '\nÖnce bunu düzelt, başka işe geçme.'
+  );
+}
+
 function kimlikOku(j) {
   const out = {};
   const e = j.effort;

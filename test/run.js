@@ -1062,6 +1062,115 @@ ol('bozuk girdide çökmez', () => {
   esit(r.status, 0);
 });
 
+function sozlesmeProje(eskiDurum) {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-durum-'));
+  const c = path.join(p, '.claude', 'relay', 'contracts');
+  fs.mkdirSync(c, { recursive: true });
+  const f = path.join(c, 'T1.md');
+  fs.writeFileSync(f, '---\nname: T1\nstatus: ' + eskiDurum + '\n---\n');
+  return f;
+}
+
+ol('sözleşme durumu geriye alınamaz', () => {
+  const f = sozlesmeProje('submitted');
+  const r = calistir(KORU, {
+    tool_name: 'Write',
+    tool_input: { file_path: f, content: '---\nname: T1\nstatus: open\n---\n' },
+  });
+  esit(r.kod, 2, 'gerileme engellenmeli');
+  icerir(r.err, 'geriye alınamaz');
+});
+
+ol('sözleşme durumu ileri gidebilir', () => {
+  const f = sozlesmeProje('active');
+  esit(
+    calistir(KORU, {
+      tool_name: 'Edit',
+      tool_input: { file_path: f, old_string: 'status: active', new_string: 'status: submitted' },
+    }).kod,
+    0
+  );
+});
+
+ol('blocked her durumdan yazılabilir', () => {
+  const f = sozlesmeProje('submitted');
+  esit(
+    calistir(KORU, {
+      tool_name: 'Edit',
+      tool_input: { file_path: f, old_string: 'x', new_string: 'status: blocked' },
+    }).kod,
+    0
+  );
+});
+
+ol('bozuk js yazımı ayrıştırma hatasıyla geri döner', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-sozdizim-'));
+  const f = path.join(d, 'bozuk.js');
+  fs.writeFileSync(f, 'function a( {\n');
+  const r = calistir(IZLE, {
+    hook_event_name: 'PostToolUse',
+    tool_name: 'Write',
+    cwd: d,
+    tool_input: { file_path: f },
+  });
+  icerir(r.out, 'ayrıştırılamıyor');
+  icerir(r.out, 'block');
+});
+
+ol('sağlam js sessiz geçer', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-sozdizim2-'));
+  const f = path.join(d, 'iyi.js');
+  fs.writeFileSync(f, 'const a = 1;\n');
+  const r = calistir(IZLE, {
+    hook_event_name: 'PostToolUse',
+    tool_name: 'Write',
+    cwd: d,
+    tool_input: { file_path: f },
+  });
+  esit(r.out, '', 'temiz dosyada çıktı olmamalı');
+});
+
+ol('ESM kaynağı CommonJS sanılıp yanlış alarm verilmez', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-esm-'));
+  const f = path.join(d, 'mod.js');
+  fs.writeFileSync(f, "import x from 'y';\nexport default x;\n");
+  esit(
+    calistir(IZLE, {
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Write',
+      cwd: d,
+      tool_input: { file_path: f },
+    }).out,
+    ''
+  );
+});
+
+ol('bozuk json geri döner, tsconfig denetlenmez', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-json-'));
+  const a = path.join(d, 'a.json');
+  fs.writeFileSync(a, '{ "x": }');
+  icerir(
+    calistir(IZLE, {
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Write',
+      cwd: d,
+      tool_input: { file_path: a },
+    }).out,
+    'ayrıştırılamıyor'
+  );
+  const b = path.join(d, 'tsconfig.json');
+  fs.writeFileSync(b, '{ // yorum\n "x": 1 }');
+  esit(
+    calistir(IZLE, {
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Write',
+      cwd: d,
+      tool_input: { file_path: b },
+    }).out,
+    ''
+  );
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

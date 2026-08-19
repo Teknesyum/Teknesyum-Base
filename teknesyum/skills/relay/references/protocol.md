@@ -39,6 +39,10 @@ edebilen ajan, denetimi fiilen atlar — bu, denetçinin kod yazamamasıyla ayn�
 bir sınır. Hook mühürsüz dosyanın `done/` altına girmesini `Write` ve `Bash` yollarından
 engeller; kabuk üzerinden kopyalama, yönlendirme ve taşıma da kapsam içindedir.
 
+**Merdiven tek yönlüdür ve hook uygular.** `contracts/*.md` üzerine yazılan `status`
+öncekinden geride olamaz — `submitted` sözleşmeyi `open` yapıp turu sıfırlamak engellenir.
+Tek istisna `blocked`: her durumdan girilir, her duruma çıkılır.
+
 **Mühür**, T0'ın `done/`'a taşımadan önce sözleşme frontmatter'ına işlediği dört alandır:
 
 ```yaml

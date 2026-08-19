@@ -67,6 +67,43 @@ function gerileme(hedef, yeniMetin) {
   );
 }
 
+// ÖLÇÜLDÜ: sıfırdan projede mimari, benzerleri görülmeden kuruluyordu; üçüncü dalgada
+// sökülüyordu. Ön araştırma bir kere yapılır, kalıcıdır. Kapı yalnızca hiç iş yapılmamış
+// ve gerçekten yeni olan projede kapalıdır — atlamak serbest, sessizce atlamak değil.
+const CONTRACT_DIZIN = /^(.*)[/]\.claude[/]relay[/]contracts[/][^/]+\.md$/i;
+
+function yeniProje(kok) {
+  try {
+    if (fs.existsSync(path.join(kok, 'docs', 'taramalar'))) return false;
+  } catch {
+    return false;
+  }
+  try {
+    if (fs.readdirSync(path.join(kok, '.claude', 'relay', 'contracts', 'done')).length)
+      return false;
+  } catch {}
+  try {
+    const { tara } = require('../scripts/harita.js');
+    return tara(kok).length < 10;
+  } catch {
+    return false;
+  }
+}
+
+function onArastirma(hedef) {
+  const m = norm(hedef).match(CONTRACT_DIZIN);
+  if (!m) return;
+  if (fs.existsSync(hedef)) return;
+  if (!yeniProje(m[1])) return;
+  return engelle(
+    'Sıfırdan projede ilk sözleşmeden önce ön araştırma yapılır (relay SKILL 1.4).',
+    'Aynı problemi çözmüş en az 10 depoyu `scout` ajanlarına dağıt, her biri',
+    '`docs/taramalar/<ad>.md` yazsın, sonra `docs/taramalar/RAPOR.md` ile birleştir.',
+    'Araştırma istenmiyorsa gerekçesini `docs/taramalar/ATLANDI.md` dosyasına tek satır',
+    'yaz — kapı o zaman açılır. Atlamak serbest, sessizce atlamak değil.'
+  );
+}
+
 function karar(j) {
   const arac = j.tool_name || '';
   const t = j.tool_input || {};
@@ -74,6 +111,7 @@ function karar(j) {
   if (/^(Write|Edit|NotebookEdit)$/.test(arac)) {
     const hedef = t.file_path || t.notebook_path || '';
     if (!hedef) return;
+    if (arac === 'Write') onArastirma(hedef);
     gerileme(hedef, arac === 'Write' ? t.content || '' : t.new_string || '');
     if (!DONE.test(norm(hedef))) return;
     // Write mührü taşıyorsa denetimden geçmiş sözleşmenin yerleşmesidir; Edit hiçbir

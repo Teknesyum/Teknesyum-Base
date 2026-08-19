@@ -6,6 +6,26 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.22.0] - 2026-08-19
+
+### Added
+
+- Prior-art research is now a required phase before the first contract of a
+  from-scratch project (relay `SKILL.md` 1.4). At least ten comparable repos are split
+  across parallel `scout` agents, each writing one `docs/taramalar/<name>.md` under six
+  fixed headings; the boss merges them into `docs/taramalar/RAPOR.md` as adopted,
+  deliberately rejected, and suspicious. Nothing is copied — patterns, boundaries and
+  mistakes are, source lines are not. Whole-project adoption is only ever a library
+  decision, and that goes to the user.
+- New `scout` agent: web + `gh api` research, no Edit tool, writes only under
+  `docs/taramalar/`. Unverifiable numbers must be tagged as such; archived repos stay in
+  scope, since "abandoned" warns against depending on a project, not against reading it.
+- The gate is mechanical: writing the first contract of a project that has never
+  finished any work and holds fewer than ten source files is blocked until the research
+  exists. Skipping is allowed with a one-line reason in `docs/taramalar/ATLANDI.md` —
+  skipping silently is not.
+
+
 ## [2.21.0] - 2026-08-19
 
 ### Added

@@ -1275,6 +1275,55 @@ ol('acik sozlesme yokken bitis cumlesi engellenmez', () => {
   esit(stopIle(p, 'Hepsi tamamlandı, testler geçti.').out, '', 'sozlesme yoksa sessiz');
 });
 
+function taptazeProje(ekle) {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-yeni-'));
+  fs.mkdirSync(path.join(p, '.claude', 'relay', 'contracts'), { recursive: true });
+  fs.writeFileSync(path.join(p, 'index.js'), 'const a = 1;\n');
+  if (ekle) {
+    fs.mkdirSync(path.join(p, 'docs', 'taramalar'), { recursive: true });
+    fs.writeFileSync(path.join(p, 'docs', 'taramalar', ekle), 'gerekce\n');
+  }
+  return p;
+}
+
+function ilkSozlesme(p) {
+  return calistir(KORU, {
+    tool_name: 'Write',
+    tool_input: {
+      file_path: path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
+      content: '---\nname: T1\nstatus: open\n---\n',
+    },
+  });
+}
+
+ol('sifirdan projede on arastirmasiz ilk sozlesme engellenir', () => {
+  const r = ilkSozlesme(taptazeProje(null));
+  esit(r.kod, 2, 'engellenmeli');
+  icerir(r.err, 'ön araştırma');
+});
+
+ol('ATLANDI.md kapiyi acar', () => {
+  esit(ilkSozlesme(taptazeProje('ATLANDI.md')).kod, 0);
+});
+
+ol('taramalar varsa kapi acik', () => {
+  esit(ilkSozlesme(taptazeProje('aider.md')).kod, 0);
+});
+
+ol('yerlesik projede on arastirma istenmez', () => {
+  const p = taptazeProje(null);
+  for (let i = 0; i < 12; i++) fs.writeFileSync(path.join(p, 'm' + i + '.js'), 'const a = 1;\n');
+  esit(ilkSozlesme(p).kod, 0, '10+ kaynak dosyali proje yeni sayilmaz');
+});
+
+ol('scout ajani paketlenir', () => {
+  const a = fs.readFileSync(path.join(KOK, 'agents', 'scout.md'), 'utf8');
+  icerir(a, 'name: scout');
+  icerir(a, 'docs/taramalar/');
+  esit(/tools:.*Write/.test(a), true, 'scout yazabilmeli');
+  esit(/tools:.*Edit/.test(a), false, 'scout kod duzenlememeli');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

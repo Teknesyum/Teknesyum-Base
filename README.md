@@ -212,6 +212,7 @@ packets, and prints the next wave of prompts.
 | `ui-builder` | UI; the theme standard is preloaded into its context | sonnet |
 | `auditor` | Verifies acceptance criteria — **cannot write or run anything** | sonnet |
 | `scribe` | Mechanical bulk work — naming, formatting, documentation | haiku |
+| `scout` | Prior-art research — scans comparable repos, writes no code | sonnet |
 
 Role determines the kind of work, model the weight; they are separate axes, and the model
 is chosen at call time.

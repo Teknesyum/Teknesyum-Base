@@ -155,6 +155,54 @@ Kural, kullanıcının "rutin onay sorma" tercihini çiğnememek için sıkı:
 
 Netleştirme turu bittiğinde kararlar `docs/PLAN.md` başına yazılır; bir daha sorulmaz.
 
+## 1.4 Ön araştırma — sıfırdan projede zorunlu
+
+Netleştirme turu bitince, **tek sözleşme yazılmadan önce** aynı problemi çözmüş projeler
+taranır. Amaç kopyalamak değil: inşa edilmişin nerede doğru, nerede yanlış yaptığını
+görüp onun üstüne çıkmak. Sıfırdan tasarlanan mimari, üçüncü dalgada sökülür.
+
+Bildirim — dağıtmadan önce tek satır:
+
+```
+Teknesyum ▸ araştırma başlatıldı · <konu> · 10 depo · scout/sonnet
+```
+
+Bitince:
+
+```
+Teknesyum ▸ araştırma bitti · 10 depo · 6 fikir alındı · 3 şüpheli · docs/taramalar/RAPOR.md
+```
+
+**Nasıl:**
+
+1. **Aday listesi — en az 10.** Aynı problemi çözen, çözmeye yakın duran ya da tek bir
+   parçasını iyi çözmüş depolar. Bir tanesi de "bu işi yanlış yapmış" olsun; neyi
+   yapmayacağını bilmek de kazançtır.
+2. **Dağıt.** Her `scout` ajanına 2-3 depo, paralel. On depoyu tek ajana verme —
+   sonuncuya geldiğinde ilkini unutur.
+3. **Depo başına tek dosya:** `docs/taramalar/<kisa-ad>.md`, sabit altı başlıkla
+   (biçim `agents/scout.md` içinde).
+4. **Birleştir.** `docs/taramalar/RAPOR.md` — üç bölüm: **alınanlar** (hangi fikir,
+   hangi depodan, nereye girdi), **bilerek alınmayanlar** (gerekçesiyle), **şüpheliler**.
+   Bu birleştirme senin işin, `scout`'un değil; karar gerektirir.
+5. **Kullanıcıya sun.** Şüpheliler ve bağımlılık kararları sorulur — sessizce alınmaz,
+   sessizce atılmaz.
+
+**Kurallar:**
+
+- **Kod kopyalanmaz.** Alınan şey desen, sınır ve hata; satır değil. Bütünüyle alınabilecek
+  tek şey kütüphanedir (`motion` gibi) ve o bir bağımlılık kararıdır — kullanıcıya sorulur.
+- **Kapatılmış depo dışlanmaz.** "Terk edilmiş" bağımlılık kurma uyarısıdır, okuma yasağı
+  değil. Roo Code kapandı ama custom-mode tasarımı hâlâ öğretici.
+- **Doğrulanamayan her rakam işaretlenir.** Kaynağı üçüncü taraf blog olan performans ve
+  kullanım iddiaları `doğrulanamadı` etiketiyle yazılır.
+- Araştırma bir kere yapılır, `docs/taramalar/` kalıcıdır. Altı ay sonra "bunu neden
+  böyle yaptık" sorusunun cevabı oradadır.
+
+Araştırma yapılmadan ilk sözleşme yazılmaya kalkılırsa hook geri çevirir. Kullanıcı
+istemiyorsa gerekçesi `docs/taramalar/ATLANDI.md` dosyasına tek satır yazılır — kapı
+o zaman açılır. Atlamak serbest, sessizce atlamak değil.
+
 ## 2. Hazırlık — sormadan yap
 
 Yazma işine başlamadan önce, sırayla kontrol et:
@@ -343,6 +391,7 @@ Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `mod
 | `ui-builder` | arayüz yazar; `teknesyum-ui` context'ine önyüklü | sonnet |
 | `auditor` | kabul kriterlerini doğrular, **kod yazamaz** | sonnet |
 | `scribe` | mekanik toplu iş — AGENTS.md, isim, biçim | haiku |
+| `scout` | ön araştırma — benzer depoları tarar, kod yazmaz | sonnet |
 | `Explore` | geniş arama (yerleşik, devam ettirilemez) | — |
 
 **opus**: mimari kararı taşıyan, algoritmik, belirsiz, zor hata ayıklama.

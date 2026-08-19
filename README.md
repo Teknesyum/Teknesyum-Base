@@ -1,6 +1,6 @@
 <div align="center">
 
-# Teknesyum Base
+<img src="assets/banner.svg" alt="Teknesyum Base" width="820">
 
 **Say what you want. The system organizes the rest.**
 
@@ -105,6 +105,10 @@ initialized with a safety commit before any file is touched, a project of thirty
 more gets a dependency map built and queried instead of read, UI work is routed to an agent
 with the theme standard preloaded, and missing `AGENTS.md` signposts get written when the
 job closes.
+
+<div align="center">
+<img src="assets/flow.svg" alt="Request to measure to plan to contracts to agents to auditor" width="900">
+</div>
 
 ### Prior art comes before the first contract
 
@@ -320,7 +324,28 @@ Teknesyum ▸ ölçü: tek dosya / gözle doğrulanabilir → ajan gerekmedi, ke
 Teknesyum ▸ ölçü: sıfırdan proje / 3 yetenek → görev paketi · 8 sözleşme
 ```
 
-Set `TEKNESYUM_SESSIZ=1` to silence them.
+**How much of this you see is a setting** — `steering` in `~/.claude/teknesyum.json`,
+asked once by `/setup`:
+
+| Level | What you see |
+|---|---|
+| `0` | Nothing. No `Teknesyum ▸` line is ever printed. |
+| `1` | Session start, dispatch, agent finish, sizing verdict. **Default.** |
+| `2` | All of the above plus a line wherever the base changed the outcome. |
+
+Level 2 exists because the interesting part is invisible: work split across agents that a
+plain session would have run sequentially, a deterministic tool chosen over a model call,
+an auditor sending a contract back, a hook refusing a write.
+
+```
+Teknesyum ▸ fark · 4 sözleşme 2 paralel ajana bölündü · tek oturumda sıralı gidecekti
+Teknesyum ▸ fark · harita.js ile bağ tarandı · 30 dosya okumak yerine 1 disk taraması
+Teknesyum ▸ fark · denetçi T2'yi geri çevirdi · kabul kriteri 3 eksikti
+```
+
+A difference line is a trace record, not a boast — if you cannot say what a plain session
+would have done instead, the line is not written. `TEKNESYUM_SESSIZ=1` still equals level
+`0`; `TEKNESYUM_STEERING=0|1|2` overrides for a single session.
 
 ### Tests
 
@@ -328,7 +353,7 @@ Set `TEKNESYUM_SESSIZ=1` to silence them.
 node test/run.js
 ```
 
-82 checks driving the real hooks and the real statusline with real payloads: the
+86 checks driving the real hooks and the real statusline with real payloads: the
 announcements, the trace files, the completion gate (including shell bypasses and relative
 Windows paths), concurrent hook processes writing the same file, and the packaging
 invariants — no `hooks` key in the manifest, a valid `.lsp.json`, the auditor's tool list,
@@ -462,6 +487,12 @@ Behavior knobs live in `skills/relay/SETTINGS.md`:
 | `briefing` | `milestone` | How often the manager reports to you |
 
 Per-project override: `<project>/.claude/relay/SETTINGS.md`.
+
+Two settings are per-machine rather than per-project, and `/setup` asks for both:
+`steering` (`0` | `1` | `2`, see [Visible steering](#visible-steering)) in
+`~/.claude/teknesyum.json`, and the UI standard in `~/.claude/teknesyum-ui.json` — keep the
+defaults, customize the palette, typography and signature, or switch it off entirely with
+`"kapali": true` so no color or measurement is imposed.
 
 ---
 

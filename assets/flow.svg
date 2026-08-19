@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" role="img" aria-label="Teknesyum Base relay flow">
+  <defs>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00f3ff"/>
+      <stop offset="55%" stop-color="#b026ff"/>
+      <stop offset="100%" stop-color="#ff00ea"/>
+    </linearGradient>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#00f3ff"/>
+    </marker>
+    <marker id="arm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b026ff"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="380" rx="20" fill="#000000"/>
+  <rect x="1" y="1" width="1198" height="378" rx="20" fill="none" stroke="url(#neon)" stroke-width="2" opacity="0.45"/>
+
+  <g font-family="Segoe UI, system-ui, sans-serif" font-size="20" fill="#ffffff" text-anchor="middle">
+    <g stroke="#00f3ff" stroke-width="2" fill="#000000">
+      <rect x="40" y="60" width="200" height="60" rx="12"/>
+      <rect x="270" y="60" width="200" height="60" rx="12"/>
+      <rect x="500" y="60" width="200" height="60" rx="12"/>
+      <rect x="730" y="60" width="200" height="60" rx="12"/>
+      <rect x="960" y="60" width="200" height="60" rx="12"/>
+    </g>
+    <text x="140" y="97">request</text>
+    <text x="370" y="97">measure</text>
+    <text x="600" y="97">prior art</text>
+    <text x="830" y="97">PLAN.md</text>
+    <text x="1060" y="97">contracts/</text>
+
+    <g stroke="#00f3ff" stroke-width="2" marker-end="url(#ar)" fill="none">
+      <path d="M240 90 L262 90"/>
+      <path d="M470 90 L492 90"/>
+      <path d="M700 90 L722 90"/>
+      <path d="M930 90 L952 90"/>
+    </g>
+
+    <path d="M1060 120 L1060 158 L140 158 L140 196" stroke="#b026ff" stroke-width="2" fill="none" marker-end="url(#arm)"/>
+
+    <g stroke-width="2" fill="#000000">
+      <rect x="40" y="204" width="260" height="60" rx="12" stroke="#b026ff"/>
+      <rect x="340" y="204" width="260" height="60" rx="12" stroke="#ff00ea"/>
+      <rect x="640" y="204" width="260" height="60" rx="12" stroke="#00f3ff"/>
+      <rect x="940" y="204" width="220" height="60" rx="12" stroke="#34d399"/>
+    </g>
+    <g font-size="19">
+      <text x="170" y="240" font-size="17">builder &#183; scribe &#183; ui-builder</text>
+      <text x="470" y="240">auditor</text>
+      <text x="770" y="240">return block</text>
+      <text x="1050" y="240" fill="#34d399">contracts/done</text>
+    </g>
+
+    <g stroke="#00f3ff" stroke-width="2" marker-end="url(#ar)" fill="none">
+      <path d="M300 234 L332 234"/>
+      <path d="M600 234 L632 234"/>
+      <path d="M900 234 L932 234"/>
+    </g>
+  </g>
+
+  <g font-family="Consolas, monospace" font-size="17" fill="#ffffff">
+    <text x="40" y="330" fill="#00f3ff">hooks &#183; 11 events</text>
+    <text x="230" y="330" opacity="0.75">syntax check</text>
+    <text x="380" y="330" fill="#b026ff">&#183;</text>
+    <text x="400" y="330" opacity="0.75">status ladder</text>
+    <text x="552" y="330" fill="#b026ff">&#183;</text>
+    <text x="572" y="330" opacity="0.75">prior-art gate</text>
+    <text x="726" y="330" fill="#b026ff">&#183;</text>
+    <text x="746" y="330" opacity="0.75">return-block floor</text>
+    <text x="944" y="330" fill="#b026ff">&#183;</text>
+    <text x="964" y="330" opacity="0.75">Teknesyum &#9654; steering</text>
+  </g>
+</svg>

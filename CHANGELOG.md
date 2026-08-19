@@ -6,6 +6,26 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.23.0] - 2026-08-19
+
+### Added
+
+- Three-level steering, read from `steering` in `~/.claude/teknesyum.json`. `0` prints no
+  `Teknesyum ▸` line at all, `1` keeps the basic ones (default), `2` adds a
+  `Teknesyum ▸ fark · …` line wherever the base changed the outcome — work split across
+  agents, a deterministic tool chosen over a model call, an auditor rejection, a hook gate
+  firing. `TEKNESYUM_STEERING` overrides for one session; `TEKNESYUM_SESSIZ=1` still equals
+  level `0`.
+- `/setup` now asks for the steering level (default `1`) and for the UI standard — keep the
+  defaults, customize it, or switch it off entirely.
+- Logo, banner and relay-flow diagram under `assets/`, drawn with the UI standard palette
+  only, and placed in the README.
+
+### Changed
+
+- `relay` SKILL 7.2 documents the difference lines and, more importantly, when not to write
+  one. Test count 82 → 86.
+
 ## [2.22.0] - 2026-08-19
 
 ### Added

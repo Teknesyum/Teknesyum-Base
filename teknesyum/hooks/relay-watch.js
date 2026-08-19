@@ -295,9 +295,30 @@ function calisanKapat(live, type) {
 }
 
 // Kullanıcı ajanların içini göremez. Base'in devreye girdiği her anı tek satır
-// bildiririz: görev verildi, ajan bitti, oturum açıldı. TEKNESYUM_SESSIZ=1 kapatır.
-function duyur(mesaj) {
-  if (process.env.TEKNESYUM_SESSIZ) return;
+// bildiririz: görev verildi, ajan bitti, oturum açıldı.
+// Seviye `~/.claude/teknesyum.json` içindeki `steering` alanından okunur:
+// 0 hiç yazma · 1 temel yönlenmeler (varsayılan) · 2 her dokunuş.
+// TEKNESYUM_SESSIZ=1 eski davranış için 0'a eşdeğerdir.
+let _seviye = null;
+
+function seviye() {
+  if (_seviye !== null) return _seviye;
+  if (process.env.TEKNESYUM_SESSIZ) return (_seviye = 0);
+  const e = process.env.TEKNESYUM_STEERING;
+  if (e !== undefined && e !== '') {
+    const n = parseInt(e, 10);
+    if (n === 0 || n === 1 || n === 2) return (_seviye = n);
+  }
+  const kok =
+    process.env.CLAUDE_CONFIG_DIR ||
+    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const c = read(path.join(kok, 'teknesyum.json'));
+  const v = c && c.steering;
+  return (_seviye = v === 0 || v === 2 ? v : 1);
+}
+
+function duyur(mesaj, min) {
+  if (seviye() < (min || 1)) return;
   try {
     process.stdout.write(JSON.stringify({ systemMessage: 'Teknesyum ▸ ' + mesaj }));
   } catch {}
@@ -306,15 +327,25 @@ function duyur(mesaj) {
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını
 // göremiyordu. Ölçüyü model yapar, ama ölçüldüğünü söylemesi artık zorunlu.
 function hatirlat(j) {
-  if (process.env.TEKNESYUM_SESSIZ) return;
+  if (seviye() === 0) return;
   // ÖLÇÜLDÜ: metin her istekte ~90 token yazıyordu ve geçmişte kalıcı. 60 mesajlık
   // oturumda 5000+ token, hepsi aynı cümlenin kopyası. Kural bir kez okunduğunda
   // geçmişte duruyor; ikinci kopyası bilgi taşımıyor. İlk iki istekte yazılır.
   if (sayacGecti(j)) return;
-  const metin =
+  let metin =
     'Teknesyum Base: iş talebiyse relay §1 ile ölç, ilk satır ' +
     '`Teknesyum ▸ ölçü: <büyüklük> → <karar>`. Ajan açmasan da yaz (örn. ' +
     '`tek dosya → ajan gerekmedi`). Salt soru/sohbette satırı yazma.';
+  // Seviye 2'de kullanıcı her dokunuşu görmek istiyor: base olmasaydı olmayacak her
+  // kararın kendi satırı olur. Biçim relay SKILL 7.2'de.
+  if (seviye() === 2) {
+    metin +=
+      ' Yönlendirme seviyesi 2: base devreye giren her kararı ayrı satırda yaz — ' +
+      '`Teknesyum ▸ fark · <ne> · <neden/kazanç>`. Kural uygulandığında, model yerine ' +
+      'deterministik araç seçildiğinde, harita/denetim/araştırma devreye girdiğinde, ' +
+      'model yükseltilip düşürüldüğünde, kanca engellediğinde yaz. Sıradan araç ' +
+      'çağrısına satır açma; base olmasaydı farklı sonuçlanacak anlara aç.';
+  }
   try {
     process.stdout.write(
       JSON.stringify({

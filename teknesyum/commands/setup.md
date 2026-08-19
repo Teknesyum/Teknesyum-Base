@@ -18,6 +18,8 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 | settings.json bağı | `statusLine.command` köprüyü gösteriyor mu | bağla |
 | Bayat kopya | `~/.claude/statusline.js` var mı | sil |
 | Çıktı dili | `~/.claude/teknesyum.json` → `dil` | sor, yaz |
+| Yönlendirme seviyesi | `~/.claude/teknesyum.json` → `steering` | sor, yaz |
+| Arayüz standardı | `~/.claude/teknesyum-ui.json` var mı, `kapali` ne | sor |
 | Debug izi | `~/.claude/teknesyum.json` → `debug` | sorma, kapalı bırak |
 | Kural dosyası | `~/.claude/RULES.md` + `CLAUDE.md`'de `@RULES.md` | oluştur |
 | Sıkıştırma penceresi | `settings.json` → `autoCompactWindow` | yoksa `250000` |
@@ -65,6 +67,23 @@ Karar kullanıcınındır, varsayma. Hepsini tek mesajda, numaralı sor:
   ve ajan çıktıları hangi dilde olsun?" Cevabı ISO kodu olarak yaz — `{"dil": "tr"}`.
   Komut adlarının İngilizce olması dili belirlemez; `/report` diyen kullanıcı Türkçe
   rapor bekliyor olabilir. Dosya varsa bir daha sorma.
+- **Yönlendirme seviyesi.** `~/.claude/teknesyum.json` içinde `steering` yoksa sor:
+  "Teknesyum'un devreye girdiği yerleri ne kadar görmek istersin?"
+
+  | Seviye | Ne görürsün |
+  |---|---|
+  | `0` | Hiçbir `Teknesyum ▸` satırı yok — base sessizce çalışır |
+  | `1` | Temel yönlenmeler: oturum açılışı, görev dağıtımı, ajan bitişi, ölçü satırı |
+  | `2` | Hepsi + `Teknesyum ▸ fark · …` — base olmasaydı farklı sonuçlanacak her karar |
+
+  **Varsayılan `1`.** Cevabı `{"steering": 0|1|2}` olarak yaz. Alan varsa bir daha sorma;
+  değiştirmek isteyen doğrudan dosyayı düzenler.
+- **Arayüz standardı.** `~/.claude/teknesyum-ui.json` yoksa sor: "Neon arayüz standardı
+  (renk paleti, tipografi, imza) devrede kalsın mı?" Üç cevap:
+  `devrede kalsın` → dosyaya dokunma, varsayılanlar geçerli ·
+  `özelleştireyim` → `/uisetup` alanlarını (palet, font, imza, ekNot) sırayla sor, yalnızca
+  değiştirileni yaz · `kapalı olsun` → `{"kapali": true}` yaz, skill hiçbir renk/ölçü
+  dayatmaz. Dosya varsa sorma, mevcut durumu bitiş özetinde tek satır göster.
 - `statusLine` **başka bir şeye** işaret ediyorsa: üzerine yazayım mı?
 - `typescript-language-server` yoksa: `npm i -g typescript-language-server typescript@5`
   çalıştırayım mı? (Global paket kurulumu — kendi başına yapma.)

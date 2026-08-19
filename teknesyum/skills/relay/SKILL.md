@@ -502,3 +502,28 @@ oturumlar arasında elle özet yazması değildir.
 Bunlar **durum bildirimidir, düzyazı özet değildir** — tablo, madde, tek satırlık olay.
 Bitmiş işi tekrar anlatma. Sıklığı `briefing` düğmesi belirler; sapma bildirimi
 hiçbir ayarda kapanmaz.
+
+## 7.2 Fark satırları — base'in dokunduğu yer
+
+Yönlendirme seviyesi `~/.claude/teknesyum.json` → `steering` alanındadır.
+`0` hiç `Teknesyum ▸` satırı yazma · `1` temel yönlenmeler (varsayılan) · `2` her dokunuş.
+Seviyeyi hook `UserPromptSubmit`'te sana bildirir; kendin dosya okumaya gitme.
+
+**Seviye 2'de**, base olmasaydı farklı sonuçlanacak her karar kendi satırını alır:
+
+```
+Teknesyum ▸ fark · 4 sözleşme 2 paralel ajana bölündü · tek oturumda sıralı gidecekti
+Teknesyum ▸ fark · harita.js ile bağ tarandı · 30 dosya okumak yerine 1 disk taraması
+Teknesyum ▸ fark · denetçi T2'yi geri çevirdi · kabul kriteri 3 eksikti
+Teknesyum ▸ fark · builder haiku→sonnet · 3 tur çözülmedi, model tavanıydı
+```
+
+Satır açılacak anlar: iş ajanlara bölündüğünde, model yerine deterministik araç
+seçildiğinde (`harita.js`, `rg`, `--check`), denetçi/ön araştırma/kanca devreye
+girdiğinde, model yükseltilip düşürüldüğünde, `RULES.md`'den bir kural sonucu
+değiştirdiğinde, bir sözleşme kapsamı dışında kalan iş bilinçli bırakıldığında.
+
+**Satır açılmayacak yer:** sıradan araç çağrısı, dosya okuma, düşünme adımı. Fark satırı
+övünme değil iz kaydıdır — "base olmasaydı bu iş şöyle giderdi" diyemiyorsan yazma.
+Seviye 0 ve 1'de bu satırlar hiç yazılmaz; 1'de yalnızca ölçü satırı ve hook bildirimleri
+kalır.

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Teknesyum Base">
+  <defs>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00f3ff"/>
+      <stop offset="55%" stop-color="#b026ff"/>
+      <stop offset="100%" stop-color="#ff00ea"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect x="6" y="6" width="244" height="244" rx="58" fill="#000000"/>
+  <rect x="6" y="6" width="244" height="244" rx="58" fill="none" stroke="url(#neon)" stroke-width="4" opacity="0.9"/>
+
+  <g filter="url(#glow)" fill="none" stroke="url(#neon)" stroke-width="6" stroke-linecap="round">
+    <path d="M128 96 C 128 140, 84 142, 72 166"/>
+    <path d="M128 96 L 128 168"/>
+    <path d="M128 96 C 128 140, 172 142, 184 166"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <circle cx="128" cy="78" r="22" fill="#000000" stroke="#00f3ff" stroke-width="8"/>
+    <circle cx="72" cy="182" r="15" fill="#000000" stroke="#b026ff" stroke-width="8"/>
+    <circle cx="128" cy="184" r="15" fill="#000000" stroke="#ff00ea" stroke-width="8"/>
+    <circle cx="184" cy="182" r="15" fill="#34d399" stroke="#34d399" stroke-width="8"/>
+  </g>
+</svg>

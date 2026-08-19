@@ -60,9 +60,18 @@ da ekler, uzun işte gürültü yapar · `quiet` yalnızca brifing, sapma ve kap
 
 `approval_gate` ile karıştırma: o **beklemeyi**, bu **anlatmayı** yönetir.
 
-**Hook bildirimleri** bu düğmeden bağımsızdır. `Teknesyum ▸ …` satırlarını hook basar:
-oturum açılışı, her görev dağıtımı, her ajan bitişi. Modelin unutabileceği bir şey değil,
-ölçülmüş olaydan gelir. Kapatmak için ortam değişkeni: `TEKNESYUM_SESSIZ=1`.
+**Hook bildirimleri** bu düğmeden bağımsızdır ve buradan değil, `~/.claude/teknesyum.json`
+içindeki `steering` alanından yönetilir — makine başına tek ayar, proje değil kullanıcı
+tercihi olduğu için:
+
+| steering | Ne görürsün |
+|---|---|
+| `0` | Hiç `Teknesyum ▸` satırı yok. Base sessizce çalışır. |
+| `1` | Temel yönlenmeler: oturum açılışı, görev dağıtımı, ajan bitişi, ölçü satırı. Varsayılan. |
+| `2` | Hepsi + `Teknesyum ▸ fark · …` satırları: base olmasaydı farklı sonuçlanacak her karar. |
+
+`/setup` sorar ve yazar. `TEKNESYUM_SESSIZ=1` hâlâ 0'a eşdeğerdir, `TEKNESYUM_STEERING=0|1|2`
+tek oturumluk ezer. Satırların çoğunu hook basar — model unutsa da gelir, ölçülmüş olaydandır.
 
 ## Kural
 

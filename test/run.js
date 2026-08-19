@@ -516,6 +516,57 @@ ol('TEKNESYUM_SESSIZ=1 bildirimleri kapatır', () => {
   );
 });
 
+ol('steering=0 bütün Teknesyum satırlarını susturur', () => {
+  const { p } = proje(2, 1);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ steering: 0 }));
+  const ek = { CLAUDE_CONFIG_DIR: cfg };
+  esit(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, ek).out, '');
+  esit(
+    calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'bir modül yaz' }, ek)
+      .out,
+    ''
+  );
+});
+
+ol('varsayılan seviye 1: temel yönlenme var, fark satırı yok', () => {
+  const { p } = proje(2, 1);
+  const r = calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'yeni bir modül yaz ve testlerini kur',
+  }).out;
+  icerir(r, 'Teknesyum Base');
+  if (r.includes('fark ·')) throw new Error('seviye 1 fark satırı istemiyor: ' + r);
+});
+
+ol('steering=2 fark satırlarını ister', () => {
+  const { p } = proje(2, 1);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg2-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ steering: 2 }));
+  const r = calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'yeni bir modül yaz' },
+    { CLAUDE_CONFIG_DIR: cfg }
+  ).out;
+  icerir(r, 'fark ·');
+  icerir(r, 'seviyesi 2');
+});
+
+ol('TEKNESYUM_STEERING ortam değişkeni dosyayı ezer', () => {
+  const { p } = proje(2, 1);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg3-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ steering: 2 }));
+  esit(
+    calistir(
+      IZLE,
+      { ...ort(p), hook_event_name: 'SessionStart' },
+      { CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_STEERING: '0' }
+    ).out,
+    ''
+  );
+});
+
 console.log('\nEşzamanlılık');
 
 ol('paralel hook süreçleri birbirinin kaydını silmez', () => {

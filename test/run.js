@@ -567,6 +567,80 @@ ol('TEKNESYUM_STEERING ortam değişkeni dosyayı ezer', () => {
   );
 });
 
+function yonlendirmeProje(sozlesmeler) {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-yonlendirme-'));
+  const c = path.join(p, '.claude', 'relay', 'contracts');
+  fs.mkdirSync(c, { recursive: true });
+  for (const s of sozlesmeler) {
+    fs.writeFileSync(
+      path.join(c, s.id + '.md'),
+      '---\nid: ' + s.id + '\ntitle: ' + s.title + '\nstatus: active\nowns: [' + s.owns.join(', ') + ']\n---\n'
+    );
+  }
+  return p;
+}
+
+ol('açık T9 Support UI işini kilitlemez', () => {
+  const p = yonlendirmeProje([{ id: 'T9', title: 'Relay mesaj dili', owns: ['README.md'] }]);
+  const r = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'support-ui-1', hook_event_name: 'UserPromptSubmit', prompt: 'Support UI panelini düzelt' },
+    konfig(true)
+  );
+  icerir(r.out, 'Support UI için yeni UI sözleşmesi');
+  icerir(r.out, 'T9 yalnız kendi işinde sürer');
+  if (r.out.includes('blocked')) throw new Error('ilgisiz T9 yeni işi engelledi');
+});
+
+ol('ilgisiz açık sözleşme yeni işi önceliklendirir', () => {
+  const p = yonlendirmeProje([{ id: 'T2', title: 'API', owns: ['src/api.js'] }]);
+  const r = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'unrelated-1', hook_event_name: 'UserPromptSubmit', prompt: 'src/ui.js dosyasında yeni ekran yap' },
+    konfig(true)
+  );
+  icerir(r.out, 'Yeni iş öncelikli');
+  icerir(r.out, 'yeni sözleşme veya ajan açılır');
+});
+
+ol('uygun owns eşleşmesi açık sözleşmeye yönlendirir', () => {
+  const p = yonlendirmeProje([{ id: 'T4', title: 'UI', owns: ['src/ui.js'] }]);
+  const r = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'matching-1', hook_event_name: 'UserPromptSubmit', prompt: 'src/ui.js dosyasını güncelle' },
+    konfig(true)
+  );
+  icerir(r.out, 'Owns eşleşmesi · T4 sürdürülür');
+});
+
+ol('iki paralel ajan aynı yeni işte görünür', () => {
+  const p = yonlendirmeProje([{ id: 'T2', title: 'API', owns: ['src/api.js'] }]);
+  const y = {
+    ...ort(p),
+    hook_event_name: 'PreToolUse',
+    tool_name: 'Agent',
+    tool_input: { subagent_type: 'builder', description: 'Support UI işi' },
+  };
+  const a = calistir(IZLE, y);
+  const b = calistir(IZLE, y);
+  icerir(a.out, 'görev veriliyor');
+  icerir(b.out, '[2 ajan çalışıyor]');
+});
+
+ol('çakışan owns sahipliği ikinci sözleşmeye bırakılmaz', () => {
+  const p = yonlendirmeProje([
+    { id: 'T2', title: 'API one', owns: ['src/shared.js'] },
+    { id: 'T3', title: 'API two', owns: ['src/shared.js'] },
+  ]);
+  const r = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'conflict-1', hook_event_name: 'UserPromptSubmit', prompt: 'src/shared.js dosyasını güncelle' },
+    konfig(true)
+  );
+  icerir(r.out, 'Sahiplik çakışması');
+  icerir(r.out, 'T0 kararı gerekir');
+});
+
 console.log('\nEşzamanlılık');
 
 ol('paralel hook süreçleri birbirinin kaydını silmez', () => {

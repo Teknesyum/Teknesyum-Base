@@ -105,6 +105,9 @@ görmek isteyene bakar, sürdürmeyi o başlatmaz.
 Devam etmeden önce tek satır bildir: kaç sözleşme açık, hangisinden devam ediyorsun.
 Kullanıcı o sırada başka bir iş verirse yeni iş önceliklidir; açık sözleşmeyi hatırlat, bırak.
 
+Yeni kullanıcı işi, açık sözleşmelerden önce owns eşleştirmesiyle yönlendirilir. İstek açık sözleşmenin owns kümesine giriyorsa o sözleşmeye devam edilir; girmiyorsa eski sözleşme yeni işi kilitlemez, yeni iş için yeni sözleşme veya ajan rotası açılır. Aynı dosya iki aktif sözleşmeye atanmaz; çakışmada atama durur ve T0 kararı gerekir. UI işi mesaj dili sözleşmesinden bağımsızdır: Support UI, uygun T5 veya yeni UI sözleşmesine yönlenir, T9 UI işini kilitlemez.
+Ajan mesajı kısa, net ve saygılıdır; ilgisiz açık sözleşme nedeniyle kullanıcıdan kapsamı yeniden isteme.
+
 ## 1.2 Proje düzeni — kök sade kalır
 
 **Kökte gereksiz dosya durmaz.** Kullanıcı klasörü açtığında ne yapacağını görmeli, neyi

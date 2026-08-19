@@ -22,7 +22,7 @@ function run(j) {
   if (j.hook_event_name === 'UserPromptSubmit') {
     const k = String(j.prompt || '').match(/^[ ]*\/([a-z0-9:-]+)/i);
     if (k) kullanimSay('komut:' + k[1].toLowerCase());
-    return hatirlat(j);
+    return hatirlat(j, root);
   }
   if (j.hook_event_name === 'Stop') return paketDenetle(j, root);
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
@@ -326,7 +326,7 @@ function duyur(mesaj, min) {
 
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını
 // göremiyordu. Ölçüyü model yapar, ama ölçüldüğünü söylemesi artık zorunlu.
-function hatirlat(j) {
+function hatirlat(j, root) {
   if (seviye() === 0) return;
   // ÖLÇÜLDÜ: metin her istekte ~90 token yazıyordu ve geçmişte kalıcı. 60 mesajlık
   // oturumda 5000+ token, hepsi aynı cümlenin kopyası. Kural bir kez okunduğunda
@@ -336,6 +336,8 @@ function hatirlat(j) {
     'Teknesyum Base: iş talebiyse relay §1 ile ölç, ilk satır ' +
     '`Teknesyum ▸ ölçü: <büyüklük> → <karar>`. Ajan açmasan da yaz (örn. ' +
     '`tek dosya → ajan gerekmedi`). Salt soru/sohbette satırı yazma.';
+  const rota = yeniIsRotasi(root, j.prompt);
+  if (rota) metin += ' ' + rota;
   // Seviye 2'de kullanıcı her dokunuşu görmek istiyor: base olmasaydı olmayacak her
   // kararın kendi satırı olur. Biçim relay SKILL 7.2'de.
   if (seviye() === 2) {
@@ -411,14 +413,47 @@ function donusEksik(root, govde) {
 }
 
 function acikIs(root) {
-  for (const d of [path.join(root, 'contracts'), root]) {
-    for (const f of dosyalar(d)) {
-      if (!f.endsWith('.md')) continue;
-      const s = metin(path.join(d, f));
-      if (s && /^status:[ \t]*(active|submitted)/im.test(s.slice(0, 800))) return true;
-    }
+  return acikSozlesmeler(root).length > 0;
+}
+
+function acikSozlesmeler(root) {
+  const dir = path.join(root, 'contracts');
+  return dosyalar(dir)
+    .filter((f) => /^T[^/]+\.md$/i.test(f))
+    .map((f) => {
+      const govde = metin(path.join(dir, f));
+      if (!govde || !/^status:[ \t]*(open|active|submitted)/im.test(govde.slice(0, 1200))) return null;
+      const owns = (govde.match(/^owns:[ \t]*\[([^\]]*)\]/im) || [])[1] || '';
+      const title = (govde.match(/^title:[ \t]*(.+)$/im) || [])[1] || f.slice(0, -3);
+      return {
+        id: f.slice(0, -3),
+        title: title.trim(),
+        owns: owns
+          .split(',')
+          .map((v) => v.trim().replace(/^['\"]|['\"]$/g, ''))
+          .filter(Boolean),
+      };
+    })
+    .filter(Boolean);
+}
+
+function yeniIsRotasi(root, prompt) {
+  if (!root || !prompt) return '';
+  const acik = acikSozlesmeler(root);
+  if (!acik.length) return '';
+  const metinPrompt = String(prompt);
+  const ui = /\b(support|ui|panel|arayüz|arayuz|interface)\b/i.test(metinPrompt);
+  const t9 = acik.find((s) => s.id.toUpperCase() === 'T9' || /mesaj dili|message language/i.test(s.title));
+  if (ui && t9) {
+    const uiSoz = acik.find((s) => s.id.toUpperCase() === 'T5' || /support|neon|ui/i.test(s.title));
+    return 'Yeni iş öncelikli · Support UI için ' + (uiSoz ? uiSoz.id : 'yeni UI sözleşmesi') + ' yönlendirilir; ' + t9.id + ' yalnız kendi işinde sürer.';
   }
-  return false;
+  const eslesen = acik.filter((s) => s.owns.some((o) => metinPrompt.includes(o)));
+  if (eslesen.length > 1) {
+    return 'Sahiplik çakışması · ' + eslesen.map((s) => s.id).join(', ') + ' aynı işi sahipleniyor; T0 kararı gerekir.';
+  }
+  if (eslesen.length === 1) return 'Owns eşleşmesi · ' + eslesen[0].id + ' sürdürülür.';
+  return 'Yeni iş öncelikli · ilgisiz açık sözleşme kilitlemez; yeni sözleşme veya ajan açılır.';
 }
 
 // Sohbete basılan uzun blokları arar: üç tırnaklı kod bloğu ve `---` ile ayrılmış bölge.

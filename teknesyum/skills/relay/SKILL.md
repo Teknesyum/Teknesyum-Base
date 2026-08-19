@@ -427,6 +427,29 @@ neyle, nerede, hangi girdide ölçüldüğü yazılmadan söylenmez. Ölçmediys
 Ölçünün kapsamadığı maliyet varsa (başka bir modele giden çağrı, ek disk, ek gecikme)
 onu da yaz — kapsamı söylenmemiş kazanç rakamı yanıltıcıdır.
 
+## 7.1 Dönüş bloğu — işçi oturumun son sözü
+
+**İşini bitiren oturum, mesajının en altına kopyalanabilir tek blok koyar.** Kural
+yalnızca çok oturumlu devirde değil, işi başka bir yerden alan ya da sonucu başka bir
+yere taşınacak her oturumda geçerlidir — kullanıcı senin bağlamını göremez, karşı
+oturuma taşıyacağı şey bu bloktur.
+
+En fazla 5 satır, üç alan:
+
+```
+T3 teslim edildi · 747 test yeşil, build temiz
+Rapor: docs/tasks/T19-isolated-performance-e2e.md
+Açık: main'e commit yetkisi bende mi?
+```
+
+Birinci satır ne bitti + durum. İkinci satır rapor dosyasının yolu — **gövde sohbete
+değil dosyaya yazılır**, karşı taraf dosyayı kendi okur. Üçüncü satır varsa tek açık
+soru; yoksa yazma.
+
+Açık bir paket ya da sözleşme varken bitiş bildirip bu bloğu vermeden kapanırsan `Stop`
+kancası seni geri çevirir. Şüphedeysen bloğu ver; beş satır ucuzdur, kullanıcının
+oturumlar arasında elle özet yazması değildir.
+
 Bunlar **durum bildirimidir, düzyazı özet değildir** — tablo, madde, tek satırlık olay.
 Bitmiş işi tekrar anlatma. Sıklığı `briefing` düğmesi belirler; sapma bildirimi
 hiçbir ayarda kapanmaz.

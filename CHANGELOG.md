@@ -6,6 +6,19 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.21.0] - 2026-08-19
+
+### Added
+
+- The handoff rule had a ceiling but no floor: an oversized copyable block was blocked,
+  yet a worker that finished its job could close without handing back anything at all.
+  While a packet or contract is open, a message that announces completion no longer
+  closes without a return block — the `Stop` hook sends it back with the required shape.
+- The return block moved into `SKILL.md` (7.1), which is always loaded. It previously
+  lived only in `references/multi-session.md`, a file read only in multi-session mode,
+  so a plain worker session never saw the rule.
+
+
 ## [2.20.0] - 2026-08-19
 
 ### Added

@@ -1238,6 +1238,43 @@ ol('yonlendirici sablon AGENTS.md adini tasir', () => {
   );
 });
 
+function acikSozlesmeProje() {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-donus-'));
+  const c = path.join(p, '.claude', 'relay', 'contracts');
+  fs.mkdirSync(c, { recursive: true });
+  fs.writeFileSync(path.join(c, 'T1.md'), '---\nname: T1\nstatus: active\n---\n');
+  return p;
+}
+
+function stopIle(cwd, mesaj) {
+  const t = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-iz-')), 'x.jsonl');
+  fs.writeFileSync(
+    t,
+    JSON.stringify({
+      type: 'assistant',
+      message: { role: 'assistant', content: [{ type: 'text', text: mesaj }] },
+    }) + '\n'
+  );
+  return calistir(IZLE, { hook_event_name: 'Stop', cwd, transcript_path: t });
+}
+
+ol('acik sozlesmede donus blogu olmadan kapanilmaz', () => {
+  const r = stopIle(acikSozlesmeProje(), 'T1 tamamlandı, tüm kabul kriterleri karşılandı.');
+  icerir(r.out, 'dönüş bloğu');
+  icerir(r.out, 'block');
+});
+
+ol('donus blogu verilmisse engel yok', () => {
+  const m = 'T1 tamamlandı.\n\n```\nT1 teslim edildi.\nRapor: .claude/relay/T1.md ## Rapor\n```\n';
+  esit(stopIle(acikSozlesmeProje(), m).out, '', 'donus blogu varken susmali');
+});
+
+ol('acik sozlesme yokken bitis cumlesi engellenmez', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  fs.mkdirSync(path.join(p, '.claude', 'relay'), { recursive: true });
+  esit(stopIle(p, 'Hepsi tamamlandı, testler geçti.').out, '', 'sozlesme yoksa sessiz');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

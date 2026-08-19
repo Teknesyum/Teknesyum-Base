@@ -24,7 +24,7 @@ function run(j) {
     if (k) kullanimSay('komut:' + k[1].toLowerCase());
     return hatirlat(j);
   }
-  if (j.hook_event_name === 'Stop') return paketDenetle(j);
+  if (j.hook_event_name === 'Stop') return paketDenetle(j, root);
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
   if (j.hook_event_name === 'SessionEnd') return oturumKapat(root, j);
   if (j.hook_event_name === 'StopFailure') return kesintiYaz(root, j);
@@ -351,12 +351,43 @@ const KOPYA_EMRI =
   /(kopyala|kopyalay|yapıştır|yapistir|copy (this|the|everything)|paste (this|it|the))/i;
 const TAVAN = 25;
 
-function paketDenetle(j) {
+function paketDenetle(j, root) {
   if (j.stop_hook_active) return;
-  const metin = sonMesaj(j.transcript_path);
-  if (!metin) return;
-  const engel = devirIhlali(metin);
+  const govde = sonMesaj(j.transcript_path);
+  if (!govde) return;
+  const engel = devirIhlali(govde) || donusEksik(root, govde);
   if (engel) process.stdout.write(JSON.stringify({ decision: 'block', reason: engel }));
+}
+
+// ÖLÇÜLDÜ: tavan vardı, taban yoktu. Uzun bloğu engelliyorduk ama işini bitiren işçi
+// hiçbir şey vermeden susabiliyordu — patron oturumuna taşınacak tek satır çıkmıyordu.
+// Açık bir paket/sözleşme varken bitiş bildiren mesaj, dönüş bloğu olmadan kapanmaz.
+const BITIS =
+  /(tamamland|bitti|kapand|geçti|gecti|teslim ed|tüm kabul|tum kabul|karşıland|karsiland|hazır|hazir|all (tests|checks) pass|is (done|complete))/i;
+const DONUS_ALAN = /^[ \t]*(rapor|report)[ \t]*:/im;
+
+function donusEksik(root, govde) {
+  if (!root || !acikIs(root)) return;
+  if (!BITIS.test(govde.slice(-1500))) return;
+  for (const { govde: blok } of bloklar(govde)) if (DONUS_ALAN.test(blok)) return;
+  return (
+    'Teknesyum: açık bir paket/sözleşme varken işi bitirdiğini söyleyip dönüş bloğu ' +
+    'vermeden kapanma (multi-session.md §5.1). Mesajın en altına, kopyalanabilir ' +
+    'tek blok olarak en fazla 5 satır ekle: birinci satır <paket/sözleşme> + durum, ' +
+    'ikinci satır "Rapor: <dosya yolu>", varsa üçüncü satır tek açık soru. Rapor ' +
+    'gövdesini sohbete değil dosyaya yaz.'
+  );
+}
+
+function acikIs(root) {
+  for (const d of [path.join(root, 'contracts'), root]) {
+    for (const f of dosyalar(d)) {
+      if (!f.endsWith('.md')) continue;
+      const s = metin(path.join(d, f));
+      if (s && /^status:[ \t]*(active|submitted)/im.test(s.slice(0, 800))) return true;
+    }
+  }
+  return false;
 }
 
 // Sohbete basılan uzun blokları arar: üç tırnaklı kod bloğu ve `---` ile ayrılmış bölge.

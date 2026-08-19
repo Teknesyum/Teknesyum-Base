@@ -128,6 +128,50 @@ never completed any work and holds fewer than ten source files is blocked until 
 research exists. Skipping is allowed — one line of reasoning in `docs/taramalar/ATLANDI.md`
 opens the gate. Skipping silently is not.
 
+### Product standards — three platforms, and staying up to date
+
+Two defaults apply to the programs the relay produces, written down in
+`skills/relay/references/standartlar.md`.
+
+**A new project targets Windows, macOS and Linux.** Business logic calls no platform API,
+paths are never built by hand, no shell is spawned to run a process, filenames are treated
+as case-sensitive, and CI runs the test suite on all three. The portable part is the whole
+program except its shell — which is what makes a later port a shell rewrite instead of a
+rewrite.
+
+Some programs are single-platform by nature: an overlay drawn over a Windows game, a
+launcher built on shell file associations. Those turn the rule off in the project's own
+`.claude/teknesyum.json`, with a reason — opting out is free, opting out silently is not:
+
+```json
+{ "platformlar": ["win"], "platformNeden": "built on Windows file associations" }
+```
+
+**On an existing project the rule never migrates anything on its own.** It asks once —
+*this project is Windows-only, port it to three platforms?* — and a `no` is written down and
+never asked again; a `yes` gets its own contract instead of being folded into whatever is
+already running. The same shape as `/uicheckup`, which scans a project's UI against the
+theme standard and writes nothing until you approve the plan.
+
+The audit is deterministic, no model involved:
+
+```bash
+node teknesyum/scripts/platform-denetim.js <root> --kati
+```
+
+It reports embedded drive letters and home directories, shell invocations, Windows-only
+target frameworks, filenames that collide when case is ignored, and the missing legs of a
+CI matrix.
+
+**Programs check for their own updates once a day, off the startup path.** Startup reads a
+timestamp and nothing else; if the day has turned, the check runs after the window is up,
+in the background, with a three-second timeout, and fails silently. The default is to
+*tell* you a version exists — a silent background install is allowed only when a published
+SHA-256 is verified first, because an updater is a code-execution channel. A program
+installed through a package manager never updates itself. The prerequisite is a release
+pipeline: every tag built for three platforms with checksums published, or no updater is
+written at all.
+
 ### Contract layout
 
 For large jobs every task is a file:
@@ -375,7 +419,7 @@ would have done instead, the line is not written. `TEKNESYUM_SESSIZ=1` still equ
 node test/run.js
 ```
 
-86 checks driving the real hooks and the real statusline with real payloads: the
+102 checks driving the real hooks and the real statusline with real payloads: the
 announcements, the trace files, the completion gate (including shell bypasses and relative
 Windows paths), concurrent hook processes writing the same file, and the packaging
 invariants — no `hooks` key in the manifest, a valid `.lsp.json`, the auditor's tool list,

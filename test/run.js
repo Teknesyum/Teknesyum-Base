@@ -580,16 +580,22 @@ function yonlendirmeProje(sozlesmeler) {
   return p;
 }
 
-ol('açık T9 Support UI işini kilitlemez', () => {
-  const p = yonlendirmeProje([{ id: 'T9', title: 'Relay mesaj dili', owns: ['README.md'] }]);
+ol('başlığı yakın sözleşme yeni işi üstlenmez', () => {
+  const p = yonlendirmeProje([{ id: 'T9', title: 'UI mesaj dili', owns: ['README.md'] }]);
   const r = calistir(
     IZLE,
     { ...ort(p), session_id: 'support-ui-1', hook_event_name: 'UserPromptSubmit', prompt: 'Support UI panelini düzelt' },
     konfig(true)
   );
-  icerir(r.out, 'Support UI için yeni UI sözleşmesi');
-  icerir(r.out, 'T9 yalnız kendi işinde sürer');
-  if (r.out.includes('blocked')) throw new Error('ilgisiz T9 yeni işi engelledi');
+  icerir(r.out, 'Yeni iş öncelikli');
+  if (r.out.includes('T9 sürdürülür')) throw new Error('başlık benzerliği sözleşme seçti');
+  if (r.out.includes('blocked')) throw new Error('ilgisiz sözleşme yeni işi engelledi');
+});
+
+ol('hook metninde tek oturumun sözleşme kimliği gömülü değil', () => {
+  const src = fs.readFileSync(IZLE, 'utf8');
+  const m = src.match(/["'`][^"'`\n]*\bT(5|9)\b[^"'`\n]*["'`]/);
+  if (m) throw new Error('projeye özgü sözleşme kimliği hook metninde: ' + m[0]);
 });
 
 ol('ilgisiz açık sözleşme yeni işi önceliklendirir', () => {
@@ -1475,6 +1481,54 @@ ol('harita C# using satirini ad alanina baglar', () => {
   const j = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'harita.json'), 'utf8'));
   esit(j['Svc.cs'].ns[0], 'App.Models', 'ic ad alani baglanmali');
   esit(j['Svc.cs'].dis.includes('System'), true, 'cerceve ad alani dis sayilmali');
+});
+
+const PLATFORM = path.join(KOK, 'scripts', 'platform-denetim.js');
+
+function platformProje(cfg) {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-platform-'));
+  fs.writeFileSync(
+    path.join(p, 'app.js'),
+    'const kok = "C:\\Users\\ali";\nconst x = require("child_process");\n'
+  );
+  fs.writeFileSync(path.join(p, 'App.csproj'), '<TargetFramework>net8.0-windows</TargetFramework>');
+  if (cfg) {
+    fs.mkdirSync(path.join(p, '.claude'), { recursive: true });
+    fs.writeFileSync(path.join(p, '.claude', 'teknesyum.json'), JSON.stringify(cfg));
+  }
+  return p;
+}
+
+ol('platform denetimi gomulu yolu ve tek platform hedefini bulur', () => {
+  const p = platformProje(null);
+  const r = spawnSync(process.execPath, [PLATFORM, p, '--kati'], { encoding: 'utf8' });
+  icerir(r.stdout, 'gömülü sürücü harfi');
+  icerir(r.stdout, 'tek platform hedefi');
+  icerir(r.stdout, 'CI iş akışı yok');
+  esit(r.status, 1, '--kati bulguda 1 donmeli');
+});
+
+ol('proje bazinda kapatilan kural bulgu uretmez', () => {
+  const p = platformProje({ platformlar: ['win'], platformNeden: 'kabuk ilişkilendirmesi' });
+  const r = spawnSync(process.execPath, [PLATFORM, p, '--kati'], { encoding: 'utf8' });
+  icerir(r.stdout, 'Kural bu projede kapalı');
+  icerir(r.stdout, 'kabuk ilişkilendirmesi');
+  esit(r.status, 0, 'kapali projede kapi acik kalmali');
+});
+
+ol('paket ve eklenti surumu ayni', () => {
+  const a = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+  const b = JSON.parse(fs.readFileSync(path.join(KOK, '.claude-plugin', 'plugin.json'), 'utf8'));
+  esit(a.version, b.version, 'surumler ayrismis');
+});
+
+ol('urun standardi paketlenir ve skill ona isaret eder', () => {
+  const f = path.join(KOK, 'skills', 'relay', 'references', 'standartlar.md');
+  esit(fs.existsSync(f), true, 'standartlar.md olmali');
+  const st = fs.readFileSync(f, 'utf8');
+  icerir(st, 'platformlar');
+  icerir(st, 'SHA256SUMS');
+  icerir(fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8'), 'standartlar.md');
 });
 
 ol('yonlendirici sablon AGENTS.md adini tasir', () => {

@@ -6,18 +6,37 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.25.0] - 2026-08-20
+
 ### Added
 
-- `/uicheckup` now performs a deterministic, write-free UI scan and hands an explicitly approved plan to `ui-builder/relay` as a verified manifest.
-- Tests cover deterministic scan digests, approval gates, stale plans, manifest validation and path traversal.
-
-### Changed
-
-- Documented the two-stage UI checkup flow and Windows, macOS and Linux support.
+- Product standards (`skills/relay/references/standartlar.md`, summarised in relay SKILL
+  1.5): a new project targets Windows, macOS and Linux by default; an existing project is
+  asked once before anything is migrated, and a `no` is recorded in that project's
+  `.claude/teknesyum.json` as `platformlar` + `platformNeden`. Programs check for updates
+  once a day off the startup path, notify by default, and install silently only against a
+  verified SHA-256 — never when installed through a package manager, which owns updates.
+- `scripts/platform-denetim.js`: deterministic portability audit — embedded drive letters
+  and home directories, shell invocations, Windows-only target frameworks, case-colliding
+  filenames, missing CI matrix legs. `--kati` exits non-zero on findings and runs in CI.
+- `/uicheckup` performs a deterministic, write-free UI scan and hands an explicitly approved
+  plan to `ui-builder`/`relay` as a verified manifest. Tests cover scan digests, the
+  approval gate, stale plans, manifest validation and path traversal.
+- CI matrix gained `macos-latest`.
 
 ### Fixed
 
-- Prevented UI checkup plans from being applied after their files or digests change.
+- New-work routing no longer carries one session's contract ids. The hook shipped with `T9`
+  and `T5` and the word "support" written into it, so every other project was advised about
+  contracts it never had. Routing now matches file ownership only — a contract with a
+  similar-sounding title does not claim unrelated work.
+- The return-block floor counts `active` and `submitted` contracts again. An `open` contract
+  has not been dispatched yet, and was forcing a return block at every session end.
+- `git rev-parse` results are cached per hook process. Two processes were spawned on every
+  tool call in projects whose relay root is resolved through git.
+- UI checkup plans can no longer be applied after their files or digests change.
+- `package.json` and the plugin manifest are asserted to carry the same version; they had
+  drifted apart.
 
 ## [2.23.0] - 2026-08-19
 

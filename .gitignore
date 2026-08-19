@@ -2,3 +2,7 @@ node_modules
 *.log
 .DS_Store
 .tani/
+.claude/worktrees/
+.claude/relay/live/
+.claude/harita.json
+.claude/harita.md

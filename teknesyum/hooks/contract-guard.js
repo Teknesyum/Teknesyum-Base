@@ -43,7 +43,20 @@ const YAZMA_FIILI =
 // `blocked` her iki yönde serbesttir — engel gerçek bir durumdur, kurtarma da öyle.
 const SIRA = { open: 0, active: 1, submitted: 2, accepted: 3, done: 3 };
 
+// ÖLÇÜLDÜ: her araç çağrısında iki `git rev-parse` süreci açılıyordu; Windows'ta süreç
+// açmak 20-60 ms. Yanıt aynı kök için değişmez, hook süreci kısa ömürlüdür — bir kez
+// sorulur, başarısızlık da önbelleklenir.
+const _gitBellek = new Map();
+
 function gitBilgisi(start) {
+  const anahtar = path.resolve(start);
+  if (_gitBellek.has(anahtar)) return _gitBellek.get(anahtar);
+  const sonuc = gitSor(anahtar);
+  _gitBellek.set(anahtar, sonuc);
+  return sonuc;
+}
+
+function gitSor(start) {
   try {
     const top = path.resolve(
       execFileSync('git', ['-C', path.resolve(start), 'rev-parse', '--show-toplevel'], {

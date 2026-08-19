@@ -105,7 +105,7 @@ görmek isteyene bakar, sürdürmeyi o başlatmaz.
 Devam etmeden önce tek satır bildir: kaç sözleşme açık, hangisinden devam ediyorsun.
 Kullanıcı o sırada başka bir iş verirse yeni iş önceliklidir; açık sözleşmeyi hatırlat, bırak.
 
-Yeni kullanıcı işi, açık sözleşmelerden önce owns eşleştirmesiyle yönlendirilir. İstek açık sözleşmenin owns kümesine giriyorsa o sözleşmeye devam edilir; girmiyorsa eski sözleşme yeni işi kilitlemez, yeni iş için yeni sözleşme veya ajan rotası açılır. Aynı dosya iki aktif sözleşmeye atanmaz; çakışmada atama durur ve T0 kararı gerekir. UI işi mesaj dili sözleşmesinden bağımsızdır: Support UI, uygun T5 veya yeni UI sözleşmesine yönlenir, T9 UI işini kilitlemez.
+Yeni kullanıcı işi, açık sözleşmelerden önce owns eşleştirmesiyle yönlendirilir. İstek açık sözleşmenin owns kümesine giriyorsa o sözleşmeye devam edilir; girmiyorsa eski sözleşme yeni işi kilitlemez, yeni iş için yeni sözleşme veya ajan rotası açılır. Aynı dosya iki aktif sözleşmeye atanmaz; çakışmada atama durur ve T0 kararı gerekir. Eşleştirme dosya sahipliğine bakar, başlık benzerliğine değil: konusu yakın görünen bir sözleşme, dosyası tutmuyorsa yeni işi üstlenmez.
 Ajan mesajı kısa, net ve saygılıdır; ilgisiz açık sözleşme nedeniyle kullanıcıdan kapsamı yeniden isteme.
 
 ## 1.2 Proje düzeni — kök sade kalır
@@ -207,6 +207,32 @@ Teknesyum ▸ araştırma bitti · 10 depo · 6 fikir alındı · 3 şüpheli ·
 Araştırma yapılmadan ilk sözleşme yazılmaya kalkılırsa hook geri çevirir. Kullanıcı
 istemiyorsa gerekçesi `docs/taramalar/ATLANDI.md` dosyasına tek satır yazılır — kapı
 o zaman açılır. Atlamak serbest, sessizce atlamak değil.
+
+## 1.5 Ürün standardı — üç platform ve kendini güncelleme
+
+Ayrıntı `references/standartlar.md`. Burada geçerli olan iki karar:
+
+**Yeni projede üç platform varsayılandır** (Windows, macOS, Linux). İş mantığı platform
+API'si çağırmaz, kabuk dışında platforma bağlı kod bulunmaz, CI üç OS'te koşar. Aksi
+söylenmediyse böyle kurulur.
+
+**Mevcut projede kural kendiliğinden uygulanmaz — sorulur.** Tek soru: "Bu proje şu an
+yalnız <platform>. Üç platforma taşıyalım mı?" `hayır` cevabı proje kökündeki
+`.claude/teknesyum.json` dosyasına `platformlar` + `platformNeden` olarak yazılır ve bir
+daha sorulmaz; `evet` cevabı geçişi **kendi sözleşmesine** açar, süren işin içine
+karıştırmaz. Aynı akış arayüz için `uicheckup` ile işler: tarar, raporlar, onay almadan
+hiçbir hedef dosyaya yazmaz.
+
+Doğası gereği tek platform olan iş (oyun overlay'i, kabuk ilişkilendirmesi, registry/ETW)
+kapatılır — gerekçe satırıyla.
+
+**Kendini güncelleme** üretilen programlarda varsayılan olarak açıktır: günde bir kez,
+açılış yolunun dışında, sessiz başarısızlıkla. Varsayılan mod haber vermektir; sessiz kurulum
+yalnız yayınlanan SHA-256 doğrulanıyorsa. Paket yöneticisiyle kurulmuş program kendini
+güncellemez. Ön koşulu, her etikette üç platforma derleyip checksum yayınlayan CI'dır —
+o yoksa güncelleyici yazılmaz.
+
+Denetim modelsizdir: `node teknesyum/scripts/platform-denetim.js <kök>`.
 
 ## 2. Hazırlık — sormadan yap
 

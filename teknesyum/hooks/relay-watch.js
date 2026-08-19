@@ -413,7 +413,7 @@ function donusEksik(root, govde) {
 }
 
 function acikIs(root) {
-  return acikSozlesmeler(root).length > 0;
+  return acikSozlesmeler(root).some((s) => s.durum === 'active' || s.durum === 'submitted');
 }
 
 function acikSozlesmeler(root) {
@@ -422,11 +422,13 @@ function acikSozlesmeler(root) {
     .filter((f) => /^T[^/]+\.md$/i.test(f))
     .map((f) => {
       const govde = metin(path.join(dir, f));
-      if (!govde || !/^status:[ \t]*(open|active|submitted)/im.test(govde.slice(0, 1200))) return null;
+      const d = (govde || '').slice(0, 1200).match(/^status:[ \t]*(open|active|submitted)/im);
+      if (!d) return null;
       const owns = (govde.match(/^owns:[ \t]*\[([^\]]*)\]/im) || [])[1] || '';
       const title = (govde.match(/^title:[ \t]*(.+)$/im) || [])[1] || f.slice(0, -3);
       return {
         id: f.slice(0, -3),
+        durum: d[1].toLowerCase(),
         title: title.trim(),
         owns: owns
           .split(',')
@@ -441,16 +443,14 @@ function yeniIsRotasi(root, prompt) {
   if (!root || !prompt) return '';
   const acik = acikSozlesmeler(root);
   if (!acik.length) return '';
-  const metinPrompt = String(prompt);
-  const ui = /\b(support|ui|panel|arayüz|arayuz|interface)\b/i.test(metinPrompt);
-  const t9 = acik.find((s) => s.id.toUpperCase() === 'T9' || /mesaj dili|message language/i.test(s.title));
-  if (ui && t9) {
-    const uiSoz = acik.find((s) => s.id.toUpperCase() === 'T5' || /support|neon|ui/i.test(s.title));
-    return 'Yeni iş öncelikli · Support UI için ' + (uiSoz ? uiSoz.id : 'yeni UI sözleşmesi') + ' yönlendirilir; ' + t9.id + ' yalnız kendi işinde sürer.';
-  }
-  const eslesen = acik.filter((s) => s.owns.some((o) => metinPrompt.includes(o)));
+  const istek = String(prompt);
+  const eslesen = acik.filter((s) => s.owns.some((o) => o && istek.includes(o)));
   if (eslesen.length > 1) {
-    return 'Sahiplik çakışması · ' + eslesen.map((s) => s.id).join(', ') + ' aynı işi sahipleniyor; T0 kararı gerekir.';
+    return (
+      'Sahiplik çakışması · ' +
+      eslesen.map((s) => s.id).join(', ') +
+      ' aynı dosyayı sahipleniyor; T0 kararı gerekir.'
+    );
   }
   if (eslesen.length === 1) return 'Owns eşleşmesi · ' + eslesen[0].id + ' sürdürülür.';
   return 'Yeni iş öncelikli · ilgisiz açık sözleşme kilitlemez; yeni sözleşme veya ajan açılır.';
@@ -851,7 +851,20 @@ function findRelay(start) {
   return common;
 }
 
+// ÖLÇÜLDÜ: her araç çağrısında iki `git rev-parse` süreci açılıyordu; Windows'ta süreç
+// açmak 20-60 ms. Yanıt aynı kök için değişmez, hook süreci kısa ömürlüdür — bir kez
+// sorulur, başarısızlık da önbelleklenir.
+const _gitBellek = new Map();
+
 function gitBilgisi(start) {
+  const anahtar = path.resolve(start);
+  if (_gitBellek.has(anahtar)) return _gitBellek.get(anahtar);
+  const sonuc = gitSor(anahtar);
+  _gitBellek.set(anahtar, sonuc);
+  return sonuc;
+}
+
+function gitSor(start) {
   try {
     const top = path.resolve(
       execFileSync('git', ['-C', path.resolve(start), 'rev-parse', '--show-toplevel'], {

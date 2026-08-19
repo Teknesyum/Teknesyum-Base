@@ -101,9 +101,29 @@ silently**:
 
 The decision is announced in one line, so you can see which rule fired without being asked
 to make the call yourself. Preparation happens without asking too: a missing git repo is
-initialized with a safety commit before any file is touched, a large unfamiliar codebase is
-indexed and then queried instead of read, UI work is routed to an agent with the theme
-standard preloaded, and missing `AGENTS.md` signposts get written when the job closes.
+initialized with a safety commit before any file is touched, a project of thirty files or
+more gets a dependency map built and queried instead of read, UI work is routed to an agent
+with the theme standard preloaded, and missing `AGENTS.md` signposts get written when the
+job closes.
+
+### Prior art comes before the first contract
+
+A from-scratch project does not get designed from scratch. Before a single contract is
+written, at least ten comparable repositories are split across parallel `scout` agents;
+each writes one `docs/taramalar/<name>.md` under six fixed headings, and the manager merges
+them into `docs/taramalar/RAPOR.md` as **adopted**, **deliberately rejected**, and
+**suspicious**.
+
+Nothing is copied. What gets taken is a pattern, a boundary, a mistake worth not repeating
+— never source lines. Adopting a project whole is only ever a library decision, and that
+one goes to you. Archived repositories stay in scope: *abandoned* is a warning against
+depending on a project, not against reading it. Numbers that cannot be traced to a primary
+source are tagged as unverified rather than repeated.
+
+The gate is mechanical, not advisory: writing the first contract of a project that has
+never completed any work and holds fewer than ten source files is blocked until the
+research exists. Skipping is allowed — one line of reasoning in `docs/taramalar/ATLANDI.md`
+opens the gate. Skipping silently is not.
 
 ### Contract layout
 
@@ -200,6 +220,22 @@ just say so; the manager reads the packet reports and `git status` itself, flags
 outside the declared area, runs the auditor, carries the produced signatures into dependent
 packets, and prints the next wave of prompts.
 
+The return trip obeys the same rule, and this is the half that is usually missing. A worker
+that finishes does not narrate its work into the chat; it writes the report to a file and
+hands back at most five lines — what closed, where the report is, and one open question if
+there is one:
+
+```
+T3 teslim edildi · 747 test yeşil, build temiz
+Rapor: docs/tasks/T19-isolated-performance-e2e.md
+Açık: main'e commit yetkisi bende mi?
+```
+
+Both directions are enforced by the `Stop` hook, and in both directions: a packet or report
+body dumped into the chat is refused, and so is announcing completion while a contract is
+open without handing back the block. A ceiling without a floor just produces workers that
+finish silently.
+
 ---
 
 ## Components
@@ -251,11 +287,19 @@ installed version at render time and stays correct across updates.
 
 ### Hooks
 
-- `contract-guard.js` — enforces the completion gate on `Write`, `Edit` and `Bash`
-- `relay-watch.js` — writes agent traces (`SubagentStart` / `PostToolUse` / `SubagentStop`),
-  narrates what the base is doing (`SessionStart` / dispatch / agent finish), requires a
-  sizing verdict on every request (`UserPromptSubmit`), and refuses to let a task packet be
-  dumped into the chat instead of written to a file (`Stop`)
+- `contract-guard.js` — enforces the completion gate on `Write`, `Edit` and `Bash`; keeps
+  the contract status ladder one-way (`open → active → submitted → done`, with `blocked`
+  reachable from anywhere), so a correction round cannot reset the audit queue; and holds
+  the prior-art gate shut on a brand-new project
+- `relay-watch.js` — eleven events. It writes agent traces (`SubagentStart` / `PostToolUse` /
+  `SubagentStop`) including the model and effort the agent *actually* ran at, narrates what
+  the base is doing (`SessionStart` / dispatch / agent finish), requires a sizing verdict on
+  every request (`UserPromptSubmit`), enforces the handoff rule in both directions (`Stop`),
+  parses every `.js`/`.json` the moment it is written and hands the syntax error straight
+  back (`PostToolUse`), feeds open contracts and the route position back into a freshly
+  compacted context (`PostCompact`), seals unfinished agent records at shutdown
+  (`SessionEnd`), records rate-limit and overload interruptions (`StopFailure`), and records
+  a failing tool without counting it as progress (`PostToolUseFailure`)
 
 ### Visible steering
 
@@ -284,7 +328,7 @@ Set `TEKNESYUM_SESSIZ=1` to silence them.
 node test/run.js
 ```
 
-47 checks driving the real hooks and the real statusline with real payloads: the
+82 checks driving the real hooks and the real statusline with real payloads: the
 announcements, the trace files, the completion gate (including shell bypasses and relative
 Windows paths), concurrent hook processes writing the same file, and the packaging
 invariants — no `hooks` key in the manifest, a valid `.lsp.json`, the auditor's tool list,
@@ -292,6 +336,23 @@ no pinned version in the statusline bridge, no stale command name anywhere in th
 Plain Node, no dependencies; CI runs it on every push.
 
 ### Code intelligence
+
+Before opening files, agents ask what is connected to what:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/harita.js" .
+```
+
+`harita.js` reads `import` / `require` / `using` lines straight from source and writes
+`.claude/harita.md` plus `harita.json`: hubs, cycles, orphans, file-to-file edges. **No
+model call and no parser to install** — a 123-file project takes seconds and produces
+about 9 kB. C# `using` resolves to a namespace node rather than a single file, because
+binding a namespace to one file produced convincing but fake edges. The rule is thirty
+source files, or a job touching three or more modules; below that `Grep` is cheaper.
+
+This is not a replacement for a semantic graph — it answers *what breaks if I touch this*,
+not *what does this mean*. Understanding a foreign codebase is still a job for something
+that reads it.
 
 The plugin ships an `.lsp.json` registering `typescript-language-server` for
 `.ts .tsx .mts .cts .js .jsx .mjs .cjs`. Agents then resolve definitions and references
@@ -355,7 +416,9 @@ src/  docs/  locale/  settings/  tools/  tests/  .claude/  README.md  <the execu
 ```
 
 `docs/` holds every document a human reads — plan, roadmap, decision log, task packets,
-notes agents leave each other. `.claude/relay/` holds live contract state, because a hook
+prior-art scans, notes agents leave each other. Folder signposts are `AGENTS.md`, so every
+tool reads the same file; a one-line `CLAUDE.md` holding `@AGENTS.md` sits next to it, since
+Claude Code's own discovery of `AGENTS.md` could not be verified. `.claude/relay/` holds live contract state, because a hook
 guards that path. UI strings never live in code: `locale/tr.json` is the source, adding a
 language is copying one file, and a translator never opens a source file.
 

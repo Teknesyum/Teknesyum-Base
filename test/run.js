@@ -129,7 +129,7 @@ ol('komut kümesi beş komut ve eski adlar hiçbir yerde geçmiyor', () => {
     .readdirSync(path.join(KOK, 'commands'))
     .filter((f) => f.endsWith('.md'))
     .sort();
-  esit(v.join(','), 'help.md,report.md,rule.md,setup.md,uisetup.md');
+  esit(v.join(','), 'help.md,report.md,rule.md,setup.md,uicheckup.md,uisetup.md');
   const yuru = (d) =>
     fs
       .readdirSync(d, { withFileTypes: true })
@@ -1220,6 +1220,85 @@ ol('bozuk json geri döner, tsconfig denetlenmez', () => {
     }).out,
     ''
   );
+});
+
+const UICHECKUP = path.join(KOK, 'scripts', 'uicheckup.js');
+const UICHECKUP_APPLY = path.join(KOK, 'scripts', 'uicheckup-apply.js');
+
+function uiCheckupProje() {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-uicheckup-'));
+  fs.mkdirSync(path.join(p, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(p, 'src', 'Panel.jsx'), 'export default function Panel() { return <div>HELLO</div>; }\n');
+  fs.writeFileSync(path.join(p, 'src', 'theme.css'), '.panel { color: rgba(1, 2, 3, 1); }\n');
+  return p;
+}
+
+function uiCheckupScan(p) {
+  const r = spawnSync(process.execPath, [UICHECKUP, p], { encoding: 'utf8' });
+  esit(r.status, 0, 'uicheckup taraması');
+  return JSON.parse(r.stdout);
+}
+
+function uiCheckupPlan(p) {
+  const plan = uiCheckupScan(p);
+  const file = path.join(p, 'ui-plan.json');
+  fs.writeFileSync(file, JSON.stringify(plan));
+  return { plan, file };
+}
+
+function uiCheckupApply(args) {
+  return spawnSync(process.execPath, [UICHECKUP_APPLY, ...args], { encoding: 'utf8' });
+}
+
+ol('uicheckup taraması deterministik plan ve digest üretir', () => {
+  const p = uiCheckupProje();
+  const first = uiCheckupScan(p);
+  const second = uiCheckupScan(p);
+  esit(JSON.stringify(first), JSON.stringify(second), 'aynı tarama aynı planı üretmeli');
+  if (!/^[a-f0-9]{64}$/.test(first.digest)) throw new Error('plan digest yok');
+  if (!first.files.length || !first.files.every((record) => /^[a-f0-9]{64}$/.test(record.digest)))
+    throw new Error('dosya digest yok');
+  if (!first.findings.length) throw new Error('bulgu yok');
+});
+
+ol('onaysız apply hedefe yazmaz', () => {
+  const p = uiCheckupProje();
+  const { plan, file } = uiCheckupPlan(p);
+  const before = fs.readFileSync(path.join(p, 'src', 'Panel.jsx'), 'utf8');
+  const r = uiCheckupApply(['--plan', file, '--plan-digest', plan.digest, '--target', p]);
+  if (r.status === 0 || !/approve/i.test(r.stderr)) throw new Error('onaysız apply reddedilmedi');
+  esit(fs.readFileSync(path.join(p, 'src', 'Panel.jsx'), 'utf8'), before, 'hedef değişti');
+});
+
+ol('stale plan değişen dosyayı reddeder', () => {
+  const p = uiCheckupProje();
+  const { plan, file } = uiCheckupPlan(p);
+  fs.appendFileSync(path.join(p, 'src', 'Panel.jsx'), 'const changed = true;\n');
+  const r = uiCheckupApply(['--approve', '--plan', file, '--plan-digest', plan.digest, '--target', p]);
+  if (r.status === 0 || !/stale plan/i.test(r.stderr)) throw new Error('stale plan reddedilmedi');
+});
+
+ol('onaylı apply güvenli manifest üretir', () => {
+  const p = uiCheckupProje();
+  const { plan, file } = uiCheckupPlan(p);
+  const r = uiCheckupApply(['--approve', '--plan', file, '--plan-digest', plan.digest, '--target', p]);
+  esit(r.status, 0, 'onaylı apply');
+  const manifest = JSON.parse(r.stdout);
+  esit(manifest.approved, true, 'manifest onay durumu');
+  esit(manifest.writeTarget, false, 'manifest yazma durumu');
+  esit(manifest.handoff, 'ui-builder/relay', 'manifest aktarımı');
+});
+
+ol('apply plan path traversal reddeder', () => {
+  const p = uiCheckupProje();
+  const { plan, file } = uiCheckupPlan(p);
+  plan.files[0].file = '../outside.txt';
+  const copy = { ...plan };
+  delete copy.digest;
+  plan.digest = require('crypto').createHash('sha256').update(JSON.stringify(copy)).digest('hex');
+  fs.writeFileSync(file, JSON.stringify(plan));
+  const r = uiCheckupApply(['--approve', '--plan', file, '--plan-digest', plan.digest, '--target', p]);
+  if (r.status === 0 || !/traversal|kök dışı/i.test(r.stderr)) throw new Error('path traversal reddedilmedi');
 });
 
 const HARITA = path.join(KOK, 'scripts', 'harita.js');

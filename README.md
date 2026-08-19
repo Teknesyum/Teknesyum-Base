@@ -272,10 +272,33 @@ guarantee cannot quietly erode.
 | `/rule` | "Don't do that again." Records a permanent rule in the right layer |
 | `/setup` | Wires this machine up. Once, at install time |
 | `/uisetup` | Configures or disables the UI standard |
+| `/uicheckup` | Scans UI files and prepares an approved relay manifest |
 | `/help` | What the base does and when, on one screen |
 
 There is no command to set a relay up and none to resume interrupted work — both happen on
 their own.
+
+### UI checkup
+
+`/uicheckup` uses a deliberate two-stage flow. The first stage scans the target project without
+writing to it and emits a deterministic JSON plan containing the UI files, findings, file digests
+and plan digest. Review and save that plan before the second stage.
+
+```powershell
+node "<plugin>/scripts/uicheckup.js" "<target>" > ui-plan.json
+```
+
+The second stage requires explicit approval, the plan digest and the same target root. It rechecks
+the plan and every file, rejects stale plans and path traversal, and emits a write-free manifest.
+That manifest is handed to `ui-builder/relay`; the apply CLI never silently patches target files.
+
+```powershell
+node "<plugin>/scripts/uicheckup-apply.js" --approve --plan ui-plan.json --plan-digest <digest> --target "<target>"
+```
+
+The same Node commands and semantics work on Windows PowerShell, macOS and Linux shells. Shell
+redirection is shown only for saving the scan output; the checkup itself uses no platform-specific
+path assumptions.
 
 ### Statusline
 

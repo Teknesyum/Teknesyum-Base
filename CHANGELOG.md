@@ -6,6 +6,19 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- `/uicheckup` now performs a deterministic, write-free UI scan and hands an explicitly approved plan to `ui-builder/relay` as a verified manifest.
+- Tests cover deterministic scan digests, approval gates, stale plans, manifest validation and path traversal.
+
+### Changed
+
+- Documented the two-stage UI checkup flow and Windows, macOS and Linux support.
+
+### Fixed
+
+- Prevented UI checkup plans from being applied after their files or digests change.
+
 ## [2.23.0] - 2026-08-19
 
 ### Added

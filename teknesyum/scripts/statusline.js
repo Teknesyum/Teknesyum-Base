@@ -21,8 +21,10 @@ function bar(pct, width) {
 
 function gitBranch(dir) {
   try {
+    // ÖLÇÜLDÜ: timeout yoktu. Ag surucusunde ya da `.git/index.lock` varken git
+    // suresiz bekliyor ve statusline ile birlikte tum satir donuyordu.
     return execSync('git rev-parse --abbrev-ref HEAD', {
-      cwd: dir, stdio: ['ignore', 'pipe', 'ignore'], encoding: 'utf8',
+      cwd: dir, stdio: ['ignore', 'pipe', 'ignore'], encoding: 'utf8', timeout: 400,
     }).trim();
   } catch { return null; }
 }
@@ -137,6 +139,10 @@ function ajanSatiri(a) {
   const ad = (a.contract ? a.contract + ' ' : '') + (a.agent_type || '?').replace(/^teknesyum:/, '');
   const ikon = olu(a) ? C.pink + '⨯' : C.ok + '✓';
   let s = ikon + ' ' + C.r + C.dim + ad + C.r;
+  if (a.model) {
+    s += ' ' + C.hint + String(a.model).replace(/^claude-/, '').replace(/-\d{8}$/, '') +
+      (a.effort ? '·' + a.effort : '') + C.r;
+  }
   if (olu(a)) s += ' ' + C.pink + (a.stop_reason === null ? KAYIP : (OLUM_SEBEBI[a.stop_reason] || 'durdu')) + C.r;
   else if (a.last_word) s += ' ' + C.hint + kisalt(a.last_word, 40) + C.r;
   return s;
@@ -178,12 +184,13 @@ process.stdin.on('end', () => {
 
   const dir = (j.workspace && j.workspace.current_dir) || j.cwd || process.cwd();
   const model = (j.model && j.model.display_name) || '?';
+  const efor = (j.effort && j.effort.level) || null;
   const cw = j.context_window || {};
   const ctx = cw.used_percentage;
   const rl = j.rate_limits || {};
 
   const l1 = [
-    C.blue + '⬢ ' + model + C.r,
+    C.blue + '⬢ ' + model + (efor ? C.hint + '·' + efor : '') + C.r,
     C.dim + path.basename(dir) + C.r,
   ];
   const br = gitBranch(dir);

@@ -1,8 +1,8 @@
 {
   "name": "teknesyum",
   "displayName": "Teknesyum Base",
-  "version": "2.16.1",
-  "description": "Neon arayÃ¼z standardÄ± + Ã§ok ajanlÄ± iÅŸ rÃ¶lesi. KullanÄ±cÄ± ne istediÄŸini sÃ¶yler; iÅŸ bÃ¼yÃ¼klÃ¼ÄŸÃ¼, ajan daÄŸÄ±lÄ±mÄ±, model ve denetim otomatik kurulur.",
+  "version": "2.17.0",
+  "description": "Neon arayüz standardı + çok ajanlı iş rölesi. Kullanıcı ne istediğini söyler; iş büyüklüğü, ajan dağılımı, model ve denetim otomatik kurulur.",
   "author": {
     "name": "Teknesyum",
     "url": "https://github.com/Teknesyum"

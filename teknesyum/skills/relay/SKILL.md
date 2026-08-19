@@ -260,6 +260,15 @@ Kullanıcı yeni bir oturum açıp bunu yapıştırır, başka bir şey anlatmaz
 **ayrı bir komut bekleme**: paketleri ve `git status`'u sen okur, alan ihlali arar,
 `auditor`'ye doğrulatır, imzaları sonraki paketlere taşır, sonraki satırları basarsın.
 
+**Dönüş yönü de aynı kurala tabidir.** Paketi çalıştıran taraf bitirince rapor gövdesini
+sohbete basmaz; gövde paketin `## Rapor` bölümüne yazılır, kullanıcıya en fazla 5 satır
+verilir: hangi paket, raporun yolu, açık soru. Kullanıcı taşıyıcıdır — ona okuyup
+aktarması gereken bir metin verme. Bu yönü de aynı `Stop` hook'u denetliyor.
+
+**Yasak desen: kopyalanmak için yazılmış dosya.** İçeriği "şu aralığı olduğu gibi kopyala,
+karşı oturuma yapıştır" diye sunulan paket dosyası, dosya olmanın tek faydasını iptal
+eder. Paket **okunmak** için yazılır.
+
 Kural seti ve paket formatı: **`references/multi-session.md`**. Bu yola gireceksen onu oku.
 
 ## 3.2 Rota — uzun iş kaldığı yerden devam eder

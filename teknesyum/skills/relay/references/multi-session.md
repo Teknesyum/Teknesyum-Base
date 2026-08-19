@@ -83,7 +83,7 @@ Dar. 3-5 tespit + bağımlı olduğun paketin ürettiği imzalar. Kod yapıştı
    yapılmayan madde ve sebebi, sonraki paketlerin kullanacağı imzalar, varsayımlar.
 2. Frontmatter'da `status: submitted` yap. **`accepted` yazma** — paketi çalıştıran taraf
    kendi işini kabul edemez; o kararı ana oturum denetimden sonra verir.
-3. Kullanıcıya tek cümle: "G2 teslim edildi." 
+3. Kullanıcıya §5.1'deki dönüş satırını ver. Rapor gövdesini sohbete basma.
 ```
 
 `yazilabilir` kümeleri **kesişemez** — ebeveyn/çocuk ilişkisi de kesişmedir
@@ -118,6 +118,43 @@ zaten daha iyi bir taşıyıcı:
 | Kayıt | sohbette kaybolur | depoda, `git`'te |
 
 Bağımlılığı açık olan paketin satırını **basma**; hangi paket bitince açılacağını yaz.
+
+## 5.1 İşçinin dönüş satırı
+
+Devir çift yönlüdür. Paketi çalıştıran taraf işi bitirdiğinde **rapor gövdesini sohbete
+basmaz** — gövde paketin `## Rapor` bölümüne ya da `docs/` altında bir dosyaya gider.
+Kullanıcıya verilen dönüş **en fazla 5 satır**, tek parça kopyalanabilir:
+
+```
+G2 teslim edildi. Rapor: .claude/relay/G2.md `## Rapor`
+Değişen: src/theme/, src/components/Panel.tsx
+Açık soru: yok
+```
+
+Üç alan yeter: hangi paket ve durumu, raporun yolu, açık soru. Değişen dosya listesi
+uzunsa onu da yazma — rapor dosyasında zaten var.
+
+Ana oturum bu satırı alınca dosyayı kendi okur. Kullanıcı taşıyıcıdır, özet katmanı
+değil; ona okuyup aktarması gereken bir metin verme.
+
+Bu yön de `Stop` hook'unda denetleniyor: ≥25 satırlık bir blokta `## Rapor` ya da
+`Rapor:` başlığı görülürse cevap engellenir.
+
+## 5.2 Kopyalanacak metnin tavanı
+
+Kopyalanabilir blok **birkaç satırdır** — gidiş yönünde tek satır, dönüş yönünde beş.
+Tavanın sebebi zarafet değil ölçü:
+
+- Kullanıcı elle taşır. 120 satırlık blok yarım taşınır, sessizce eksilir.
+- Gövde iki kez token yakar: bir kez patronun çıktısında, bir kez işçinin girdisinde.
+  Dosya yolu bir kez yakar, karşı taraf dosyayı **kendi** okur.
+- Yapıştırılan metin depoda yoktur. Dosya `git`'tedir, güncellenir, denetlenebilir.
+
+**Yasak desen: "kopyalanmak için yazılmış dosya".** İçeriği `---` ya da kod bloğuyla
+çevrilip "şu aralığı olduğu gibi kopyala, karşı oturuma yapıştır" denen dosya, dosya
+olmanın tek faydasını iptal eder. Paket dosyası **okunmak** için yazılır; sohbete çıkan
+şey ona giden yoldur. Bu desen de hook'ta engellenir: kopyalama emrinin hemen ardından
+gelen ≥25 satırlık blok reddedilir.
 
 ## 6. Toplama
 

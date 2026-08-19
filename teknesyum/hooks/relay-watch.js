@@ -109,11 +109,56 @@ function run(j) {
       // alanı boş bırak — yanlış zaman, zamansızlıktan kötüdür.
       s.ended = (s.started && now < s.started) ? null : now;
       if (j.last_assistant_message) s.last_word = String(j.last_assistant_message).slice(0, 300);
+      Object.assign(s, kimlikOku(j));
       break;
     }
   }
 
   yaz(file, s);
+}
+
+
+// ÖLÇÜLDÜ: hook yükünde `effort: { level: "high" }` alanı her olayda geliyor ve
+// okunmuyordu. Model yükte yok — ajanın kendi transcript'inin son asistan satırında
+// duruyor. İkisi birlikte "beyan edilen model/efor gerçekten uygulandı mı" sorusunu
+// mekanik olarak cevaplar; ajan tanımındaki `model:`/`effort:` artık doğrulanabilir.
+function kimlikOku(j) {
+  const out = {};
+  const e = j.effort;
+  const lvl = e && typeof e === 'object' ? e.level : e;
+  if (lvl) out.effort = String(lvl);
+  const tp = j.agent_transcript_path || j.transcript_path;
+  const son = sonAsistan(tp);
+  if (son) {
+    if (son.model) out.model = String(son.model);
+    if (son.effort) out.effort = String(son.effort);
+  }
+  return out;
+}
+
+// Transcript'in sonundan geriye doğru ilk asistan satırını bulur. Dosya büyük olabilir;
+// yalnızca son 256 kB okunur.
+function sonAsistan(tp) {
+  if (!tp) return null;
+  let ham;
+  try {
+    const fd = fs.openSync(tp, 'r');
+    const boy = fs.fstatSync(fd).size;
+    const bas = Math.max(0, boy - 262144);
+    const buf = Buffer.alloc(boy - bas);
+    fs.readSync(fd, buf, 0, buf.length, bas);
+    fs.closeSync(fd);
+    ham = buf.toString('utf8');
+  } catch { return null; }
+  const satir = ham.split('\n');
+  for (let i = satir.length - 1; i >= 0; i--) {
+    if (!satir[i].includes('"assistant"')) continue;
+    let o;
+    try { o = JSON.parse(satir[i]); } catch { continue; }
+    if (!o || o.type !== 'assistant') continue;
+    return { model: o.message && o.message.model, effort: o.effort };
+  }
+  return null;
 }
 
 const CALISAN = '_running.json';
@@ -189,27 +234,67 @@ function sayacGecti(j) {
 }
 
 // Ölçüldü: kural multi-session.md §5'te yazılıydı ve yine de sohbete 120 satırlık paket
-// basıldı. Yazılı kural yeterli değilse kapıya bekçi konur — paket dosyaya, kullanıcıya
-// tek satır. Yalnızca iki işaret birden varsa tetiklenir; normal kod bloğu dokunulmaz.
+// basıldı. Yazılı kural yeterli değilse kapıya bekçi konur — devrin iki yönü de dosyayla
+// yürür, sohbete yalnızca işaretçi çıkar. Normal kod bloğu dokunulmaz.
 const PAKET_BASLIK = /^#{1,3}[ \t]*(GÖREV|GOREV|TASK)\b/im;
 const PAKET_ALAN = /^[ \t]*(Depo|Repo|Yığın|Yigin|Stack|Kabuk|Shell)[ \t]*:/im;
+const RAPOR_BASLIK = /^#{1,3}[ \t]*(RAPOR|REPORT)\b|^[ \t]*(Rapor|Report)[ \t]*:/im;
+const KOPYA_EMRI =
+  /(kopyala|kopyalay|yapıştır|yapistir|copy (this|the|everything)|paste (this|it|the))/i;
+const TAVAN = 25;
 
 function paketDenetle(j) {
   if (j.stop_hook_active) return;
   const metin = sonMesaj(j.transcript_path);
   if (!metin) return;
-  for (const blok of metin.match(/```[\s\S]*?```/g) || []) {
-    if (blok.split('\n').length < 25) continue;
-    if (!PAKET_BASLIK.test(blok) || !PAKET_ALAN.test(blok)) continue;
-    return process.stdout.write(JSON.stringify({
-      decision: 'block',
-      reason:
-        'Teknesyum: görev paketini sohbete basma. Paket dosyaya yazılır, kullanıcıya ' +
-        'tek satır verilir (multi-session.md §5). Paketi `.claude/relay/G<n>.md` altına ' +
-        'yaz, sonra sadece şunu bas: "`.claude/relay/G<n>.md` oku ve içindeki görevi ' +
-        'eksiksiz uygula." Paketi çalıştıracak taraf dosyayı kendi okur; kullanıcının ' +
-        '120 satır kopyalaması gerekmez.',
-    }));
+  const engel = devirIhlali(metin);
+  if (engel) process.stdout.write(JSON.stringify({ decision: 'block', reason: engel }));
+}
+
+// Sohbete basılan uzun blokları arar: üç tırnaklı kod bloğu ve `---` ile ayrılmış bölge.
+function bloklar(metin) {
+  const out = [];
+  const kod = /```[\s\S]*?```/g;
+  let m;
+  while ((m = kod.exec(metin))) out.push({ govde: m[0], bas: m.index });
+  const cizgi = /^-{3,}[ \t]*$/gm;
+  const yer = [];
+  while ((m = cizgi.exec(metin))) yer.push(m.index);
+  for (let i = 0; i + 1 < yer.length; i++) {
+    out.push({ govde: metin.slice(yer[i], yer[i + 1]), bas: yer[i] });
+  }
+  return out;
+}
+
+function devirIhlali(metin) {
+  for (const { govde: blok, bas } of bloklar(metin)) {
+    if (blok.split('\n').length < TAVAN) continue;
+    // Kopyalama emri bloğun hemen öncesinde aranır. Metnin herhangi bir yerinde arayınca
+    // `---` ayraç kullanan uzun ama masum cevaplar da engelleniyordu.
+    const kopya = KOPYA_EMRI.test(metin.slice(Math.max(0, bas - 400), bas));
+
+    if (PAKET_BASLIK.test(blok) && PAKET_ALAN.test(blok)) {
+      return 'Teknesyum: görev paketini sohbete basma. Paket dosyaya yazılır, ' +
+        'kullanıcıya tek satır verilir (multi-session.md §5). Paketi ' +
+        '`.claude/relay/G<n>.md` altına yaz, sonra sadece şunu bas: ' +
+        '"`.claude/relay/G<n>.md` oku ve içindeki görevi eksiksiz uygula." Paketi ' +
+        'çalıştıracak taraf dosyayı kendi okur; kullanıcının 120 satır kopyalaması ' +
+        'gerekmez.';
+    }
+
+    if (RAPOR_BASLIK.test(blok)) {
+      return 'Teknesyum: raporu sohbete basma. Rapor dosyaya yazılır, kullanıcıya ' +
+        'en fazla 5 satır verilir (multi-session.md §5.1). Gövdeyi paketin ' +
+        '`## Rapor` bölümüne ya da `docs/` altında bir dosyaya yaz, sonra şunu bas: ' +
+        '"<paket> teslim edildi. Rapor: <dosya yolu>." Karşı taraf dosyayı kendi okur.';
+    }
+
+    if (kopya) {
+      return 'Teknesyum: kullanıcıdan uzun bir bloğu kopyalamasını isteme ' +
+        '(multi-session.md §5). Kopyalanabilir metin birkaç satırdır; gövde dosyada ' +
+        'durur ve karşı taraf dosyayı kendi okur. Bloğu bir dosyaya yaz, sohbete ' +
+        'yalnızca "<dosya yolu> oku ve uygula" satırını bas.';
+    }
   }
 }
 

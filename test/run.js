@@ -192,6 +192,50 @@ ol('normal kod bloğu ve tek satırlık teslim engellenmez', () => {
   esit(bos('```\n# GÖREV: kısa\nDepo: x\n```'), '', 'kısa blok');
 });
 
+ol('sohbete basılan rapor gövdesi engellenir', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const blok = '```\n## Rapor\n' + '- yapıldı\n'.repeat(30) + '```';
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop',
+    transcript_path: transcript('G2 bitti:\n\n' + blok) }, konfig(true));
+  const o = JSON.parse(r.out);
+  esit(o.decision, 'block');
+  icerir(o.reason, '5.1');
+});
+
+ol('kopyalanmak için sunulan uzun blok engellenir', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const uzun = '---\n' + 'satır\n'.repeat(30) + '---\n';
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop',
+    transcript_path: transcript('Aşağıdaki bloğu olduğu gibi kopyala:\n\n' + uzun) },
+    konfig(true));
+  const o = JSON.parse(r.out);
+  esit(o.decision, 'block');
+  icerir(o.reason, 'dosyada');
+});
+
+ol('kopyalama emri olmadan `---` ayraçlı uzun cevap engellenmez', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const uzun = '---\n' + 'satır\n'.repeat(30) + '---\n';
+  esit(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop',
+    transcript_path: transcript('Bulgular:\n\n' + uzun) }, konfig(true)).out, '');
+});
+
+ol('SubagentStop ajanın modelini ve eforunu ize yazar', () => {
+  const { p, live } = proje(1, 0);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
+  const at = path.join(d, 'agent-a1.jsonl');
+  fs.writeFileSync(at, JSON.stringify({
+    type: 'assistant', effort: 'low', message: { model: 'claude-haiku-4-5' },
+  }) + '\n');
+  calistir(IZLE, {
+    ...ort(p), hook_event_name: 'SubagentStop', agent_id: 'a1', agent_type: 'scribe',
+    agent_transcript_path: at, effort: { level: 'high' },
+  }, konfig(true));
+  const a = JSON.parse(fs.readFileSync(path.join(live, 'a1.json'), 'utf8'));
+  esit(a.model, 'claude-haiku-4-5', 'model');
+  esit(a.effort, 'low', 'efor');
+});
+
 ol('Stop döngüye girmez (stop_hook_active)', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
   esit(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop', stop_hook_active: true,

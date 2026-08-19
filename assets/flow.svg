@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" role="img" aria-label="Teknesyum Base relay flow">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" role="img" aria-label="Teknesyum Base flow from Request through Measure, Prior Art, contracts, agents, Auditor, Return Block, and Contracts/Done">
   <defs>
     <linearGradient id="neon" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#00f3ff"/>
@@ -24,11 +24,11 @@
       <rect x="730" y="60" width="200" height="60" rx="12"/>
       <rect x="960" y="60" width="200" height="60" rx="12"/>
     </g>
-    <text x="140" y="97">request</text>
-    <text x="370" y="97">measure</text>
-    <text x="600" y="97">prior art</text>
-    <text x="830" y="97">PLAN.md</text>
-    <text x="1060" y="97">contracts/</text>
+    <text x="140" y="97">Request</text>
+    <text x="370" y="97">Measure</text>
+    <text x="600" y="97">Prior Art</text>
+    <text x="830" y="97">Builder · Scribe · UI-Builder</text>
+    <text x="1060" y="97">Contracts/Done</text>
 
     <g stroke="#00f3ff" stroke-width="2" marker-end="url(#ar)" fill="none">
       <path d="M240 90 L262 90"/>
@@ -46,10 +46,10 @@
       <rect x="940" y="204" width="220" height="60" rx="12" stroke="#34d399"/>
     </g>
     <g font-size="19">
-      <text x="170" y="240" font-size="17">builder &#183; scribe &#183; ui-builder</text>
-      <text x="470" y="240">auditor</text>
-      <text x="770" y="240">return block</text>
-      <text x="1050" y="240" fill="#34d399">contracts/done</text>
+      <text x="170" y="240" font-size="17">Builder · Scribe · UI-Builder</text>
+      <text x="470" y="240">Auditor</text>
+      <text x="770" y="240">Return Block</text>
+      <text x="1050" y="240" fill="#34d399">Contracts/Done</text>
     </g>
 
     <g stroke="#00f3ff" stroke-width="2" marker-end="url(#ar)" fill="none">
@@ -60,15 +60,15 @@
   </g>
 
   <g font-family="Consolas, monospace" font-size="17" fill="#ffffff">
-    <text x="40" y="330" fill="#00f3ff">hooks &#183; 11 events</text>
-    <text x="230" y="330" opacity="0.75">syntax check</text>
-    <text x="380" y="330" fill="#b026ff">&#183;</text>
-    <text x="400" y="330" opacity="0.75">status ladder</text>
-    <text x="552" y="330" fill="#b026ff">&#183;</text>
-    <text x="572" y="330" opacity="0.75">prior-art gate</text>
-    <text x="726" y="330" fill="#b026ff">&#183;</text>
-    <text x="746" y="330" opacity="0.75">return-block floor</text>
-    <text x="944" y="330" fill="#b026ff">&#183;</text>
-    <text x="964" y="330" opacity="0.75">Teknesyum &#9654; steering</text>
+    <text x="40" y="330" fill="#00f3ff">Hooks · 11 Events</text>
+    <text x="230" y="330" opacity="0.75">Syntax Check</text>
+    <text x="380" y="330" fill="#b026ff">·</text>
+    <text x="400" y="330" opacity="0.75">Status Ladder</text>
+    <text x="552" y="330" fill="#b026ff">·</text>
+    <text x="572" y="330" opacity="0.75">Prior-Art Gate</text>
+    <text x="726" y="330" fill="#b026ff">·</text>
+    <text x="746" y="330" opacity="0.75">Return-Block Floor</text>
+    <text x="944" y="330" fill="#b026ff">·</text>
+    <text x="964" y="330" opacity="0.75">Teknesyum ▸ Steering</text>
   </g>
 </svg>

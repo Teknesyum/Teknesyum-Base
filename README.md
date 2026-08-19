@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="Teknesyum Base" width="820">
+<img src="assets/banner.svg" alt="Teknesyum Base — agent orchestration with Relay, Contracts, Hooks, Audit, and Prior Art" width="820">
 
 **Say what you want. The system organizes the rest.**
 
@@ -107,7 +107,7 @@ with the theme standard preloaded, and missing `AGENTS.md` signposts get written
 job closes.
 
 <div align="center">
-<img src="assets/flow.svg" alt="Request to measure to plan to contracts to agents to auditor" width="900">
+<img src="assets/flow.svg" alt="Request, Measure, Prior Art, Builder · Scribe · UI-Builder, Auditor, Return Block, Contracts/Done, Hooks · 11 Events, Syntax Check, Status Ladder, Prior-Art Gate, Return-Block Floor, Teknesyum ▸ Steering" width="900">
 </div>
 
 ### Prior art comes before the first contract
@@ -557,8 +557,12 @@ working — a project that already has one is still written to, so no trace is l
 
 ## Support
 
+<div style="background:#0a0a0c;border:1px solid #00f3ff;border-radius:16px;padding:24px;box-shadow:inset 0 0 8px #00f3ff">
+
 Built in spare time, free.
 
 <a href="https://github.com/sponsors/Teknesyum"><img src="https://img.shields.io/badge/Buy_me_a_coffee-b026ff?style=for-the-badge&logo=githubsponsors&logoColor=b026ff&labelColor=0d0d0f" alt="Sponsor" /></a>
 
 **[github.com/Teknesyum](https://github.com/Teknesyum)** · MIT
+
+</div>

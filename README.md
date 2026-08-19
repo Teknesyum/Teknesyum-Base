@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="Teknesyum Base — agent orchestration with Relay, Contracts, Hooks, Audit, and Prior Art" width="820">
+<img src="assets/banner.svg" alt="Teknesyum Base — relay architecture for contracts, agents, hooks, and audit" width="100%" style="max-width:1200px;height:auto">
 
 **Say what you want. The system organizes the rest.**
 
@@ -8,8 +8,7 @@ A base layer for Claude Code: a multi-agent work relay, an independent auditor, 
 neon UI standard. How big a job is, how many pieces it splits into, which agent runs on
 which model, and how the result is verified — the system decides, not you.
 
-[![Sponsor](https://img.shields.io/badge/Sponsor-Teknesyum-b026ff?style=flat-square&logo=githubsponsors)](https://github.com/sponsors/Teknesyum)
-[![License](https://img.shields.io/badge/License-MIT-00f3ff?style=flat-square)](LICENSE)
+[License](LICENSE) · [Support Teknesyum](https://github.com/sponsors/Teknesyum)
 
 </div>
 
@@ -107,7 +106,7 @@ with the theme standard preloaded, and missing `AGENTS.md` signposts get written
 job closes.
 
 <div align="center">
-<img src="assets/flow.svg" alt="Request, Measure, Prior Art, Builder · Scribe · UI-Builder, Auditor, Return Block, Contracts/Done, Hooks · 11 Events, Syntax Check, Status Ladder, Prior-Art Gate, Return-Block Floor, Teknesyum ▸ Steering" width="900">
+<img src="assets/flow.svg" alt="Teknesyum Base architecture: Request, Measure, Prior Art gate, Contracts, agents, Auditor, Return Block, and Done" width="100%" style="max-width:1200px;height:auto">
 </div>
 
 ### Prior art comes before the first contract
@@ -580,11 +579,11 @@ working — a project that already has one is still written to, so no trace is l
 
 ## Support
 
-<div style="background:#0a0a0c;border:1px solid #00f3ff;border-radius:16px;padding:24px;box-shadow:inset 0 0 8px #00f3ff">
+<div style="background:#0a0a0c;border:1px solid rgba(176,38,255,.5);border-radius:16px;padding:24px;box-shadow:inset 0 0 8px rgba(176,38,255,.5)">
 
 Built in spare time, free.
 
-<a href="https://github.com/sponsors/Teknesyum"><img src="https://img.shields.io/badge/Buy_me_a_coffee-b026ff?style=for-the-badge&logo=githubsponsors&logoColor=b026ff&labelColor=0d0d0f" alt="Sponsor" /></a>
+<a href="https://github.com/sponsors/Teknesyum" style="display:inline-block;padding:12px 16px;background:transparent;border:1px solid rgba(176,38,255,.5);border-radius:12px;color:#b026ff;font-weight:700;text-decoration:none">Support Teknesyum</a>
 
 **[github.com/Teknesyum](https://github.com/Teknesyum)** · MIT
 

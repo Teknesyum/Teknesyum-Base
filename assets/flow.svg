@@ -1,74 +1,82 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" role="img" aria-label="Teknesyum Base flow from Request through Measure, Prior Art, contracts, agents, Auditor, Return Block, and Contracts/Done">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" width="1200" height="440" role="img" aria-label="Teknesyum Base architecture: Request, Measure, Prior Art gate, Contracts, agents, Auditor, Return Block, and Done">
   <defs>
     <linearGradient id="neon" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#00f3ff"/>
       <stop offset="55%" stop-color="#b026ff"/>
       <stop offset="100%" stop-color="#ff00ea"/>
     </linearGradient>
-    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
       <path d="M0 0 L10 5 L0 10 z" fill="#00f3ff"/>
     </marker>
-    <marker id="arm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <marker id="purple-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
       <path d="M0 0 L10 5 L0 10 z" fill="#b026ff"/>
+    </marker>
+    <marker id="pink-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#ff00ea"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="1200" height="380" rx="20" fill="#000000"/>
-  <rect x="1" y="1" width="1198" height="378" rx="20" fill="none" stroke="url(#neon)" stroke-width="2" opacity="0.45"/>
+  <rect width="1200" height="440" rx="20" fill="#000000"/>
+  <rect x="1" y="1" width="1198" height="438" rx="20" fill="none" stroke="url(#neon)" stroke-width="2" opacity="0.45"/>
 
-  <g font-family="Segoe UI, system-ui, sans-serif" font-size="20" fill="#ffffff" text-anchor="middle">
+  <g font-family="Segoe UI, system-ui, sans-serif" text-anchor="middle" fill="#ffffff">
     <g stroke="#00f3ff" stroke-width="2" fill="#000000">
-      <rect x="40" y="60" width="200" height="60" rx="12"/>
-      <rect x="270" y="60" width="200" height="60" rx="12"/>
-      <rect x="500" y="60" width="200" height="60" rx="12"/>
-      <rect x="730" y="60" width="200" height="60" rx="12"/>
-      <rect x="960" y="60" width="200" height="60" rx="12"/>
+      <rect x="40" y="48" width="200" height="64" rx="12"/>
+      <rect x="270" y="48" width="200" height="64" rx="12"/>
+      <rect x="500" y="48" width="200" height="64" rx="12"/>
+      <rect x="730" y="48" width="200" height="64" rx="12"/>
+      <rect x="960" y="48" width="200" height="64" rx="12"/>
     </g>
-    <text x="140" y="97">Request</text>
-    <text x="370" y="97">Measure</text>
-    <text x="600" y="97">Prior Art</text>
-    <text x="830" y="97">Builder · Scribe · UI-Builder</text>
-    <text x="1060" y="97">Contracts/Done</text>
-
-    <g stroke="#00f3ff" stroke-width="2" marker-end="url(#ar)" fill="none">
-      <path d="M240 90 L262 90"/>
-      <path d="M470 90 L492 90"/>
-      <path d="M700 90 L722 90"/>
-      <path d="M930 90 L952 90"/>
+    <g font-size="20">
+      <text x="140" y="88">Request</text>
+      <text x="370" y="88">Measure</text>
+      <text x="600" y="88">Prior Art Gate</text>
+      <text x="830" y="88">Contracts</text>
+      <text x="1060" y="88">Dispatch</text>
     </g>
 
-    <path d="M1060 120 L1060 158 L140 158 L140 196" stroke="#b026ff" stroke-width="2" fill="none" marker-end="url(#arm)"/>
+    <g stroke="#00f3ff" stroke-width="2" marker-end="url(#blue-arrow)" fill="none">
+      <path d="M240 80 L262 80"/>
+      <path d="M470 80 L492 80"/>
+      <path d="M700 80 L722 80"/>
+      <path d="M930 80 L952 80"/>
+    </g>
+
+    <path d="M1060 112 L1060 154 L140 154 L140 202" stroke="#b026ff" stroke-width="2" fill="none" marker-end="url(#purple-arrow)"/>
 
     <g stroke-width="2" fill="#000000">
-      <rect x="40" y="204" width="260" height="60" rx="12" stroke="#b026ff"/>
-      <rect x="340" y="204" width="260" height="60" rx="12" stroke="#ff00ea"/>
-      <rect x="640" y="204" width="260" height="60" rx="12" stroke="#00f3ff"/>
-      <rect x="940" y="204" width="220" height="60" rx="12" stroke="#34d399"/>
+      <rect x="40" y="210" width="260" height="68" rx="12" stroke="#b026ff"/>
+      <rect x="340" y="210" width="260" height="68" rx="12" stroke="#ff00ea"/>
+      <rect x="640" y="210" width="260" height="68" rx="12" stroke="#00f3ff"/>
+      <rect x="940" y="210" width="220" height="68" rx="12" stroke="#34d399"/>
     </g>
     <g font-size="19">
-      <text x="170" y="240" font-size="17">Builder · Scribe · UI-Builder</text>
-      <text x="470" y="240">Auditor</text>
-      <text x="770" y="240">Return Block</text>
-      <text x="1050" y="240" fill="#34d399">Contracts/Done</text>
+      <text x="170" y="251">Builder · Scribe · UI-Builder</text>
+      <text x="470" y="251">Auditor</text>
+      <text x="770" y="251">Return Block</text>
+      <text x="1050" y="251" fill="#34d399">Done</text>
     </g>
 
-    <g stroke="#00f3ff" stroke-width="2" marker-end="url(#ar)" fill="none">
-      <path d="M300 234 L332 234"/>
-      <path d="M600 234 L632 234"/>
-      <path d="M900 234 L932 234"/>
+    <g stroke="#00f3ff" stroke-width="2" marker-end="url(#blue-arrow)" fill="none">
+      <path d="M300 244 L332 244"/>
+      <path d="M600 244 L632 244"/>
+      <path d="M900 244 L932 244"/>
     </g>
+
+    <path d="M770 278 L770 326 L170 326 L170 284" stroke="#ff00ea" stroke-width="2" fill="none" marker-end="url(#pink-arrow)"/>
+    <text x="470" y="314" font-size="16" fill="#ff00ea">Rejected work returns to the same agent</text>
   </g>
 
-  <g font-family="Consolas, monospace" font-size="17" fill="#ffffff">
-    <text x="40" y="330" fill="#00f3ff">Hooks · 11 Events</text>
-    <text x="230" y="330" opacity="0.75">Syntax Check</text>
-    <text x="380" y="330" fill="#b026ff">·</text>
-    <text x="400" y="330" opacity="0.75">Status Ladder</text>
-    <text x="552" y="330" fill="#b026ff">·</text>
-    <text x="572" y="330" opacity="0.75">Prior-Art Gate</text>
-    <text x="726" y="330" fill="#b026ff">·</text>
-    <text x="746" y="330" opacity="0.75">Return-Block Floor</text>
-    <text x="944" y="330" fill="#b026ff">·</text>
-    <text x="964" y="330" opacity="0.75">Teknesyum ▸ Steering</text>
+  <g font-family="Consolas, 'Cascadia Mono', monospace" font-size="17" fill="#ffffff">
+    <text x="40" y="390" fill="#00f3ff">Hooks · 11 Events</text>
+    <text x="230" y="390">Syntax Check</text>
+    <text x="380" y="390" fill="#b026ff">·</text>
+    <text x="400" y="390">Status Ladder</text>
+    <text x="552" y="390" fill="#b026ff">·</text>
+    <text x="572" y="390">Audit Seal</text>
+    <text x="670" y="390" fill="#b026ff">·</text>
+    <text x="690" y="390">Return-Block Floor</text>
+    <text x="916" y="390" fill="#b026ff">·</text>
+    <text x="936" y="390">Teknesyum ▸ Steering</text>
   </g>
 </svg>

@@ -19,6 +19,8 @@ Davranış düğmeleri `SETTINGS.md`'de. Projede `.claude/relay/SETTINGS.md` var
 
 **Çıktı dili:** `~/.claude/teknesyum.json` içindeki `dil` alanı ne diyorsa o dilde yaz; dosya yoksa Türkçe. Komut ve alan adlarının İngilizce olması çıktı dilini değiştirmez.
 
+Kullanıcıdan aksiyon veya karar bekleniyorsa yanıtın sonunda `Senden istediklerim` başlığı aç ve numaralı maddelerde tam kopyalanabilir metin ver. Aksiyon veya karar beklenmiyorsa bu başlığı yazma.
+
 ## 0. İlke sırası ve takas
 
 Üç ilke var: **token tasarrufu**, **kullanıcı rahatlığı**, **kod verimliliği**. Çoğu kararda

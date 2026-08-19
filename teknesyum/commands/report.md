@@ -13,7 +13,7 @@ Bağımlılıkları çöz: `done/`'a bakarak hangi `open` sözleşmelerin başla
 hesapla, HAZIR işaretle.
 
 Ajan barı: `steps / tur_tavani` oranı. Tavanlar — builder 60, ui-builder 60, auditor 30,
-scribe 40. `stop_reason` `null` ise çalışıyor, `end_turn` ise bitti, başka değer ise ÖLÜ.
+scribe 40. `stop_reason` `null` ise çalışıyor, `end_turn` ise bitti, başka değer ise ÖLÜ. `stop_reason: other` veya neden alanının eksikliği kesin kök neden kanıtı değildir; kök neden bilinmiyorsa bilinmiyor de. Dosya çakışması kanıtı yoksa çakışma deme.
 `stop_reason` `null` ama `ended` yok ve `last_seen` 10 dakikadan eskiyse **KAYIP** —
 arka planda düşmüş, yoklama yapma.
 

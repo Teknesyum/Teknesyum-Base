@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
@@ -41,7 +42,59 @@ const YAZMA_FIILI =
 // olan sözleşme yeniden `open` yazılıp denetim sırası sıfırlandı. Merdiven tek yönlüdür.
 // `blocked` her iki yönde serbesttir — engel gerçek bir durumdur, kurtarma da öyle.
 const SIRA = { open: 0, active: 1, submitted: 2, accepted: 3, done: 3 };
-const CONTRACTS = /(^|\/)\.claude\/relay\/contracts\/[^/]+\.md$/i;
+
+function gitBilgisi(start) {
+  try {
+    const top = path.resolve(
+      execFileSync('git', ['-C', path.resolve(start), 'rev-parse', '--show-toplevel'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim()
+    );
+    const git = execFileSync('git', ['-C', top, 'rev-parse', '--git-common-dir'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    return { top, common: path.dirname(path.resolve(top, git)) };
+  } catch {
+    return null;
+  }
+}
+
+function relayKoku(start) {
+  let d = path.resolve(start);
+  for (;;) {
+    const relay = path.join(d, '.claude', 'relay');
+    if (fs.existsSync(relay)) return relay;
+    const up = path.dirname(d);
+    if (up === d) break;
+    d = up;
+  }
+  const git = gitBilgisi(start);
+  if (!git) return null;
+  const relay = path.join(git.common, '.claude', 'relay');
+  return fs.existsSync(relay) ? relay : null;
+}
+
+function canonical(hedef) {
+  const absolute = path.resolve(hedef);
+  const relay = relayKoku(path.dirname(absolute));
+  if (!relay) return null;
+  const contracts = path.join(relay, 'contracts');
+  const relative = path.relative(contracts, absolute);
+  if (!relative || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) return null;
+  if (!/^T[^/\\]+\.md$/i.test(relative)) return null;
+  return absolute;
+}
+
+function canonicalDone(hedef) {
+  const absolute = path.resolve(hedef);
+  const relay = relayKoku(path.dirname(absolute));
+  if (!relay) return false;
+  const done = path.join(relay, 'contracts', 'done');
+  const relative = path.relative(done, absolute);
+  return relative && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative);
+}
 
 function durum(metin) {
   const m = String(metin).match(/^status:[ \t]*([a-z]+)/im);
@@ -49,7 +102,7 @@ function durum(metin) {
 }
 
 function gerileme(hedef, yeniMetin) {
-  if (!CONTRACTS.test(norm(hedef))) return;
+  if (!canonical(hedef)) return;
   const yeni = durum(yeniMetin);
   if (yeni === null || SIRA[yeni] === undefined) return;
   let eski = null;
@@ -91,10 +144,12 @@ function yeniProje(kok) {
 }
 
 function onArastirma(hedef) {
-  const m = norm(hedef).match(CONTRACT_DIZIN);
-  if (!m) return;
-  if (fs.existsSync(hedef)) return;
-  if (!yeniProje(m[1])) return;
+  const canonicalPath = canonical(hedef);
+  if (!canonicalPath) return;
+  if (fs.existsSync(canonicalPath)) return;
+  const relay = relayKoku(path.dirname(canonicalPath));
+  const kok = relay && path.dirname(path.dirname(relay));
+  if (!kok || !yeniProje(kok)) return;
   return engelle(
     'Sıfırdan projede ilk sözleşmeden önce ön araştırma yapılır (relay SKILL 1.4).',
     'Aynı problemi çözmüş en az 10 depoyu `scout` ajanlarına dağıt, her biri',

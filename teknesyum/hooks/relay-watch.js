@@ -666,8 +666,8 @@ function izSatiri(live, j, ev, now) {
 function izYolu(root) {
   const yeni = path.join(root, 'live');
   const eski = path.join(root, 'canli');
-  if (!fs.existsSync(yeni) && fs.existsSync(eski)) return eski;
-  return yeni;
+  const temel = !fs.existsSync(yeni) && fs.existsSync(eski) ? eski : yeni;
+  return _worktree ? path.join(temel, 'worktrees', safe(_worktree)) : temel;
 }
 
 function genelKok() {
@@ -797,16 +797,44 @@ function kullanimSay(anahtar) {
   } catch {}
 }
 
+let _worktree = null;
+
 function findRelay(start) {
   let d = path.resolve(start);
-  for (let i = 0; i < 6; i++) {
+  for (;;) {
     const c = path.join(d, '.claude', 'relay');
     if (fs.existsSync(c)) return c;
     const up = path.dirname(d);
     if (up === d) break;
     d = up;
   }
-  return null;
+  const git = gitBilgisi(start);
+  if (!git) return null;
+  const common = path.join(git.common, '.claude', 'relay');
+  if (!fs.existsSync(common)) return null;
+  if (norm(git.top) !== norm(git.common)) _worktree = git.top;
+  return common;
+}
+
+function gitBilgisi(start) {
+  try {
+    const top = path.resolve(
+      execFileSync('git', ['-C', path.resolve(start), 'rev-parse', '--show-toplevel'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim()
+    );
+    let common = execFileSync(
+      'git',
+      ['-C', top, 'rev-parse', '--git-common-dir'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    ).trim();
+    common = path.resolve(top, common);
+    if (path.basename(common).toLowerCase() === '.git') common = path.dirname(common);
+    return { top, common };
+  } catch {
+    return null;
+  }
 }
 
 function read(f) {

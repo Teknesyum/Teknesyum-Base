@@ -10,9 +10,11 @@ color: cyan
 
 Sana bir sözleşme dosyası yolu verildi. Kodu sen yazacaksın.
 
-1. Sözleşmeyi oku, `status: active` yap. `SETTINGS.md`'deki `ask_threshold` davranışını belirler.
-2. **Bağlam ve Arayüzler bölümlerini kullan, keşif yapma.** Sözleşme yetmiyorsa
-   `status: blocked` yap, eksik bilgiyi Çıktı'ya tek cümleyle yaz, dur. T0 tamamlayacak.
+1. Sözleşmeyi verilen canonical yoldan oku; worktree kökünü ve `.claude/relay` kökünü
+   değiştirme. `status: active` yap. `SETTINGS.md`'deki `ask_threshold` davranışını belirler.
+2. **Bağlam ve Arayüzler bölümlerini kullan, keşif yapma.** Canonical sözleşme yolu
+   okunamıyor veya worktree relay kökü bulunamıyorsa `status: blocked` yap, Çıktı'ya
+   tek cümleyle kurulum/yol hatasını yaz, dur. T0 tamamlayacak.
 3. **Sadece `owns` listesindeki dosyalara yaz.** Başka dosya gerekiyorsa dokunma:
    `status: blocked` + "T0 kararı gerekli: <dosya>, <neden>".
 4. **Kayıt noktasını her kabul kriteri sınırında** üzerine yaz — her araç çağrısında değil.
@@ -30,7 +32,10 @@ Kurallar:
 - Kod yorumu yazma.
 - Mevcut koddaki isimlendirme ve stili taklit et, yenisini icat etme.
 - Kapsam dışına çıkma. Yolda gördüğün başka sorunu düzeltme, Çıktı'ya tek satır not düş.
-- Rapor kısa: değişen dosyalar + T0'ın bilmesi gereken tek paragraf. Kod dökme.
+- İletişim kısa ve doğrudan olsun; `lütfen` zorunlu değildir. Dönüşte şu şablonu kullan:
+  `T<n> teslim edildi · durum: <durum>`
+  `Rapor: <dosya yolu>`
+  `Açık: <tek soru>` (yoksa satırı çıkar). Kod dökme.
 
 ## Ajan hafızası
 

@@ -1108,6 +1108,51 @@ ol('alt klasörden açılan oturumda röle bulunur', () => {
   icerir(r.out, 'builder', 'çalışan ajan');
 });
 
+function worktreeProje() {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-worktree-'));
+  const main = path.join(p, 'main');
+  const wt = path.join(p, 'worktree');
+  fs.mkdirSync(main, { recursive: true });
+  spawnSync('git', ['-C', main, 'init', '--initial-branch=main'], { encoding: 'utf8' });
+  fs.writeFileSync(path.join(main, 'index.js'), 'const a = 1;\n');
+  spawnSync('git', ['-C', main, 'add', 'index.js'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', main, '-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-m', 'init'], { encoding: 'utf8' });
+  const relay = path.join(main, '.claude', 'relay');
+  fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
+  fs.writeFileSync(path.join(relay, 'contracts', 'T1.md'), '---\nstatus: active\n---\n');
+  spawnSync('git', ['-C', main, 'worktree', 'add', '--detach', wt], { encoding: 'utf8' });
+  return { main, wt, relay };
+}
+
+ol('worktree cwd kanonik röleyi bulur ve canlı izi ayırır', () => {
+  const { wt, relay } = worktreeProje();
+  const r = calistir(IZLE, {
+    ...ort(wt),
+    hook_event_name: 'PostToolUse',
+    agent_id: 'a1',
+    agent_type: 'builder',
+    tool_input: { file_path: path.join(relay, 'contracts', 'T1.md') },
+  });
+  esit(r.kod, 0);
+  const worktrees = path.join(relay, 'live', 'worktrees');
+  const izler = fs.existsSync(worktrees)
+    ? fs.readdirSync(worktrees).filter((f) => fs.existsSync(path.join(worktrees, f, 'a1.json')))
+    : [];
+  if (izler.length !== 1) throw new Error('worktree izi common izine karıştı');
+});
+
+ol('worktree sözleşme durumu canonical yoldan korunur', () => {
+  const { wt, relay } = worktreeProje();
+  const f = path.join(relay, 'contracts', 'T1.md');
+  const r = calistir(KORU, {
+    cwd: wt,
+    tool_name: 'Write',
+    tool_input: { file_path: f, content: '---\nstatus: open\n---\n' },
+  });
+  esit(r.kod, 2, 'worktree sözleşmesi gerilememeli');
+  icerir(r.err, 'geriye alınamaz');
+});
+
 ol('bozuk girdide çökmez', () => {
   const r = spawnSync(process.execPath, [DURUM], { input: 'bu json degil', encoding: 'utf8' });
   esit(r.status, 0);

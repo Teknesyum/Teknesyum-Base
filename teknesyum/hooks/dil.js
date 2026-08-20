@@ -73,17 +73,21 @@ const S = {
   olcu: {
     tr:
       'Teknesyum Base: iş talebiyse relay §1 ile ölç ve ilk satırı **ters tırnak içinde** ' +
-      'bas — `Teknesyum ▸ ölçü · <iş ne kadar> — <ne yaptım>`. Satırın tamamı tek kod ' +
+      'bas — `Teknesyum ▸ Ölçü ▸ <iş ne kadar> — <ne yaptım>`. Satırın tamamı tek kod ' +
       'parçası olacak, arkası bloklu görünsün; başlık işareti, kalın yazı ya da madde imi ' +
-      'ekleme. Günlük dille yaz, kısaltma ve ok işareti kullanma: ' +
-      '`Teknesyum ▸ ölçü · tek dosyalık iş — ajan açmadım, kendim yaptım`. Ajan açmasan da ' +
+      'ekleme. Etiket büyük harfle başlar, ayraç ▸ işaretidir, kalan cümle sıradan tümce ' +
+      'düzenindedir: ilk harf büyük, gerisi küçük. Günlük dille yaz, kısaltma yapma ve ' +
+      'cümlenin içinde ok kullanma: ' +
+      '`Teknesyum ▸ Ölçü ▸ Tek dosyalık iş — ajan açmadım, kendim yaptım`. Ajan açmasan da ' +
       'yaz. Salt soru/sohbette satırı hiç yazma.',
     en:
       'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
-      'line **inside backticks** — `Teknesyum ▸ size · <how big> — <what I did>`. The whole ' +
+      'line **inside backticks** — `Teknesyum ▸ Size ▸ <how big> — <what I did>`. The whole ' +
       'line is one code span so it reads as a block; no heading marks, bold or bullets. ' +
-      'Use plain words, no arrows or shorthand: ' +
-      '`Teknesyum ▸ size · one file — no agent needed, I did it myself`. Write it even when ' +
+      'The label is capitalised, the separator is ▸, and the rest is ordinary sentence ' +
+      'case: first letter capital, the rest lower. Use plain words, no shorthand, and no ' +
+      'arrows inside the sentence: ' +
+      '`Teknesyum ▸ Size ▸ One file — no agent needed, I did it myself`. Write it even when ' +
       'no agent is opened. Skip the line entirely for plain questions.',
   },
   dilTalimati: {
@@ -93,15 +97,17 @@ const S = {
   seviye2: {
     tr:
       'Yönlendirme seviyesi 2: base devreye giren her kararı kendi satırında, yine ters ' +
-      'tırnak içinde yaz — `Teknesyum ▸ fark · <ne yaptım> — <base olmasaydı ne olurdu>`. ' +
-      'Cümle günlük Türkçe olsun; kısaltma, ok işareti ve terim yığını yok. Kural ' +
+      'tırnak içinde yaz — `Teknesyum ▸ Fark ▸ <ne yaptım> — <base olmasaydı ne olurdu>`. ' +
+      'Etiket büyük harfle başlar, ayraç ▸ işaretidir, kalan cümle sıradan tümce düzeninde ' +
+      'yazılır. Cümle günlük Türkçe olsun; kısaltma, cümle içi ok ve terim yığını yok. Kural ' +
       'uygulandığında, model yerine deterministik araç seçildiğinde, harita/denetim/araştırma ' +
       'devreye girdiğinde, model yükseltilip düşürüldüğünde, kanca engellediğinde yaz. Sıradan ' +
       'araç çağrısına satır açma; base olmasaydı farklı sonuçlanacak anlara aç.',
     en:
       'Steering level 2: give every decision the base drove its own line, also inside ' +
-      'backticks — `Teknesyum ▸ diff · <what I did> — <what would have happened without it>`. ' +
-      'Everyday words only; no arrows, no shorthand, no stacked jargon. Write one when a ' +
+      'backticks — `Teknesyum ▸ Diff ▸ <what I did> — <what would have happened without it>`. ' +
+      'The label is capitalised, the separator is ▸, and the rest is ordinary sentence case. ' +
+      'Everyday words only; no arrows inside the sentence, no shorthand, no stacked jargon. Write one when a ' +
       'rule applies, when a deterministic tool replaces a model call, when the ' +
       'map/audit/prior-art gate fires, when a model is escalated or dropped, when a hook ' +
       'blocks something. No line for ordinary tool calls — only where a plain session ' +

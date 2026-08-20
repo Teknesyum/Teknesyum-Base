@@ -8,6 +8,13 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [2.28.0] - 2026-08-20
 
+### Changed
+
+- The steering lines now read as a labelled block: `Teknesyum ▸ Size ▸ …` and
+  `Teknesyum ▸ Diff ▸ …`. The label is capitalised, `▸` separates it from the sentence
+  instead of a middle dot, and the sentence itself is ordinary case rather than all
+  lowercase.
+
 ### Added
 
 - `/save` and `/load`: the conversation itself can now be carried into a new session, not

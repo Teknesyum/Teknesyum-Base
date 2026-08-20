@@ -213,7 +213,7 @@ ol('UserPromptSubmit her istekte ölçü satırını zorunlu kılar', () => {
   );
   const o = JSON.parse(r.out);
   esit(o.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
-  icerir(o.hookSpecificOutput.additionalContext, 'ölçü ·');
+  icerir(o.hookSpecificOutput.additionalContext, 'Ölçü ▸');
   icerir(o.hookSpecificOutput.additionalContext, 'ters tırnak içinde');
 });
 
@@ -539,7 +539,7 @@ ol('varsayılan seviye 1: temel yönlenme var, fark satırı yok', () => {
     prompt: 'yeni bir modül yaz ve testlerini kur',
   }).out;
   icerir(r, 'Teknesyum Base');
-  if (r.includes('fark ·')) throw new Error('seviye 1 fark satırı istemiyor: ' + r);
+  if (r.includes('Fark ▸')) throw new Error('seviye 1 fark satırı istemiyor: ' + r);
 });
 
 ol('steering=2 fark satırlarını ister', () => {
@@ -551,7 +551,7 @@ ol('steering=2 fark satırlarını ister', () => {
     { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'yeni bir modül yaz' },
     { CLAUDE_CONFIG_DIR: cfg }
   ).out;
-  icerir(r, 'fark ·');
+  icerir(r, 'Fark ▸');
   icerir(r, 'seviyesi 2');
 });
 

@@ -81,7 +81,7 @@ Karar kullanıcınındır, varsayma. Hepsini tek mesajda, numaralı sor:
   |---|---|
   | `0` | Hiçbir `Teknesyum ▸` satırı yok — base sessizce çalışır |
   | `1` | Temel yönlenmeler: oturum açılışı, görev dağıtımı, ajan bitişi, ölçü satırı |
-  | `2` | Hepsi + `Teknesyum ▸ fark · …` — base olmasaydı farklı sonuçlanacak her karar |
+  | `2` | Hepsi + `Teknesyum ▸ Fark ▸ …` — base olmasaydı farklı sonuçlanacak her karar |
 
   **Varsayılan `1`.** Cevabı `{"steering": 0|1|2}` olarak yaz. Alan varsa bir daha sorma;
   değiştirmek isteyen doğrudan dosyayı düzenler.

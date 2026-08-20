@@ -417,12 +417,13 @@ Every work request also gets a sizing verdict — including the requests that ne
 at all, so silence never means "is this thing even loaded?":
 
 ```
-`Teknesyum ▸ size · one file, verifiable by eye — no agent needed, I did it myself`
-`Teknesyum ▸ size · new project, three skill areas — split into 8 contracts as task packets`
+`Teknesyum ▸ Size ▸ One file, verifiable by eye — no agent needed, I did it myself`
+`Teknesyum ▸ Size ▸ New project, three skill areas — split into 8 contracts as task packets`
 ```
 
 The sizing and difference lines are printed as code spans, so they read as a block instead
-of disappearing into the prose around them.
+of disappearing into the prose around them. The label is capitalised, `▸` separates it from
+the sentence, and the sentence itself is written in ordinary case.
 
 **How much of this you see is a setting** — `steering` in `~/.claude/teknesyum.json`,
 asked once by `/setup`:
@@ -438,9 +439,9 @@ plain session would have run sequentially, a deterministic tool chosen over a mo
 an auditor sending a contract back, a hook refusing a write.
 
 ```
-`Teknesyum ▸ diff · split the job into 4 contracts across 2 agents — one session would have run them in a row`
-`Teknesyum ▸ diff · mapped the imports with harita.js — one disk scan instead of reading 30 files`
-`Teknesyum ▸ diff · the auditor sent T2 back — acceptance criterion 3 was not met`
+`Teknesyum ▸ Diff ▸ Split the job into 4 contracts across 2 agents — one session would have run them in a row`
+`Teknesyum ▸ Diff ▸ Mapped the imports with harita.js — one disk scan instead of reading 30 files`
+`Teknesyum ▸ Diff ▸ The auditor sent T2 back — acceptance criterion 3 was not met`
 ```
 
 A difference line is a trace record, not a boast — if you cannot say what a plain session

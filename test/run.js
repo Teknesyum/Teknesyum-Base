@@ -2205,6 +2205,67 @@ ol('yukle kaydi sarmalayarak geri verir', () => {
   icerir(oturumCalistir('liste', '--proje', p).out, 'sinav');
 });
 
+ol('iki sohbetin kaydi birbirini ezmez', () => {
+  const p = oturumProjesi();
+  const kaynak = path.join(p, 'kaynak.jsonl');
+  const ikinci = path.join(p, 'ikinci.jsonl');
+  fs.writeFileSync(ikinci, fs.readFileSync(kaynak, 'utf8').replace(/"S1"/g, '"S2"'));
+
+  esit(oturumCalistir('kaydet', 'ortak', '--proje', p, '--transkript', kaynak).kod, 0, 'ilk kayit');
+  const carpisma = oturumCalistir('kaydet', 'ortak', '--proje', p, '--transkript', ikinci);
+  esit(carpisma.kod, 1, 'baska oturumun kaydina yazmak reddedilmeli');
+  icerir(carpisma.err, '--ustune');
+  esit(
+    JSON.parse(fs.readFileSync(path.join(p, '.claude', 'oturumlar', 'ortak', 'durum.json'), 'utf8'))
+      .oturumId,
+    'S1',
+    'reddedilen kayit ilk sahibinde kalmali'
+  );
+
+  esit(
+    oturumCalistir('kaydet', 'ortak', '--proje', p, '--transkript', kaynak).kod,
+    0,
+    'kendi kaydini tazeleyebilir'
+  );
+  const zorla = oturumCalistir('kaydet', 'ortak', '--proje', p, '--transkript', ikinci, '--ustune');
+  esit(zorla.kod, 0, '--ustune ile yazilabilmeli');
+
+  const son = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'oturumlar', 'SON.json'), 'utf8'));
+  esit(Object.keys(son.oturumlar).length, 2, 'her oturumun kendi isaretcisi olmali');
+});
+
+ol('adsiz kayit oturum kimligini tasir, yukle hepsini listeler', () => {
+  const p = oturumProjesi();
+  const kaynak = path.join(p, 'kaynak.jsonl');
+  const ikinci = path.join(p, 'ikinci.jsonl');
+  fs.writeFileSync(
+    ikinci,
+    fs
+      .readFileSync(kaynak, 'utf8')
+      .replace(/"S1"/g, '"S2"')
+      .replace('ilk istek', 'oteki sohbetin istegi')
+  );
+  oturumCalistir('kaydet', '--proje', p, '--transkript', kaynak);
+  oturumCalistir('kaydet', '--proje', p, '--transkript', ikinci);
+
+  const klasor = fs
+    .readdirSync(path.join(p, '.claude', 'oturumlar'))
+    .filter((f) => fs.statSync(path.join(p, '.claude', 'oturumlar', f)).isDirectory());
+  esit(klasor.length, 2, 'iki ayri klasor olmali');
+  if (!klasor.every((f) => /-S[12]$/.test(f)))
+    throw new Error('adsiz kayit oturum kimligi tasimali');
+
+  const r = oturumCalistir('yukle', '--proje', p);
+  icerir(r.out, '<<<KAYIT DİZİNİ · 2 kayıt>>>');
+  icerir(r.out, 'oturum S2');
+  if ((r.out.match(/<<<KAYIT SONU>>>/g) || []).length !== 1)
+    throw new Error('argumansiz yukle tek govde acmali');
+
+  const t = oturumCalistir('yukle', 'hepsi', '--proje', p);
+  esit((t.out.match(/<<<KAYIT SONU>>>/g) || []).length, 2, 'hepsi iki govde acmali');
+  icerir(t.out, 'oteki sohbetin istegi');
+});
+
 ol('olmayan kayit ve kacis denemesi reddedilir', () => {
   const p = oturumProjesi();
   esit(oturumCalistir('yukle', '--proje', p).kod, 1, 'kayitsiz yukle cikis kodu');

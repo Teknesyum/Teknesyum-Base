@@ -95,7 +95,9 @@ function transkriptBul(kok) {
   }
   const dizin = transkriptDizini(kok);
   if (!fs.existsSync(dizin)) dur('bu proje için transkript klasörü yok: ' + dizin);
-  const oturum = arg('oturum', null);
+  // Aynı projede iki sohbet açıkken en yeni dosya öteki sohbetin olabilir. Claude Code
+  // kendi oturum kimliğini ortama koyar; tahmin etmek yerine onu sor.
+  const oturum = arg('oturum', process.env.CLAUDE_CODE_SESSION_ID || null);
   const dosyalar = fs
     .readdirSync(dizin)
     .filter((f) => f.endsWith('.jsonl'))
@@ -461,10 +463,32 @@ function kaydet() {
   const yol = transkriptBul(kok);
   const veri = ayikla(yol);
   const pozisyonel = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
-  const ad = slug(pozisyonel || '') || damga(new Date());
+  // Aynı projede birden fazla sohbet var: adsız kayıt oturum kimliğini de taşır, yoksa
+  // aynı dakikada kaydeden iki sohbet aynı klasöre yazar ve biri ötekini siler.
+  const ad = slug(pozisyonel || '') || damga(new Date()) + '-' + (veri.oturumId || '').slice(0, 8);
   const dip = kayitKok(kok);
   const hedef = path.join(dip, ad);
   if (path.dirname(hedef) !== dip) dur('geçersiz kayıt adı: ' + ad);
+
+  // Ad elle verildiyse başka bir sohbetin kaydının üstüne yazma riski var. Aynı oturum
+  // kendi kaydını tazeleyebilir; başkasınınkine dokunmak açık izin ister.
+  const eskiDurum = path.join(hedef, 'durum.json');
+  if (fs.existsSync(eskiDurum) && !bayrak('ustune')) {
+    let sahip = null;
+    try {
+      sahip = JSON.parse(fs.readFileSync(eskiDurum, 'utf8')).oturumId;
+    } catch {}
+    if (sahip && veri.oturumId && sahip !== veri.oturumId) {
+      dur(
+        '`' +
+          ad +
+          '` başka bir sohbetin kaydı (oturum ' +
+          String(sahip).slice(0, 8) +
+          '). ' +
+          'Başka bir ad ver ya da üstüne yazmak için --ustune ekle.'
+      );
+    }
+  }
   fs.mkdirSync(hedef, { recursive: true });
 
   fs.copyFileSync(yol, path.join(hedef, 'ham.jsonl'));
@@ -518,11 +542,7 @@ function kaydet() {
     ),
     'utf8'
   );
-  fs.writeFileSync(
-    path.join(dip, 'SON.json'),
-    JSON.stringify({ ad, kaydedildi: ek.kaydedildi }, null, 2),
-    'utf8'
-  );
+  sonYaz(dip, { ad, kaydedildi: ek.kaydedildi, oturumId: veri.oturumId });
 
   const bagil = path.relative(kok, hedef).split(path.sep).join('/');
   process.stdout.write(
@@ -544,17 +564,70 @@ function kaydet() {
   );
 }
 
-function kayitSec(kok) {
+// SON.json tek işaretçi değil, oturum başına işaretçi tutar: iki sohbet aynı projede
+// kaydettiğinde biri ötekinin izini silmesin. Yazma önce geçici dosyaya, sonra rename.
+function sonOku(dip) {
+  try {
+    const c = JSON.parse(fs.readFileSync(path.join(dip, 'SON.json'), 'utf8'));
+    return c && c.oturumlar ? c : { son: null, oturumlar: {} };
+  } catch {
+    return { son: null, oturumlar: {} };
+  }
+}
+
+function sonYaz(dip, kayit) {
+  const c = sonOku(dip);
+  c.son = { ad: kayit.ad, kaydedildi: kayit.kaydedildi };
+  if (kayit.oturumId) c.oturumlar[kayit.oturumId] = { ad: kayit.ad, kaydedildi: kayit.kaydedildi };
+  const gecici = path.join(dip, 'SON.json.' + process.pid);
+  fs.writeFileSync(gecici, JSON.stringify(c, null, 2) + '\n', 'utf8');
+  fs.renameSync(gecici, path.join(dip, 'SON.json'));
+}
+
+function kayitlar(kok) {
   const dip = kayitKok(kok);
-  if (!fs.existsSync(dip)) dur('kayıt yok — önce /save çalıştır');
+  if (!fs.existsSync(dip)) return [];
+  return fs
+    .readdirSync(dip)
+    .filter((f) => {
+      try {
+        return fs.statSync(path.join(dip, f)).isDirectory();
+      } catch {
+        return false;
+      }
+    })
+    .map((f) => {
+      const yol = path.join(dip, f);
+      let d = {};
+      try {
+        d = JSON.parse(fs.readFileSync(path.join(yol, 'durum.json'), 'utf8'));
+      } catch {}
+      return { ad: f, yol, durum: d, zaman: d.kaydedildi || '' };
+    })
+    .sort((a, b) => (a.zaman < b.zaman ? 1 : -1));
+}
+
+function dizinSatiri(k, isaret) {
+  const d = k.durum;
+  return (
+    (isaret ? '▸ ' : '  ') +
+    k.ad +
+    '  ·  ' +
+    (saat(d.kaydedildi) || 'zamansız') +
+    '  ·  oturum ' +
+    String(d.oturumId || '?').slice(0, 8) +
+    '  ·  ' +
+    (d.tur || '?') +
+    ' tur' +
+    (d.baslik ? '  ·  ' + d.baslik : '')
+  );
+}
+
+function kayitSec(kok) {
+  const hepsi = kayitlar(kok);
+  if (!hepsi.length) dur('kayıt yok — önce /save çalıştır');
   const pozisyonel = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
   const istenen = arg('ad', pozisyonel);
-  const hepsi = fs
-    .readdirSync(dip)
-    .filter((f) => fs.statSync(path.join(dip, f)).isDirectory())
-    .map((f) => ({ ad: f, yol: path.join(dip, f), zaman: fs.statSync(path.join(dip, f)).mtimeMs }))
-    .sort((a, b) => b.zaman - a.zaman);
-  if (!hepsi.length) dur('kayıt yok — önce /save çalıştır');
   if (istenen) {
     const s = slug(istenen);
     const bul = hepsi.find((x) => x.ad === s) || hepsi.find((x) => x.ad.indexOf(s) >= 0);
@@ -565,13 +638,9 @@ function kayitSec(kok) {
   return hepsi[0];
 }
 
-function yukle() {
-  const kok = projeKok();
-  const kayit = kayitSec(kok);
-  const durumYolu = path.join(kayit.yol, 'durum.json');
-  if (!fs.existsSync(durumYolu)) dur('bozuk kayıt: durum.json yok — ' + kayit.yol);
-  const durum = JSON.parse(fs.readFileSync(durumYolu, 'utf8'));
-
+function ozetOku(kok, kayit) {
+  const d = kayit.durum;
+  if (!Object.keys(d).length) dur('bozuk kayıt: durum.json yok — ' + kayit.yol);
   let ozet;
   if (bayrak('tam')) {
     const ham = path.join(kayit.yol, 'ham.jsonl');
@@ -579,12 +648,12 @@ function yukle() {
     ozet = ozetUret(
       ayikla(ham),
       {
-        ad: durum.ad,
-        kok: durum.kok,
-        kaydedildi: durum.kaydedildi,
-        git: durum.git,
-        diff: !!durum.diff,
-        relay: durum.relay,
+        ad: d.ad,
+        kok: d.kok,
+        kaydedildi: d.kaydedildi,
+        git: d.git,
+        diff: !!d.diff,
+        relay: d.relay,
       },
       true
     );
@@ -594,13 +663,13 @@ function yukle() {
 
   const uyari = [];
   const simdi = gitDurum(kok);
-  if (durum.git && simdi && durum.git.sha !== simdi.sha) {
+  if (d.git && simdi && d.git.sha !== simdi.sha) {
     uyari.push(
-      'git HEAD değişmiş: kayıtta ' + durum.git.sha.slice(0, 8) + ', şimdi ' + simdi.sha.slice(0, 8)
+      'git HEAD değişmiş: kayıtta ' + d.git.sha.slice(0, 8) + ', şimdi ' + simdi.sha.slice(0, 8)
     );
   }
-  if (path.resolve(durum.kok) !== kok) uyari.push('kayıt başka kökten alınmış: ' + durum.kok);
-  if (durum.diff) {
+  if (d.kok && path.resolve(d.kok) !== kok) uyari.push('kayıt başka kökten alınmış: ' + d.kok);
+  if (d.diff) {
     uyari.push(
       'kayıtta çalışma yaması var: ' +
         path.relative(kok, kayit.yol).split(path.sep).join('/') +
@@ -608,39 +677,47 @@ function yukle() {
     );
   }
 
-  const bas = ['<<<KAYIT ' + durum.ad + '>>>'];
+  const bas = ['<<<KAYIT ' + (d.ad || kayit.ad) + '>>>'];
   if (uyari.length) bas.push('UYARI: ' + uyari.join(' · '));
-  process.stdout.write([...bas, '', ozet, '<<<KAYIT SONU>>>'].join('\n') + '\n');
+  return [...bas, '', ozet, '<<<KAYIT SONU>>>'].join('\n');
+}
+
+function yukle() {
+  const kok = projeKok();
+  const hepsi = kayitlar(kok);
+  if (!hepsi.length) dur('kayıt yok — önce /save çalıştır');
+  const pozisyonel = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
+  const tumu = pozisyonel === 'hepsi' || bayrak('hepsi');
+
+  // Aynı projede birden çok sohbet kaydediyor: hangi kaydın açıldığı kadar hangilerinin
+  // durduğu da bilgidir. Dizin her zaman basılır, gövde seçime göre.
+  const acilan = tumu ? hepsi : [kayitSec(kok)];
+  const dizin = [
+    '<<<KAYIT DİZİNİ · ' + hepsi.length + ' kayıt>>>',
+    ...hepsi.map((k) =>
+      dizinSatiri(
+        k,
+        acilan.some((a) => a.ad === k.ad)
+      )
+    ),
+    '<<<DİZİN SONU>>>',
+  ].join('\n');
+
+  const govde = acilan
+    .slice()
+    .reverse()
+    .map((k) => ozetOku(kok, k))
+    .join('\n\n');
+  process.stdout.write(dizin + '\n\n' + govde + '\n');
 }
 
 function liste() {
-  const kok = projeKok();
-  const dip = kayitKok(kok);
-  if (!fs.existsSync(dip)) {
+  const hepsi = kayitlar(projeKok());
+  if (!hepsi.length) {
     process.stdout.write('kayıt yok\n');
     return;
   }
-  const satir = [];
-  for (const f of fs.readdirSync(dip)) {
-    const y = path.join(dip, f);
-    if (!fs.statSync(y).isDirectory()) continue;
-    let d = {};
-    try {
-      d = JSON.parse(fs.readFileSync(path.join(y, 'durum.json'), 'utf8'));
-    } catch (e) {}
-    satir.push({
-      zaman: d.kaydedildi || '',
-      metin: [f, saat(d.kaydedildi), (d.tur || '?') + ' tur', d.baslik || '']
-        .filter(Boolean)
-        .join('  ·  '),
-    });
-  }
-  if (!satir.length) {
-    process.stdout.write('kayıt yok\n');
-    return;
-  }
-  satir.sort((a, b) => (a.zaman < b.zaman ? 1 : -1));
-  process.stdout.write(satir.map((x) => x.metin).join('\n') + '\n');
+  process.stdout.write(hepsi.map((k) => dizinSatiri(k, false).slice(2)).join('\n') + '\n');
 }
 
 function yardim() {
@@ -648,8 +725,9 @@ function yardim() {
     [
       'oturum.js — sohbet oturumunu diske kaydeder ve geri yükler',
       '',
-      '  node oturum.js kaydet [ad] [--proje <yol>] [--oturum <id>] [--transkript <yol>] [--tam]',
-      '  node oturum.js yukle  [ad] [--proje <yol>] [--tam]',
+      '  node oturum.js kaydet [ad] [--proje <yol>] [--oturum <id>] [--transkript <yol>]',
+      '                            [--tam] [--ustune]',
+      '  node oturum.js yukle  [ad|hepsi] [--proje <yol>] [--tam]',
       '  node oturum.js liste       [--proje <yol>]',
       '',
       'Kayıt yeri: <proje>/.claude/oturumlar/<ad>/',

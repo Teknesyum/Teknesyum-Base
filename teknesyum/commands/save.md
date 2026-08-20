@@ -32,5 +32,12 @@ Betik çıktısında **gönderilmemiş metin: var** yazıyorsa kutuda duran, hi�
 yazı da kaydedilmiştir — Claude Code bunu 200 karakterlik önizleme olarak tuttuğu için
 kayıt da o kadarını içerir. Kuyrukta bekleyen mesajlar tam metinle kaydedilir.
 
-Aynı ad ikinci kez verilirse eski kayıt üzerine yazılır — kullanıcı ada takılmışsa
-uyar, kendiliğinden ad değiştirme.
+**Aynı projede birden fazla sohbet çalışabilir.** Adsız kayıt tarihin yanına oturum
+kimliğini de yazar, o yüzden iki sohbet aynı dakikada kaydetse bile birbirini silmez.
+Kendi kaydını aynı adla tazeleyebilirsin; ad başka bir sohbetin kaydına aitse betik
+reddeder. Gerçekten üstüne yazılacaksa `--ustune` ekle — önce kullanıcıya sor, bu
+başkasının kaydını siler.
+
+Hangi transkriptin kaydedileceği tahmin edilmez: Claude Code kendi oturum kimliğini
+ortama koyar, betik onu okur. `--oturum <id>` ile başka bir sohbetin transkriptini de
+kaydedebilirsin.

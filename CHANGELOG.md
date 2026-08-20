@@ -6,6 +6,24 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.30.0] - 2026-08-20
+
+### Fixed
+
+- Several chats can now work in one project without their records colliding. Which
+  transcript belongs to the running chat is read from the environment instead of guessed
+  from the newest file on disk — with two chats open, the newest file was as likely to be
+  the other one's. An unnamed record carries the session id next to the date, and writing
+  over a record another chat owns is refused unless `--ustune` says so.
+- The pointer file keeps one entry per session instead of a single "latest", so one chat
+  saving no longer erases another's trail.
+
+### Changed
+
+- `/load` always prints an index of every record first — name, time, session id, turns —
+  with the opened one marked, so a load cannot silently hide that another chat has a
+  record waiting. `/load hepsi` opens all of them.
+
 ## [2.29.0] - 2026-08-20
 
 ### Added

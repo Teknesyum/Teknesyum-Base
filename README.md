@@ -379,11 +379,24 @@ stands now: a moved `git HEAD`, a different project root, or a stored patch each
 as a warning line. The patch is never applied on its own — `/load` reports it, you decide.
 Records are local and stay out of git.
 
+Several chats can work in one project at the same time, so no record is allowed to land on
+another. Which transcript belongs to the running chat is not guessed — Claude Code puts its
+session id in the environment and the script reads it. An unnamed record carries that id
+next to the date, so two chats saving in the same minute get separate folders. A named
+record can be refreshed by the chat that owns it; a chat writing over someone else's record
+is refused until `--ustune` says so explicitly. The pointer file keeps one entry per
+session rather than a single "latest", so one chat saving never erases another's trail.
+
+Every `/load` starts with an index of all records — name, time, session id, turn count —
+with the one it opened marked. That way a load never silently hides the fact that another
+chat has a record waiting. `/load hepsi` opens all of them; anything else opens one.
+
 ```
-/save                 name the record after the date
+/save                 name the record after the date and session
 /save relay-refactor  name it yourself
-/load                 newest record
+/load                 index of all records, newest one opened
 /load relay-refactor  a specific one
+/load hepsi           every record
 ```
 
 ### UI checkup

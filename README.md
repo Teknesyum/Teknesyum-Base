@@ -318,12 +318,46 @@ guarantee cannot quietly erode.
 | `/setup` | Wires this machine up. Once, at install time |
 | `/uisetup` | Configures or disables the UI standard |
 | `/uicheckup` | Scans UI files and prepares an approved relay manifest |
+| `/premium` | Switches the Max 20x profile on or off, and reports which one is live |
 | `/save` | Writes this session to disk — transcript, context, git state, unsent text |
 | `/load` | Reads a saved session back and picks up where it stopped |
 | `/help` | What the base does and when, on one screen |
 
 There is no command to set a relay up and none to resume interrupted work — both happen on
 their own.
+
+### Premium profile
+
+The defaults are sized for a budget that runs out. On a Max 20x plan it does not, and the
+same defaults become a handbrake: work is queued that could have run at once, and a model
+is picked to be cheap rather than to be right. `/premium ac` swaps the whole profile in one
+move — agent frontmatter, relay knobs, and the machine-level flag are written together,
+because a profile that only half applies is worse than either half.
+
+| | Standard | Premium |
+|---|---|---|
+| builder · ui-builder | sonnet / medium / 60 turns | opus / xhigh / 80 turns |
+| auditor | sonnet / high / 30 turns | opus / xhigh / 40 turns |
+| scout | sonnet / high / 45 turns | opus / high / 60 turns |
+| scribe | haiku / low / 40 turns | opus / low / 40 turns |
+| parallel agents | 2 | 6 |
+| worktree isolation | off | on |
+| model escalation | on | off — already at the top |
+| report · briefing | short · milestone | detailed · every-step |
+
+Sonnet and haiku are dropped entirely; the difference between roles moves from the model to
+the effort. `scribe` still runs at low effort on opus, because labouring over a rename is a
+loss at any price. Effort tops out at `xhigh`, the highest value the frontmatter accepts.
+
+Two things do not change. A deterministic tool still comes before a model call — `biome`,
+`rg` and `sed` are chosen for being right, not for being cheap. And the auditor still cannot
+write. Premium buys depth, not permission.
+
+With the profile on, the session start prints `Teknesyum ▸ premium mod` and the first two
+prompts carry a behaviour note into the model: open the parallelism, do not fall back to
+sonnet, do not use token thrift as a reason. `/premium durum` compares the flag against the
+files and says so when a plugin update has reverted them; `TEKNESYUM_PREMIUM=1|0` overrides
+for one session without touching anything on disk.
 
 ### Session save and load
 

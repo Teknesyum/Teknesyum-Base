@@ -90,6 +90,32 @@ const S = {
       '`Teknesyum ▸ Size ▸ One file — no agent needed, I did it myself`. Write it even when ' +
       'no agent is opened. Skip the line entirely for plain questions.',
   },
+  premiumAcik: {
+    tr: 'premium mod · her ajan opus · 6 paralele kadar',
+    en: 'premium mode · every agent on opus · up to 6 in parallel',
+  },
+  premiumNotu: {
+    tr:
+      'Premium mod açık (Max 20x). Sonnet ve haiku kullanma; her ajan opus çalışır. ' +
+      'Bağımsız sözleşmeleri sıraya dizme, aynı anda yürüt — altı paralel ajana kadar ' +
+      'çıkabilirsin, üçü geçtiğinde worktree izolasyonuyla. Delege eşiğini aşağı çek: ' +
+      'kararsız kaldığın işi kendin sürüklemek yerine ajana ver. Token tasarrufu bu ' +
+      'modda gerekçe değil — dosyayı okumak grepten daha iyi cevap veriyorsa oku, ' +
+      'aramayı dar tutma, denetimi her sözleşmede çalıştır. Düşünmeyi işe göre ayarla: ' +
+      'mekanik ve kalıbı belli işte uzun uzun düşünme, karar taşıyan veya hata ayıklama ' +
+      'işinde dibini sıyır. Deterministik araç hâlâ modelden önce gelir; o tercih ' +
+      'tokenden değil doğruluktan.',
+    en:
+      'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
+      'Do not queue independent contracts, run them at once — up to six agents in ' +
+      'parallel, with worktree isolation past three. Lower the delegation threshold: ' +
+      'hand out the work you would otherwise drag along yourself. Saving tokens is not a ' +
+      'reason here — read the file when reading answers better than grepping, keep the ' +
+      'search wide, run the audit on every contract. Match thinking to the work: do not ' +
+      'labour over mechanical, pattern-fixed tasks; go all the way down on decisions and ' +
+      'debugging. A deterministic tool still comes before a model call — that choice is ' +
+      'about correctness, not tokens.',
+  },
   dilTalimati: {
     tr: 'Kullanıcıya ve diğer ajanlara Türkçe yaz — sözleşmeler, paketler, raporlar dahil.',
     en: 'Write to the user and to other agents in English — contracts, packets and reports included.',

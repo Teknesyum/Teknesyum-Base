@@ -42,8 +42,9 @@ taze ajanla** bir üst modele çıkar (haiku→sonnet→opus). Sorun modelin sev
 harcamayı keser. Devam ettirilen ajanın modeli değiştirilemez, bu yüzden tırmanış hep
 taze ajanla gelir.
 
-**parallel_width** — `owns` kümeleri kesişmeyen sözleşmeler için tavan. 3'ü aşma;
-her paralel ajan tam dispatch maliyeti taşır.
+**parallel_width** — `owns` kümeleri kesişmeyen sözleşmeler için tavan. Standart profilde
+3'ü aşma; her paralel ajan tam dispatch maliyeti taşır. Premium profilde tavan 6'dır ve
+3'ü geçtiğinde `worktree_isolation` kendiliğinden açılır.
 
 **worktree_isolation** — `on` ise ajanlar `isolation: worktree` ile reponun izole
 kopyasında çalışır. Paralel çakışmayı dosya sisteminde çözer, ama her ajana repo
@@ -77,6 +78,28 @@ ezer. Geçersiz değer `en` sayılır.
 
 `/setup` sorar ve yazar. `TEKNESYUM_SESSIZ=1` hâlâ 0'a eşdeğerdir, `TEKNESYUM_STEERING=0|1|2`
 tek oturumluk ezer. Satırların çoğunu hook basar — model unutsa da gelir, ölçülmüş olaydandır.
+
+## Premium profil
+
+Yukarıdaki blok iki profilden birini taşır ve elle değil `/premium` ile değiştirilir —
+düğmeler, ajan frontmatter'ı ve `~/.claude/teknesyum.json` birlikte yazılır, üçü ayrı
+düşerse ölçü tutmaz.
+
+| Düğme | Standart | Premium |
+|---|---|---|
+| `default_model` | sonnet | opus |
+| `parallel_width` | 2 | 6 |
+| `worktree_isolation` | off | on |
+| `model_escalation` | on | off |
+| `fix_ceiling` | 5 | 8 |
+| `report_length` | short | detailed |
+| `briefing` | milestone | every-step |
+
+Premium, Max 20x planı içindir: token bütçesi kısıt olmaktan çıkar, sonnet ve haiku
+tamamen bırakılır, efor tavanı `xhigh` olur. Değişmeyen tek şey deterministik araç
+tercihidir — `biome`, `rg`, `sed` modelden ucuz olduğu için değil daha doğru olduğu için
+seçilir. `/premium durum` yürürlükteki profili söyler, `TEKNESYUM_PREMIUM=1|0` tek
+oturumluk ezer.
 
 ## Kural
 

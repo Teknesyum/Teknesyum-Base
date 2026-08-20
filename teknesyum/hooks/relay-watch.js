@@ -317,6 +317,22 @@ function seviye() {
   return (_seviye = v === 0 || v === 2 ? v : 1);
 }
 
+// Premium, ödenen planla ilgili: makine başına tek ayar, proje değil kullanıcı tercihi.
+// `steering` ile aynı dosyada durur; ajan profilini `/premium` betiği yazar.
+let _premium = null;
+
+function premium() {
+  if (_premium !== null) return _premium;
+  const e = process.env.TEKNESYUM_PREMIUM;
+  if (e === '0' || e === 'off') return (_premium = false);
+  if (e === '1' || e === 'on') return (_premium = true);
+  const kok =
+    process.env.CLAUDE_CONFIG_DIR ||
+    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const c = read(path.join(kok, 'teknesyum.json'));
+  return (_premium = !!(c && c.premium === true));
+}
+
 function duyur(mesaj, min) {
   if (seviye() < (min || 1)) return;
   try {
@@ -333,6 +349,7 @@ function hatirlat(j, root) {
   // geçmişte duruyor; ikinci kopyası bilgi taşımıyor. İlk iki istekte yazılır.
   if (sayacGecti(j)) return;
   let metin = ceviri('olcu') + ' ' + ceviri('dilTalimati');
+  if (premium()) metin += ' ' + ceviri('premiumNotu');
   const rota = yeniIsRotasi(root, j.prompt);
   if (rota) metin += ' ' + rota;
   if (platformNotuYok(j.cwd)) metin += ' ' + ceviri('platformNotu');
@@ -573,6 +590,7 @@ function worktreeSayisi(proje) {
 function acilis(root) {
   const parca = [];
   if (kurulumEksik()) parca.push(ceviri('kurulumEksik'));
+  if (premium()) parca.push(ceviri('premiumAcik'));
   if (root) {
     const acik = say(path.join(root, 'contracts'));
     const biten = say(path.join(root, 'contracts', 'done'));

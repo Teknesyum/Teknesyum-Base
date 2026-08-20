@@ -6,6 +6,25 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.29.0] - 2026-08-20
+
+### Added
+
+- `/premium`: a profile for the Max 20x plan, switched in one move rather than knob by
+  knob. Agent frontmatter, the relay knobs in `SETTINGS.md` and the `premium` flag in
+  `~/.claude/teknesyum.json` are written together — a profile that only half applies is
+  worse than either half, and `/premium durum` reports the mismatch when a plugin update
+  reverts the agent files.
+- The premium profile drops sonnet and haiku entirely: every role runs opus and the
+  difference between roles moves to the effort — `xhigh` for code and audit, `high` for
+  research, `low` for mechanical bulk work. Parallel width goes from 2 to 6, worktree
+  isolation comes on, model escalation goes off because there is nothing left to escalate
+  to.
+- While the profile is on, the session start prints `Teknesyum ▸ premium mod` and the
+  first two prompts carry a behaviour note: open the parallelism, do not fall back to
+  sonnet, do not treat token thrift as a reason. `TEKNESYUM_PREMIUM=1|0` overrides for one
+  session without touching disk.
+
 ## [2.28.0] - 2026-08-20
 
 ### Changed

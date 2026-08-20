@@ -441,6 +441,12 @@ Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `mod
 Şüphedeysen bir alt basamağı seç ve kabul kriterini sıkılaştır. `auditor`'yi güvenlik,
 veri kaybı veya mimari sınır içeren işlerde opus'a çıkar.
 
+**Premium mod açıkken bu tablo geçersizdir.** Her rol opus çalışır; ayrım modelde değil
+eforda olur — mekanik işte düşük, kod ve denetimde `xhigh`. Model tırmanışı kapanır:
+zaten tepedesin, çözülmeyen sözleşmede modeli değil sözleşmeyi düzelt. Paralel tavanı
+altıdır ve üçü geçtiğinde worktree izolasyonu açılır. `/premium durum` hangi profilin
+yürürlükte olduğunu söyler.
+
 ## 5. Delege etme eşiği
 
 Alt ajan soğuk başlar; üretken iş başlamadan ~4-15k token yanar. Karar kuralı,

@@ -126,12 +126,15 @@ ol('statusline köprüsü sürümden bağımsız', () => {
   icerir(fs.readFileSync(path.join(KOK, 'commands', 'setup.md'), 'utf8'), 'bridge.js');
 });
 
-ol('komut kümesi yedi komut ve eski adlar hiçbir yerde geçmiyor', () => {
+ol('komut kümesi dokuz komut ve eski adlar hiçbir yerde geçmiyor', () => {
   const v = fs
     .readdirSync(path.join(KOK, 'commands'))
     .filter((f) => f.endsWith('.md'))
     .sort();
-  esit(v.join(','), 'help.md,load.md,report.md,rule.md,save.md,setup.md,uicheckup.md,uisetup.md');
+  esit(
+    v.join(','),
+    'help.md,load.md,premium.md,report.md,rule.md,save.md,setup.md,uicheckup.md,uisetup.md'
+  );
   const yuru = (d) =>
     fs
       .readdirSync(d, { withFileTypes: true })
@@ -2212,6 +2215,88 @@ ol('olmayan kayit ve kacis denemesi reddedilir', () => {
   oturumCalistir('kaydet', '../disari', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl'));
   if (fs.existsSync(path.join(p, '.claude', 'disari')))
     throw new Error('kayit adi kayit kokunun disina cikti');
+});
+
+const PREMIUM = path.join(KOK, 'scripts', 'premium.js');
+
+function premiumKopya() {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-premium-'));
+  fs.mkdirSync(path.join(p, 'agents'), { recursive: true });
+  fs.mkdirSync(path.join(p, 'skills', 'relay'), { recursive: true });
+  for (const f of fs.readdirSync(path.join(KOK, 'agents')))
+    fs.copyFileSync(path.join(KOK, 'agents', f), path.join(p, 'agents', f));
+  fs.copyFileSync(
+    path.join(KOK, 'skills', 'relay', 'SETTINGS.md'),
+    path.join(p, 'skills', 'relay', 'SETTINGS.md')
+  );
+  return { p, cfg: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-premium-cfg-')) };
+}
+
+function premiumCalistir(komut, p, cfg) {
+  const r = spawnSync(process.execPath, [PREMIUM, komut, '--kok', p], {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg },
+  });
+  return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
+}
+
+function ajanMetni(p) {
+  return fs
+    .readdirSync(path.join(p, 'agents'))
+    .map((f) => fs.readFileSync(path.join(p, 'agents', f), 'utf8'))
+    .join('\n');
+}
+
+ol('premium profili sonnet ve haiku bırakır, eforu yükseltir', () => {
+  const { p, cfg } = premiumKopya();
+  esit(premiumCalistir('ac', p, cfg).kod, 0, 'premium ac cikis kodu');
+  const a = ajanMetni(p);
+  if (/^model: (sonnet|haiku)$/m.test(a)) throw new Error('premium profilinde sonnet/haiku kaldı');
+  esit((a.match(/^model: opus$/gm) || []).length, 5, 'bes ajan da opus olmali');
+  if (!/^effort: xhigh$/m.test(a)) throw new Error('xhigh efor yok');
+  if (!/^effort: low$/m.test(a)) throw new Error('scribe düşük eforda kalmalı');
+  const s = fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  icerir(s, 'default_model      : opus');
+  icerir(s, 'parallel_width     : 6');
+  icerir(s, 'worktree_isolation : on');
+  esit(JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8')).premium, true);
+});
+
+ol('premium kapatildiginda dosyalar bire bir geri doner', () => {
+  const { p, cfg } = premiumKopya();
+  const once =
+    ajanMetni(p) + fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  premiumCalistir('ac', p, cfg);
+  premiumCalistir('kapat', p, cfg);
+  const sonra =
+    ajanMetni(p) + fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  esit(sonra === once, true, 'kapat sonrasi dosyalar ayni olmali');
+  esit(JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8')).premium, false);
+  icerir(premiumCalistir('durum', p, cfg).out, 'standart');
+});
+
+ol('premium durumu konfig ile dosyalar ayrisinca uyusmazlik bildirir', () => {
+  const { p, cfg } = premiumKopya();
+  premiumCalistir('ac', p, cfg);
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ premium: false }));
+  icerir(premiumCalistir('durum', p, cfg).out, 'UYUŞMAZLIK');
+});
+
+ol('premium notu yalnizca acikken enjekte edilir', () => {
+  const { p } = proje(1, 0);
+  const kapali = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-pcfg0-'));
+  const acik = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-pcfg1-'));
+  fs.writeFileSync(path.join(kapali, 'teknesyum.json'), JSON.stringify({ dil: 'tr' }));
+  fs.writeFileSync(path.join(acik, 'teknesyum.json'), JSON.stringify({ dil: 'tr', premium: true }));
+  const iste = (cfg) =>
+    calistir(
+      IZLE,
+      { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'yeni bir modül yaz' },
+      { CLAUDE_CONFIG_DIR: cfg }
+    ).out;
+  if (iste(kapali).includes('Premium mod'))
+    throw new Error('premium kapaliyken not enjekte edildi');
+  icerir(iste(acik), 'Premium mod açık');
 });
 
 console.log(

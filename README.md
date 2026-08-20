@@ -108,7 +108,7 @@ with the theme standard preloaded, and missing `AGENTS.md` signposts get written
 job closes.
 
 <div align="center">
-<img src="assets/flow.svg" alt="Teknesyum Base architecture: Request, Measure, Prior Art gate, Contracts, agents, Auditor, Return Block, and Done" width="100%" style="max-width:1200px;height:auto">
+<img src="assets/flow.svg" alt="Teknesyum Base relay flow: user request, measurement and classification, optional prior research, plan and owns contract, builder or ui-builder or scribe dispatch, worktree and canonical relay visibility, builder delivery, independent read-only auditor, contract-guard and done gate, hook verification, and return to the user; unrelated open contracts do not block new work, and UI work uses scan, explicit approval, then apply manifest handoff" width="100%" style="max-width:1600px;height:auto">
 </div>
 
 ### Prior art comes before the first contract

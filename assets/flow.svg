@@ -1,82 +1,153 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" width="1200" height="440" role="img" aria-label="Teknesyum Base architecture: Request, Measure, Prior Art gate, Contracts, agents, Auditor, Return Block, and Done">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 980" width="1600" height="980" role="img" aria-labelledby="flow-title flow-desc">
+  <title id="flow-title">Teknesyum Base work relay</title>
+  <desc id="flow-desc">A request is measured and classified, researched when needed, given a plan and contract with owns, dispatched to a suitable builder, tracked through worktree and canonical relay visibility, delivered, audited independently, passed through contract-guard and the done gate, verified by hooks, and returned to the user. Unrelated open contracts do not block new work. UI work follows scan, explicit approve, and apply manifest handoff.</desc>
   <defs>
-    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#00f3ff"/>
-      <stop offset="55%" stop-color="#b026ff"/>
-      <stop offset="100%" stop-color="#ff00ea"/>
-    </linearGradient>
-    <marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M0 0 L10 5 L0 10 z" fill="#00f3ff"/>
+    <filter id="blue-glow" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="pink-glow" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#00f3ff"/>
     </marker>
-    <marker id="purple-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M0 0 L10 5 L0 10 z" fill="#b026ff"/>
+    <marker id="arrow-pink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#ff00ea"/>
     </marker>
-    <marker id="pink-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M0 0 L10 5 L0 10 z" fill="#ff00ea"/>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" height="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#b026ff"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" height="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#34d399"/>
     </marker>
   </defs>
+  <rect width="1600" height="980" fill="#000000"/>
+  <rect x="3" y="3" width="1594" height="974" rx="20" fill="none" stroke="#00f3ff" stroke-width="2" opacity="0.5" filter="url(#blue-glow)"/>
 
-  <rect width="1200" height="440" rx="20" fill="#000000"/>
-  <rect x="1" y="1" width="1198" height="438" rx="20" fill="none" stroke="url(#neon)" stroke-width="2" opacity="0.45"/>
+  <g font-family="'Segoe UI', system-ui, sans-serif" fill="#ffffff">
+    <text x="56" y="52" font-size="28" font-weight="700" fill="#00f3ff">Teknesyum Base relay flow</text>
+    <text x="56" y="84" font-size="16">A visible path from request to verified return.</text>
 
-  <g font-family="Segoe UI, system-ui, sans-serif" text-anchor="middle" fill="#ffffff">
-    <g stroke="#00f3ff" stroke-width="2" fill="#000000">
-      <rect x="40" y="48" width="200" height="64" rx="12"/>
-      <rect x="270" y="48" width="200" height="64" rx="12"/>
-      <rect x="500" y="48" width="200" height="64" rx="12"/>
-      <rect x="730" y="48" width="200" height="64" rx="12"/>
-      <rect x="960" y="48" width="200" height="64" rx="12"/>
+    <g fill="#000000" stroke="#00f3ff" stroke-width="2" filter="url(#blue-glow)">
+      <rect x="56" y="126" width="224" height="82" rx="12"/>
+      <rect x="316" y="126" width="224" height="82" rx="12"/>
+      <rect x="576" y="126" width="224" height="82" rx="12"/>
+      <rect x="836" y="126" width="224" height="82" rx="12"/>
+      <rect x="1096" y="126" width="224" height="82" rx="12"/>
     </g>
-    <g font-size="20">
-      <text x="140" y="88">Request</text>
-      <text x="370" y="88">Measure</text>
-      <text x="600" y="88">Prior Art Gate</text>
-      <text x="830" y="88">Contracts</text>
-      <text x="1060" y="88">Dispatch</text>
+    <g font-size="19" text-anchor="middle">
+      <text x="168" y="160">User request</text>
+      <text x="168" y="188" font-size="16">Intent and scope</text>
+      <text x="428" y="160">Measure and classify</text>
+      <text x="428" y="188" font-size="16">Size, risk, and route</text>
+      <text x="688" y="160">Prior research if needed</text>
+      <text x="688" y="188" font-size="16">Scout before first contract</text>
+      <text x="948" y="160">Plan, contract, owns</text>
+      <text x="948" y="188" font-size="16">Dependencies and boundaries</text>
+      <text x="1208" y="160">Dispatch</text>
+      <text x="1208" y="188" font-size="16">Suitable worker</text>
     </g>
-
-    <g stroke="#00f3ff" stroke-width="2" marker-end="url(#blue-arrow)" fill="none">
-      <path d="M240 80 L262 80"/>
-      <path d="M470 80 L492 80"/>
-      <path d="M700 80 L722 80"/>
-      <path d="M930 80 L952 80"/>
-    </g>
-
-    <path d="M1060 112 L1060 154 L140 154 L140 202" stroke="#b026ff" stroke-width="2" fill="none" marker-end="url(#purple-arrow)"/>
-
-    <g stroke-width="2" fill="#000000">
-      <rect x="40" y="210" width="260" height="68" rx="12" stroke="#b026ff"/>
-      <rect x="340" y="210" width="260" height="68" rx="12" stroke="#ff00ea"/>
-      <rect x="640" y="210" width="260" height="68" rx="12" stroke="#00f3ff"/>
-      <rect x="940" y="210" width="220" height="68" rx="12" stroke="#34d399"/>
-    </g>
-    <g font-size="19">
-      <text x="170" y="251">Builder · Scribe · UI-Builder</text>
-      <text x="470" y="251">Auditor</text>
-      <text x="770" y="251">Return Block</text>
-      <text x="1050" y="251" fill="#34d399">Done</text>
+    <g stroke="#00f3ff" stroke-width="2" fill="none" marker-end="url(#arrow-blue)">
+      <path d="M280 167 H308"/>
+      <path d="M540 167 H568"/>
+      <path d="M800 167 H828"/>
+      <path d="M1060 167 H1088"/>
     </g>
 
-    <g stroke="#00f3ff" stroke-width="2" marker-end="url(#blue-arrow)" fill="none">
-      <path d="M300 244 L332 244"/>
-      <path d="M600 244 L632 244"/>
-      <path d="M900 244 L932 244"/>
+    <path d="M688 208 V252" stroke="#ff00ea" stroke-width="2" fill="none" marker-end="url(#arrow-pink)"/>
+    <rect x="494" y="258" width="388" height="62" rx="12" fill="#000000" stroke="#ff00ea" stroke-width="2" filter="url(#pink-glow)"/>
+    <text x="688" y="285" text-anchor="middle" font-size="17" fill="#ff00ea">If new: docs/taramalar/ opens the gate</text>
+    <text x="688" y="308" text-anchor="middle" font-size="15">Skip only with an explicit reason</text>
+
+    <path d="M1208 208 V360" stroke="#b026ff" stroke-width="2" fill="none" marker-end="url(#arrow-purple)"/>
+    <g fill="#000000" stroke="#b026ff" stroke-width="2" filter="url(#blue-glow)">
+      <rect x="56" y="360" width="250" height="88" rx="12"/>
+      <rect x="332" y="360" width="250" height="88" rx="12"/>
+      <rect x="608" y="360" width="250" height="88" rx="12"/>
+      <rect x="884" y="360" width="250" height="88" rx="12"/>
     </g>
+    <g text-anchor="middle">
+      <text x="181" y="395" font-size="18">Builder</text>
+      <text x="181" y="422" font-size="15">Code and tests</text>
+      <text x="457" y="395" font-size="18">ui-builder</text>
+      <text x="457" y="422" font-size="15">UI and CSS work</text>
+      <text x="733" y="395" font-size="18">Scribe</text>
+      <text x="733" y="422" font-size="15">Mechanical changes</text>
+      <text x="1009" y="395" font-size="18">Worktree and canonical relay</text>
+      <text x="1009" y="422" font-size="15">Visible ownership and state</text>
+    </g>
+    <g stroke="#b026ff" stroke-width="2" fill="none" marker-end="url(#arrow-purple)">
+      <path d="M306 404 H324"/>
+      <path d="M582 404 H600"/>
+      <path d="M858 404 H876"/>
+    </g>
+    <path d="M1009 448 V486 H1260 V522" stroke="#00f3ff" stroke-width="2" fill="none" marker-end="url(#arrow-blue)"/>
 
-    <path d="M770 278 L770 326 L170 326 L170 284" stroke="#ff00ea" stroke-width="2" fill="none" marker-end="url(#pink-arrow)"/>
-    <text x="470" y="314" font-size="16" fill="#ff00ea">Rejected work returns to the same agent</text>
-  </g>
+    <rect x="1180" y="258" width="360" height="72" rx="12" fill="#000000" stroke="#34d399" stroke-width="2" filter="url(#blue-glow)"/>
+    <text x="1360" y="287" text-anchor="middle" font-size="17" fill="#34d399">Unrelated open contract</text>
+    <text x="1360" y="312" text-anchor="middle" font-size="15">Does not block new work</text>
+    <path d="M1320 208 V248" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
 
-  <g font-family="Consolas, 'Cascadia Mono', monospace" font-size="17" fill="#ffffff">
-    <text x="40" y="390" fill="#00f3ff">Hooks · 11 Events</text>
-    <text x="230" y="390">Syntax Check</text>
-    <text x="380" y="390" fill="#b026ff">·</text>
-    <text x="400" y="390">Status Ladder</text>
-    <text x="552" y="390" fill="#b026ff">·</text>
-    <text x="572" y="390">Audit Seal</text>
-    <text x="670" y="390" fill="#b026ff">·</text>
-    <text x="690" y="390">Return-Block Floor</text>
-    <text x="916" y="390" fill="#b026ff">·</text>
-    <text x="936" y="390">Teknesyum ▸ Steering</text>
+    <rect x="56" y="494" width="560" height="174" rx="12" fill="#000000" stroke="#ff00ea" stroke-width="2" filter="url(#pink-glow)"/>
+    <text x="84" y="530" font-size="20" font-weight="700" fill="#ff00ea">UI work handoff</text>
+    <g fill="#000000" stroke="#ff00ea" stroke-width="2">
+      <rect x="84" y="552" width="148" height="64" rx="12"/>
+      <rect x="258" y="552" width="148" height="64" rx="12"/>
+      <rect x="432" y="552" width="148" height="64" rx="12"/>
+    </g>
+    <g text-anchor="middle" font-size="16">
+      <text x="158" y="579">Scan</text>
+      <text x="158" y="601" font-size="14">Read-only plan</text>
+      <text x="332" y="579">Explicit approve</text>
+      <text x="332" y="601" font-size="14">Digest and target</text>
+      <text x="506" y="579">Apply / manifest</text>
+      <text x="506" y="601" font-size="14">ui-builder/relay handoff</text>
+    </g>
+    <g stroke="#ff00ea" stroke-width="2" fill="none" marker-end="url(#arrow-pink)">
+      <path d="M232 584 H250"/>
+      <path d="M406 584 H424"/>
+    </g>
+    <path d="M582 616 H733 V448" stroke="#ff00ea" stroke-width="2" fill="none" marker-end="url(#arrow-pink)"/>
+
+    <g fill="#000000" stroke="#00f3ff" stroke-width="2" filter="url(#blue-glow)">
+      <rect x="1060" y="522" width="252" height="88" rx="12"/>
+      <rect x="1340" y="522" width="200" height="88" rx="12"/>
+    </g>
+    <g text-anchor="middle">
+      <text x="1186" y="557" font-size="18">Builder delivery</text>
+      <text x="1186" y="584" font-size="15">Output and checkpoint</text>
+      <text x="1440" y="557" font-size="18">Independent auditor</text>
+      <text x="1440" y="584" font-size="15">Read-only verification</text>
+    </g>
+    <path d="M1312 566 H1332" stroke="#00f3ff" stroke-width="2" fill="none" marker-end="url(#arrow-blue)"/>
+
+    <path d="M1440 610 V672 H1260 V714" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+    <g fill="#000000" stroke="#34d399" stroke-width="2" filter="url(#blue-glow)">
+      <rect x="1040" y="714" width="252" height="88" rx="12"/>
+      <rect x="1320" y="714" width="220" height="88" rx="12"/>
+    </g>
+    <g text-anchor="middle">
+      <text x="1166" y="749" font-size="18" fill="#34d399">contract-guard</text>
+      <text x="1166" y="776" font-size="15">Audit seal and owns check</text>
+      <text x="1430" y="749" font-size="18" fill="#34d399">Done gate</text>
+      <text x="1430" y="776" font-size="15">Only T0 moves to done/</text>
+    </g>
+    <path d="M1292 758 H1312" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+
+    <path d="M1320 802 V850 H1040" stroke="#00f3ff" stroke-width="2" fill="none" marker-end="url(#arrow-blue)"/>
+    <rect x="700" y="850" width="340" height="72" rx="12" fill="#000000" stroke="#00f3ff" stroke-width="2" filter="url(#blue-glow)"/>
+    <text x="870" y="879" text-anchor="middle" font-size="18">Hook verification</text>
+    <text x="870" y="905" text-anchor="middle" font-size="15">relay-watch.js and contract-guard.js</text>
+    <path d="M700 886 H560 V758 H616" stroke="#00f3ff" stroke-width="2" fill="none" marker-end="url(#arrow-blue)"/>
+    <rect x="56" y="714" width="560" height="88" rx="12" fill="#000000" stroke="#00f3ff" stroke-width="2" filter="url(#blue-glow)"/>
+    <text x="336" y="749" text-anchor="middle" font-size="19">Return to user</text>
+    <text x="336" y="777" text-anchor="middle" font-size="15">Verified result and visible relay state</text>
+
+    <g font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" font-size="16" fill="#ffffff">
+      <text x="56" y="954" fill="#00f3ff">status: active → submitted → accepted → done</text>
+      <text x="720" y="954" fill="#b026ff">protocol.md · uicheckup.md</text>
+    </g>
   </g>
 </svg>

@@ -26,7 +26,7 @@ function run(j) {
   }
 
   if (j.hook_event_name === 'SessionStart') {
-    return acilis(root, kap ? ceviri('kapsayiciAcilis', path.basename(kap)) : '');
+    return acilis(root, kap ? ceviri('kapsayiciAcilis', path.basename(kap)) : '', j.session_id);
   }
   if (j.hook_event_name === 'UserPromptSubmit') {
     const k = String(j.prompt || '').match(/^[ ]*\/([a-z0-9:-]+)/i);
@@ -623,7 +623,37 @@ function worktreeSayisi(proje) {
 }
 
 // stdout tek JSON taşır — açılışta söylenecek her şey tek satırda birleşir.
-function acilis(root, kapNotu) {
+// Uzak denetimden ya da başka bir pencereden yürüyen iş yarım kalıyor: `/save`
+// çalışmadığı için yeni sohbet önceki oturumun varlığından habersiz açılıyordu.
+// Sözleşme açıkken önceki oturumun transkripti duruyorsa devralınacağını söyleriz.
+function oncekiOturum(proje, simdiki) {
+  const dizin = path.join(
+    process.env.USERPROFILE || process.env.HOME || '.',
+    '.claude',
+    'projects',
+    path.resolve(proje).replace(/[^a-zA-Z0-9]/g, '-')
+  );
+  let l = [];
+  try {
+    l = fs.readdirSync(dizin);
+  } catch {
+    return null;
+  }
+  let enYeni = 0;
+  for (const f of l) {
+    if (!f.endsWith('.jsonl') || f.slice(0, -6) === simdiki) continue;
+    try {
+      const t = fs.statSync(path.join(dizin, f)).mtimeMs;
+      if (t > enYeni) enYeni = t;
+    } catch {}
+  }
+  if (!enYeni) return null;
+  const dk = Math.round((Date.now() - enYeni) / 60000);
+  if (dk > 7 * 24 * 60) return null;
+  return dk < 90 ? ceviri('dakikaOnce', dk) : ceviri('saatOnce', Math.round(dk / 60));
+}
+
+function acilis(root, kapNotu, oturumId) {
   const parca = [];
   if (kapNotu) parca.push(kapNotu);
   if (kurulumEksik()) parca.push(ceviri('kurulumEksik'));
@@ -633,6 +663,10 @@ function acilis(root, kapNotu) {
     const biten = say(path.join(root, 'contracts', 'done'));
     if (!acik && !biten) parca.push(ceviri('roleSozlesmeYok'));
     else parca.push(ceviri('roleDurum', biten, acik + biten, acik));
+    if (acik) {
+      const once = oncekiOturum(path.dirname(path.dirname(root)), oturumId);
+      if (once) parca.push(ceviri('oncekiOturumVar', once));
+    }
     const w = worktreeSayisi(path.dirname(path.dirname(root)));
     if (w) parca.push(ceviri('worktreeBirikim', w));
     const n = sorunSayisi(izYolu(root));

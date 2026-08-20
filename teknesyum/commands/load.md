@@ -1,6 +1,6 @@
 ---
 description: Kaydedilmiş bir oturumu geri yükler — kaldığın yerden devam
-argument-hint: <kayıt adı — boş bırakılırsa en son kayıt>
+argument-hint: <kayıt adı · son · hepsi — boş bırakılırsa en son kayıt>
 allowed-tools: Bash, Read
 ---
 
@@ -12,6 +12,12 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/oturum.js" yukle "$ARGUMENTS"
 
 `${CLAUDE_PLUGIN_ROOT}` çözülmezse betik `~/.claude/plugins/**/teknesyum/scripts/oturum.js`
 altındadır. Argüman boşsa en son kayıt açılır, `hepsi` dendiğinde bütün kayıtlar açılır.
+
+`son` özel bir argümandır: kayıt aranmaz, bu projenin **bir önceki oturumunun
+transkripti** doğrudan özetlenir. Uzak denetim penceresi kapandığında, oturum çöktüğünde
+ya da kullanıcı `/save` demeyi unuttuğunda devralmanın yolu budur — hiç kayıt yoksa
+argümansız `/load` da kendiliğinden buraya düşer. Çıktısı `<<<ÖNCEKİ OTURUM ...>>>` ile
+başlar, gerisi kayıtla aynı biçimdedir.
 
 Çıktı her zaman `<<<KAYIT DİZİNİ>>>` ile başlar: **aynı projede birden fazla sohbet
 kaydetmiş olabilir**, dizin hepsini oturum kimliğiyle listeler ve açılanı `▸` ile

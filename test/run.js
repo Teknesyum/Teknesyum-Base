@@ -2491,6 +2491,49 @@ ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
   esit(JSON.parse(fs.readFileSync(durum, 'utf8')).oturumId, 'S1', 'dogru oturum');
 });
 
+ol('load son kayit olmadan onceki oturumu transkriptten devralir', () => {
+  const p = oturumProjesi();
+  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  const dizin = path.join(evDizin, '.claude', 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
+  fs.mkdirSync(dizin, { recursive: true });
+  fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(dizin, 'ONCEKI.jsonl'));
+  const ort = { ...process.env, USERPROFILE: evDizin, HOME: evDizin, TEKNESYUM_DIL: 'tr' };
+  const r = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
+    encoding: 'utf8',
+    env: { ...ort, CLAUDE_CODE_SESSION_ID: 'BASKA' },
+  });
+  esit(r.status, 0, 'kayit olmadan devralinmali');
+  icerir(r.stdout, 'ÖNCEKİ OTURUM');
+  icerir(r.stdout, 'ONCEKI');
+  // Argümansız /load da kayıt yokken aynı yere düşer.
+  const b = spawnSync(process.execPath, [OTURUM, 'yukle', '--proje', p], {
+    encoding: 'utf8',
+    env: { ...ort, CLAUDE_CODE_SESSION_ID: 'BASKA' },
+  });
+  esit(b.status, 0, 'kayitsiz /load transkripte dusmeli');
+  icerir(b.stdout, 'ÖNCEKİ OTURUM');
+  // Devralınacak oturum bu oturumun kendisiyse geri dönülecek bir şey yoktur.
+  const c = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
+    encoding: 'utf8',
+    env: { ...ort, CLAUDE_CODE_SESSION_ID: 'ONCEKI' },
+  });
+  esit(c.status, 1, 'kendi transkripti devralinmamali');
+});
+
+ol('acilis acik sozlesme varken onceki oturumu haber verir', () => {
+  const { p } = proje(2, 1);
+  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  const dizin = path.join(evDizin, '.claude', 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
+  fs.mkdirSync(dizin, { recursive: true });
+  fs.writeFileSync(path.join(dizin, 'ESKI.jsonl'), '{}\n');
+  const r = calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'SessionStart', session_id: 'YENI' },
+    { CLAUDE_CONFIG_DIR: konfig(true), USERPROFILE: evDizin, HOME: evDizin }
+  );
+  icerir(JSON.parse(r.out).systemMessage, '/load son');
+});
+
 const KAPSAYICI = path.join(KOK, 'hooks', 'kapsayici.js');
 
 function kapsayiciKur() {

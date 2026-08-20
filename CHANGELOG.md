@@ -6,6 +6,18 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.34.0] - 2026-08-20
+
+### Added
+
+- `/load son` picks the project's previous session up straight from its transcript, with
+  no record involved. A remote-control window that closes, a crash, or a forgotten `/save`
+  used to end the thread there; the transcript was on disk the whole time. A bare `/load`
+  falls through to the same path when the project has no records at all.
+- The start-up line now says when there is a recent session to pick up: with open
+  contracts and a transcript from another session in the last week, it reports how long ago
+  it ran and that `/load son` will read it.
+
 ## [2.33.0] - 2026-08-20
 
 ### Added

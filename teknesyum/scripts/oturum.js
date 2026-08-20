@@ -707,9 +707,62 @@ function ozetOku(kok, kayit) {
   return [...bas, '', ozet, '<<<KAYIT SONU>>>'].join('\n');
 }
 
+// Uzak denetim penceresi kapandığında ya da oturum çökünce `/save` çalışmaz; kayıt
+// yoktur ama transkript diskte durur. Devralmak için kaydın olması şart değil: aynı
+// projenin en yeni transkripti, bu oturum hariç, doğrudan özetlenir.
+function sonTranskript(kok) {
+  const dizin = transkriptDizini(kok);
+  const simdi = process.env.CLAUDE_CODE_SESSION_ID || null;
+  let l = [];
+  try {
+    l = fs.readdirSync(dizin);
+  } catch {
+    return null;
+  }
+  const aday = l
+    .filter((f) => f.endsWith('.jsonl'))
+    .map((f) => ({ yol: path.join(dizin, f), ad: f.replace(/\.jsonl$/, '') }))
+    .filter((x) => x.ad !== simdi)
+    .map((x) => ({ ...x, zaman: fs.statSync(x.yol).mtimeMs }))
+    .sort((a, b) => b.zaman - a.zaman);
+  return aday[0] || null;
+}
+
+function son() {
+  const kok = projeKok();
+  const t = sonTranskript(kok);
+  if (!t) dur('bu projede devralınacak önceki oturum yok');
+  const veri = ayikla(t.yol);
+  const ozet = ozetUret(
+    veri,
+    {
+      ad: 'önceki oturum · ' + t.ad.slice(0, 8),
+      kok,
+      kaydedildi: new Date(t.zaman).toISOString(),
+      git: gitDurum(kok),
+      diff: false,
+      relay: relayDurum(kok),
+    },
+    bayrak('tam')
+  );
+  process.stdout.write(
+    [
+      '<<<ÖNCEKİ OTURUM · kayıt yok, transkriptten devralındı>>>',
+      '',
+      ozet,
+      '<<<KAYIT SONU>>>',
+    ].join('\n') + '\n'
+  );
+}
+
 function yukle() {
   const kok = projeKok();
   const hepsi = kayitlar(kok);
+  const istek = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
+  if (istek === 'son' || istek === 'onceki' || istek === 'önceki') return son();
+  // Kayıt yoksa iş de yok demek değil: transkript duruyorsa oradan devral, kullanıcıyı
+  // "önce /save çalıştır" diye geçmişe göndermenin anlamı yok.
+  if (!hepsi.length && sonTranskript(kok)) return son();
   if (!hepsi.length) dur('kayıt yok — önce /save çalıştır');
   const pozisyonel = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
   const tumu = pozisyonel === 'hepsi' || bayrak('hepsi');
@@ -752,7 +805,8 @@ function yardim() {
       '',
       '  node oturum.js kaydet [ad] [--proje <yol>] [--oturum <id>] [--transkript <yol>]',
       '                            [--tam] [--ustune]',
-      '  node oturum.js yukle  [ad|hepsi] [--proje <yol>] [--tam]',
+      '  node oturum.js yukle  [ad|son|hepsi] [--proje <yol>] [--tam]',
+      '                            son: kayıt yoksa önceki oturumun transkriptinden devral',
       '  node oturum.js liste       [--proje <yol>]',
       '',
       'Kayıt yeri: <proje>/.claude/oturumlar/<ad>/',

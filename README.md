@@ -400,7 +400,16 @@ chat has a record waiting. `/load hepsi` opens all of them; anything else opens 
 /load                 index of all records, newest one opened
 /load relay-refactor  a specific one
 /load hepsi           every record
+/load son             pick the previous session up from its transcript, no record needed
 ```
+
+A session that dies does not get to take the thread with it. When the remote-control
+window closes, the process crashes, or you simply never typed `/save`, the transcript is
+still on disk — `/load son` summarizes the project's previous session straight from it,
+and a bare `/load` falls through to the same place when no record exists. The relay state
+is independent of all this: contracts, their status and `LOG.md` live in the project, so a
+new session reports what is open at start-up regardless. If there is also a recent session
+to pick up, the start-up line says so.
 
 ### Drive the project from a phone
 

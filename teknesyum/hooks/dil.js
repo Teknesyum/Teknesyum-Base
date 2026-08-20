@@ -374,6 +374,18 @@ const S = {
     en: (n) => n + ' agent problems recorded · open `live/_sorun.log`, read why, do not skip it',
   },
 
+  dakikaOnce: { tr: (n) => n + ' dakika önce', en: (n) => n + ' minutes ago' },
+  saatOnce: { tr: (n) => n + ' saat önce', en: (n) => n + ' hours ago' },
+  oncekiOturumVar: {
+    tr: (ne) =>
+      'önceki oturum ' +
+      ne +
+      ' · kaydı yoksa bile devralınır: `/load son` ile transkriptten okurum',
+    en: (ne) =>
+      'previous session ' +
+      ne +
+      ' · it is picked up even without a record: `/load son` reads it from the transcript',
+  },
   kapsayiciAcilis: {
     tr: (ad) =>
       'oturum `' +

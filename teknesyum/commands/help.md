@@ -32,6 +32,7 @@ sadece ne istediğini söyle.
 | `/premium` | Max 20x profili: opus, xhigh efor, altı paralel ajan. `durum` ile bak |
 | `/save` | Bu oturumu diske yazar: konuşma, bağlam, git durumu, gönderilmemiş metin |
 | `/load` | Kayıtlı oturumu geri okur, kaldığın yerden devam eder |
+| `/rc` | Bu projeyi telefondan sürülebilir yapar: uzak denetim oturumu açar |
 | `/help` | Bu ekran |
 
 **Bilmek işine yarayacak iki sınır**

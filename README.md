@@ -321,6 +321,7 @@ guarantee cannot quietly erode.
 | `/premium` | Switches the Max 20x profile on or off, and reports which one is live |
 | `/save` | Writes this session to disk — transcript, context, git state, unsent text |
 | `/load` | Reads a saved session back and picks up where it stopped |
+| `/rc` | Opens a remote-control session so the project can be driven from a phone |
 | `/help` | What the base does and when, on one screen |
 
 There is no command to set a relay up and none to resume interrupted work — both happen on
@@ -398,6 +399,30 @@ chat has a record waiting. `/load hepsi` opens all of them; anything else opens 
 /load relay-refactor  a specific one
 /load hepsi           every record
 ```
+
+### Drive the project from a phone
+
+Claude Code's Remote Control keeps the session on your machine and lets a phone or browser
+steer it. Today it is started from the terminal client, and the desktop app has no button
+for it — `/rc` fills that gap and does the whole errand: it finds the terminal client
+(offering to install it when it is missing, `/rc kur`), saves the current chat, opens a
+terminal window in the project root and starts the remote session named after the folder.
+
+What is left for you is one tap: Claude app → **Code** tab → the session name. The
+terminal window shows a QR code when you press the space bar, and the record `/rc` just
+saved is loaded on the phone with `/load <name>`, so the conversation continues rather
+than restarting.
+
+```
+/rc                 open remote control for this project
+/rc kur             install the terminal client first, then open
+/rc metin           print the command instead of opening a window
+/rc kaydetme        open without saving the chat first
+```
+
+If a window cannot be opened, the command prints one copy-pasteable line rather than
+handing you a set of instructions. This command exists only until the desktop app grows a
+remote-control control of its own; on that day it is removed.
 
 ### UI checkup
 

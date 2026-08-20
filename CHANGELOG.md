@@ -6,6 +6,21 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.31.0] - 2026-08-20
+
+### Added
+
+- `/rc`: opens a Remote Control session for the current project so it can be driven from a
+  phone. The desktop app has no control for this yet, so the command runs the whole errand
+  — it locates the terminal client (`/rc kur` installs it when missing), refuses versions
+  older than 2.1.196, saves the current chat, opens a terminal window in the project root
+  and starts `claude remote-control` named after the folder. What is left for the user is
+  one tap in the Claude app's Code tab, and `/load <record>` to continue the same
+  conversation rather than starting a new one. When no window can be opened, the command
+  prints a single copy-pasteable line instead of a set of instructions.
+  The command is deliberately temporary: it is removed once the desktop app gains its own
+  remote-control control.
+
 ## [2.30.0] - 2026-08-20
 
 ### Fixed

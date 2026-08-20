@@ -374,6 +374,103 @@ const S = {
     en: (n) => n + ' agent problems recorded · open `live/_sorun.log`, read why, do not skip it',
   },
 
+  rcKuruluyor: {
+    tr: 'Claude terminal istemcisi kurulu değil, kuruyorum.',
+    en: 'The Claude terminal client is not installed; installing it now.',
+  },
+  rcIstemciYok: {
+    tr: (komut) => [
+      'Uzak denetim terminal istemcisiyle açılıyor, o da kurulu değil.',
+      '`/rc kur` dersen kurulumu ben yaparım. Kendin kurmak istersen tek satır:',
+      '',
+      '    ' + komut,
+    ],
+    en: (komut) => [
+      'Remote control runs through the terminal client, which is not installed.',
+      'Say `/rc kur` and I will install it. To do it yourself, one line:',
+      '',
+      '    ' + komut,
+    ],
+  },
+  rcSurumEski: {
+    tr: (en) =>
+      'Terminal istemcisi eski · uzak denetim için en az ' +
+      en +
+      ' gerekiyor. `claude update` çalıştır.',
+    en: (en) =>
+      'The terminal client is old · remote control needs at least ' + en + '. Run `claude update`.',
+  },
+  rcAcildi: {
+    tr: (ad, kayit) =>
+      [
+        'Uzak denetim açıldı · oturum adı **' + ad + '**',
+        '',
+        'Telefonda: Claude uygulaması → alttaki **Code** sekmesi → **' + ad + '**.',
+        'Yeşil nokta bu makinenin açık olduğunu gösterir. Açılan terminal penceresinde',
+        'boşluk tuşuna basarsan karekod çıkar, okutunca doğrudan o oturuma girersin.',
+      ].concat(
+        kayit
+          ? [
+              '',
+              'Bu sohbet `' + kayit + '` adıyla kaydedildi. Telefondaki oturuma şunu yaz,',
+              'kaldığımız yerden devam eder:',
+              '',
+              '    /load ' + kayit,
+            ]
+          : []
+      ),
+    en: (ad, kayit) =>
+      [
+        'Remote control is up · session name **' + ad + '**',
+        '',
+        'On your phone: Claude app → **Code** tab → **' + ad + '**.',
+        'The green dot means this machine is online. Press the space bar in the terminal',
+        'window that opened to show a QR code you can scan straight into the session.',
+      ].concat(
+        kayit
+          ? [
+              '',
+              'This chat was saved as `' + kayit + '`. Type this in the phone session to',
+              'pick up where we left off:',
+              '',
+              '    /load ' + kayit,
+            ]
+          : []
+      ),
+  },
+  rcElle: {
+    tr: (komut, ad) => [
+      'Uzak denetimi açmak için bir terminal penceresinde şunu çalıştır:',
+      '',
+      '    ' + komut,
+      '',
+      'Sonra telefonda Claude uygulaması → **Code** sekmesi → **' + ad + '**.',
+    ],
+    en: (komut, ad) => [
+      'Run this in a terminal window to bring remote control up:',
+      '',
+      '    ' + komut,
+      '',
+      'Then on your phone: Claude app → **Code** tab → **' + ad + '**.',
+    ],
+  },
+  rcAcilamadi: {
+    tr: (komut, ad) => [
+      'Terminal penceresini açamadım. Şunu bir terminale yapıştır:',
+      '',
+      '    ' + komut,
+      '',
+      'Pencere açık kaldığı sürece telefondan **' + ad + '** oturumuna bağlanabilirsin.',
+    ],
+    en: (komut, ad) => [
+      'I could not open a terminal window. Paste this into one:',
+      '',
+      '    ' + komut,
+      '',
+      'While that window stays open, the **' + ad + '** session is reachable from your phone.',
+    ],
+  },
+
   uiPalet: {
     tr: 'Rengi palet tokeniyle değiştir — ara ton yok (teknesyum-ui §2).',
     en: 'Replace the colour with a palette token — no in-between tones (teknesyum-ui §2).',

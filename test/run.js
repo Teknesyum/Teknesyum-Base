@@ -133,7 +133,7 @@ ol('komut kümesi dokuz komut ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'help.md,load.md,premium.md,report.md,rule.md,save.md,setup.md,uicheckup.md,uisetup.md'
+    'help.md,load.md,premium.md,rc.md,report.md,rule.md,save.md,setup.md,uicheckup.md,uisetup.md'
   );
   const yuru = (d) =>
     fs
@@ -2358,6 +2358,51 @@ ol('premium notu yalnizca acikken enjekte edilir', () => {
   if (iste(kapali).includes('Premium mod'))
     throw new Error('premium kapaliyken not enjekte edildi');
   icerir(iste(acik), 'Premium mod açık');
+});
+
+const RC = path.join(KOK, 'scripts', 'rc.js');
+
+function rcCalistir(arg, ek) {
+  return spawnSync(process.execPath, [RC].concat(arg), {
+    encoding: 'utf8',
+    env: { ...process.env, TEKNESYUM_DIL: 'tr', ...(ek || {}) },
+  });
+}
+
+ol('rc metin kipinde pencere acmaz, komutu basar', () => {
+  const r = rcCalistir(['--metin', '--ad', 'DenemeProje']);
+  esit(r.status, 0, 'metin kipi calismali');
+  icerir(r.stdout, 'remote-control --name');
+  icerir(r.stdout, 'DenemeProje');
+});
+
+ol('rc istemci yoksa kurulum satirini verir', () => {
+  const bos = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rc-bos-'));
+  const r = rcCalistir(['--metin', '--ad', 'X'], {
+    PATH: bos,
+    Path: bos,
+    USERPROFILE: bos,
+    HOME: bos,
+  });
+  esit(r.status, 3, 'istemci yoksa cikis kodu 3');
+  icerir(r.stdout, 'install');
+  icerir(r.stdout, '/rc kur');
+});
+
+ol('rc surum esigini bilir', () => {
+  const { eski, EN_AZ } = require(RC);
+  esit(eski([2, 1, 100]), true, 'esik alti eski sayilmali');
+  esit(eski(EN_AZ), false, 'esik surumu eski degil');
+  esit(eski([2, 2, 0]), false, 'ust surum eski degil');
+  esit(eski(null), false, 'okunamayan surum engel degil');
+});
+
+ol('rc komutu betigi cagirir ve pencere acmayi kendine birakmaz', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'rc.md'), 'utf8');
+  icerir(k, 'scripts/rc.js');
+  icerir(k, '--kur');
+  icerir(k, '--metin');
+  esit(/pencere açmaya/.test(k) || /pencere açma/.test(k), true, 'model pencere acmamali');
 });
 
 console.log(

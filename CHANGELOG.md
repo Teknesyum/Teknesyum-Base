@@ -6,6 +6,15 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.31.1] - 2026-08-20
+
+### Fixed
+
+- `/save` (and the save `/rc` runs first) failed with `oturum bulunamadı` when the session
+  was opened in a parent folder and the work happens in a subproject: the transcript lives
+  under the folder the session started in, not under the project being saved. With the
+  session id in hand, the record now finds it wherever it is.
+
 ## [2.31.0] - 2026-08-20
 
 ### Added

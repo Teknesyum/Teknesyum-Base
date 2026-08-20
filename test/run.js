@@ -2405,6 +2405,22 @@ ol('rc komutu betigi cagirir ve pencere acmayi kendine birakmaz', () => {
   esit(/pencere açmaya/.test(k) || /pencere açma/.test(k), true, 'model pencere acmamali');
 });
 
+ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
+  const p = oturumProjesi();
+  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  const baska = path.join(evDizin, '.claude', 'projects', 'C--baska-klasor');
+  fs.mkdirSync(baska, { recursive: true });
+  fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(baska, 'S1.jsonl'));
+  const r = spawnSync(process.execPath, [OTURUM, 'kaydet', 'uzak', '--proje', p], {
+    encoding: 'utf8',
+    env: { ...process.env, USERPROFILE: evDizin, HOME: evDizin, CLAUDE_CODE_SESSION_ID: 'S1' },
+  });
+  esit(r.status, 0, 'baska klasordeki transkript bulunmali');
+  const durum = path.join(p, '.claude', 'oturumlar', 'uzak', 'durum.json');
+  esit(fs.existsSync(durum), true, 'kayit yazilmali');
+  esit(JSON.parse(fs.readFileSync(durum, 'utf8')).oturumId, 'S1', 'dogru oturum');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

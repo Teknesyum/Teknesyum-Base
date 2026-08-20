@@ -87,17 +87,40 @@ function transkriptDizini(kok) {
   return path.join(os.homedir(), '.claude', 'projects', kok.replace(/[^a-zA-Z0-9]/g, '-'));
 }
 
+// ÖLÇÜLDÜ: oturum `Projeler` üst klasöründe açılıp iş alt projede yapılınca kayıt
+// "oturum bulunamadı" diyordu — transkript oturumun açıldığı klasörün altında duruyor,
+// kaydedilen proje başka. Kimlik elimizdeyken doğru dosyayı bulmak bir taramalık iş.
+function transkriptAra(oturum) {
+  if (!oturum) return null;
+  const dip = path.join(os.homedir(), '.claude', 'projects');
+  let dizinler = [];
+  try {
+    dizinler = fs.readdirSync(dip);
+  } catch {
+    return null;
+  }
+  for (const d of dizinler) {
+    const aday = path.join(dip, d, oturum + '.jsonl');
+    if (fs.existsSync(aday)) return aday;
+  }
+  return null;
+}
+
 function transkriptBul(kok) {
   const acik = arg('transkript', null);
   if (acik) {
     if (!fs.existsSync(acik)) dur('transkript yok: ' + acik);
     return acik;
   }
-  const dizin = transkriptDizini(kok);
-  if (!fs.existsSync(dizin)) dur('bu proje için transkript klasörü yok: ' + dizin);
   // Aynı projede iki sohbet açıkken en yeni dosya öteki sohbetin olabilir. Claude Code
   // kendi oturum kimliğini ortama koyar; tahmin etmek yerine onu sor.
   const oturum = arg('oturum', process.env.CLAUDE_CODE_SESSION_ID || null);
+  const dizin = transkriptDizini(kok);
+  if (!fs.existsSync(dizin)) {
+    const baska = transkriptAra(oturum);
+    if (baska) return baska;
+    dur('bu proje için transkript klasörü yok: ' + dizin);
+  }
   const dosyalar = fs
     .readdirSync(dizin)
     .filter((f) => f.endsWith('.jsonl'))
@@ -109,8 +132,10 @@ function transkriptBul(kok) {
   if (!dosyalar.length) dur('transkript bulunamadı: ' + dizin);
   if (oturum) {
     const bul = dosyalar.find((x) => x.ad === oturum);
-    if (!bul) dur('oturum bulunamadı: ' + oturum);
-    return bul.yol;
+    if (bul) return bul.yol;
+    const baska = transkriptAra(oturum);
+    if (baska) return baska;
+    dur('oturum bulunamadı: ' + oturum);
   }
   return dosyalar[0].yol;
 }

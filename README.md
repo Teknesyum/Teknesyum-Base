@@ -629,7 +629,7 @@ working — a project that already has one is still written to, so no trace is l
 
 ## Support
 
-<div align="center">
+<div align="center" role="region" aria-label="Support Teknesyum" style="border:2px solid #00f3ff;border-radius:24px;background:#000000;padding:24px">
 
 <a href="https://github.com/sponsors/Teknesyum"><img src="assets/support.svg" alt="Support Teknesyum — built in spare time, free, MIT" width="100%" style="max-width:1200px;height:auto"></a>
 

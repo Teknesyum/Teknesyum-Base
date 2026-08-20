@@ -212,8 +212,8 @@ ol('UserPromptSubmit her istekte ölçü satırını zorunlu kılar', () => {
   );
   const o = JSON.parse(r.out);
   esit(o.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
-  icerir(o.hookSpecificOutput.additionalContext, 'ölçü:');
-  icerir(o.hookSpecificOutput.additionalContext, 'ajan gerekmedi');
+  icerir(o.hookSpecificOutput.additionalContext, 'ölçü ·');
+  icerir(o.hookSpecificOutput.additionalContext, 'ters tırnak içinde');
 });
 
 ol('UserPromptSubmit röle kurulu olmayan klasörde iz bırakmaz', () => {
@@ -2073,6 +2073,26 @@ ol('platform denetimi olmayan yolu bildirir', () => {
   );
   esit(r.status, 2, 'olmayan yol icin cikis kodu');
   if (!/yol yok/.test(r.stderr)) throw new Error('olmayan yol bildirilmedi');
+});
+
+ol('govdeli CLAUDE.md engellenir, isaretci serbest', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-agents-'));
+  fs.mkdirSync(path.join(p, 'src'), { recursive: true });
+  const yaz = (dosya, icerik) =>
+    calistir(KORU, {
+      hook_event_name: 'PreToolUse',
+      tool_name: 'Write',
+      tool_input: { file_path: dosya, content: icerik },
+    });
+  const govdeli = yaz(path.join(p, 'src', 'CLAUDE.md'), '# src\n\nBurada arayuz durur.\n');
+  esit(govdeli.kod, 2, 'govdeli CLAUDE.md engellenmeli');
+  icerir(govdeli.err, 'AGENTS.md');
+  esit(yaz(path.join(p, 'src', 'CLAUDE.md'), '@AGENTS.md\n').kod, 0, 'isaretci serbest');
+  esit(
+    yaz(path.join(p, 'src', 'AGENTS.md'), '# src\n\nBurada arayuz durur.\n').kod,
+    0,
+    'AGENTS.md serbest'
+  );
 });
 
 console.log(

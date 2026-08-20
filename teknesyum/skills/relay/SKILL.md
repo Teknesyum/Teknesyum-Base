@@ -556,14 +556,20 @@ Yönlendirme seviyesi `~/.claude/teknesyum.json` → `steering` alanındadır.
 `0` hiç `Teknesyum ▸` satırı yazma · `1` temel yönlenmeler (varsayılan) · `2` her dokunuş.
 Seviyeyi hook `UserPromptSubmit`'te sana bildirir; kendin dosya okumaya gitme.
 
-**Seviye 2'de**, base olmasaydı farklı sonuçlanacak her karar kendi satırını alır:
+**Seviye 2'de**, base olmasaydı farklı sonuçlanacak her karar kendi satırını alır. Satır
+**baştan sona ters tırnak içinde** yazılır — terminalde arkası bloklu çıkar, düz metnin
+içinde kaybolmaz. Kalın yazı, başlık işareti, madde imi ekleme:
 
 ```
-Teknesyum ▸ fark · 4 sözleşme 2 paralel ajana bölündü · tek oturumda sıralı gidecekti
-Teknesyum ▸ fark · harita.js ile bağ tarandı · 30 dosya okumak yerine 1 disk taraması
-Teknesyum ▸ fark · denetçi T2'yi geri çevirdi · kabul kriteri 3 eksikti
-Teknesyum ▸ fark · builder haiku→sonnet · 3 tur çözülmedi, model tavanıydı
+`Teknesyum ▸ fark · işi 4 sözleşmeye bölüp 2 ajana verdim — tek oturumda sırayla giderdi`
+`Teknesyum ▸ fark · bağları harita.js ile taradım — 30 dosya okumak yerine tek disk taraması`
+`Teknesyum ▸ fark · denetçi T2'yi geri çevirdi — kabul kriteri 3 karşılanmamıştı`
+`Teknesyum ▸ fark · builder'ı sonnet'e yükselttim — haiku 3 turda çözemedi`
 ```
+
+Cümle günlük dilde kurulur: önce ne yaptığın, sonra kısa çizgiyle base olmasaydı ne
+olacağı. Ok işareti, kısaltma ve terim yığını kullanma — satırı okuyan geliştirici değil
+kullanıcıdır.
 
 Satır açılacak anlar: iş ajanlara bölündüğünde, model yerine deterministik araç
 seçildiğinde (`harita.js`, `rg`, `--check`), denetçi/ön araştırma/kanca devreye

@@ -6,6 +6,21 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.27.0] - 2026-08-20
+
+### Added
+
+- `AGENTS.md` is now enforced, not just recommended: writing a `CLAUDE.md` with a body is
+  blocked, and the hook explains that the pointer file is `AGENTS.md` with a one-line
+  `CLAUDE.md` (`@AGENTS.md`) beside it. Claude Code is not the only tool reading a project.
+
+### Changed
+
+- `Teknesyum ▸` lines are printed inside backticks so they render as a block instead of
+  disappearing into the surrounding prose, and their wording moved to everyday language:
+  what was done first, then what a plain session would have done, separated by a dash.
+  No arrows, no shorthand, no stacked jargon.
+
 ## [2.26.0] - 2026-08-20
 
 ### Added

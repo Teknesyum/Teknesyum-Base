@@ -72,13 +72,19 @@ const S = {
 
   olcu: {
     tr:
-      'Teknesyum Base: iş talebiyse relay §1 ile ölç, ilk satır ' +
-      '`Teknesyum ▸ ölçü: <büyüklük> → <karar>`. Ajan açmasan da yaz (örn. ' +
-      '`tek dosya → ajan gerekmedi`). Salt soru/sohbette satırı yazma.',
+      'Teknesyum Base: iş talebiyse relay §1 ile ölç ve ilk satırı **ters tırnak içinde** ' +
+      'bas — `Teknesyum ▸ ölçü · <iş ne kadar> — <ne yaptım>`. Satırın tamamı tek kod ' +
+      'parçası olacak, arkası bloklu görünsün; başlık işareti, kalın yazı ya da madde imi ' +
+      'ekleme. Günlük dille yaz, kısaltma ve ok işareti kullanma: ' +
+      '`Teknesyum ▸ ölçü · tek dosyalık iş — ajan açmadım, kendim yaptım`. Ajan açmasan da ' +
+      'yaz. Salt soru/sohbette satırı hiç yazma.',
     en:
-      'Teknesyum Base: if this is a work request, size it with relay §1 and open with ' +
-      '`Teknesyum ▸ size: <scope> → <decision>`. Write the line even when no agent is ' +
-      'needed (e.g. `single file → no agent`). Skip it for plain questions.',
+      'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
+      'line **inside backticks** — `Teknesyum ▸ size · <how big> — <what I did>`. The whole ' +
+      'line is one code span so it reads as a block; no heading marks, bold or bullets. ' +
+      'Use plain words, no arrows or shorthand: ' +
+      '`Teknesyum ▸ size · one file — no agent needed, I did it myself`. Write it even when ' +
+      'no agent is opened. Skip the line entirely for plain questions.',
   },
   dilTalimati: {
     tr: 'Kullanıcıya ve diğer ajanlara Türkçe yaz — sözleşmeler, paketler, raporlar dahil.',
@@ -86,17 +92,20 @@ const S = {
   },
   seviye2: {
     tr:
-      'Yönlendirme seviyesi 2: base devreye giren her kararı ayrı satırda yaz — ' +
-      '`Teknesyum ▸ fark · <ne> · <neden/kazanç>`. Kural uygulandığında, model yerine ' +
-      'deterministik araç seçildiğinde, harita/denetim/araştırma devreye girdiğinde, ' +
-      'model yükseltilip düşürüldüğünde, kanca engellediğinde yaz. Sıradan araç ' +
-      'çağrısına satır açma; base olmasaydı farklı sonuçlanacak anlara aç.',
+      'Yönlendirme seviyesi 2: base devreye giren her kararı kendi satırında, yine ters ' +
+      'tırnak içinde yaz — `Teknesyum ▸ fark · <ne yaptım> — <base olmasaydı ne olurdu>`. ' +
+      'Cümle günlük Türkçe olsun; kısaltma, ok işareti ve terim yığını yok. Kural ' +
+      'uygulandığında, model yerine deterministik araç seçildiğinde, harita/denetim/araştırma ' +
+      'devreye girdiğinde, model yükseltilip düşürüldüğünde, kanca engellediğinde yaz. Sıradan ' +
+      'araç çağrısına satır açma; base olmasaydı farklı sonuçlanacak anlara aç.',
     en:
-      'Steering level 2: give every decision the base drove its own line — ' +
-      '`Teknesyum ▸ diff · <what> · <why it matters>`. Write one when a rule applies, when ' +
-      'a deterministic tool replaces a model call, when the map/audit/prior-art gate fires, ' +
-      'when a model is escalated or dropped, when a hook blocks something. No line for ' +
-      'ordinary tool calls — only where a plain session would have ended up elsewhere.',
+      'Steering level 2: give every decision the base drove its own line, also inside ' +
+      'backticks — `Teknesyum ▸ diff · <what I did> — <what would have happened without it>`. ' +
+      'Everyday words only; no arrows, no shorthand, no stacked jargon. Write one when a ' +
+      'rule applies, when a deterministic tool replaces a model call, when the ' +
+      'map/audit/prior-art gate fires, when a model is escalated or dropped, when a hook ' +
+      'blocks something. No line for ordinary tool calls — only where a plain session ' +
+      'would have ended up elsewhere.',
   },
   platformNotu: {
     tr:
@@ -315,6 +324,18 @@ const S = {
     ],
   },
 
+  yonlendiriciDosya: {
+    tr: [
+      'Yönlendirici dosya `AGENTS.md` adını taşır, `CLAUDE.md` değil — projeyi yalnız',
+      'Claude Code okumuyor. Bilgiyi `AGENTS.md` dosyasına yaz; Claude Code için yanına',
+      'tek satırlık `CLAUDE.md` koy, içinde yalnız `@AGENTS.md` olsun.',
+    ],
+    en: [
+      'The pointer file is called `AGENTS.md`, not `CLAUDE.md` — Claude Code is not the',
+      'only tool reading this project. Put the content in `AGENTS.md` and leave a one-line',
+      '`CLAUDE.md` next to it containing only `@AGENTS.md`.',
+    ],
+  },
   sorunBirikim: {
     tr: (n) =>
       n + ' ajan sorunu kayıtlı · `live/_sorun.log` dosyasını aç, sebebi gör, sessiz geçme',

@@ -202,6 +202,23 @@ function onArastirma(hedef) {
   return engelle(...ceviri('onArastirma'));
 }
 
+// ÖLÇÜLDÜ: yönlendirici dosyanın adı `AGENTS.md` diye kararlaştırıldı ama oturumlar
+// klasör başına gövdeli `CLAUDE.md` yazmaya devam etti — bu projeyi okuyan tek araç
+// Claude Code değil. Tek satırlık işaretçi (`@AGENTS.md`) serbest, gövdelisi değil.
+// Ev dizinindeki `~/.claude/CLAUDE.md` kuralın dışındadır.
+function yonlendirici(hedef, icerik) {
+  const yol = norm(path.resolve(hedef));
+  if (!/(^|\/)CLAUDE\.md$/i.test(yol)) return;
+  if (/(^|\/)\.claude\/CLAUDE\.md$/i.test(yol)) return;
+  const satir = String(icerik)
+    .split('\n')
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .filter((x) => !x.startsWith('<!--'));
+  if (satir.length <= 2 && satir.every((x) => /^@\S+\.md$/.test(x))) return;
+  return engelle(...ceviri('yonlendiriciDosya'));
+}
+
 function karar(j) {
   const arac = j.tool_name || '';
   const t = j.tool_input || {};
@@ -210,6 +227,7 @@ function karar(j) {
     const hedef = t.file_path || t.notebook_path || '';
     if (!hedef) return;
     if (arac === 'Write') onArastirma(hedef);
+    if (arac === 'Write') yonlendirici(hedef, t.content || '');
     gerileme(hedef, arac === 'Write' ? t.content || '' : t.new_string || '');
     if (!DONE.test(norm(hedef))) return;
     // Write mührü taşıyorsa denetimden geçmiş sözleşmenin yerleşmesidir; Edit hiçbir

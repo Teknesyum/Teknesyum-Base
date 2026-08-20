@@ -6,6 +6,24 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.28.0] - 2026-08-20
+
+### Added
+
+- `/save` and `/load`: the conversation itself can now be carried into a new session, not
+  only the contracts relay already resumes. A record is four files under
+  `<project>/.claude/oturumlar/<name>/` — `ham.jsonl` (the transcript, byte for byte),
+  `ozet.md` (the digest `/load` reads back: every turn, tool calls as name plus target,
+  last ten turns long and older ones trimmed), `durum.json` (session id, model, context
+  usage, git HEAD and dirty files, open contracts, message queue, unsent text) and
+  `calisma.diff` (the dirty working tree at save time, untracked files included).
+- The text typed into the input box but never submitted is part of the record. Claude Code
+  keeps a 200-character preview of it, so the record holds that much and says so; messages
+  queued while Claude was working are kept in full.
+- `/load` reads the record against the repo as it stands and warns when `git HEAD` has
+  moved, when the record came from another project root, or when a patch is stored. The
+  patch is never applied on its own.
+
 ## [2.27.0] - 2026-08-20
 
 ### Added

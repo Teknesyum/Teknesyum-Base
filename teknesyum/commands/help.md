@@ -17,7 +17,8 @@ sadece ne istediğini söyle.
 - **Denetim.** Kodu yazan ajan kendi işini onaylayamaz; ayrı bir denetçi bakar.
   Denetçi hiçbir şey yazamaz ve komut çalıştıramaz.
 - **Sürdürme.** Oturum kapanır, bağlam dolar, ajan ölürse — yeni oturumda kaldığın
-  yerden devam edilir. "Devam" demene bile gerek yok.
+  yerden devam edilir. "Devam" demene bile gerek yok. Sürdürülen şey sözleşmelerdir;
+  konuşmanın kendisini taşımak istersen `/save` ile mühürler, `/load` ile açarsın.
 - **Arayüz standardı.** Arayüz yazılan her yerde aynı palet, tipografi ve imza.
 
 **Komutlar — hepsi isteğe bağlı**
@@ -28,6 +29,8 @@ sadece ne istediğini söyle.
 | `/rule` | "Bunu bir daha yapma." Kalıcı kural kaydeder, doğru katmana yazar |
 | `/setup` | Makineyi bağlar: statusline, dil tercihi, dil sunucusu. Kurulumda bir kez |
 | `/uisetup` | Arayüz standardını değiştirir veya tamamen kapatır |
+| `/save` | Bu oturumu diske yazar: konuşma, bağlam, git durumu, gönderilmemiş metin |
+| `/load` | Kayıtlı oturumu geri okur, kaldığın yerden devam eder |
 | `/help` | Bu ekran |
 
 **Bilmek işine yarayacak iki sınır**

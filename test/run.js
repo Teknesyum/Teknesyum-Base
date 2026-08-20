@@ -7,6 +7,7 @@ const KOK = path.join(__dirname, '..', 'teknesyum');
 const IZLE = path.join(KOK, 'hooks', 'relay-watch.js');
 const KORU = path.join(KOK, 'hooks', 'contract-guard.js');
 const DURUM = path.join(KOK, 'scripts', 'statusline.js');
+const OTURUM = path.join(KOK, 'scripts', 'oturum.js');
 
 let gecti = 0;
 const kaldi = [];
@@ -125,12 +126,12 @@ ol('statusline köprüsü sürümden bağımsız', () => {
   icerir(fs.readFileSync(path.join(KOK, 'commands', 'setup.md'), 'utf8'), 'bridge.js');
 });
 
-ol('komut kümesi beş komut ve eski adlar hiçbir yerde geçmiyor', () => {
+ol('komut kümesi yedi komut ve eski adlar hiçbir yerde geçmiyor', () => {
   const v = fs
     .readdirSync(path.join(KOK, 'commands'))
     .filter((f) => f.endsWith('.md'))
     .sort();
-  esit(v.join(','), 'help.md,report.md,rule.md,setup.md,uicheckup.md,uisetup.md');
+  esit(v.join(','), 'help.md,load.md,report.md,rule.md,save.md,setup.md,uicheckup.md,uisetup.md');
   const yuru = (d) =>
     fs
       .readdirSync(d, { withFileTypes: true })
@@ -2093,6 +2094,124 @@ ol('govdeli CLAUDE.md engellenir, isaretci serbest', () => {
     0,
     'AGENTS.md serbest'
   );
+});
+
+function oturumProjesi() {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-oturum-'));
+  const sat = [
+    {
+      type: 'user',
+      sessionId: 'S1',
+      timestamp: '2026-01-01T10:00:00.000Z',
+      cwd: p,
+      version: '2.1.0',
+      message: { role: 'user', content: 'ilk istek<system-reminder>gizli not</system-reminder>' },
+    },
+    {
+      type: 'assistant',
+      sessionId: 'S1',
+      timestamp: '2026-01-01T10:00:05.000Z',
+      message: {
+        role: 'assistant',
+        model: 'claude-opus-5',
+        usage: { input_tokens: 10, cache_read_input_tokens: 90, output_tokens: 7 },
+        content: [
+          { type: 'thinking', thinking: 'gizli dusunce' },
+          { type: 'text', text: 'ilk cevap' },
+          { type: 'tool_use', name: 'Edit', input: { file_path: path.join(p, 'a.js') } },
+        ],
+      },
+    },
+    {
+      type: 'user',
+      sessionId: 'S1',
+      timestamp: '2026-01-01T10:00:06.000Z',
+      toolUseResult: { ok: true },
+      message: { role: 'user', content: [{ type: 'tool_result', content: 'tamam' }] },
+    },
+    {
+      type: 'assistant',
+      sessionId: 'S1',
+      isSidechain: true,
+      timestamp: '2026-01-01T10:00:07.000Z',
+      message: { role: 'assistant', content: [{ type: 'text', text: 'alt ajan konusmasi' }] },
+    },
+    {
+      type: 'queue-operation',
+      operation: 'enqueue',
+      sessionId: 'S1',
+      content: 'kuyrukta bekleyen is',
+    },
+    { type: 'last-prompt', sessionId: 'S1', lastPrompt: 'yazdim ama gondermedim' },
+  ];
+  fs.writeFileSync(
+    path.join(p, 'kaynak.jsonl'),
+    sat.map((x) => JSON.stringify(x)).join('\n') + '\n'
+  );
+  return p;
+}
+
+function oturumCalistir(...ek) {
+  const r = spawnSync(process.execPath, [OTURUM, ...ek], { encoding: 'utf8' });
+  return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
+}
+
+ol('oturum kaydi ozet, ham ve durum uretir', () => {
+  const p = oturumProjesi();
+  const r = oturumCalistir(
+    'kaydet',
+    'sinav',
+    '--proje',
+    p,
+    '--transkript',
+    path.join(p, 'kaynak.jsonl')
+  );
+  esit(r.kod, 0, 'kaydet cikis kodu');
+  const dip = path.join(p, '.claude', 'oturumlar', 'sinav');
+  for (const f of ['ozet.md', 'ham.jsonl', 'durum.json'])
+    if (!fs.existsSync(path.join(dip, f))) throw new Error('eksik dosya: ' + f);
+  const d = JSON.parse(fs.readFileSync(path.join(dip, 'durum.json'), 'utf8'));
+  esit(d.oturumId, 'S1', 'oturum kimligi');
+  esit(d.tur, 1, 'tur sayisi');
+  esit(d.taslak, 'yazdim ama gondermedim', 'gonderilmemis metin');
+  esit(d.kuyruk.length, 1, 'kuyruk');
+  esit(d.altAjanMesaji, 1, 'alt ajan sayimi');
+});
+
+ol('ozet gizli icerigi disarida birakir, gerekeni tasir', () => {
+  const p = oturumProjesi();
+  oturumCalistir('kaydet', 'sinav', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl'));
+  const o = fs.readFileSync(path.join(p, '.claude', 'oturumlar', 'sinav', 'ozet.md'), 'utf8');
+  icerir(o, 'ilk istek');
+  icerir(o, 'ilk cevap');
+  icerir(o, 'yazdim ama gondermedim');
+  icerir(o, 'kuyrukta bekleyen is');
+  if (o.includes('gizli not')) throw new Error('system-reminder ozete sizdi');
+  if (o.includes('gizli dusunce')) throw new Error('dusunce blogu ozete sizdi');
+  if (o.includes('alt ajan konusmasi')) throw new Error('alt ajan konusmasi ana akisa karisti');
+});
+
+ol('yukle kaydi sarmalayarak geri verir', () => {
+  const p = oturumProjesi();
+  oturumCalistir('kaydet', 'sinav', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl'));
+  const r = oturumCalistir('yukle', '--proje', p);
+  esit(r.kod, 0, 'yukle cikis kodu');
+  icerir(r.out, '<<<KAYIT sinav>>>');
+  icerir(r.out, '<<<KAYIT SONU>>>');
+  icerir(r.out, 'ilk cevap');
+  icerir(oturumCalistir('liste', '--proje', p).out, 'sinav');
+});
+
+ol('olmayan kayit ve kacis denemesi reddedilir', () => {
+  const p = oturumProjesi();
+  esit(oturumCalistir('yukle', '--proje', p).kod, 1, 'kayitsiz yukle cikis kodu');
+  oturumCalistir('kaydet', 'sinav', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl'));
+  const yok = oturumCalistir('yukle', 'olmayan', '--proje', p);
+  esit(yok.kod, 1, 'olmayan kayit cikis kodu');
+  icerir(yok.err, 'bulunamad');
+  oturumCalistir('kaydet', '../disari', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl'));
+  if (fs.existsSync(path.join(p, '.claude', 'disari')))
+    throw new Error('kayit adi kayit kokunun disina cikti');
 });
 
 console.log(

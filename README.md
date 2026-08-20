@@ -318,10 +318,39 @@ guarantee cannot quietly erode.
 | `/setup` | Wires this machine up. Once, at install time |
 | `/uisetup` | Configures or disables the UI standard |
 | `/uicheckup` | Scans UI files and prepares an approved relay manifest |
+| `/save` | Writes this session to disk — transcript, context, git state, unsent text |
+| `/load` | Reads a saved session back and picks up where it stopped |
 | `/help` | What the base does and when, on one screen |
 
 There is no command to set a relay up and none to resume interrupted work — both happen on
 their own.
+
+### Session save and load
+
+Relay resumes work on its own, but what it resumes are *contracts* — the plan, not the
+conversation. `/save` covers the other half. It writes the session to
+`<project>/.claude/oturumlar/<name>/` as four files: `ham.jsonl`, a byte-for-byte copy of
+the transcript, so nothing is lost; `ozet.md`, the digest `/load` reads back, with every
+turn, each tool call as name plus target, the last ten turns kept long and older ones
+trimmed; `durum.json`, holding the session id, model, context usage, git HEAD and dirty
+files, open relay contracts, the message queue and the unsent text; and `calisma.diff`, a
+patch of the dirty working tree at save time, untracked files included.
+
+The unsent text is what sits in the input box, typed but never submitted. Claude Code keeps
+only a 200-character preview of it, so that is what the record holds. Messages queued while
+Claude was working are stored in full.
+
+`/load` with no argument takes the newest record and compares it against the repo as it
+stands now: a moved `git HEAD`, a different project root, or a stored patch each come back
+as a warning line. The patch is never applied on its own — `/load` reports it, you decide.
+Records are local and stay out of git.
+
+```
+/save                 name the record after the date
+/save relay-refactor  name it yourself
+/load                 newest record
+/load relay-refactor  a specific one
+```
 
 ### UI checkup
 

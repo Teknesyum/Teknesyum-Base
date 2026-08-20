@@ -8,9 +8,9 @@ A base layer for Claude Code: a multi-agent work relay, an independent auditor, 
 neon UI standard. How big a job is, how many pieces it splits into, which agent runs on
 which model, and how the result is verified — the system decides, not you.
 
-<a href="LICENSE"><img src="assets/badge-license.svg" alt="License MIT" height="38"></a>
-&nbsp;
 <a href="https://github.com/sponsors/Teknesyum"><img src="assets/badge-sponsor.svg" alt="Support Teknesyum" height="38"></a>
+&nbsp;
+<a href="LICENSE"><img src="assets/badge-license.svg" alt="License MIT" height="38"></a>
 
 </div>
 
@@ -322,6 +322,8 @@ guarantee cannot quietly erode.
 | `/save` | Writes this session to disk — transcript, context, git state, unsent text |
 | `/load` | Reads a saved session back and picks up where it stopped |
 | `/rc` | Opens a remote-control session so the project can be driven from a phone |
+| `/rcall` | Does the same for every project in the parent folder |
+| `/rcadvanced` | Remote control with the choices left to you: mode, permissions, capacity |
 | `/help` | What the base does and when, on one screen |
 
 There is no command to set a relay up and none to resume interrupted work — both happen on
@@ -405,8 +407,9 @@ chat has a record waiting. `/load hepsi` opens all of them; anything else opens 
 Claude Code's Remote Control keeps the session on your machine and lets a phone or browser
 steer it. Today it is started from the terminal client, and the desktop app has no button
 for it — `/rc` fills that gap and does the whole errand: it finds the terminal client
-(offering to install it when it is missing, `/rc kur`), saves the current chat, opens a
-terminal window in the project root and starts the remote session named after the folder.
+(offering to install it when it is missing, `/rc kur`), answers the client's start-up
+questions ahead of time, saves the current chat, opens a terminal window in the project
+root and starts the remote session named after the folder. Nothing is asked of you.
 
 What is left for you is one tap: Claude app → **Code** tab → the session name. The
 terminal window shows a QR code when you press the space bar, and the record `/rc` just
@@ -414,11 +417,18 @@ saved is loaded on the phone with `/load <name>`, so the conversation continues 
 than restarting.
 
 ```
-/rc                 open remote control for this project
-/rc kur             install the terminal client first, then open
-/rc metin           print the command instead of opening a window
-/rc kaydetme        open without saving the chat first
+/rc                    open remote control for this project, no questions
+/rc kur                install the terminal client first, then open
+/rcall                 open one session per project in the parent folder
+/rcadvanced            pick the spawn mode, permission mode, capacity yourself
+/rcadvanced metin      print the command instead of opening a window
+/rcadvanced kaydetme   open without saving the chat first
 ```
+
+`/rcall` walks the folder above the project and puts every project in it on remote
+control. Folders whose name starts with `!`, `.` or `_` — where archived and finished
+work lives — stay out; anything else you want skipped goes into the `rcAtla` list in
+`~/.claude/teknesyum.json`. The default cap is twelve windows (`/rcall tavan 30`).
 
 If a window cannot be opened, the command prints one copy-pasteable line rather than
 handing you a set of instructions. This command exists only until the desktop app grows a

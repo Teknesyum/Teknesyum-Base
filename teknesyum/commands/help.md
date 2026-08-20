@@ -33,6 +33,8 @@ sadece ne istediğini söyle.
 | `/save` | Bu oturumu diske yazar: konuşma, bağlam, git durumu, gönderilmemiş metin |
 | `/load` | Kayıtlı oturumu geri okur, kaldığın yerden devam eder |
 | `/rc` | Bu projeyi telefondan sürülebilir yapar: uzak denetim oturumu açar |
+| `/rcall` | Aynısını üst klasördeki bütün projeler için yapar |
+| `/rcadvanced` | Uzak denetimi seçenekleriyle açar: kip, izin, kapasite |
 | `/help` | Bu ekran |
 
 **Bilmek işine yarayacak iki sınır**

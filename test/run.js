@@ -126,14 +126,14 @@ ol('statusline köprüsü sürümden bağımsız', () => {
   icerir(fs.readFileSync(path.join(KOK, 'commands', 'setup.md'), 'utf8'), 'bridge.js');
 });
 
-ol('komut kümesi dokuz komut ve eski adlar hiçbir yerde geçmiyor', () => {
+ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
   const v = fs
     .readdirSync(path.join(KOK, 'commands'))
     .filter((f) => f.endsWith('.md'))
     .sort();
   esit(
     v.join(','),
-    'help.md,load.md,premium.md,rc.md,report.md,rule.md,save.md,setup.md,uicheckup.md,uisetup.md'
+    'help.md,load.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,setup.md,uicheckup.md,uisetup.md'
   );
   const yuru = (d) =>
     fs
@@ -2369,11 +2369,75 @@ function rcCalistir(arg, ek) {
   });
 }
 
+function rcEv() {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcev-'));
+  return { USERPROFILE: d, HOME: d };
+}
+
 ol('rc metin kipinde pencere acmaz, komutu basar', () => {
-  const r = rcCalistir(['--metin', '--ad', 'DenemeProje']);
+  const r = rcCalistir(['--metin', '--ad', 'DenemeProje'], rcEv());
   esit(r.status, 0, 'metin kipi calismali');
   icerir(r.stdout, 'remote-control --name');
   icerir(r.stdout, 'DenemeProje');
+  icerir(r.stdout, '--spawn same-dir');
+});
+
+ol('rc acilis sorularini kapatir, gelismis kip geri acar', () => {
+  const { komutSatiri } = require(RC);
+  esit(
+    komutSatiri('claude', 'A', ['--spawn', 'same-dir']),
+    '"claude" remote-control --name "A" --spawn same-dir'
+  );
+  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcev-'));
+  const ayar = path.join(evDizin, '.claude.json');
+  const anahtar = process.cwd().replace(/\\/g, '/');
+  fs.writeFileSync(ayar, JSON.stringify({ projects: {} }));
+  rcCalistir(['--metin', '--ad', 'A'], { USERPROFILE: evDizin, HOME: evDizin });
+  let j = JSON.parse(fs.readFileSync(ayar, 'utf8'));
+  esit(j.remoteDialogSeen, true, 'evet hayir sorusu kapatilmali');
+  esit(j.projects[anahtar].remoteControlSpawnMode, 'same-dir', 'kip sorusu kapatilmali');
+  const g = rcCalistir(['--gelismis', '--metin', '--ad', 'A'], {
+    USERPROFILE: evDizin,
+    HOME: evDizin,
+  });
+  j = JSON.parse(fs.readFileSync(ayar, 'utf8'));
+  esit(j.projects[anahtar].remoteControlSpawnMode, undefined, 'gelismis kipte soru geri gelmeli');
+  esit(/--spawn/.test(g.stdout), false, 'gelismis kipte kip dayatilmamali');
+});
+
+ol('rcall arsivlenmis ve tamamlanmis klasorleri disarida birakir', () => {
+  const { elenir, projeler } = require(RC);
+  esit(elenir('!Arşivlendi', []), true, 'unlem ile baslayan elenmeli');
+  esit(elenir('.claude', []), true, 'nokta ile baslayan elenmeli');
+  esit(elenir('Runly', []), false, 'proje elenmemeli');
+  esit(elenir('Runly', ['runly']), true, 'atla listesi calismali');
+  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcall-'));
+  for (const ad of ['Alfa', 'Beta', '!Tamamlandı', '_eski']) {
+    fs.mkdirSync(path.join(dip, ad, '.git'), { recursive: true });
+  }
+  fs.mkdirSync(path.join(dip, 'DosyaYok'));
+  const { alinan, elenen } = projeler(dip);
+  esit(
+    alinan.map((x) => x.ad).join(','),
+    'Alfa,Beta',
+    'yalniz gercek ve arsivlenmemis projeler alinmali'
+  );
+  esit(elenen.length, 2, 'elenen klasorler sayilmali');
+});
+
+ol('rcall metin kipinde her proje icin komut basar', () => {
+  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcall2-'));
+  fs.mkdirSync(path.join(dip, 'Gama', '.git'), { recursive: true });
+  const r = rcCalistir(['--hepsi', '--metin', '--kok', dip], rcEv());
+  esit(r.status, 0, 'metin kipi calismali');
+  icerir(r.stdout, 'Gama');
+  icerir(r.stdout, 'remote-control --name');
+});
+
+ol('rcall proje bulamazsa kod 6 verir', () => {
+  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcall3-'));
+  const r = rcCalistir(['--hepsi', '--metin', '--kok', dip], rcEv());
+  esit(r.status, 6, 'bos klasorde cikis kodu 6');
 });
 
 ol('rc istemci yoksa kurulum satirini verir', () => {
@@ -2401,8 +2465,14 @@ ol('rc komutu betigi cagirir ve pencere acmayi kendine birakmaz', () => {
   const k = fs.readFileSync(path.join(KOK, 'commands', 'rc.md'), 'utf8');
   icerir(k, 'scripts/rc.js');
   icerir(k, '--kur');
-  icerir(k, '--metin');
+  esit(/--metin|kaydetme/.test(k), false, 'rc yuzeyi sade kalmali');
   esit(/pencere açmaya/.test(k) || /pencere açma/.test(k), true, 'model pencere acmamali');
+  const g = fs.readFileSync(path.join(KOK, 'commands', 'rcadvanced.md'), 'utf8');
+  icerir(g, '--gelismis');
+  icerir(g, '--kaydetme');
+  const h = fs.readFileSync(path.join(KOK, 'commands', 'rcall.md'), 'utf8');
+  icerir(h, '--hepsi');
+  icerir(h, 'rcAtla');
 });
 
 ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {

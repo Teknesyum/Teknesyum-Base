@@ -471,6 +471,53 @@ const S = {
     ],
   },
 
+  rcSorularAcik: {
+    tr: [
+      '',
+      'Gelişmiş kip: pencere soruları geri açıldı, seçimleri orada yapacaksın.',
+      'Sorusuz açılış için `/rc` yeter.',
+    ],
+    en: [
+      '',
+      'Advanced mode: the window will ask its own questions again; answer them there.',
+      'Plain `/rc` opens without any.',
+    ],
+  },
+  rcHepsiYok: {
+    tr: (dip) => '`' + dip + '` altında uzak denetime açılacak proje bulamadım.',
+    en: (dip) => 'No project to put on remote control under `' + dip + '`.',
+  },
+  rcHepsiOzet: {
+    tr: (acilan, elenen, kalan, artan) =>
+      (acilan.length
+        ? [acilan.length + ' proje uzak denetime açıldı:', '', '    ' + acilan.join(' · ')]
+        : ['Uzak denetime açılacak projeler:']
+      ).concat(
+        elenen.length ? ['', 'Dışarıda kalan klasörler: ' + elenen.join(' · ')] : [],
+        artan > 0 ? ['', artan + ' proje tavanın dışında kaldı · `/rcall tavan 30`'] : [],
+        kalan.length
+          ? ['', 'Bunlar için pencere açılmadı, komutu sen çalıştıracaksın:', ''].concat(
+              kalan.map((x) => '    ' + x)
+            )
+          : [],
+        ['', 'Telefonda: Claude uygulaması → **Code** sekmesi → proje adı.']
+      ),
+    en: (acilan, elenen, kalan, artan) =>
+      (acilan.length
+        ? [acilan.length + ' projects are on remote control:', '', '    ' + acilan.join(' · ')]
+        : ['Projects to put on remote control:']
+      ).concat(
+        elenen.length ? ['', 'Folders left out: ' + elenen.join(' · ')] : [],
+        artan > 0 ? ['', artan + ' projects hit the cap · `/rcall tavan 30`'] : [],
+        kalan.length
+          ? ['', 'No window opened for these — run the command yourself:', ''].concat(
+              kalan.map((x) => '    ' + x)
+            )
+          : [],
+        ['', 'On your phone: Claude app → **Code** tab → project name.']
+      ),
+  },
+
   uiPalet: {
     tr: 'Rengi palet tokeniyle değiştir — ara ton yok (teknesyum-ui §2).',
     en: 'Replace the colour with a palette token — no in-between tones (teknesyum-ui §2).',

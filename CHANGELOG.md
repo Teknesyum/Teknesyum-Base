@@ -6,6 +6,34 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.32.0] - 2026-08-20
+
+### Added
+
+- `/rcall` puts every project in the parent folder on remote control, one window each.
+  Folders whose name starts with `!`, `.` or `_` — archived and finished work — are left
+  out, as is anything listed under `rcAtla` in `~/.claude/teknesyum.json`. Twelve windows
+  by default, `/rcall tavan 30` for more.
+- `/rcadvanced` opens remote control with the choices left to the user: spawn mode,
+  permission mode, capacity, session name, and the `metin` / `kaydetme` options that used
+  to sit on `/rc`.
+
+### Changed
+
+- `/rc` no longer produces any questions. The client asked two on start-up — whether to
+  enable remote control and which spawn mode to use; the command now answers both before
+  opening the window (`remoteDialogSeen` and the project's `remoteControlSpawnMode` in
+  `~/.claude.json`, plus an explicit `--spawn same-dir`).
+- The `/rc` surface is down to the errand itself: `/rc` and `/rc kur`. `metin` and
+  `kaydetme` moved to `/rcadvanced`; the copy-pasteable fallback line still prints on its
+  own whenever a window cannot be opened.
+
+### Fixed
+
+- The License badge box was twice as wide as its text and the Support hearts were hollow
+  outlines. Both badges now hug their text, the hearts are filled, and Support sits left
+  of License at the top of the README as it already did at the bottom.
+
 ## [2.31.1] - 2026-08-20
 
 ### Fixed

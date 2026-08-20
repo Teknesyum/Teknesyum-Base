@@ -6,6 +6,18 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.33.0] - 2026-08-20
+
+### Added
+
+- The base now covers sessions opened one folder too high. When the session root is a
+  container — not a project itself, but holding projects — `kapsayici.js` follows which
+  project the touched files belong to, and at the end of every turn moves the agent memory
+  that piled up in `<parent>/.claude/agent-memory` into that project, merging the
+  `MEMORY.md` index rather than overwriting it. The active project is injected into the
+  model context as well, so `/save`, `/rc`, the map and the relay take the project root
+  instead of the folder above it. Sessions opened on a project are untouched.
+
 ## [2.32.0] - 2026-08-20
 
 ### Added

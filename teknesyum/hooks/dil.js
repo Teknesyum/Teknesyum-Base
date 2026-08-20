@@ -374,6 +374,36 @@ const S = {
     en: (n) => n + ' agent problems recorded · open `live/_sorun.log`, read why, do not skip it',
   },
 
+  kapsayiciAcilis: {
+    tr: (ad) =>
+      'oturum `' +
+      ad +
+      '` üst klasöründe açıldı · hangi projede çalıştığını izliyorum, ajan hafızası tur sonunda o projeye taşınıyor',
+    en: (ad) =>
+      'session opened in the `' +
+      ad +
+      '` parent folder · I track which project you are in and move agent memory there at the end of each turn',
+  },
+  kapsayiciEtkin: {
+    tr: (ad, yol) =>
+      'Bu oturum projelerin üst klasöründe açıldı; çalışılan proje **' +
+      ad +
+      '** (`' +
+      yol +
+      '`). Proje kökü isteyen her şeyi oraya yönlendir — `/save`, `/rc`, harita, röle ' +
+      've sözleşmeler `--proje` parametresini bu yolla alır, dosya yollarını da bu ' +
+      'kökten kur. Kullanıcıya klasörü değiştirmesini söyleme, iş burada yürür.',
+    en: (ad, yol) =>
+      'This session was opened in the parent folder of the projects; the project being ' +
+      'worked on is **' +
+      ad +
+      '** (`' +
+      yol +
+      '`). Point everything that needs a project root there — `/save`, `/rc`, the map, ' +
+      'the relay and contracts take `--proje` with this path, and file paths start from ' +
+      'this root. Do not ask the user to switch folders; the work runs here.',
+  },
+
   rcKuruluyor: {
     tr: 'Claude terminal istemcisi kurulu değil, kuruyorum.',
     en: 'The Claude terminal client is not installed; installing it now.',

@@ -2491,6 +2491,92 @@ ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
   esit(JSON.parse(fs.readFileSync(durum, 'utf8')).oturumId, 'S1', 'dogru oturum');
 });
 
+const KAPSAYICI = path.join(KOK, 'hooks', 'kapsayici.js');
+
+function kapsayiciKur() {
+  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kap-'));
+  fs.mkdirSync(path.join(dip, 'Alfa', '.git'), { recursive: true });
+  fs.mkdirSync(path.join(dip, 'Beta', '.git'), { recursive: true });
+  fs.mkdirSync(path.join(dip, 'Alfa', 'src'), { recursive: true });
+  return dip;
+}
+
+ol('kapsayici klasor taninir, projenin kendisi tanınmaz', () => {
+  const { kok } = require(KAPSAYICI);
+  const dip = kapsayiciKur();
+  esit(kok(dip), path.resolve(dip), 'ust klasor kapsayici sayilmali');
+  esit(kok(path.join(dip, 'Alfa')), null, 'proje kapsayici sayilmamali');
+  esit(kok(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'))), null, 'bos klasor degil');
+});
+
+ol('dokunulan dosya etkin projeyi belirler', () => {
+  const { izle, etkin } = require(KAPSAYICI);
+  const dip = kapsayiciKur();
+  const durum = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dur-')), 'k.json');
+  izle(dip, durum, { tool_input: { file_path: path.join(dip, 'Alfa', 'src', 'a.js') } });
+  esit(etkin(durum).ad, 'Alfa', 'ilk proje secilmeli');
+  izle(dip, durum, { tool_input: { file_path: path.join(dip, 'Beta', 'b.js') } });
+  esit(etkin(durum).ad, 'Beta', 'son dokunulan proje etkin olmali');
+  izle(dip, durum, { tool_input: { file_path: path.join(os.tmpdir(), 'disarida.js') } });
+  esit(etkin(durum).ad, 'Beta', 'kapsayici disi yol etkini degistirmemeli');
+});
+
+ol('ust klasorde biriken ajan hafizasi projeye tasinir, dizin birlestirilir', () => {
+  const { tasi } = require(KAPSAYICI);
+  const dip = kapsayiciKur();
+  const kaynak = path.join(dip, '.claude', 'agent-memory', 'teknesyum-builder');
+  const varis = path.join(dip, 'Alfa', '.claude', 'agent-memory', 'teknesyum-builder');
+  fs.mkdirSync(kaynak, { recursive: true });
+  fs.mkdirSync(varis, { recursive: true });
+  fs.writeFileSync(path.join(kaynak, 'MEMORY.md'), '- [Yeni](yeni.md) — yeni bilgi\n');
+  fs.writeFileSync(path.join(kaynak, 'yeni.md'), 'govde\n');
+  fs.writeFileSync(path.join(varis, 'MEMORY.md'), '- [Eski](eski.md) — eski bilgi\n');
+  const n = tasi(dip, path.join(dip, 'Alfa'));
+  esit(n, 2, 'iki dosya tasinmali');
+  esit(fs.existsSync(path.join(varis, 'yeni.md')), true, 'govde tasinmali');
+  const dizin = fs.readFileSync(path.join(varis, 'MEMORY.md'), 'utf8');
+  icerir(dizin, 'eski.md');
+  icerir(dizin, 'yeni.md');
+  esit(fs.existsSync(path.join(dip, '.claude')), false, 'bosalan ust klasor silinmeli');
+});
+
+ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () => {
+  const dip = kapsayiciKur();
+  const cfg = konfig(true);
+  const oturum = { cwd: dip, session_id: 'kap-1', transcript_path: '/x/kap-1.jsonl' };
+  const a = calistir(
+    IZLE,
+    { ...oturum, hook_event_name: 'SessionStart' },
+    { CLAUDE_CONFIG_DIR: cfg }
+  );
+  icerir(JSON.parse(a.out).systemMessage, 'üst klasör');
+  calistir(
+    IZLE,
+    {
+      ...oturum,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Edit',
+      tool_input: { file_path: path.join(dip, 'Alfa', 'src', 'a.js') },
+    },
+    { CLAUDE_CONFIG_DIR: cfg }
+  );
+  const b = calistir(
+    IZLE,
+    { ...oturum, hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
+    { CLAUDE_CONFIG_DIR: cfg }
+  );
+  icerir(JSON.parse(b.out).hookSpecificOutput.additionalContext, 'Alfa');
+  const kaynak = path.join(dip, '.claude', 'agent-memory', 'teknesyum-builder');
+  fs.mkdirSync(kaynak, { recursive: true });
+  fs.writeFileSync(path.join(kaynak, 'not.md'), 'x\n');
+  calistir(IZLE, { ...oturum, hook_event_name: 'Stop' }, { CLAUDE_CONFIG_DIR: cfg });
+  esit(
+    fs.existsSync(path.join(dip, 'Alfa', '.claude', 'agent-memory', 'teknesyum-builder', 'not.md')),
+    true,
+    'hafiza projeye tasinmali'
+  );
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

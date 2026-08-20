@@ -483,6 +483,23 @@ installed version at render time and stays correct across updates.
   compacted context (`PostCompact`), seals unfinished agent records at shutdown
   (`SessionEnd`), records rate-limit and overload interruptions (`StopFailure`), and records
   a failing tool without counting it as progress (`PostToolUseFailure`)
+- `kapsayici.js` — covers the session that was opened one folder too high
+
+### Opened in the parent folder
+
+Claude Code keys everything it stores per project on the folder the session was opened in.
+Open the session on the folder that holds all your projects and work in a subfolder, and
+the subagent memory of ten different projects lands in one shared bucket —
+`<parent>/.claude/agent-memory` — instead of the project it belongs to.
+
+The base does not ask you to pick a different folder. It notices that the folder is a
+container — not a project itself, but holding projects — follows which project the files
+you touch belong to, and at the end of every turn moves whatever agent memory piled up in
+the parent into that project, merging the `MEMORY.md` index instead of overwriting it. The
+active project is also handed to the model, so `/save`, `/rc`, the map and the relay write
+to the project root rather than the folder above it.
+
+Sessions opened on a project directly never enter this path; nothing changes for them.
 
 ### Visible steering
 

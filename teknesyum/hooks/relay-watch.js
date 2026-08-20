@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { s: ceviri } = require('./dil.js');
+const kapsayici = require('./kapsayici.js');
 
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
@@ -14,20 +15,33 @@ process.stdin.on('end', () => {
 
 function run(j) {
   const root = findRelay(j.cwd || process.cwd());
+  const kap = kapsayici.kok(j.cwd || process.cwd());
+  const kapDurum = kap
+    ? path.join(genelKok(), safe(j.session_id || 'oturum') + '.kapsayici')
+    : null;
   if (j.hook_event_name === 'PostToolUse') {
+    if (kap) kapsayici.izle(kap, kapDurum, j);
     const bozuk = sozdizim(j);
     if (bozuk) process.stdout.write(JSON.stringify({ decision: 'block', reason: bozuk }));
   }
 
-  if (j.hook_event_name === 'SessionStart') return acilis(root);
+  if (j.hook_event_name === 'SessionStart') {
+    return acilis(root, kap ? ceviri('kapsayiciAcilis', path.basename(kap)) : '');
+  }
   if (j.hook_event_name === 'UserPromptSubmit') {
     const k = String(j.prompt || '').match(/^[ ]*\/([a-z0-9:-]+)/i);
     if (k) kullanimSay('komut:' + k[1].toLowerCase());
-    return hatirlat(j, root);
+    return hatirlat(j, root, kap && kapsayici.etkin(kapDurum));
   }
-  if (j.hook_event_name === 'Stop') return paketDenetle(j, root);
+  if (j.hook_event_name === 'Stop') {
+    if (kap) kapsayiciTopla(kap, kapDurum);
+    return paketDenetle(j, root);
+  }
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
-  if (j.hook_event_name === 'SessionEnd') return oturumKapat(root, j);
+  if (j.hook_event_name === 'SessionEnd') {
+    if (kap) kapsayiciTopla(kap, kapDurum);
+    return oturumKapat(root, j);
+  }
   if (j.hook_event_name === 'StopFailure') return kesintiYaz(root, j);
 
   // Röle kurulu projede izler proje içinde durur (/report oradan okur). Kurulu değilse
@@ -342,13 +356,24 @@ function duyur(mesaj, min) {
 
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını
 // göremiyordu. Ölçüyü model yapar, ama ölçüldüğünü söylemesi artık zorunlu.
-function hatirlat(j, root) {
-  if (seviye() === 0) return;
+// Üst klasörde açılan oturumda hafızayı turun sonunda ait olduğu projeye taşırız.
+// Çıktı yazmaz: `Stop` olayında karar bloğuyla aynı akışa iki JSON yazmak çıktıyı bozar.
+function kapsayiciTopla(kap, durum) {
+  const p = kapsayici.etkin(durum);
+  if (p) kapsayici.tasi(kap, p.yol);
+}
+
+function hatirlat(j, root, etkinProje) {
+  // Kayıt, röle ve harita oturumun açıldığı klasörü değil projeyi bekliyor; modele
+  // hangi projede olduğunu söylemezsek `--proje` parametresini boş geçer. Bu satır
+  // ölçü hatırlatması susmuş olsa da yazılır.
+  const kapMetin = etkinProje ? ceviri('kapsayiciEtkin', etkinProje.ad, etkinProje.yol) : '';
+  if (seviye() === 0) return kapEkle(kapMetin);
   // ÖLÇÜLDÜ: metin her istekte ~90 token yazıyordu ve geçmişte kalıcı. 60 mesajlık
   // oturumda 5000+ token, hepsi aynı cümlenin kopyası. Kural bir kez okunduğunda
   // geçmişte duruyor; ikinci kopyası bilgi taşımıyor. İlk iki istekte yazılır.
-  if (sayacGecti(j)) return;
-  let metin = ceviri('olcu') + ' ' + ceviri('dilTalimati');
+  if (sayacGecti(j)) return kapEkle(kapMetin);
+  let metin = (kapMetin ? kapMetin + ' ' : '') + ceviri('olcu') + ' ' + ceviri('dilTalimati');
   if (premium()) metin += ' ' + ceviri('premiumNotu');
   const rota = yeniIsRotasi(root, j.prompt);
   if (rota) metin += ' ' + rota;
@@ -357,6 +382,17 @@ function hatirlat(j, root) {
   // Seviye 2'de kullanıcı her dokunuşu görmek istiyor: base olmasaydı olmayacak her
   // kararın kendi satırı olur. Biçim relay SKILL 7.2'de.
   if (seviye() === 2) metin += ' ' + ceviri('seviye2');
+  try {
+    process.stdout.write(
+      JSON.stringify({
+        hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
+      })
+    );
+  } catch {}
+}
+
+function kapEkle(metin) {
+  if (!metin) return;
   try {
     process.stdout.write(
       JSON.stringify({
@@ -587,8 +623,9 @@ function worktreeSayisi(proje) {
 }
 
 // stdout tek JSON taşır — açılışta söylenecek her şey tek satırda birleşir.
-function acilis(root) {
+function acilis(root, kapNotu) {
   const parca = [];
+  if (kapNotu) parca.push(kapNotu);
   if (kurulumEksik()) parca.push(ceviri('kurulumEksik'));
   if (premium()) parca.push(ceviri('premiumAcik'));
   if (root) {

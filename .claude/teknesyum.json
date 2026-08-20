@@ -1,0 +1,4 @@
+{
+  "platformlar": ["windows", "macos", "linux"],
+  "platformNeden": "Base bir Claude Code eklentisi; kullanıcıları üç işletim sisteminde de var. Platforma özgü iş Node'un path/os API'lerinde toplanır, kabuk betiğine dağılmaz — bu yüzden üç platform desteklemek Windows'u geriletmez. Kullanıcıya verilen komutlar Windows PowerShell 5.1 varsayımıyla yazılır."
+}

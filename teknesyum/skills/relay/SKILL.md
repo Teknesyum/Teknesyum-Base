@@ -329,6 +329,15 @@ her sözleşmeyi `auditor`'ye doğrulat → kaldıysa düzeltme döngüsü → `
 
 **Planlamayı asla delege etme.** Soğuk başlayan ajan daha kötü plan yapar.
 
+**Ajana verdiğin metin yalın olur.** Sözleşme, paket ve dönüş raporu düz cümleyle yazılır:
+ne oldu, nerede, ne gerekiyor. Ajanın aramasını istediğin dosyanın **yolunu ver ve zorunlu
+mu opsiyonel mi olduğunu söyle** — "SETTINGS.md'ye bak" gibi yarım cümle, ajanı olmayan
+dosyayı aramaya gönderir.
+
+**Her turda `.claude/relay/live/_sorun.log` dosyasını oku.** Ajanlar bulamadıkları dosyayı,
+boş dönen aracı ve belirsiz talimatı oraya yazar; kanca da başarısız araç çağrılarını
+oraya düşürür. Sorun kullanıcının ekran görüntüsüyle değil bu dosyayla öğrenilir.
+
 ## 3.1 Görev paketi — işi oturum dışına çıkar
 
 Alt ajan tavanı var: her biri bağlamından pay yer, oturum kapanınca hepsi düşer. Büyük iş
@@ -533,6 +542,13 @@ oturumlar arasında elle özet yazması değildir.
 Bunlar **durum bildirimidir, düzyazı özet değildir** — tablo, madde, tek satırlık olay.
 Bitmiş işi tekrar anlatma. Sıklığı `briefing` düğmesi belirler; sapma bildirimi
 hiçbir ayarda kapanmaz.
+
+## 7.1 Dil
+
+`~/.claude/teknesyum.json` → `dil` alanı `en` (varsayılan) ya da `tr`. Bu alan hem
+kullanıcıya çıkan bildirimleri hem ajanların birbirine yazdığı metni belirler: sözleşme,
+rapor, kayıt noktası, engel açıklaması. Ajana iş verirken sözleşmeyi bu dilde yaz; hook
+sana seviyeyle birlikte dili de bildirir, dosya okumaya gitme.
 
 ## 7.2 Fark satırları — base'in dokunduğu yer
 

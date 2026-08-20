@@ -233,6 +233,13 @@ function main() {
   const arg = process.argv.slice(2);
   const kati = arg.includes('--kati');
   const kok = path.resolve(arg.find((a) => !a.startsWith('--')) || process.cwd());
+  // ÖLÇÜLDÜ: olmayan yol için çıktı "0 dosya · 0 bulgu" idi — temiz proje ile yanlış yol
+  // aynı görünüyordu. Yol yoksa ölçüm yapılmamıştır; sessiz geçilmez.
+  if (!fs.existsSync(kok)) {
+    process.stderr.write('yol yok: ' + kok + '\n');
+    process.exitCode = 2;
+    return;
+  }
   const r = denetle(kok);
   process.stdout.write(yaz(r));
   if (kati && !r.platformlar && r.bulgu.some((b) => !b.bilgi)) process.exitCode = 1;

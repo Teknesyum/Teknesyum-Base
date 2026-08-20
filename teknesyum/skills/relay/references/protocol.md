@@ -91,6 +91,12 @@ Açıkken iki dosya oluşur:
 | `_hook-debug.json` | Sayaç: toplam olay, olay dağılımı, `agent_id` gelen olay oranı, olay başına alan listesi |
 | `_hook-debug.log` | Zaman damgalı olay günlüğü: `zaman \| olay \| kimlik \| araç \| kısa alanlar` |
 
+`_sorun.log` bunlardan ayrıdır: **debug kapalıyken de yazılır** ve açılışta sayısı bildirilir.
+İçine iki kaynak yazar — kanca, başarısız her araç çağrısını (`zaman | kimlik | araç | hedef |
+hata`); ajanlar, bulamadıkları dosyayı ve belirsiz talimatı (`zaman | sözleşme | rol | ne
+aradın | ne bulamadın | ne yaptın`). T0 her turda okur. Sorun tespiti kullanıcının ekran
+görüntüsüne bırakılmaz.
+
 Sayaç "hook ateşledi mi" sorusunu cevaplar; günlük **"ajan hangi olaydan sonra sustu"**
 sorusunu cevaplar. Yarım kesilen ajanı ararken günlükte o ajanın `id:`/`tr:` kimliğini
 `grep`'le ve son satırına bak — orada duran araç çağrısı kesilme noktasıdır.
@@ -232,6 +238,16 @@ Yeni oturum sırayla okur, başka hiçbir şey:
 
 Sonra: `stop_reason: null` → `SendMessage` ile yokla · ölü → §5 · ajan yok, bağımlılığı
 karşılanmış `open` var → dağıt.
+
+**Düzeltme turuna girerken kayıt noktası önce güncellenir.** `submitted` bir sözleşme
+`active`'e dönüyorsa kayıt noktası hâlâ "tamamlandı" diyor demektir; oturum orada kesilirse
+kurtarma sözleşmeyi bitmiş sanar ve kalan maddeler kaybolur. Sırası: kayıt noktasına turun
+kaçıncı olduğunu ve açık maddeleri yaz → `status: active`. Ters sırayı `contract-guard`
+engeller.
+
+**Durum tablosu sözleşmeyle birlikte değişir.** `PLAN.md`'deki satır sözleşmenin
+frontmatter'ından geri kalırsa iki kaynak çelişir; kurtarma hangisine inanacağını bilemez.
+Sözleşme durumu değiştiğinde tabloyu da o turda güncelle.
 
 `PLAN.md`'yi ancak yeni görev üretecekse oku. Sözleşme `done/`'a taşınınca ilgili
 `live/<agent_id>.json` dosyasını sil.

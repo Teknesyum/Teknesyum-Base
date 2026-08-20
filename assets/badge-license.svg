@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" width="220" height="48" role="img" aria-label="License MIT">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00f3ff"/>
+      <stop offset="100%" stop-color="#b026ff"/>
+    </linearGradient>
+    <filter id="lgw" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="1" y="1" width="218" height="46" rx="14" fill="#0a0a0c" stroke="url(#lg)" stroke-width="2" opacity="0.95"/>
+  <g filter="url(#lgw)">
+    <circle cx="28" cy="24" r="6" fill="none" stroke="#00f3ff" stroke-width="3"/>
+  </g>
+  <g font-family="Segoe UI, system-ui, sans-serif" font-size="18" font-weight="700">
+    <text x="48" y="30" fill="#ffffff">License</text>
+    <text x="122" y="30" fill="#00f3ff" font-family="Consolas, 'Cascadia Mono', monospace">MIT</text>
+  </g>
+</svg>

@@ -43,6 +43,7 @@ function calistir(script, yuk, ek) {
       ...process.env,
       TEKNESYUM_SESSIZ: '',
       TEKNESYUM_DEBUG: '',
+      TEKNESYUM_DIL: 'tr',
       CLAUDE_CONFIG_DIR: BOS_CFG,
       ...(ek || {}),
     },
@@ -574,7 +575,13 @@ function yonlendirmeProje(sozlesmeler) {
   for (const s of sozlesmeler) {
     fs.writeFileSync(
       path.join(c, s.id + '.md'),
-      '---\nid: ' + s.id + '\ntitle: ' + s.title + '\nstatus: active\nowns: [' + s.owns.join(', ') + ']\n---\n'
+      '---\nid: ' +
+        s.id +
+        '\ntitle: ' +
+        s.title +
+        '\nstatus: active\nowns: [' +
+        s.owns.join(', ') +
+        ']\n---\n'
     );
   }
   return p;
@@ -584,7 +591,12 @@ ol('başlığı yakın sözleşme yeni işi üstlenmez', () => {
   const p = yonlendirmeProje([{ id: 'T9', title: 'UI mesaj dili', owns: ['README.md'] }]);
   const r = calistir(
     IZLE,
-    { ...ort(p), session_id: 'support-ui-1', hook_event_name: 'UserPromptSubmit', prompt: 'Support UI panelini düzelt' },
+    {
+      ...ort(p),
+      session_id: 'support-ui-1',
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'Support UI panelini düzelt',
+    },
     konfig(true)
   );
   icerir(r.out, 'Yeni iş öncelikli');
@@ -602,7 +614,12 @@ ol('ilgisiz açık sözleşme yeni işi önceliklendirir', () => {
   const p = yonlendirmeProje([{ id: 'T2', title: 'API', owns: ['src/api.js'] }]);
   const r = calistir(
     IZLE,
-    { ...ort(p), session_id: 'unrelated-1', hook_event_name: 'UserPromptSubmit', prompt: 'src/ui.js dosyasında yeni ekran yap' },
+    {
+      ...ort(p),
+      session_id: 'unrelated-1',
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'src/ui.js dosyasında yeni ekran yap',
+    },
     konfig(true)
   );
   icerir(r.out, 'Yeni iş öncelikli');
@@ -613,7 +630,12 @@ ol('uygun owns eşleşmesi açık sözleşmeye yönlendirir', () => {
   const p = yonlendirmeProje([{ id: 'T4', title: 'UI', owns: ['src/ui.js'] }]);
   const r = calistir(
     IZLE,
-    { ...ort(p), session_id: 'matching-1', hook_event_name: 'UserPromptSubmit', prompt: 'src/ui.js dosyasını güncelle' },
+    {
+      ...ort(p),
+      session_id: 'matching-1',
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'src/ui.js dosyasını güncelle',
+    },
     konfig(true)
   );
   icerir(r.out, 'Owns eşleşmesi · T4 sürdürülür');
@@ -640,11 +662,344 @@ ol('çakışan owns sahipliği ikinci sözleşmeye bırakılmaz', () => {
   ]);
   const r = calistir(
     IZLE,
-    { ...ort(p), session_id: 'conflict-1', hook_event_name: 'UserPromptSubmit', prompt: 'src/shared.js dosyasını güncelle' },
+    {
+      ...ort(p),
+      session_id: 'conflict-1',
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'src/shared.js dosyasını güncelle',
+    },
     konfig(true)
   );
   icerir(r.out, 'Sahiplik çakışması');
   icerir(r.out, 'T0 kararı gerekir');
+});
+
+ol('varsayilan dil ingilizce', () => {
+  const { p } = proje(2, 1);
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, { TEKNESYUM_DIL: '' });
+  icerir(r.out, 'relay ready');
+  if (r.out.includes('röle kurulu')) throw new Error('varsayilan dil turkce donmus');
+});
+
+ol('dil ayari teknesyum.json dosyasindan okunur', () => {
+  const { p } = proje(2, 1);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dil-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr' }));
+  const r = calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'SessionStart' },
+    { TEKNESYUM_DIL: '', CLAUDE_CONFIG_DIR: cfg }
+  );
+  icerir(r.out, 'röle kurulu');
+});
+
+ol('gecersiz dil degeri ingilizceye duser', () => {
+  const { p } = proje(2, 1);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dil2-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'de' }));
+  const r = calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'SessionStart' },
+    { TEKNESYUM_DIL: '', CLAUDE_CONFIG_DIR: cfg }
+  );
+  icerir(r.out, 'relay ready');
+});
+
+ol('ingilizce kurulumda ajan yonergesi de ingilizce', () => {
+  const { p } = proje(2, 1);
+  const r = calistir(
+    IZLE,
+    {
+      ...ort(p),
+      session_id: 'dil-en',
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'yeni bir modül yaz',
+    },
+    { TEKNESYUM_DIL: 'en' }
+  );
+  icerir(r.out, 'to other agents in English');
+  if (r.out.includes('Türkçe yaz')) throw new Error('karisik dil');
+});
+
+ol('turkce kurulumda ajanlara turkce yazma talimati gider', () => {
+  const { p } = proje(2, 1);
+  const r = calistir(IZLE, {
+    ...ort(p),
+    session_id: 'dil-tr',
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'yeni bir modül yaz',
+  });
+  icerir(r.out, 'Türkçe yaz');
+});
+
+ol('birikmis worktree acilista bir kez bildirilir', () => {
+  const { p } = proje(1, 0);
+  const w = path.join(p, '.claude', 'worktrees');
+  for (const ad of ['a', 'b', 'c']) fs.mkdirSync(path.join(w, ad), { recursive: true });
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' });
+  icerir(r.out, '3 ajan worktree');
+});
+
+ol('worktree yoksa birikim uyarisi cikmaz', () => {
+  const { p } = proje(1, 0);
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' });
+  if (r.out.includes('worktree')) throw new Error('gereksiz uyari');
+});
+
+ol('platform notu olmayan depoda model tek soru sormaya yonlendirilir', () => {
+  const { p } = proje(1, 0);
+  fs.mkdirSync(path.join(p, '.git'), { recursive: true });
+  const r = calistir(IZLE, {
+    ...ort(p),
+    session_id: 'platform-1',
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'bir modul yaz',
+  });
+  icerir(r.out, 'platform notu yok');
+});
+
+ol('platform notu yazilmissa soru tekrarlanmaz', () => {
+  const { p } = proje(1, 0);
+  fs.mkdirSync(path.join(p, '.git'), { recursive: true });
+  fs.mkdirSync(path.join(p, '.claude'), { recursive: true });
+  fs.writeFileSync(
+    path.join(p, '.claude', 'teknesyum.json'),
+    JSON.stringify({ platformlar: ['windows'], platformNeden: 'oyun eklentisi' })
+  );
+  const r = calistir(IZLE, {
+    ...ort(p),
+    session_id: 'platform-2',
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'bir modul yaz',
+  });
+  if (r.out.includes('platform notu yok')) throw new Error('not varken sorulmus');
+});
+
+ol('depo olmayan klasorde platform sorusu sorulmaz', () => {
+  const { p } = proje(1, 0);
+  const r = calistir(IZLE, {
+    ...ort(p),
+    session_id: 'platform-3',
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'bir modul yaz',
+  });
+  if (r.out.includes('platform notu yok')) throw new Error('gecici klasorde sorulmus');
+});
+
+ol('basarisiz arac cagrisi sorun gunlugune yazilir', () => {
+  const { p, live } = proje(1, 0);
+  calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'PostToolUseFailure',
+    agent_id: 'a1',
+    tool_name: 'Read',
+    tool_input: { file_path: '.claude/relay/SETTINGS.md' },
+    error: 'ENOENT: no such file',
+  });
+  const g = fs.readFileSync(path.join(live, '_sorun.log'), 'utf8');
+  icerir(g, 'SETTINGS.md');
+  icerir(g, 'ENOENT');
+  icerir(g, 'a1');
+});
+
+ol('sorun gunlugu debug kapaliyken de tutulur', () => {
+  const { p, live } = proje(1, 0);
+  calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'PostToolUseFailure',
+      tool_name: 'Bash',
+      tool_input: { command: 'npm test' },
+      error: 'exit 1',
+    },
+    { TEKNESYUM_DEBUG: '' }
+  );
+  icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'npm test');
+});
+
+ol('birikmis sorun acilista bildirilir', () => {
+  const { p, live } = proje(1, 0);
+  fs.mkdirSync(live, { recursive: true });
+  fs.writeFileSync(path.join(live, '_sorun.log'), 'x | y\nz | t\n');
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' });
+  icerir(r.out, '2 ajan sorunu');
+});
+
+ol('sorun yoksa acilis sessiz kalir', () => {
+  const { p } = proje(1, 0);
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' });
+  if (r.out.includes('ajan sorunu')) throw new Error('gereksiz sorun bildirimi');
+});
+
+ol('ajan yonergelerinde yalin dil ve sorun kaydi kurali var', () => {
+  for (const a of ['auditor', 'builder', 'scout', 'scribe', 'ui-builder']) {
+    const m = fs.readFileSync(path.join(KOK, 'agents', a + '.md'), 'utf8');
+    icerir(m, 'Yalın yaz');
+    icerir(m, '_sorun.log');
+  }
+});
+
+ol('kanca engelleri secili dilde konusur', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-engel-dil-'));
+  const c = path.join(p, '.claude', 'relay', 'contracts');
+  fs.mkdirSync(c, { recursive: true });
+  const f = path.join(c, 'T1.md');
+  fs.writeFileSync(f, '---\nstatus: active\n---\n');
+  const yuk = {
+    hook_event_name: 'PreToolUse',
+    cwd: p,
+    tool_name: 'Write',
+    tool_input: { file_path: f, content: '---\nstatus: open\n---\n' },
+  };
+  icerir(calistir(KORU, yuk, { TEKNESYUM_DIL: 'en' }).err, 'cannot move backwards');
+  icerir(calistir(KORU, yuk).err, 'geriye alınamaz');
+});
+
+ol('open durumundan dogrudan submitted engellenir', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-basamak-'));
+  const c = path.join(p, '.claude', 'relay', 'contracts');
+  fs.mkdirSync(c, { recursive: true });
+  const f = path.join(c, 'T1.md');
+  fs.writeFileSync(f, '---\nstatus: open\n---\n');
+  const r = calistir(KORU, {
+    hook_event_name: 'PreToolUse',
+    cwd: p,
+    tool_name: 'Write',
+    tool_input: { file_path: f, content: '---\nstatus: submitted\n---\n' },
+  });
+  icerir(r.err, 'Basamak atlan');
+});
+
+ol('open durumundan active serbest', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-basamak2-'));
+  const c = path.join(p, '.claude', 'relay', 'contracts');
+  fs.mkdirSync(c, { recursive: true });
+  const f = path.join(c, 'T1.md');
+  fs.writeFileSync(f, '---\nstatus: open\n---\n');
+  const r = calistir(KORU, {
+    hook_event_name: 'PreToolUse',
+    cwd: p,
+    tool_name: 'Write',
+    tool_input: { file_path: f, content: '---\nstatus: active\n---\n' },
+  });
+  esit(r.err, '', 'gecerli gecis engellendi');
+});
+
+ol('duraklama bildiren mesaj senden bolumu olmadan kapanmaz', () => {
+  const { p } = proje(0, 0);
+  fs.writeFileSync(
+    path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
+    '---\nstatus: active\n---\n'
+  );
+  const m = 'T3 oturum limitine takildi, isi guvenli noktada durdurdum.\nRapor: PLAN.md';
+  const r = calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'Stop',
+    transcript_path: transcript(m),
+  });
+  const o = JSON.parse(r.out);
+  esit(o.decision, 'block');
+  icerir(o.reason, 'Senden istediklerim');
+});
+
+ol('senden bolumu varsa duraklama serbest', () => {
+  const { p } = proje(0, 0);
+  fs.writeFileSync(
+    path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
+    '---\nstatus: active\n---\n'
+  );
+  const m =
+    'T3 oturum limitine takildi.\nRapor: PLAN.md\n\n## Senden istediklerim\n\n1. Limit donunce yaz: `T3 devam`';
+  const r = calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'Stop',
+    transcript_path: transcript(m),
+  });
+  esit(r.out, '', 'gecerli duraklama engellendi');
+});
+
+ol('duraklama yoksa senden bolumu istenmez', () => {
+  const { p } = proje(0, 0);
+  fs.writeFileSync(
+    path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
+    '---\nstatus: active\n---\n'
+  );
+  const r = calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'Stop',
+    transcript_path: transcript('T3 uzerinde calisiyorum, band olcumu suruyor.'),
+  });
+  esit(r.out, '', 'gereksiz engel');
+});
+
+ol('bayat kayit noktasiyla duzeltme turu acilmaz', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bayat-'));
+  const c = path.join(d, '.claude', 'relay', 'contracts');
+  fs.mkdirSync(c, { recursive: true });
+  const f = path.join(c, 'T1.md');
+  fs.writeFileSync(
+    f,
+    '---\nstatus: submitted\n---\n\n## Kayit noktasi\n\nTamamlandi. Test 69/69.\n'
+  );
+  const yuk = {
+    hook_event_name: 'PreToolUse',
+    cwd: d,
+    tool_name: 'Edit',
+    tool_input: { file_path: f, new_string: 'status: active' },
+  };
+  icerir(calistir(KORU, yuk).err, 'kayıt noktasını güncelle');
+  fs.writeFileSync(
+    f,
+    '---\nstatus: submitted\n---\n\n## Kayit noktasi\n\nTur 2. Acik: tavan payi, deneme paylasimi.\n'
+  );
+  esit(calistir(KORU, yuk).err, '', 'taze kayit noktasi engellendi');
+});
+
+ol('yeni proje niyetinde on arastirma hatirlatilir', () => {
+  const { p } = proje(0, 0);
+  const r = calistir(IZLE, {
+    ...ort(p),
+    session_id: 'arastirma-1',
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'VideoEdit diye bir klasör oluştur, plan yap, işe girişme',
+  });
+  icerir(r.out, 'en az 10 depo');
+});
+
+ol('taramalar varsa hatirlatma cikmaz', () => {
+  const { p } = proje(0, 0);
+  fs.mkdirSync(path.join(p, 'docs', 'taramalar'), { recursive: true });
+  const r = calistir(IZLE, {
+    ...ort(p),
+    session_id: 'arastirma-2',
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'sıfırdan bir uygulama yapacağız',
+  });
+  if (r.out.includes('en az 10 depo')) throw new Error('gereksiz hatirlatma');
+});
+
+ol('siradan istekte arastirma hatirlatmasi cikmaz', () => {
+  const { p } = proje(0, 0);
+  const r = calistir(IZLE, {
+    ...ort(p),
+    session_id: 'arastirma-3',
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'su fonksiyondaki hatayi duzelt',
+  });
+  if (r.out.includes('en az 10 depo')) throw new Error('gureltu');
+});
+
+ol('yeni projede PLAN.md yazimi arastirma kapisina takilir', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-plankapi-'));
+  fs.mkdirSync(path.join(d, '.claude', 'relay', 'contracts', 'done'), { recursive: true });
+  const r = calistir(KORU, {
+    hook_event_name: 'PreToolUse',
+    cwd: d,
+    tool_name: 'Write',
+    tool_input: { file_path: path.join(d, '.claude', 'relay', 'PLAN.md'), content: '# Plan' },
+  });
+  icerir(r.err, 'n araştırma');
 });
 
 console.log('\nEşzamanlılık');
@@ -1196,7 +1551,21 @@ function worktreeProje() {
   spawnSync('git', ['-C', main, 'init', '--initial-branch=main'], { encoding: 'utf8' });
   fs.writeFileSync(path.join(main, 'index.js'), 'const a = 1;\n');
   spawnSync('git', ['-C', main, 'add', 'index.js'], { encoding: 'utf8' });
-  spawnSync('git', ['-C', main, '-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-m', 'init'], { encoding: 'utf8' });
+  spawnSync(
+    'git',
+    [
+      '-C',
+      main,
+      '-c',
+      'user.name=Test',
+      '-c',
+      'user.email=test@example.com',
+      'commit',
+      '-m',
+      'init',
+    ],
+    { encoding: 'utf8' }
+  );
   const relay = path.join(main, '.claude', 'relay');
   fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
   fs.writeFileSync(path.join(relay, 'contracts', 'T1.md'), '---\nstatus: active\n---\n');
@@ -1353,7 +1722,10 @@ const UICHECKUP_APPLY = path.join(KOK, 'scripts', 'uicheckup-apply.js');
 function uiCheckupProje() {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-uicheckup-'));
   fs.mkdirSync(path.join(p, 'src'), { recursive: true });
-  fs.writeFileSync(path.join(p, 'src', 'Panel.jsx'), 'export default function Panel() { return <div>HELLO</div>; }\n');
+  fs.writeFileSync(
+    path.join(p, 'src', 'Panel.jsx'),
+    'export default function Panel() { return <div>HELLO</div>; }\n'
+  );
   fs.writeFileSync(path.join(p, 'src', 'theme.css'), '.panel { color: rgba(1, 2, 3, 1); }\n');
   return p;
 }
@@ -1399,14 +1771,30 @@ ol('stale plan değişen dosyayı reddeder', () => {
   const p = uiCheckupProje();
   const { plan, file } = uiCheckupPlan(p);
   fs.appendFileSync(path.join(p, 'src', 'Panel.jsx'), 'const changed = true;\n');
-  const r = uiCheckupApply(['--approve', '--plan', file, '--plan-digest', plan.digest, '--target', p]);
+  const r = uiCheckupApply([
+    '--approve',
+    '--plan',
+    file,
+    '--plan-digest',
+    plan.digest,
+    '--target',
+    p,
+  ]);
   if (r.status === 0 || !/stale plan/i.test(r.stderr)) throw new Error('stale plan reddedilmedi');
 });
 
 ol('onaylı apply güvenli manifest üretir', () => {
   const p = uiCheckupProje();
   const { plan, file } = uiCheckupPlan(p);
-  const r = uiCheckupApply(['--approve', '--plan', file, '--plan-digest', plan.digest, '--target', p]);
+  const r = uiCheckupApply([
+    '--approve',
+    '--plan',
+    file,
+    '--plan-digest',
+    plan.digest,
+    '--target',
+    p,
+  ]);
   esit(r.status, 0, 'onaylı apply');
   const manifest = JSON.parse(r.stdout);
   esit(manifest.approved, true, 'manifest onay durumu');
@@ -1422,8 +1810,17 @@ ol('apply plan path traversal reddeder', () => {
   delete copy.digest;
   plan.digest = require('crypto').createHash('sha256').update(JSON.stringify(copy)).digest('hex');
   fs.writeFileSync(file, JSON.stringify(plan));
-  const r = uiCheckupApply(['--approve', '--plan', file, '--plan-digest', plan.digest, '--target', p]);
-  if (r.status === 0 || !/traversal|kök dışı/i.test(r.stderr)) throw new Error('path traversal reddedilmedi');
+  const r = uiCheckupApply([
+    '--approve',
+    '--plan',
+    file,
+    '--plan-digest',
+    plan.digest,
+    '--target',
+    p,
+  ]);
+  if (r.status === 0 || !/traversal|kök dışı/i.test(r.stderr))
+    throw new Error('path traversal reddedilmedi');
 });
 
 const HARITA = path.join(KOK, 'scripts', 'harita.js');
@@ -1625,6 +2022,57 @@ ol('scout ajani paketlenir', () => {
   icerir(a, 'docs/taramalar/');
   esit(/tools:.*Write/.test(a), true, 'scout yazabilmeli');
   esit(/tools:.*Edit/.test(a), false, 'scout kod duzenlememeli');
+});
+
+ol('uicheckup kod adlarini buyuk harf bulgusu saymaz', () => {
+  const p = uiCheckupProje();
+  fs.writeFileSync(
+    path.join(p, 'src', 'Sabit.jsx'),
+    'const API_URL = "https://x/API";\nexport const A = () => <div>Panel acildi</div>;\n'
+  );
+  const r = uiCheckupScan(p);
+  const bulgu = r.findings.filter((f) => f.file === 'src/Sabit.jsx');
+  esit(bulgu.length, 0, 'kod adlari bulgu uretmemeli');
+});
+
+ol('uicheckup palet disi rengi ve punto sapmasini yakalar', () => {
+  const p = uiCheckupProje();
+  fs.writeFileSync(
+    path.join(p, 'src', 'Kart.css'),
+    '.kart { color: #123456; }\n.ad { font-size: 11px; }\n.iyi { color: #00f3ff; font-size: 14px; }\n'
+  );
+  const r = uiCheckupScan(p);
+  const bulgu = r.findings.filter((f) => f.file === 'src/Kart.css');
+  esit(bulgu.length, 2, 'iki bulgu bekleniyor');
+  esit(
+    bulgu.every((f) => f.line < 3),
+    true,
+    'palet ici satir bulgu uretmemeli'
+  );
+});
+
+ol('uicheckup yalniz atif yapilan katalog kurallarini basar', () => {
+  const p = uiCheckupProje();
+  const r = uiCheckupScan(p);
+  const atif = new Set(r.findings.map((f) => f.rule));
+  esit(
+    r.catalog.rules.every((rule) => atif.has(rule.id)),
+    true,
+    'atif yapilmayan kural basilmamali'
+  );
+  esit(r.truncated, 0, 'tavan asilmadi');
+});
+
+ol('platform denetimi olmayan yolu bildirir', () => {
+  const r = spawnSync(
+    process.execPath,
+    [PLATFORM, path.join(os.tmpdir(), 'teknesyum-yok-' + Date.now())],
+    {
+      encoding: 'utf8',
+    }
+  );
+  esit(r.status, 2, 'olmayan yol icin cikis kodu');
+  if (!/yol yok/.test(r.stderr)) throw new Error('olmayan yol bildirilmedi');
 });
 
 console.log(

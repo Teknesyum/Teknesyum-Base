@@ -6,6 +6,51 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.26.0] - 2026-08-20
+
+### Added
+
+- Language setting: `dil` in `~/.claude/teknesyum.json` is `en` (default) or `tr`, asked by
+  `/setup`, overridable per session with `TEKNESYUM_DIL`. One field governs both the
+  notifications you see and the language agents write to each other in — contracts,
+  reports, checkpoints and block messages.
+- `live/_sorun.log`: every failed tool call is recorded by the hook, and agents append a
+  line whenever they hit a missing file, an unreadable path or an ambiguous instruction.
+  The log is kept even with debug off, its size is announced at session start, and the
+  manager reads it each round. Falling back to a default is allowed; falling back silently
+  is not.
+- A `Senden istediklerim` floor: if an answer reports that work is paused (usage limit,
+  a pending decision) without a numbered list of what the user should do, the `Stop` hook
+  blocks it.
+- Prior-art gate widened: it now also guards the first `PLAN.md` write, and a from-scratch
+  request triggers a prompt-time reminder. Two projects started as “just make a plan” and
+  the 10+ repository scan never ran, because the gate only watched the first contract.
+- A plain-language communication section in all five agents: write flat sentences, and
+  never pass over an unexpected situation in silence.
+
+### Changed
+
+- `uicheckup` scan rules: the uppercase rule now only looks at visible text (JSX text
+  nodes and labelled attributes) instead of every capital letter run, the colour rule
+  measures palette conformance instead of three hardcoded greys, a type-scale rule was
+  added, findings are capped at 200 with the remainder counted in `truncated`, and only
+  the catalog rules actually referenced are printed.
+- Neon support blocks in the README: GitHub strips inline styles, so the plain HTML boxes
+  were replaced with palette-token SVGs (`assets/badge-license.svg`,
+  `assets/badge-sponsor.svg`, `assets/support.svg`).
+
+### Fixed
+
+- `submitted → active` was blocked as a regression although `protocol.md` §2 documents it
+  as the fix-round transition; the transition is now allowed, on the condition that the
+  checkpoint no longer claims the contract is finished.
+- `open → submitted` is blocked: skipping `active` makes a contract look like nobody is
+  working on it, and recovery cannot find the half-done work.
+- `platform-denetim.js` reported “0 files · 0 findings” for a path that does not exist,
+  which looked identical to a clean project; it now fails with `yol yok` and exit code 2.
+- Two `ÖLÇÜLDÜ` notes in `relay-watch.js` claimed sub-agent tool events do not reach the
+  hook. Measured: 207 of 472 `PostToolUse` events carry `agent_id`. Both were rewritten.
+
 ## [2.25.0] - 2026-08-20
 
 ### Added

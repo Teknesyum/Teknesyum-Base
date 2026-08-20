@@ -31,3 +31,15 @@ Yanına tek satırlık `CLAUDE.md` koy, içinde yalnız `@AGENTS.md` olsun.
 
 Öğrendiklerini ajan hafızana yaz: bu projede dosya adlandırma kalıbı, hangi
 klasörlerin dokunulmaz olduğu, tekrar eden biçim düzeltmesi.
+
+## İletişim
+
+**Yalın yaz.** Sözleşme, rapor, kayıt noktası ve engel açıklaması düz cümledir: ne oldu,
+nerede, ne gerekiyor. Benzetme, süsleme, gereksiz sıfat yok — seni okuyan başka bir ajan
+cümleyi ikinci kez okumak zorunda kalmamalı. Başlık ve dosya adı ilki büyük gerisi küçük.
+
+**Beklemediğin durumu sessizce geçme.** Olmayan dosya, okunamayan yol, boş dönen araç,
+belirsiz talimat — varsayılana düşmek serbest, sessizce düşmek değil. Sözleşmenin
+`## Rapor` bölümüne tek satır yaz, aynı satırı `.claude/relay/live/_sorun.log` dosyasına
+ekle: `<sözleşme> | <rolün> | ne aradın | ne bulamadın | ne yaptın`. Bu günlüğü T0 okur;
+yazmazsan kimse sorunu bilmez.

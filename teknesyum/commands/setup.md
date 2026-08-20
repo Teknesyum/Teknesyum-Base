@@ -17,7 +17,7 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 | Statusline köprüsü | `~/.claude/teknesyum-statusline.js` var mı | kur |
 | settings.json bağı | `statusLine.command` köprüyü gösteriyor mu | bağla |
 | Bayat kopya | `~/.claude/statusline.js` var mı | sil |
-| Çıktı dili | `~/.claude/teknesyum.json` → `dil` | sor, yaz |
+| Dil (`en`/`tr`) | `~/.claude/teknesyum.json` → `dil` | sor, yaz |
 | Yönlendirme seviyesi | `~/.claude/teknesyum.json` → `steering` | sor, yaz |
 | Arayüz standardı | `~/.claude/teknesyum-ui.json` var mı, `kapali` ne | sor |
 | Debug izi | `~/.claude/teknesyum.json` → `debug` | sorma, kapalı bırak |
@@ -63,10 +63,17 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 
 Karar kullanıcınındır, varsayma. Hepsini tek mesajda, numaralı sor:
 
-- **Çıktı dili.** `~/.claude/teknesyum.json` içinde `dil` yoksa sor: "Raporlar, açıklamalar
-  ve ajan çıktıları hangi dilde olsun?" Cevabı ISO kodu olarak yaz — `{"dil": "tr"}`.
-  Komut adlarının İngilizce olması dili belirlemez; `/report` diyen kullanıcı Türkçe
-  rapor bekliyor olabilir. Dosya varsa bir daha sorma.
+- **Dil.** `~/.claude/teknesyum.json` içinde `dil` yoksa sor: "Teknesyum hangi dilde
+  çalışsın?" İki seçenek var, başkasını yazma:
+
+  | Değer | Ne olur |
+  |---|---|
+  | `en` | Bildirimler, uyarılar ve ajanların birbirine yazdığı metin İngilizce |
+  | `tr` | Aynıları Türkçe |
+
+  **Varsayılan `en`.** Tek alan iki yeri birden yönetir: kullanıcıya çıkan `Teknesyum ▸`
+  satırları ve sözleşme/rapor/kayıt noktası gibi ajandan ajana giden metin. Cevabı
+  `{"dil": "en"}` ya da `{"dil": "tr"}` olarak yaz. Alan varsa bir daha sorma.
 - **Yönlendirme seviyesi.** `~/.claude/teknesyum.json` içinde `steering` yoksa sor:
   "Teknesyum'un devreye girdiği yerleri ne kadar görmek istersin?"
 

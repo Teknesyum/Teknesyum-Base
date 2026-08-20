@@ -8,7 +8,9 @@ A base layer for Claude Code: a multi-agent work relay, an independent auditor, 
 neon UI standard. How big a job is, how many pieces it splits into, which agent runs on
 which model, and how the result is verified — the system decides, not you.
 
-[License](LICENSE) · [Support Teknesyum](https://github.com/sponsors/Teknesyum)
+<a href="LICENSE"><img src="assets/badge-license.svg" alt="License MIT" height="38"></a>
+&nbsp;
+<a href="https://github.com/sponsors/Teknesyum"><img src="assets/badge-sponsor.svg" alt="Support Teknesyum" height="38"></a>
 
 </div>
 
@@ -554,8 +556,9 @@ Behavior knobs live in `skills/relay/SETTINGS.md`:
 
 Per-project override: `<project>/.claude/relay/SETTINGS.md`.
 
-Two settings are per-machine rather than per-project, and `/setup` asks for both:
-`steering` (`0` | `1` | `2`, see [Visible steering](#visible-steering)) in
+Three settings are per-machine rather than per-project, and `/setup` asks for all of
+them: `dil` (`en` default, or `tr`) in `~/.claude/teknesyum.json` — it governs both the
+notifications you see and the language agents write to each other in; `steering` (`0` | `1` | `2`, see [Visible steering](#visible-steering)) in
 `~/.claude/teknesyum.json`, and the UI standard in `~/.claude/teknesyum-ui.json` — keep the
 defaults, customize the palette, typography and signature, or switch it off entirely with
 `"kapali": true` so no color or measurement is imposed.
@@ -623,12 +626,12 @@ working — a project that already has one is still written to, so no trace is l
 
 ## Support
 
-<div style="background:#0a0a0c;border:1px solid rgba(176,38,255,.5);border-radius:16px;padding:24px;box-shadow:inset 0 0 8px rgba(176,38,255,.5)">
+<div align="center">
 
-Built in spare time, free.
+<a href="https://github.com/sponsors/Teknesyum"><img src="assets/support.svg" alt="Support Teknesyum — built in spare time, free, MIT" width="100%" style="max-width:1200px;height:auto"></a>
 
-<a href="https://github.com/sponsors/Teknesyum" style="display:inline-block;padding:12px 16px;background:transparent;border:1px solid rgba(176,38,255,.5);border-radius:12px;color:#b026ff;font-weight:700;text-decoration:none">Support Teknesyum</a>
-
-**[github.com/Teknesyum](https://github.com/Teknesyum)** · MIT
+<a href="https://github.com/sponsors/Teknesyum"><img src="assets/badge-sponsor.svg" alt="Support Teknesyum" height="38"></a>
+&nbsp;
+<a href="LICENSE"><img src="assets/badge-license.svg" alt="License MIT" height="38"></a>
 
 </div>

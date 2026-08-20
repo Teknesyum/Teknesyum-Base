@@ -134,6 +134,22 @@ Açık soru: yok
 Üç alan yeter: hangi paket ve durumu, raporun yolu, açık soru. Değişen dosya listesi
 uzunsa onu da yazma — rapor dosyasında zaten var.
 
+**İş yarıda duruyorsa dönüş bloğu yetmez.** Oturum limiti, beklenen karar, dışarıdan
+gelecek bir cevap — duruşun bedelini kullanıcı öder ve ne yapacağını senden öğrenir.
+Mesajın en altına numaralı **Senden istediklerim** bölümü koy; her madde ne yapılacağını
+ve kopyalanacak tam metni versin:
+
+```
+## Senden istediklerim
+
+1. Limit 05:20'de dönünce yeni oturumu `vidshrink` klasöründe aç ve şunu yaz:
+   `T3 düzeltme turunu ve T2c ölçümünü sürdür.`
+```
+
+Gerekçe yazma, "çünkü" yok. Beklediğin bir şey yoksa bu bölümü **açma** — ve o zaman
+duraklamayı da bildirme, iş sürüyor demektir. Bu kuralı `Stop` hook'u denetler: mesaj
+duraklama bildirip bu bölümü taşımıyorsa cevap engellenir.
+
 Ana oturum bu satırı alınca dosyayı kendi okur. Kullanıcı taşıyıcıdır, özet katmanı
 değil; ona okuyup aktarması gereken bir metin verme.
 

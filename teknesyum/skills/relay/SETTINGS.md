@@ -70,6 +70,11 @@ tercihi olduğu için:
 | `1` | Temel yönlenmeler: oturum açılışı, görev dağıtımı, ajan bitişi, ölçü satırı. Varsayılan. |
 | `2` | Hepsi + `Teknesyum ▸ fark · …` satırları: base olmasaydı farklı sonuçlanacak her karar. |
 
+**Dil** de aynı dosyadadır: `dil` alanı `en` (varsayılan) ya da `tr`. Tek alan iki
+yeri birden yönetir — kullanıcıya çıkan bildirimler ve ajanların birbirine yazdığı metin
+(sözleşme, rapor, kayıt noktası, engel açıklaması). `TEKNESYUM_DIL=en|tr` tek oturumluk
+ezer. Geçersiz değer `en` sayılır.
+
 `/setup` sorar ve yazar. `TEKNESYUM_SESSIZ=1` hâlâ 0'a eşdeğerdir, `TEKNESYUM_STEERING=0|1|2`
 tek oturumluk ezer. Satırların çoğunu hook basar — model unutsa da gelir, ölçülmüş olaydandır.
 

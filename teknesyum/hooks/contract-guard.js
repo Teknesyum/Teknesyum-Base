@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { s: ceviri } = require('./dil.js');
 
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
@@ -125,12 +126,37 @@ function gerileme(hedef, yeniMetin) {
     return;
   }
   if (eski === null || SIRA[eski] === undefined) return;
+  // ÖLÇÜLDÜ: canlı koşuda scribe `open`'dan doğrudan `submitted`'a atladı. Basamak
+  // atlanınca sözleşme "kimse üzerinde çalışmıyor" görünür; ajan düşerse kurtarma
+  // hangi işin yarım kaldığını bilemez. `active` işaretlemek bir satırlık iştir.
+  if (eski === 'open' && SIRA[yeni] > SIRA.active) return engelle(...ceviri('basamakAtlama', yeni));
+  // ÖLÇÜLDÜ: `submitted → active` protokolde meşru bir geçiş (protocol.md §2, denetçi
+  // KALDI dedi → düzeltme turu) ama merdiven kuralı onu gerileme sayıp engelliyordu.
+  // Geçiş serbesttir; tek şart kayıt noktasının turu yansıtması.
+  if (eski === 'submitted' && yeni === 'active') {
+    return kayitBayat(hedef) ? engelle(...ceviri('kayitBayat')) : undefined;
+  }
   if (SIRA[yeni] >= SIRA[eski]) return;
-  return engelle(
-    'Sözleşme durumu geriye alınamaz: ' + eski + ' -> ' + yeni + '.',
-    'Merdiven tek yönlü: open -> active -> submitted -> done. Tıkandıysan status: blocked yaz,',
-    'gerekçeyi sözleşmeye işle. Turu sıfırlamak denetim sırasını da sıfırlar.'
-  );
+  return engelle(...ceviri('gerileme', eski, yeni));
+}
+
+// Düzeltme turuna girerken kayıt noktası hala "tamamlandı" diyorsa, oturum kesilince
+// kurtarma sözleşmeyi bitmiş sanar ve kalan maddeler kaybolur. Önce kayıt noktası
+// güncellenir, sonra durum `active` olur.
+const BITIS_IZI = /(tamamland|bitti|submitted|complete|finished|kabul edildi)/i;
+
+function kayitBayat(hedef) {
+  let govde = '';
+  try {
+    govde = fs.readFileSync(hedef, 'utf8');
+  } catch {
+    return false;
+  }
+  const bas = govde.match(/^##[ \t]*(Kay[ıi]t noktas[ıi]|Checkpoint)[ \t]*$/im);
+  if (!bas) return false;
+  const kalan = govde.slice(bas.index + bas[0].length);
+  const son = kalan.search(/^##[ \t]/m);
+  return BITIS_IZI.test(son === -1 ? kalan : kalan.slice(0, son));
 }
 
 // ÖLÇÜLDÜ: sıfırdan projede mimari, benzerleri görülmeden kuruluyordu; üçüncü dalgada
@@ -156,20 +182,24 @@ function yeniProje(kok) {
   }
 }
 
+// ÖLÇÜLDÜ: kapı yalnız ilk sözleşmede duruyordu. İki proje "plan yap, işe girişme"
+// diye başladı; sözleşme yazılmadığı için kapı hiç ateşlemedi ve 10+ depo taraması
+// atlandı. Araştırma plandan önce gelir — `PLAN.md` de kapının arkasındadır.
+function planYolu(hedef) {
+  const mutlak = path.resolve(hedef);
+  const relay = relayKoku(path.dirname(mutlak));
+  if (!relay) return null;
+  return norm(mutlak) === norm(path.join(relay, 'PLAN.md')) ? mutlak : null;
+}
+
 function onArastirma(hedef) {
-  const canonicalPath = canonical(hedef);
+  const canonicalPath = canonical(hedef) || planYolu(hedef);
   if (!canonicalPath) return;
   if (fs.existsSync(canonicalPath)) return;
   const relay = relayKoku(path.dirname(canonicalPath));
   const kok = relay && path.dirname(path.dirname(relay));
   if (!kok || !yeniProje(kok)) return;
-  return engelle(
-    'Sıfırdan projede ilk sözleşmeden önce ön araştırma yapılır (relay SKILL 1.4).',
-    'Aynı problemi çözmüş en az 10 depoyu `scout` ajanlarına dağıt, her biri',
-    '`docs/taramalar/<ad>.md` yazsın, sonra `docs/taramalar/RAPOR.md` ile birleştir.',
-    'Araştırma istenmiyorsa gerekçesini `docs/taramalar/ATLANDI.md` dosyasına tek satır',
-    'yaz — kapı o zaman açılır. Atlamak serbest, sessizce atlamak değil.'
-  );
+  return engelle(...ceviri('onArastirma'));
 }
 
 function karar(j) {
@@ -185,11 +215,7 @@ function karar(j) {
     // Write mührü taşıyorsa denetimden geçmiş sözleşmenin yerleşmesidir; Edit hiçbir
     // koşulda meşru değil — bitmiş sözleşme değiştirilmez.
     if (arac === 'Write' && muhurlu(t.content || '')) return;
-    return engelle(
-      'contracts/done/ denetimden geçmiş sözleşmeler içindir, salt okunur.',
-      'Mühür dört alan ister: audit: passed · auditor_id · diff · verification.',
-      'Sözleşme yeniden açılacaksa T0 dosyayı contracts/ altına geri taşır ve status: open yapar.'
-    );
+    return engelle(...ceviri('doneSaltOkunur'));
   }
 
   if (arac !== 'Bash') return;
@@ -210,11 +236,7 @@ function karar(j) {
       if (muhurlu(fs.readFileSync(aday, 'utf8'))) return;
     } catch {}
   }
-  return engelle(
-    'contracts/done/ altına kabuktan yazma engellendi.',
-    'Sözleşme oraya ancak denetçi GEÇTİ verdikten ve T0 dört alanlı mührü — audit: passed ·',
-    'auditor_id · diff · verification — işledikten sonra taşınır. Denetim atlanamaz.'
-  );
+  return engelle(...ceviri('doneKabuk'));
 }
 
 function yollar(komut) {

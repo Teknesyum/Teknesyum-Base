@@ -78,7 +78,7 @@ kurmayan bir test.
 ## Ölçümün bilinen sınırları
 
 **Paralel koşu profilleri karıştırdı — ama üretimi bozmadı.** Üç koşu aynı anda
-başlatıldı ve `/premium` makine geneline yazıyor; eco penceresi profili değiştirince
+başlatıldı ve `/teknesyum:premium` makine geneline yazıyor; eco penceresi profili değiştirince
 premium koşusu bunu gördü.
 
 Etkisi sonradan ölçüldü ve sanılandan küçük çıktı. Ajanların hangi modelle açıldığı

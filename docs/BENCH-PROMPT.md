@@ -11,7 +11,7 @@ Dördünü aynı oturumda peş peşe koşma — sonrakiler bağlam taşır ve av
 ölçüm bozulur.
 
 **Profiller sıralı koşulmalı, paralel değil.** İlk turda üçü paralel koşuldu ve
-`/premium` makine geneline yazdığı için birbirlerini bozdular: eco penceresi profili
+`/teknesyum:premium` makine geneline yazdığı için birbirlerini bozdular: eco penceresi profili
 değiştirince premium koşusu onu gördü. Ölçülen koşu artık "baştan sona premium" değildi.
 
 Paralel koşmak isteniyorsa profil ortam değişkeniyle ayrılmalı — `TEKNESYUM_PREMIUM=1|0`
@@ -57,7 +57,7 @@ değer mi" sorusunun cevabı olmaz.
    ```
 
    Sonra Claude Code'u yeniden başlat — eklenti ancak o zaman düşer. Yeni oturumda
-   `/premium` komutu **bulunamamalı**; bulunuyorsa eklenti hâlâ yüklü demektir, dur ve
+   `/teknesyum:premium` komutu **bulunamamalı**; bulunuyorsa eklenti hâlâ yüklü demektir, dur ve
    söyle. Koşu bitince `claude plugin enable teknesyum@teknesyum` ile geri aç.
 
    `yalin` oturumu başka bir klasörde açılacağı için bu dosyayı göreli yolla bulamaz;
@@ -68,8 +68,8 @@ değer mi" sorusunun cevabı olmaz.
    **Eklentiyi kapatmak makine geneli bir işlemdir.** Yalın koşu sürerken başka bir
    Teknesyum oturumu açma; koşu bitmeden eklentiyi geri açma.
 
-3. **Üç profil için:** profili uygula ve doğrula — `/premium <durum>` ardından
-   `/premium durum`. Yürürlükteki profil ile klasör adı tutmuyorsa **dur ve söyle**;
+3. **Üç profil için:** profili uygula ve doğrula — `/teknesyum:premium <durum>` ardından
+   `/teknesyum:premium durum`. Yürürlükteki profil ile klasör adı tutmuyorsa **dur ve söyle**;
    yanlış profille koşulan bench ölçüm değil gürültüdür.
 
 4. **Ana oturumun modeli ve eforu dört koşuda da aynı: `opus` + `high`.** Bunu koşuya
@@ -84,7 +84,7 @@ değer mi" sorusunun cevabı olmaz.
    biz onu opus'ta koşuyoruz. Ölçülen şey "eco profilinin katkısı", "eco kullanıcısının
    gerçek deneyimi" değil.
 
-5. `BENCH.md` dosyasına başlangıç zamanını ve (varsa) `/premium durum` çıktısını yaz.
+5. `BENCH.md` dosyasına başlangıç zamanını ve (varsa) `/teknesyum:premium durum` çıktısını yaz.
 
 ## Görev
 

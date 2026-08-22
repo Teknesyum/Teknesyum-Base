@@ -1,7 +1,8 @@
 # Bench sonucu — Chess960 hamle üreteci
 
-Dört durumun üçü tamamlandı. `yalin` (base kapalı) hâlâ koşuyor; bu rapor onsuz
-yazıldı ve geldiğinde güncellenecek.
+Dört durum da tamamlandı. `yalin` başka bir makinede koşuldu (base kurulu değil, aynı
+model ve efor); kodu buraya alınıp **bütün ölçümler tek makinede** yapıldı, yani CPU farkı
+tabloya girmiyor.
 
 Görev: Chess960 hamle üreteci, TypeScript, dış bağımlılık yok, 45 dakika tavan.
 Ana oturum dört koşuda da `opus` + `high` — profil yalnız ajanların modelini değiştirir.
@@ -10,33 +11,38 @@ Ana oturum dört koşuda da `opus` + `high` — profil yalnız ajanların modeli
 
 ## Doğruluk — üçü de geçti
 
-| Konum | Derinlik | Beklenen | eco | normal | premium |
-|---|---:|---:|---|---|---|
-| startpos | 5 | 4.865.609 | ✓ | ✓ | ✓ |
-| kiwipete | 5 | 193.690.690 | ✓ | ✓ | ✓ |
-| pos3 · pos4 · pos5 · pos6 | 4 | yayınlanmış | ✓ | ✓ | ✓ |
+| Konum | Derinlik | Beklenen | yalin | eco | normal | premium |
+|---|---:|---:|---|---|---|---|
+| startpos | 5 | 4.865.609 | ✓ | ✓ | ✓ | ✓ |
+| kiwipete | 5 | 193.690.690 | ✓ | ✓ | ✓ | ✓ |
+| pos3 · pos4 · pos5 · pos6 | 4 | yayınlanmış | ✓ | ✓ | ✓ | ✓ |
 
-Chess960 tarafında yayınlanmış tek bir referans kümesi olmadığı için üç koşu birbirine
-karşı doğrulandı: dört Chess960 konumunda, üç derinlikte, **hiç ayrışma yok**.
+Chess960 tarafında dört koşu birbirine karşı doğrulandı: dört konum, üç derinlik,
+**hiç ayrışma yok**.
 
-**Doğruluk bu bench'i ayırmadı.** Üç profil de çalışan bir üreteç çıkardı. Ayrım başka
-yerde.
+**Doğruluk bu bench'i ayırmadı.** Dördü de çalışan bir üreteç çıkardı — base'li üçü de,
+base'siz olan da. Bench'in ana skoru olarak koyduğum "en derin doğru perft" hiçbir şey
+ayırt etmedi.
 
 ---
 
 ## Ayrışma — hız, boyut, yöntem
 
-| | eco | normal | premium |
-|---|---|---|---|
-| kiwipete d5 | 24,4 sn | 25,4 sn | **16,7 sn** |
-| Kod | 786 satır / 6 dosya | 1008 satır / 7 dosya | **2825 satır / 18 dosya** |
-| Ajan | **0** | 4 (2 builder, 2 auditor) | ilk oturumda açıldı, sayı kayıp |
-| Token | ~157.709 | 226.856 | ölçüm eksik (kesinti) |
-| Süre | 27 dk 22 sn | 28 dk | ~45 dk (kesintili) |
-| Ön araştırma | 0 depo (tavan 1) | 0 depo (bilerek atlandı) | — |
+Hız ölçümü dördü için de bu makinede, arka arkaya yapıldı.
 
-Premium üçte bir daha hızlı kod yazdı ve bunu üç buçuk kat daha fazla satırla yaptı.
-Eco en az kodu yazdı ve en az token harcadı; hızı normal ile aynı.
+| | yalin | eco | normal | premium |
+|---|---|---|---|---|
+| kiwipete d5 | 29,4 sn | 21,8 sn | 21,6 sn | **15,5 sn** |
+| Kod | **750 satır / 4 dosya** | 786 / 6 | 1008 / 7 | 2825 / 18 |
+| Kendi testi | **1268** | — | 47 | — |
+| Ajan | 0 (base yok) | **0 (kendi kararı)** | 4 | ilk oturumda açıldı, sayı kayıp |
+| Token | **~113.000** | ~157.709 | 226.856 | ölçüm eksik (kesinti) |
+| Süre | 37 dk | 27 dk | 28 dk | ~45 dk (kesintili) |
+| Ön araştırma | 0 depo | 0 depo (tavan 1) | 0 depo (bilerek atlandı) | — |
+
+Premium en hızlı üreteci yazdı — yalın koşudan **iki kat hızlı** — ve bunu dört kat fazla
+satırla yaptı. Yalın en az token harcadı ve en yavaş kodu yazdı, ama en çok testi o yazdı:
+1268'e karşı 47.
 
 ---
 
@@ -53,6 +59,10 @@ ana oturumda tuttu. Bu, eco'nun tasarlandığı gibi çalıştığının kanıt�
 için. Denetim dört bulgu çıkardı, dördü de gerçekti.
 
 **premium en fazla kodu ve en hızlı üreteci çıkardı**, ama koşusu iki kesintiye uğradı.
+
+**yalin hiçbir base mekanizması olmadan koştu** — ajan yok, sözleşme yok, denetçi yok, ölçü
+satırı yok. En az token harcayan koşu bu oldu, ki beklenen bir sonuç: base'in kendisi de
+token yakıyor.
 
 ---
 
@@ -72,6 +82,28 @@ bakıyor. Bench'in ana skoru (en derin doğru perft) üç profili ayırt etmedi;
 Denetçinin bulduğu diğer üçü de aynı sınıftan: bozuk FEN'in sessizce başka bir konuma
 dönüşmesi, test koşucusunun import hatasını yutması, ve adını taşıdığı senaryoyu hiç
 kurmayan bir test.
+
+---
+
+## Base'in aleyhine çıkan bulgu
+
+Yalın koşu, referans perft sayılarını **web'den çekti** ve kendi hatırladığının yanlış
+olduğunu buldu:
+
+> *"Published table fetched — my recall of position 4 was wrong, the real values differ."*
+
+Sonra elli Chess960 konumunu yayınlanmış tabloya karşı doğruladı ve 1268 test yazdı.
+
+Eco koşusu aynı yerde ters yönde davrandı: referansları **modelin kendi bilgisinden** yazdı
+ve yalnız koda karşı doğruladı. Tutmayan bir referansı da testten çıkardı — kendi ifadesiyle
+*"hatırlanan sayı yanlış olabileceği için"*. Bu savunulabilir bir karar ama doğrulanmamış
+bir temele dayanıyor, ve web araması token yakacağı için eco felsefesiyle de uyumlu.
+
+**Yani tasarruf profili, doğrulama titizliğini düşürdü.** Eco'nun kendi kuralı "doğruluktan
+feda edilmez" diyor; bu koşuda doğruluk *çıktıda* korundu (perft sayıları doğru), ama
+*doğrulama yönteminde* feda edildi. Kural ihlali değil, kuralın kör noktası.
+
+Bench'in en dürüst cümlesi bu: base'li bir profil, base'siz koşudan daha az titiz davrandı.
 
 ---
 
@@ -106,10 +138,24 @@ sonuç verir; bu tablo eğilim gösterir, kanıt değil.
 
 ---
 
-## Yalın koşu neden önemli
+## Base'e değer mi — bu koşunun cevabı
 
-Yukarıdaki tablo base'in üç ayarını birbiriyle karşılaştırıyor. **Base'e değip değmediği
-sorusunun cevabı burada yok** — o ancak base kapalıyken koşulan dördüncü sütunla çıkar.
+Tek turluk bir ölçüm, ve cevabı tek yönlü değil.
 
-Beklenen ayrım noktası doğruluk değil, denetim: yalın koşuda `@types/node` sınıfından bir
-kusur yakalanacak mı, yoksa perft yeşil diye teslim mi edilecek.
+**Base'in lehine:** `normal` profilinin denetçisi, perft'in asla yakalayamayacağı bir kusur
+buldu — temiz klonda derlenmeyen bir depo. Denetçi açan profil buldu, açmayanlar bulamadı.
+Premium en hızlı kodu yazdı, yalın koşunun iki katı.
+
+**Base'in aleyhine:** yalın koşu en az token harcadı (~113.000, normal'in yarısı) ve en çok
+testi yazdı (1268'e karşı 47). Referans doğrulamasında da en titiz o davrandı.
+
+**Ayırt etmeyen:** doğruluk. Dördü de aynı perft sayılarını üretti.
+
+Dürüst özet: base bu görevde **hız ve denetim** kattı, **token ve test yoğunluğu** açısından
+maliyet getirdi. Görev tek başına bir modelin bitirebileceği boyuttaydı — 750 satırlık bir
+üreteç için dört ajan açmak, sözleşme yazmak ve denetim turu koşmak kendi ağırlığını taşıdı.
+Base'in tasarlandığı yer bu değil: bağlamın dolduğu, işin bölünmesi gereken, tek oturumun
+yetmediği işler.
+
+Bunu ölçmek için görevin **bench'in kendisinden büyük** olması gerekirdi. Bir sonraki tur
+için not: 45 dakikada tek modelin bitirebildiği bir iş, çok ajanlı bir sistemi sınamaz.

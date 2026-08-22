@@ -2385,8 +2385,16 @@ function oturumProjesi() {
   return p;
 }
 
+// ÖLÇÜLDÜ (22.08.2026): bu yardımcı makinenin gerçek `teknesyum.json` dosyasını
+// okuyordu. Geliştirici profili eco'ya alınca `/save` gzip'e geçti ve `ham.jsonl`
+// bekleyen test düştü — kusur kayıtta değil testteydi. Koşu kendi konfig kökünü kurar.
+const OTURUM_CFG = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-oturum-cfg-'));
+
 function oturumCalistir(...ek) {
-  const r = spawnSync(process.execPath, [OTURUM, ...ek], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [OTURUM, ...ek], {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: OTURUM_CFG },
+  });
   return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
 }
 
@@ -3866,7 +3874,7 @@ ol('tur ozeti sure ve token tahminini tek satirda verir', () => {
     calistir(IZLE, { ...ort(p), transcript_path: t, hook_event_name: 'Stop' }, ek)
   );
   icerir(m, 'Total Süre: ~');
-  icerir(m, 'sn   Tahmini Token: ~');
+  icerir(m, 'sn     Tahmini Token: ~');
   const tok = parseInt(m.match(/Token: ~(\d+)/)[1], 10);
   if (tok < 900 || tok > 1200) throw new Error('token tahmini bekleneni tutmadi: ' + tok);
 });

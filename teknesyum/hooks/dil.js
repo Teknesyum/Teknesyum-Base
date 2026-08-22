@@ -79,12 +79,14 @@ const S = {
     en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
   },
   turOzeti: {
-    tr: (sure, token) => 'Total Süre: ~' + sure + '   Tahmini Token: ~' + token,
-    en: (sure, token) => 'Total Time: ~' + sure + '   Estimated Tokens: ~' + token,
+    tr: (sure, token) => '`Total Süre: ~' + sure + '     Tahmini Token: ~' + token + '`',
+    en: (sure, token) => '`Total Time: ~' + sure + '     Estimated Tokens: ~' + token + '`',
   },
   turOzetiYonerge: {
     tr: (satir) =>
-      'Turu kapatırken cevabının en altına şu satırı olduğu gibi, tek satır olarak yaz: ' + satir,
+      'Turu kapatırken cevabının en altına şu satırı **ters tırnakları dahil** olduğu gibi ' +
+      'yaz, tek satır olarak: ' +
+      satir,
     en: (satir) =>
       'When you close the turn write this line at the very bottom of your answer, ' +
       'verbatim and on one line: ' +

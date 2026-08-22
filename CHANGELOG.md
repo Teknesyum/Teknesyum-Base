@@ -37,6 +37,16 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   script's own view of the world; it now lives in `hooks/dil.js` and both hooks read it
   from there.
 
+### Fixed
+
+- Two container tests wrapped `konfig()` — which already returns an env object — in a
+  second `{ CLAUDE_CONFIG_DIR: ... }`, so the hook received the literal string
+  `[object Object]` as its config directory. The hook then resolved a relative path and
+  wrote `[object Object]/teknesyum/live/` into the repository root, where it had been
+  committed and kept churning on every run. The tests were also not exercising the config
+  they claimed to. Both call sites now pass the object through, and the stray directory is
+  gone from the tree.
+
 ## [2.36.1] - 2026-08-22
 
 ### Fixed

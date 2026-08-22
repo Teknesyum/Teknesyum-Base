@@ -2642,7 +2642,7 @@ ol('acilis acik sozlesme varken onceki oturumu haber verir', () => {
   const r = calistir(
     IZLE,
     { ...ort(p), hook_event_name: 'SessionStart', session_id: 'YENI' },
-    { CLAUDE_CONFIG_DIR: konfig(true), USERPROFILE: evDizin, HOME: evDizin }
+    { ...konfig(true), USERPROFILE: evDizin, HOME: evDizin }
   );
   icerir(JSON.parse(r.out).systemMessage, '/load son');
 });

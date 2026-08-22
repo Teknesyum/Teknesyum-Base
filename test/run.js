@@ -149,10 +149,10 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
   // ÖLÇÜLDÜ (22.08.2026): tarama raporları başka projelerin komut adlarını taşıyor —
   // `docs/taramalar/` altındaki bir rapor yabancı bir `/durum` komutundan söz edince
   // test bunu bizim eski adımız sandı. Kapsam kendi yüzeyimizle sınırlı.
-  const YABANCI = /[/\]docs[/\]taramalar[/\]/;
+  const YABANCI = (f) => f.replace(/\\/g, '/').includes('/docs/taramalar/');
   for (const f of yuru(path.join(__dirname, '..'))) {
     if (!/\.(md|js|json|tsx)$/.test(f) || f === __filename) continue;
-    if (YABANCI.test(f)) continue;
+    if (YABANCI(f)) continue;
     const s = fs.readFileSync(f, 'utf8');
     for (const eski of [
       '/iskele',

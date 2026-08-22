@@ -15,8 +15,19 @@ function varMi(...p) {
   }
 }
 
+// ÖLÇÜLDÜ: `kok` her araç çağrısında bir `readdirSync` ve alt klasör başına üç
+// `existsSync` yapıyordu; yirmi projelik üst klasörde altmışın üzerinde dosya sorgusu.
+// Yanıt aynı dizin için değişmez, kanca süreci tek olay yaşar — bir kez sorulur.
+const _projeBellek = new Map();
+const _kokBellek = new Map();
+
 function projeMi(d) {
-  return varMi(d, '.git') || varMi(d, 'package.json') || varMi(d, '.claude', 'relay');
+  const anahtar = path.resolve(d);
+  if (_projeBellek.has(anahtar)) return _projeBellek.get(anahtar);
+  const sonuc =
+    varMi(anahtar, '.git') || varMi(anahtar, 'package.json') || varMi(anahtar, '.claude', 'relay');
+  _projeBellek.set(anahtar, sonuc);
+  return sonuc;
 }
 
 function altlar(d) {
@@ -33,6 +44,13 @@ function altlar(d) {
 // Kapsayıcı klasör: kendisi proje değil, ama altında en az bir proje var.
 function kok(cwd) {
   const d = path.resolve(cwd || '.');
+  if (_kokBellek.has(d)) return _kokBellek.get(d);
+  const sonuc = kokSor(d);
+  _kokBellek.set(d, sonuc);
+  return sonuc;
+}
+
+function kokSor(d) {
   if (projeMi(d)) return null;
   return altlar(d).some((a) => projeMi(path.join(d, a))) ? d : null;
 }

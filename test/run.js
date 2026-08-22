@@ -2733,6 +2733,209 @@ ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () =
   );
 });
 
+ol('kapsayici koku ikinci cagrida dizini yeniden okumaz', () => {
+  const dip = kapsayiciKur();
+  delete require.cache[require.resolve(KAPSAYICI)];
+  const { kok } = require(KAPSAYICI);
+  const asilOku = fs.readdirSync;
+  const asilVar = fs.existsSync;
+  let oku = 0;
+  let vari = 0;
+  fs.readdirSync = (...a) => {
+    oku++;
+    return asilOku.apply(fs, a);
+  };
+  fs.existsSync = (...a) => {
+    vari++;
+    return asilVar.apply(fs, a);
+  };
+  let ilk;
+  let ikinci;
+  try {
+    ilk = kok(dip);
+    const okuBir = oku;
+    const variBir = vari;
+    ikinci = kok(dip);
+    esit(oku, okuBir, 'ikinci cagri readdirSync yapmamali');
+    esit(vari, variBir, 'ikinci cagri existsSync yapmamali');
+  } finally {
+    fs.readdirSync = asilOku;
+    fs.existsSync = asilVar;
+  }
+  esit(ilk, path.resolve(dip), 'ilk cevap');
+  esit(ikinci, ilk, 'onbellek ayni cevabi vermeli');
+});
+
+ol('genel kok worktree oturumunda alt klasore kaymaz', () => {
+  const { wt } = worktreeProje();
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const yuk = {
+    cwd: wt,
+    session_id: 'wt-1',
+    transcript_path: '/x/wt-1.jsonl',
+    hook_event_name: 'UserPromptSubmit',
+    prompt: '/report',
+  };
+  calistir(IZLE, yuk, { CLAUDE_CONFIG_DIR: cfg });
+  calistir(IZLE, yuk, { CLAUDE_CONFIG_DIR: cfg });
+  const kok = path.join(cfg, 'teknesyum', 'live');
+  esit(fs.existsSync(path.join(kok, 'wt-1.hatirlatma')), true, 'sayac genel kokte olmali');
+  esit(fs.existsSync(path.join(kok, 'kullanim.json')), true, 'kullanim genel kokte olmali');
+  esit(
+    fs.existsSync(path.join(kok, 'worktrees')),
+    false,
+    'genel kok worktree alt klasoru acmamali'
+  );
+});
+
+ol('eski canli genel koku duruyorsa oraya yazmaya devam edilir', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  fs.mkdirSync(path.join(cfg, 'teknesyum', 'canli'), { recursive: true });
+  calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: '/report' },
+    { CLAUDE_CONFIG_DIR: cfg }
+  );
+  esit(
+    fs.existsSync(path.join(cfg, 'teknesyum', 'canli', 'kullanim.json')),
+    true,
+    'eski dizin varken yeni dizine kacilmamali'
+  );
+  esit(fs.existsSync(path.join(cfg, 'teknesyum', 'live')), false, 'iki dizine bolunmemeli');
+});
+
+ol('role kurulu projede de genel kok supurulur, kullanim sayaci korunur', () => {
+  const { p } = proje(1, 0);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const kok = path.join(cfg, 'teknesyum', 'live');
+  const bayat = path.join(kok, 'eski-oturum');
+  fs.mkdirSync(bayat, { recursive: true });
+  fs.writeFileSync(path.join(bayat, 'a1.json'), '{}');
+  const sayac = path.join(kok, 'kullanim.json');
+  fs.writeFileSync(sayac, JSON.stringify({ 'komut:eski': { n: 3 } }));
+  const gun = Date.now() - 30 * 60 * 60 * 1000;
+  fs.utimesSync(bayat, gun / 1000, gun / 1000);
+  fs.utimesSync(sayac, gun / 1000, gun / 1000);
+  calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'SubagentStop',
+      agent_id: 'a9',
+      agent_type: 'builder',
+      agent_transcript_path: '/x/a9.jsonl',
+    },
+    { CLAUDE_CONFIG_DIR: cfg }
+  );
+  esit(fs.existsSync(bayat), false, 'role kurulu projede bayat iz duruyor');
+  esit(fs.existsSync(sayac), true, 'birikimli kullanim sayaci supurulmemeli');
+});
+
+ol('debug gunlugu tavani asinca son satirlara kirpilir', () => {
+  const { p, live } = proje(1, 0);
+  fs.mkdirSync(live, { recursive: true });
+  const g = path.join(live, '_hook-debug.log');
+  fs.writeFileSync(g, ('x'.repeat(200) + '\n').repeat(5000));
+  calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'PostToolUse',
+      agent_id: 'a1',
+      agent_type: 'builder',
+      tool_name: 'Bash',
+      tool_input: {},
+    },
+    { TEKNESYUM_DEBUG: '1' }
+  );
+  const l = fs.readFileSync(g, 'utf8').split('\n').filter(Boolean);
+  esit(l.length, 1000, 'gunluk son bin satira inmeli');
+  icerir(l[l.length - 1], 'PostToolUse', 'yeni satir korunmali');
+});
+
+ol('beyan edilen model ve efor tutmazsa sorun gunlugune yazilir', () => {
+  const { p, live } = proje(1, 0);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
+  const at = path.join(d, 'agent-b1.jsonl');
+  fs.writeFileSync(
+    at,
+    JSON.stringify({ type: 'assistant', message: { model: 'claude-opus-4-5' } }) + '\n'
+  );
+  calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'SubagentStop',
+      agent_id: 'b1',
+      agent_type: 'teknesyum:scribe',
+      agent_transcript_path: at,
+      effort: { level: 'xhigh' },
+    },
+    konfig(true)
+  );
+  const g = fs.readFileSync(path.join(live, '_sorun.log'), 'utf8');
+  icerir(g, 'scribe | model | beyan: haiku | gerçek: claude-opus-4-5', 'model uyusmazligi');
+  icerir(g, 'scribe | efor | beyan: low | gerçek: xhigh', 'efor uyusmazligi');
+});
+
+ol('beyanla uyusan ajan sorun gunlugu acmaz', () => {
+  const { p, live } = proje(1, 0);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
+  const at = path.join(d, 'agent-b2.jsonl');
+  fs.writeFileSync(
+    at,
+    JSON.stringify({ type: 'assistant', message: { model: 'claude-haiku-4-5' } }) + '\n'
+  );
+  calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'SubagentStop',
+      agent_id: 'b2',
+      agent_type: 'teknesyum:scribe',
+      agent_transcript_path: at,
+      effort: { level: 'low' },
+    },
+    konfig(true)
+  );
+  esit(fs.existsSync(path.join(live, '_sorun.log')), false, 'uyusan ajan sorun yazmamali');
+});
+
+ol('cagrida secilen model beyan sayilir, uyusmazlik uydurulmaz', () => {
+  const { p, live } = proje(1, 0);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
+  const at = path.join(d, 'agent-b3.jsonl');
+  fs.writeFileSync(
+    at,
+    JSON.stringify({ type: 'assistant', message: { model: 'claude-opus-4-5' } }) + '\n'
+  );
+  const cfg = konfig(true);
+  calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'PreToolUse',
+      tool_name: 'Agent',
+      tool_input: { subagent_type: 'teknesyum:scribe', description: 'agir is', model: 'opus' },
+    },
+    cfg
+  );
+  calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'SubagentStop',
+      agent_id: 'b3',
+      agent_type: 'teknesyum:scribe',
+      agent_transcript_path: at,
+      effort: { level: 'low' },
+    },
+    cfg
+  );
+  esit(fs.existsSync(path.join(live, '_sorun.log')), false, 'ezilen model uyusmazlik sayilmamali');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

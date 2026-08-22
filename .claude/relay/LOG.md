@@ -3,3 +3,4 @@
 2026-08-22 | T2 eco-kayit-profil | teknesyum-builder | submitted | eco: gzipli ham transkript + tek satirlik filo dokumu + 64 kB baslik tamponu; /premium uc profili esit anlatir | 230/230
 2026-08-22 | T1 scan | teknesyum-builder | submitted | /scan uc profil sertifikasi + kalici kapsam kaydi + 15 test | 271/271
 2026-08-22 | T1 oturum-profil-kaydi | teknesyum-builder | submitted | profil kaydi makine genelinden oturum basina indi (oturumlar/<sid>.json), 7 gun bayatlik, durum artik oturum profilini basiyor (ajan dosyalari ayri satirda) + efor izole degil satiri | 277/277
+2026-08-22 | T2 dugmeler-enjeksiyona | teknesyum-builder | submitted | premium.js hicbir dosya yazmiyor; ajan model alani silindi, efor/tur normal tabaninda; dugme sapmalari enjeksiyona gecti; ayarSayi uc katman; profil degisince sayac sifirlaniyor; tur makbuzu adi ayristi | 310/310

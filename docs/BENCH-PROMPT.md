@@ -10,6 +10,13 @@ docs/BENCH-PROMPT.md oku ve uygula. Durum: <yalin|eco|normal|premium>
 Dördünü aynı oturumda peş peşe koşma — sonrakiler bağlam taşır ve avantajlı başlar,
 ölçüm bozulur.
 
+**Üç profil aynı anda koşulabilir**, ayrı pencerelerde. `yalin` koşamaz: eklentiyi
+kapatmak makine geneli bir işlem, o sırada başka Teknesyum oturumu açılamaz. Sıra:
+önce üç profil paralel, sonra yalın tek başına.
+
+**Koşu 45 dakikayla sınırlıdır.** İş bitmek zorunda değil — ölçülen şey "kim bitirdi"
+değil, **aynı sürede kim ne kadar ilerledi**. Süre dolunca elindekini teslim et.
+
 **Dört durum:**
 
 | Durum | Ne | Neden ölçülüyor |
@@ -68,6 +75,13 @@ değer mi" sorusunun cevabı olmaz.
 
 Chess960 (Fischer Random) için bir hamle üreteci. Dil TypeScript, dış bağımlılık yok.
 
+**Süre tavanı 45 dakika.** Saati koşu başında not et. Süre dolduğunda ne durumdaysan
+commit at ve teslim et — yarım iş geçerli bir sonuçtur, gecikmiş iş değildir. Sonuna
+kadar çalışıp tavanı aşmak ölçümü bozar.
+
+Sıralama senin kararın. Neyi önce yaptığın da ölçümün parçası: 45 dakikada perft(2)'ye
+kadar doğru çalışan bir üreteç, perft(5) hedefleyip hiçbir şey çalıştıramamaktan iyidir.
+
 - 960 başlangıç dizilişinin hepsi üretilebilmeli, numaralandırma standart olmalı.
 - Bütün kurallar: rok (Chess960 kuralları), en passant, terfi, şah, şahmat, pat.
 - `perft(fen, derinlik)` — verilen konumdan verilen derinlikte yasal hamle sayısını döner.
@@ -91,13 +105,17 @@ Chess960 (Fischer Random) için bir hamle üreteci. Dil TypeScript, dış bağı
 Commit at ve tek blok halinde ver:
 
 ```
-Süre: <toplam>
+Süre: <toplam, tavana ulaşıldı mı>
 Ajan: <kaç tane, hangi modeller>
 Taranan depo: <kaç>
 Kod: <dosya sayısı> dosya, <satır sayısı> satır
 Kendi testlerim: <kaç/kaç>
+En derin çalışan perft: <derinlik, hangi konumda>
 Bildiğim eksikler: <dürüst liste>
 ```
+
+`En derin çalışan perft` bench'in ana skorudur: hangi derinliğe kadar **kendi ürettiğin
+sayı doğru**. Emin değilsen o derinliği yazma — doğrulanmamış derinlik sıfır sayılır.
 
 Eksik bırakmak serbest, eksik olduğunu gizlemek değil. Son satır boş çıkıyorsa
 muhtemelen yeterince bakmamışsındır.
@@ -110,12 +128,14 @@ muhtemelen yeterince bakmamışsındır.
 
 | Ölçüt | Nereden |
 |---|---|
-| Süre | `BENCH.md` toplamı |
+| İlerleme | 45 dakikada ulaşılan en derin doğru perft |
 | Token | `BENCH.md` toplamı |
 | Doğruluk | perft referanslarıyla karşılaştırma |
 | Bug yoğunluğu | başarısız perft / bin satır |
-| Verimlilik | doğruluk ÷ token |
+| Verimlilik | ulaşılan derinlik ÷ token |
 | Ajan maliyeti | açılan ajan sayısı ve modelleri |
+
+Süre artık bir ölçüt değil, sabit. Değişken olan ne kadar ilerlendiği.
 
 Asıl kıyas `yalin` sütununa karşıdır: üç profil birbirinden ne kadar ayrışırsa ayrışsın,
 base'in kattığı değer ancak base'siz koşuyla karşılaştırıldığında görünür. Base bir

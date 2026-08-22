@@ -600,10 +600,16 @@ function kaydet() {
 
 // SON.json tek işaretçi değil, oturum başına işaretçi tutar: iki sohbet aynı projede
 // kaydettiğinde biri ötekinin izini silmesin. Yazma önce geçici dosyaya, sonra rename.
+function nesneMi(x) {
+  return !!x && typeof x === 'object' && !Array.isArray(x);
+}
+
 function sonOku(dip) {
   try {
     const c = JSON.parse(fs.readFileSync(path.join(dip, 'SON.json'), 'utf8'));
-    return c && c.oturumlar ? c : { son: null, oturumlar: {} };
+    if (!nesneMi(c)) return { son: null, oturumlar: {} };
+    if (!nesneMi(c.oturumlar)) return { son: nesneMi(c.son) ? c.son : null, oturumlar: {} };
+    return c;
   } catch {
     return { son: null, oturumlar: {} };
   }
@@ -668,6 +674,12 @@ function kayitSec(kok) {
     if (!bul)
       dur('kayıt bulunamadı: ' + istenen + ' — mevcut: ' + hepsi.map((x) => x.ad).join(', '));
     return bul;
+  }
+  const oturum = arg('oturum', process.env.CLAUDE_CODE_SESSION_ID || null);
+  if (oturum) {
+    const isaret = sonOku(kayitKok(kok)).oturumlar[oturum];
+    const bu = nesneMi(isaret) && isaret.ad ? hepsi.find((x) => x.ad === isaret.ad) : null;
+    if (bu) return bu;
   }
   return hepsi[0];
 }

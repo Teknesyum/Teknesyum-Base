@@ -873,13 +873,15 @@ const S = {
     tr: (n) => 'Ekran kapısı ' + n + ' dakika açık; süre dolunca kendiliğinden kapanır.',
     en: (n) => 'The screen gate is open for ' + n + ' minutes; it closes when time runs out.',
   },
-  ekranAcik: {
-    tr: 'Ekran kapısı şu an açık.',
-    en: 'The screen gate is open right now.',
-  },
-  ekranKapali: {
-    tr: 'Ekran kapısı kapalı. `/ekran` bir tur açar, `/ekran 10` on dakika açık tutar.',
-    en: 'The screen gate is closed. `/ekran` opens one turn, `/ekran 10` keeps it ten minutes.',
+  ekranDamgaYok: {
+    tr: [
+      'Tur damgası okunamadı, kapı bir tur için açılamaz — kapalı tarafa düşüldü.',
+      'Süre vererek aç: `/ekran 10` on dakika açık tutar.',
+    ].join('\n'),
+    en: [
+      'The turn stamp could not be read, so the gate cannot open for one turn.',
+      'Open it with a duration instead: `/ekran 10` keeps it open for ten minutes.',
+    ].join('\n'),
   },
   ekranBekleyen: {
     tr: (ne) => 'Kuyrukta bekleyen: ' + ne,

@@ -4929,10 +4929,26 @@ function ekranCfg(kapaliMi) {
   return c;
 }
 
+function ekranTurYolu(c) {
+  return path.join(ekranKok(c), SID + '.tur');
+}
+
 function ekranTur(c, ms) {
-  const f = path.join(ekranKok(c), SID + '.tur');
-  fs.writeFileSync(f, 'x');
-  if (ms) fs.utimesSync(f, ms / 1000, ms / 1000);
+  const t = ms || Date.now();
+  fs.writeFileSync(ekranTurYolu(c), JSON.stringify({ t, son: t, durak: 0, boy: 0 }));
+}
+
+function ekranTurDokun(c) {
+  const d = JSON.parse(fs.readFileSync(ekranTurYolu(c), 'utf8'));
+  d.son = Date.now();
+  d.durak = (d.durak || 0) + 1;
+  fs.writeFileSync(ekranTurYolu(c), JSON.stringify(d));
+  const ileri = Date.now() / 1000 + 5;
+  fs.utimesSync(ekranTurYolu(c), ileri, ileri);
+}
+
+function ekranTurBitir(c) {
+  fs.unlinkSync(ekranTurYolu(c));
 }
 
 function ekranDurumu(c) {
@@ -4978,6 +4994,7 @@ ol('ekran kapisi computer-use cagrisini kapaliyken engeller aciksa gecirir', () 
   const kapali = ekranArac(c, 'mcp__computer-use__computer');
   esit(kapali.kod, 2, 'kapali kapi exit 2 vermeli');
   icerir(kapali.err, 'ENGELLENDİ');
+  ekranTur(c);
   ekranAc(c);
   esit(ekranArac(c, 'mcp__computer-use__computer').kod, 0, 'acik kapi gecirmeli');
 });
@@ -5013,6 +5030,7 @@ ol('ekran kapisi ayni turda bes denemede tek bildirim basar', () => {
     const r = ekranArac(c, 'mcp__computer-use__computer');
     esit(r.kod, 2, 'her deneme engellenmeli');
     if (r.out) bildirim++;
+    ekranTurDokun(c);
   }
   esit(bildirim, 1, 'tur basina tek bildirim');
   esit(ekranDurumu(c).kuyruk['mcp__computer-use__computer'].kez, 5, 'kuyruk bes saymali');
@@ -5022,7 +5040,9 @@ ol('ekran kapisi yeni turda bildirimi bir kez daha basar', () => {
   const c = ekranCfg();
   ekranTur(c, Date.now() - 90000);
   esit(ekranArac(c, 'mcp__computer-use__computer').out === '', false, 'ilk turda bildirim');
+  ekranTurDokun(c);
   esit(ekranArac(c, 'mcp__computer-use__computer').out, '', 'ayni turda ikinci bildirim yok');
+  ekranTurBitir(c);
   ekranTur(c, Date.now());
   esit(ekranArac(c, 'mcp__computer-use__computer').out === '', false, 'yeni turda bildirim');
 });
@@ -5038,9 +5058,35 @@ ol('/ekran bir tur acar sonraki turda kapi yine kapalidir', () => {
   const c = ekranCfg();
   ekranTur(c, Date.now() - 60000);
   icerir(ekranAc(c), 'bir tur');
+  ekranTurDokun(c);
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 0, 'tur ici olay kapiyi kapatmamali');
+  ekranTurDokun(c);
   esit(ekranArac(c, 'mcp__computer-use__computer').kod, 0, 'acildigi turda gecmeli');
+  ekranTurBitir(c);
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 2, 'tur bitince kapali');
   ekranTur(c, Date.now());
   esit(ekranArac(c, 'mcp__computer-use__computer').kod, 2, 'sonraki turda kapali');
+});
+
+ol('/ekran tur damgasi yokken kapiyi acmaz', () => {
+  const c = ekranCfg();
+  icerir(ekranAc(c), 'kapalı tarafa');
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 2, 'damgasiz tek tur acilmamali');
+  esit(
+    fs.existsSync(path.join(ekranKok(c), SID + '.ekran.json')) && ekranDurumu(c).acik,
+    undefined
+  );
+  icerir(ekranAc(c, 10), '10 dakika');
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 0, 'sureli acma damgasiz da calismali');
+});
+
+ol('/ekran kuyrugu sifirlar', () => {
+  const c = ekranCfg();
+  ekranArac(c, 'mcp__computer-use__computer');
+  ekranArac(c, 'mcp__computer-use__computer');
+  icerir(ekranAc(c, 5), 'mcp__computer-use__computer ×2');
+  esit(Object.keys(ekranDurumu(c).kuyruk).length, 0, 'kuyruk bosalmali');
+  esit(ekranAc(c, 5).includes('Kuyrukta'), false, 'ikinci acmada eski sayac gorunmemeli');
 });
 
 ol('/ekran 10 on dakika acik tutar damga eskiyince kapanir', () => {
@@ -5082,8 +5128,25 @@ ol('ekran kapisi dotnet run ve pencere acan komutlari kapaliyken engeller', () =
   ]) {
     esit(ekranBash(c, k).kod, 2, k + ' engellenmeli');
   }
+  ekranTur(c);
   ekranAc(c);
   esit(ekranBash(c, 'dotnet run').kod, 0, '/ekran sonrasi gecmeli');
+});
+
+ol('ekran kapisi komut metninde gecen ama calistirmayan kullanimi gecirir', () => {
+  const c = ekranCfg();
+  for (const k of [
+    'echo dotnet run',
+    'git commit -m "dotnet run duzeltmesi"',
+    'rg "dotnet run"',
+    'ls bin/Debug/net8.0/App.exe',
+    'rm bin/Release/App.exe',
+    'grep -n "npm run electron" package.json',
+    'cat docs/x.md | rg "Start-Process App.exe"',
+    'sed -i "s/dotnet run/dotnet test/" README.md',
+  ]) {
+    esit(ekranBash(c, k).kod, 0, k + ' engellenmemeli');
+  }
 });
 
 ol('ekran kapisi bassiz bayrak tasiyan komutu kapaliyken de gecirir', () => {

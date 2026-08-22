@@ -61,34 +61,21 @@ gerektirmez.
 Ayrı işletim sistemi, ayrı masaüstü, ayrı girdi kuyruğu. Ajan orada istediği kadar
 tıklar, senin ekranın hiç sarsılmaz.
 
-Bu makinede durum: **Hyper-V kapalı** — 22.08.2026'da açıldı, aynı gün kullanıcı kararıyla
-geri kapatıldı. Arada yeniden başlatma olmadığı için özellik hiç etkinleşmedi, net değişim
-sıfır. Windows Sandbox kapalı. Kaynak sıkıntısı yok (63,6 GB RAM, 333 GB boş, 16 iş parçacığı).
-
-**Karar:** bu yol şimdilik rafta. Ekran kapısı (§4.1) odak çalma sorununu zaten kapatıyor;
-VM ancak "arayüzü gerçekten tıklatarak görmem gerek" diyen iş kaldığında gerekecek.
+Bu makinede durum: **Hyper-V kapalı, Windows Sandbox kapalı** — ikisi de Pro sürümde var,
+açılabilir. Kaynak sıkıntısı yok (64 GB RAM, 343 GB boş, 16 iş parçacığı).
 
 Bilmen gerekenler:
 
-- **Hipervizör bedeli zaten ödeniyordu — bu belgenin ilk hâli yanılıyordu.** Ölçüm:
-  `HypervisorPresent` daha Hyper-V açılmadan `True`, çünkü **VBS/HVCI (Bellek Bütünlüğü)**
-  çalışıyor (`SecurityServicesRunning = 2`). Windows 11'in uygun donanımdaki varsayılanı bu.
-  Yani hile korumalarını ve VMware/VirtualBox'ı etkileyen hipervizör zaten devredeydi;
-  Hyper-V onun üstüne VM yığınını ekliyor, yeni bir hipervizör bedeli getirmiyor.
-  Karar yine de geri alınabilir ve makinenin tamamını ilgilendiriyor — ama sanılandan ucuz.
+- Hyper-V'yi açmak **hipervizörü** devreye sokar. Bazı oyun hile korumaları ve
+  VMware/VirtualBox kurulumları bundan etkilenir. Geri alınabilir ama makinenin tamamını
+  ilgilendiren bir karar.
 - **GPU:** NVENC testleri sanal makinede güvenilir değil. Tüketici kartlarında GPU-P
   (bölümleme) resmî desteklenmiyor, sürücü dosyalarını konuğa elle kopyalamak gerekiyor.
   VidShrink'in donanım kodlayıcı yolu **host'ta** test edilmeye devam etmeli; sanal
   makineye giden yalnızca arayüz ve CPU yolu olur.
-- Ajanı sanal makinede nasıl çalıştırırsın: **içine Claude Code kurmaya gerek yok.**
-  `Invoke-Command -VMName` (PowerShell Direct) host'taki ajanın konuk içinde komut
-  çalıştırmasını sağlar — VMBus üzerinden, ağsız, konsolsuz, penceresiz. VM'in arayüzü
-  vardır ama kullanıcının monitörüne hiç çizilmez. `VMConnect` çizerdi; kullanılmaz.
-  Ekran görüntüsü konuğun içinde alınıp paylaşılan klasöre yazılır, ajan dosyayı okur.
-  Bu, belgenin ilk hâlindeki "VM'e Claude Code kur, `/rc` ile izle" adımını ve onunla
-  gelen tarayıcı girişini tümden kaldırır.
-- PowerShell Direct konuk hesabı kimlik doğrular; atılabilir bir test VM'i için bile bir
-  parola gerekir ve o parolayı kullanıcı belirler.
+- Ajanı sanal makinede nasıl çalıştırırsın: içine Claude Code kurulur, oturum orada açılır.
+  Uzak denetimle (`/rc`) telefondan ya da bu ekrandan tek pencereden izlenir — masaüstünü
+  ele geçiren taraf artık senin masaüstün değil.
 
 ### 3.3 Windows Sandbox (hafif, tek kullanımlık)
 
@@ -124,9 +111,12 @@ Ajanın ekranı **istemesi** engellenemez ama **habersiz alması** engellenebili
    **Kapatmak:** `~/.claude/teknesyum.json` içine `"ekran_kapisi": false`. Kanca hiçbir
    şey yapmadan çıkar; anahtar yoksa kapı açıktır.
 
-   **Tümden sökmek:** `teknesyum/hooks/ekran-kapisi.js` dosyasını sil ve `hooks.json`
-   içindeki `PreToolUse` bloğundan `matcher: "Bash|mcp__computer-use__.*|mcp__Windows-MCP__.*"`
-   girdisini kaldır. Başka hiçbir dosyaya dokunmaz — `relay-watch.js` kapıdan habersizdir.
+   **Tümden sökmek:** `teknesyum/hooks/ekran-kapisi.js` ile `teknesyum/commands/ekran.md`
+   dosyalarını sil ve `hooks.json` içindeki `PreToolUse` bloğundan
+   `matcher: "Bash|mcp__computer-use__.*|mcp__Windows-MCP__.*"` girdisini kaldır.
+   Başka hiçbir dosyaya dokunmaz — `relay-watch.js` kapıdan habersizdir, kapı onun tur
+   dosyasını yalnız okur. `dil.js`'teki `ekran*` metinleri geride kalırsa çağrısız durur.
+   Sökme fiilen sınandı: üçü kaldırıldığında kalan test kümesi 282/282 geçiyor.
 2. **Kural.** `standartlar.md`'ye tek madde: uygulama doğrulaması başsız koşuyla yapılır;
    arayüz gerekiyorsa UIA, ekran sürme son çaredir ve izin ister.
 3. **Test kipi maddesi.** Her masaüstü programına `--test` bayrağı: pencere ekran dışında,

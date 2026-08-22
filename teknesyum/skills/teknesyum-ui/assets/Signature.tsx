@@ -27,16 +27,16 @@ export function Signature() {
           rel="noopener noreferrer"
           title="Projeyi desteklemek için tıkla"
           className="group flex items-center gap-1.5 text-sm font-bold tracking-[0.15em] no-underline
-                     px-3 py-1.5 rounded-lg border bg-transparent transition-all duration-300
+                     px-3 py-1.5 rounded-lg border bg-transparent
+                     transition-[color,border-color] duration-[--tk-t-instant]
                      text-[var(--color-neon-purple)] border-[var(--color-neon-purple)]/50
-                     [text-shadow:0_0_5px_rgba(176,38,255,0.5)]
-                     hover:border-[var(--color-neon-purple)]
-                     hover:shadow-[0_0_12px_rgba(176,38,255,0.35)]"
+                     shadow-[0_0_12px_rgba(176,38,255,0.35)] opacity-80 hover:opacity-100
+                     hover:border-[var(--color-neon-purple)]"
         >
           <svg
             width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden
             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            className="transition-transform duration-300 group-hover:scale-110"
+            className="transition-transform duration-[--tk-t-instant] group-hover:scale-110"
           >
             <path d="M4 9h13v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9Z" />
             <path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H17" />

@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { s: ceviri } = require('../hooks/dil.js');
 
-const UI_EXTENSIONS = new Set([
+const UI_UZANTILARI = new Set([
   '.tsx',
   '.jsx',
   '.vue',
@@ -16,7 +16,7 @@ const UI_EXTENSIONS = new Set([
   '.xaml',
   '.cs',
 ]);
-const TOKEN_EXTENSIONS = new Set([
+const TOKEN_UZANTILARI = new Set([
   '.json',
   '.yaml',
   '.yml',
@@ -26,151 +26,151 @@ const TOKEN_EXTENSIONS = new Set([
   '.less',
   '.xaml',
 ]);
-const SKIP_NAMES = new Set(['node_modules', '.git', 'build', 'dist', 'bin', 'obj']);
+const ATLANAN_ADLAR = new Set(['node_modules', '.git', 'build', 'dist', 'bin', 'obj']);
 
-function fail(message, code = 1) {
-  process.stderr.write(`${message}\n`);
-  process.exitCode = code;
+function hata(mesaj, kod = 1) {
+  process.stderr.write(`${mesaj}\n`);
+  process.exitCode = kod;
 }
 
-function readInput() {
-  const args = process.argv.slice(2);
-  const targetArg = args.find((arg) => !arg.startsWith('-'));
-  const targetFlag = args.indexOf('--target');
-  if (targetFlag >= 0 && args[targetFlag + 1]) return { target: args[targetFlag + 1] };
-  if (targetArg) return { target: targetArg };
+function girdiOku() {
+  const argumanlar = process.argv.slice(2);
+  const hedefArgumani = argumanlar.find((arguman) => !arguman.startsWith('-'));
+  const hedefBayragi = argumanlar.indexOf('--target');
+  if (hedefBayragi >= 0 && argumanlar[hedefBayragi + 1])
+    return { target: argumanlar[hedefBayragi + 1] };
+  if (hedefArgumani) return { target: hedefArgumani };
   if (process.stdin.isTTY) return {};
   try {
-    const value = fs.readFileSync(0, 'utf8').trim();
-    return value ? JSON.parse(value) : {};
+    const deger = fs.readFileSync(0, 'utf8').trim();
+    return deger ? JSON.parse(deger) : {};
   } catch {
     throw new Error('stdin JSON okunamadı');
   }
 }
 
-function normalizeTarget(value) {
-  if (typeof value !== 'string' || value.trim() === '') throw new Error('target gerekli');
-  const absolute = path.resolve(value);
-  const stat = fs.lstatSync(absolute);
-  if (stat.isSymbolicLink() || !stat.isDirectory())
+function hedefCoz(deger) {
+  if (typeof deger !== 'string' || deger.trim() === '') throw new Error('target gerekli');
+  const mutlak = path.resolve(deger);
+  const durum = fs.lstatSync(mutlak);
+  if (durum.isSymbolicLink() || !durum.isDirectory())
     throw new Error('target gerçek bir klasör olmalı');
-  return fs.realpathSync.native(absolute);
+  return fs.realpathSync.native(mutlak);
 }
 
-function isHidden(name) {
-  return name.startsWith('.');
+function gizliMi(ad) {
+  return ad.startsWith('.');
 }
 
-function isTokenFile(name, extension) {
-  if (!TOKEN_EXTENSIONS.has(extension)) return false;
+function tokenDosyasiMi(ad, uzanti) {
+  if (!TOKEN_UZANTILARI.has(uzanti)) return false;
   return (
-    /(^|[._-])(tokens?|theme|variables?)([._-]|$)/i.test(name) ||
-    /(^|[/\\])tokens?([/\\])/i.test(name)
+    /(^|[._-])(tokens?|theme|variables?)([._-]|$)/i.test(ad) || /(^|[/\\])tokens?([/\\])/i.test(ad)
   );
 }
 
-function collectFiles(root) {
-  const files = [];
-  function visit(directory) {
-    let entries = fs.readdirSync(directory, { withFileTypes: true });
-    entries = entries.sort(
+function dosyalariTopla(kok) {
+  const dosyalar = [];
+  function gez(klasor) {
+    let girdiler = fs.readdirSync(klasor, { withFileTypes: true });
+    girdiler = girdiler.sort(
       (a, b) =>
         a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }) || a.name.localeCompare(b.name)
     );
-    for (const entry of entries) {
-      if (isHidden(entry.name) || SKIP_NAMES.has(entry.name)) continue;
-      const absolute = path.join(directory, entry.name);
-      const stat = fs.lstatSync(absolute);
-      if (stat.isSymbolicLink()) continue;
-      if (stat.isDirectory()) {
-        visit(absolute);
+    for (const girdi of girdiler) {
+      if (gizliMi(girdi.name) || ATLANAN_ADLAR.has(girdi.name)) continue;
+      const mutlak = path.join(klasor, girdi.name);
+      const durum = fs.lstatSync(mutlak);
+      if (durum.isSymbolicLink()) continue;
+      if (durum.isDirectory()) {
+        gez(mutlak);
         continue;
       }
-      if (!stat.isFile()) continue;
-      const extension = path.extname(entry.name).toLowerCase();
-      if (!UI_EXTENSIONS.has(extension) && !isTokenFile(entry.name, extension)) continue;
-      const relative = path.relative(root, absolute).split(path.sep).join('/');
-      files.push({ absolute, relative, kind: UI_EXTENSIONS.has(extension) ? 'ui' : 'token' });
+      if (!durum.isFile()) continue;
+      const uzanti = path.extname(girdi.name).toLowerCase();
+      if (!UI_UZANTILARI.has(uzanti) && !tokenDosyasiMi(girdi.name, uzanti)) continue;
+      const gorece = path.relative(kok, mutlak).split(path.sep).join('/');
+      dosyalar.push({ mutlak, gorece, kind: UI_UZANTILARI.has(uzanti) ? 'ui' : 'token' });
     }
   }
-  visit(root);
-  return files.sort(
+  gez(kok);
+  return dosyalar.sort(
     (a, b) =>
-      a.relative.localeCompare(b.relative, 'en', { sensitivity: 'base' }) ||
-      a.relative.localeCompare(b.relative)
+      a.gorece.localeCompare(b.gorece, 'en', { sensitivity: 'base' }) ||
+      a.gorece.localeCompare(b.gorece)
   );
 }
 
-function catalogRoot() {
-  const candidates = [
+function katalogKoku() {
+  const adaylar = [
     path.resolve(__dirname, '..', 'skills', 'teknesyum-ui'),
     path.resolve(__dirname, '..', '..', 'skills', 'teknesyum-ui'),
   ];
-  for (const candidate of candidates) {
-    if (fs.existsSync(path.join(candidate, 'SKILL.md'))) return candidate;
+  for (const aday of adaylar) {
+    if (fs.existsSync(path.join(aday, 'SKILL.md'))) return aday;
   }
   throw new Error('teknesyum-ui katalogu bulunamadı');
 }
 
-function readCatalog() {
-  const root = catalogRoot();
-  const paths = ['SKILL.md'];
-  const references = path.join(root, 'references');
-  if (fs.existsSync(references)) {
-    for (const name of fs.readdirSync(references).sort((a, b) => a.localeCompare(b))) {
-      const absolute = path.join(references, name);
-      if (fs.lstatSync(absolute).isFile() && path.extname(name).toLowerCase() === '.md')
-        paths.push(path.join('references', name));
+function katalogOku() {
+  const kok = katalogKoku();
+  const yollar = ['SKILL.md'];
+  const referanslar = path.join(kok, 'references');
+  if (fs.existsSync(referanslar)) {
+    for (const ad of fs.readdirSync(referanslar).sort((a, b) => a.localeCompare(b))) {
+      const mutlak = path.join(referanslar, ad);
+      if (fs.lstatSync(mutlak).isFile() && path.extname(ad).toLowerCase() === '.md')
+        yollar.push(path.join('references', ad));
     }
   }
-  const documents = paths.map((relative) => ({
-    path: relative.split(path.sep).join('/'),
-    content: fs.readFileSync(path.join(root, relative), 'utf8'),
+  const belgeler = yollar.map((gorece) => ({
+    path: gorece.split(path.sep).join('/'),
+    content: fs.readFileSync(path.join(kok, gorece), 'utf8'),
   }));
-  const rules = [];
-  for (const document of documents) {
-    const lines = document.content.split(/\r?\n/);
-    lines.forEach((line, index) => {
-      const match = line.match(/^#{2,4}\s+(.+?)\s*$/);
-      if (!match) return;
-      const title = match[1].replace(/[`*_]/g, '').trim();
-      const slug = title
+  const kurallar = [];
+  for (const belge of belgeler) {
+    const satirlar = belge.content.split(/\r?\n/);
+    satirlar.forEach((satirMetni, sira) => {
+      const eslesme = satirMetni.match(/^#{2,4}\s+(.+?)\s*$/);
+      if (!eslesme) return;
+      const baslik = eslesme[1].replace(/[`*_]/g, '').trim();
+      const slug = baslik
         .toLowerCase()
         .normalize('NFKD')
         .replace(/[̀-ͯ]/g, '')
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
-      rules.push({
-        id: slug || `section-${rules.length + 1}`,
-        title,
-        source: document.path,
-        line: index + 1,
+      kurallar.push({
+        id: slug || `section-${kurallar.length + 1}`,
+        title: baslik,
+        source: belge.path,
+        line: sira + 1,
       });
     });
   }
-  rules.sort(
+  kurallar.sort(
     (a, b) => a.source.localeCompare(b.source) || a.line - b.line || a.id.localeCompare(b.id)
   );
-  const source = documents.map((document) => `${document.path}\n${document.content}`).join('\n');
+  const kaynak = belgeler.map((belge) => `${belge.path}\n${belge.content}`).join('\n');
   return {
-    root,
-    documents,
-    rules,
-    digest: crypto.createHash('sha256').update(source).digest('hex'),
+    root: kok,
+    documents: belgeler,
+    rules: kurallar,
+    digest: crypto.createHash('sha256').update(kaynak).digest('hex'),
   };
 }
 
-function ruleFor(catalog, terms, fallback) {
-  const found = catalog.rules.find((rule) =>
-    terms.some((term) => rule.title.toLowerCase().includes(term))
+function kuralBul(katalog, terimler, yedek) {
+  const bulunan = katalog.rules.find((kural) =>
+    terimler.some((terim) => kural.title.toLowerCase().includes(terim))
   );
-  if (found) return found.id;
-  const section = catalog.rules.find((rule) => rule.id.startsWith(fallback));
-  return section ? section.id : fallback;
+  if (bulunan) return bulunan.id;
+  const bolum = katalog.rules.find((kural) => kural.id.startsWith(yedek));
+  return bolum ? bolum.id : yedek;
 }
 
-function finding(file, line, rule, severity, suggestion) {
-  return { file, line, rule, severity, suggestion };
+function bulguYap(dosya, satir, kural, severity, oneri) {
+  return { file: dosya, line: satir, rule: kural, severity, suggestion: oneri };
 }
 
 const PALET = new Set([
@@ -185,101 +185,101 @@ const PALET = new Set([
 ]);
 const PUNTO = new Set([10, 13, 14, 18, 24]);
 const BULGU_TAVANI = 200;
-const BUYUK = '[A-Z\u00c7\u011e\u0130\u00d6\u015e\u00dc]';
-const UPPERCASE = new RegExp('(^|[^p{L}])' + BUYUK + '{3,}([^p{L}]|$)', 'u');
+const BUYUK = '[A-ZÇĞİÖŞÜ]';
+const BUYUK_HARF_DIZISI = new RegExp('(^|[^p{L}])' + BUYUK + '{3,}([^p{L}]|$)', 'u');
 const GORUNEN_NITELIK =
   /\b(?:Content|Text|Header|ToolTip|title|label|placeholder|alt|aria-label)\s*=\s*["']([^"']+)["']/gi;
 const RENK = /#[0-9a-fA-F]{3,8}\b|\brgba?\([^)]*\)|\bhsla?\([^)]*\)/g;
 const BEYAZ_ZEMIN =
   /\b(?:background|background-color|Background)\s*[:=]\s*["']?\s*(#fff(?:fff)?\b|white\b)/i;
 
-function gorunenParcalar(lineText) {
-  const out = [];
-  for (const m of lineText.matchAll(/>([^<>{}]+)</g)) out.push(m[1]);
-  for (const m of lineText.matchAll(GORUNEN_NITELIK)) out.push(m[1]);
-  return out.filter((s) => /\p{L}/u.test(s));
+function gorunenParcalar(satirMetni) {
+  const cikti = [];
+  for (const m of satirMetni.matchAll(/>([^<>{}]+)</g)) cikti.push(m[1]);
+  for (const m of satirMetni.matchAll(GORUNEN_NITELIK)) cikti.push(m[1]);
+  return cikti.filter((parca) => /\p{L}/u.test(parca));
 }
 
-function hexNormal(value) {
-  const v = value.toLowerCase();
+function hexNormal(deger) {
+  const v = deger.toLowerCase();
   if (!v.startsWith('#')) return v.replace(/\s+/g, '');
   if (v.length === 4) return '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
   if (v.length === 9 && v.endsWith('ff')) return v.slice(0, 7);
   return v;
 }
 
-function paletDisi(value) {
-  const v = hexNormal(value);
+function paletDisi(deger) {
+  const v = hexNormal(deger);
   if (v === 'transparent' || /^rgba?\([^)]*,\s*0\s*\)$/.test(v)) return false;
   if (v.startsWith('#')) return !PALET.has(v);
   return true;
 }
 
-function puntoBulgusu(lineText) {
-  const out = [];
-  for (const m of lineText.matchAll(/font-size\s*:\s*([\d.]+)px/gi)) out.push(Number(m[1]));
-  for (const m of lineText.matchAll(/FontSize\s*=\s*"([\d.]+)"/g)) out.push(Number(m[1]));
-  return out.filter((n) => Number.isFinite(n) && !PUNTO.has(n));
+function puntoBulgusu(satirMetni) {
+  const cikti = [];
+  for (const m of satirMetni.matchAll(/font-size\s*:\s*([\d.]+)px/gi)) cikti.push(Number(m[1]));
+  for (const m of satirMetni.matchAll(/FontSize\s*=\s*"([\d.]+)"/g)) cikti.push(Number(m[1]));
+  return cikti.filter((n) => Number.isFinite(n) && !PUNTO.has(n));
 }
 
-function inspect(file, text, catalog) {
-  const lines = text.split(/\r?\n/);
-  const findings = [];
-  const caseRule = ruleFor(catalog, ['uppercase', 'b\u00fcy\u00fck harf'], 'text-case');
-  const colorRule = ruleFor(catalog, ['palet', 'palette', 'renk'], 'color-palette');
-  const groundRule = ruleFor(catalog, ['zemin', 'ground', 'background'], 'color-palette');
-  const typeRule = ruleFor(catalog, ['punto', 'tipografi', 'type scale'], 'typography');
-  const motionRule = ruleFor(
-    catalog,
-    ['width', 'height', 'box-shadow', 'animasyonlan\u0131r'],
+function denetle(dosya, metin, katalog) {
+  const satirlar = metin.split(/\r?\n/);
+  const bulgular = [];
+  const harfKurali = kuralBul(katalog, ['uppercase', 'büyük harf'], 'text-case');
+  const renkKurali = kuralBul(katalog, ['palet', 'palette', 'renk'], 'color-palette');
+  const zeminKurali = kuralBul(katalog, ['zemin', 'ground', 'background'], 'color-palette');
+  const puntoKurali = kuralBul(katalog, ['punto', 'tipografi', 'type scale'], 'typography');
+  const hareketKurali = kuralBul(
+    katalog,
+    ['width', 'height', 'box-shadow', 'animasyonlanır'],
     'motion-properties'
   );
-  lines.forEach((lineText, index) => {
-    const line = index + 1;
+  satirlar.forEach((satirMetni, sira) => {
+    const satir = sira + 1;
     // ÖLÇÜLDÜ: kural her satırdaki büyük harf dizisini yakalıyordu — sabit adı, HTTP,
     // sınıf adı, hepsi bulguydu ve çıktı okunmaz oluyordu. Kural görünen metne aittir:
     // JSX metin düğümü ve etiketli nitelik. Kodun kendi adlandırması bu kuralın dışı.
-    if (gorunenParcalar(lineText).some((parca) => UPPERCASE.test(parca)))
-      findings.push(finding(file, line, caseRule, 'warning', ceviri('uiBuyukHarf')));
-    if (BEYAZ_ZEMIN.test(lineText))
-      findings.push(finding(file, line, groundRule, 'error', ceviri('uiZemin')));
+    if (gorunenParcalar(satirMetni).some((parca) => BUYUK_HARF_DIZISI.test(parca)))
+      bulgular.push(bulguYap(dosya, satir, harfKurali, 'warning', ceviri('uiBuyukHarf')));
+    if (BEYAZ_ZEMIN.test(satirMetni))
+      bulgular.push(bulguYap(dosya, satir, zeminKurali, 'error', ceviri('uiZemin')));
     // ÖLÇÜLDÜ: üç gri sabiti aranıyordu; paletin dışındaki diğer bütün renkler sessizce
     // geçiyordu. Ölçüt listede olmak değil, palette olmaktır.
     else
-      for (const m of lineText.match(RENK) || []) {
+      for (const m of satirMetni.match(RENK) || []) {
         if (!paletDisi(m)) continue;
-        findings.push(finding(file, line, colorRule, 'warning', ceviri('uiPalet')));
+        bulgular.push(bulguYap(dosya, satir, renkKurali, 'warning', ceviri('uiPalet')));
         break;
       }
-    if (puntoBulgusu(lineText).length)
-      findings.push(finding(file, line, typeRule, 'warning', ceviri('uiPunto')));
+    if (puntoBulgusu(satirMetni).length)
+      bulgular.push(bulguYap(dosya, satir, puntoKurali, 'warning', ceviri('uiPunto')));
     if (
       /\b(?:transition|animation)\s*:[^;]*(?:width|height|top|left|margin|box-shadow|filter)\b/i.test(
-        lineText
+        satirMetni
       )
     )
-      findings.push(finding(file, line, motionRule, 'error', ceviri('uiHareket')));
+      bulgular.push(bulguYap(dosya, satir, hareketKurali, 'error', ceviri('uiHareket')));
   });
-  return findings;
+  return bulgular;
 }
 
-function run(input) {
-  const root = normalizeTarget(input.target || input.path);
-  const catalog = readCatalog();
-  const files = collectFiles(root);
-  const findings = [];
-  const records = [];
-  for (const file of files) {
-    const content = fs.readFileSync(file.absolute);
-    const text = content.toString('utf8');
-    records.push({
-      file: file.relative,
-      kind: file.kind,
-      digest: crypto.createHash('sha256').update(content).digest('hex'),
+function tara(girdi) {
+  const kok = hedefCoz(girdi.target || girdi.path);
+  const katalog = katalogOku();
+  const dosyalar = dosyalariTopla(kok);
+  const bulgular = [];
+  const kayitlar = [];
+  for (const dosya of dosyalar) {
+    const icerik = fs.readFileSync(dosya.mutlak);
+    const metin = icerik.toString('utf8');
+    kayitlar.push({
+      file: dosya.gorece,
+      kind: dosya.kind,
+      digest: crypto.createHash('sha256').update(icerik).digest('hex'),
     });
-    findings.push(...inspect(file.relative, text, catalog));
+    bulgular.push(...denetle(dosya.gorece, metin, katalog));
   }
-  findings.sort(
+  bulgular.sort(
     (a, b) =>
       a.file.localeCompare(b.file) ||
       a.line - b.line ||
@@ -290,26 +290,26 @@ function run(input) {
   // ÖLÇÜLDÜ: tarama tüm kataloğu (60+ başlık) ve sınırsız bulguyu basıyordu; orta boy
   // bir araydüzde çıktı model bağlamının büyük bölümünü yiyordu. Tavanın üstü `truncated`
   // alanında sayı olarak durur; atlanan bulgu gizlenmez, sayılır.
-  const kesilen = Math.max(0, findings.length - BULGU_TAVANI);
-  const gosterilen = findings.slice(0, BULGU_TAVANI);
+  const kesilen = Math.max(0, bulgular.length - BULGU_TAVANI);
+  const gosterilen = bulgular.slice(0, BULGU_TAVANI);
   const atif = new Set(gosterilen.map((f) => f.rule));
-  const output = {
-    target: root,
+  const cikti = {
+    target: kok,
     catalog: {
-      digest: catalog.digest,
-      rules: catalog.rules.filter((rule) => atif.has(rule.id)),
+      digest: katalog.digest,
+      rules: katalog.rules.filter((kural) => atif.has(kural.id)),
     },
-    files: records,
+    files: kayitlar,
     findings: gosterilen,
     truncated: kesilen,
   };
-  const canonical = JSON.stringify(output);
-  output.digest = crypto.createHash('sha256').update(canonical).digest('hex');
-  return output;
+  const kanonik = JSON.stringify(cikti);
+  cikti.digest = crypto.createHash('sha256').update(kanonik).digest('hex');
+  return cikti;
 }
 
 try {
-  process.stdout.write(`${JSON.stringify(run(readInput()))}\n`);
+  process.stdout.write(`${JSON.stringify(tara(girdiOku()))}\n`);
 } catch (error) {
-  fail(error instanceof Error ? error.message : String(error));
+  hata(error instanceof Error ? error.message : String(error));
 }

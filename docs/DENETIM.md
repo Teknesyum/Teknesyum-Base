@@ -8,8 +8,7 @@ Her bulgu dosya ve satırla kanıtlanmıştır. Kanıtlanamayan hiçbir şey yaz
 
 Sürüm: 2.37.0 · denetim anındaki HEAD `b9c8a3d` · 164/164 test geçiyordu.
 
-**Onarım durumu** — Faz 1 kapandı, 187/187 test geçiyor. B14 dışındaki bütün bulgular
-düştü; B14 (isimlendirme ve kurulum dili) son turda. Kapanan bulgular başlıklarında
+**Onarım durumu** — Faz 1 kapandı, 187/187 test geçiyor. Bütün bulgular düştü. Kapanan bulgular başlıklarında
 işaretli. Kapanmayanlar dalga 2 ve 3'te.
 
 ---
@@ -368,7 +367,7 @@ süreç açmak 20-60 ms"); burada aynı önlem yok.
 
 ---
 
-## B14 · İsimlendirme ve dil iki yerde tutarsız
+## B14 · İsimlendirme ve dil iki yerde tutarsız — **kapandı**
 
 **Boy:** küçük
 

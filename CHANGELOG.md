@@ -53,6 +53,10 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   check ran a `readdirSync` plus three `existsSync` per subdirectory on every single tool
   call.
 - Prior-art scans live under `docs/taramalar/`, where the skill says scan output belongs.
+- `uicheckup.js` and `uicheckup-apply.js` use Turkish identifiers like every other script in
+  the repo, and the install scripts speak English to the user like every other outward-facing
+  surface. Flags, JSON field names and output strings are untouched — both `--help` outputs
+  are byte-identical.
 
 ### Fixed
 

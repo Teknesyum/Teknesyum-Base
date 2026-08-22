@@ -1,6 +1,6 @@
 # Bench sonucu — Chess960 hamle üreteci
 
-Dört durum da tamamlandı. `yalin` başka bir makinede koşuldu (base kurulu değil, aynı
+Dört durum tamamlandı, premium iki kez koşuldu — beşinci sütun varyansı gösteriyor. `yalin` başka bir makinede koşuldu (base kurulu değil, aynı
 model ve efor); kodu buraya alınıp **bütün ölçümler tek makinede** yapıldı, yani CPU farkı
 tabloya girmiyor.
 
@@ -28,21 +28,23 @@ ayırt etmedi.
 
 ## Ayrışma — hız, boyut, yöntem
 
-Hız ölçümü dördü için de bu makinede, arka arkaya yapıldı.
+Hız ölçümü beşi için de bu makinede, arka arkaya yapıldı.
 
-| | yalin | eco | normal | premium |
-|---|---|---|---|---|
-| kiwipete d5 | 29,4 sn | 21,8 sn | 21,6 sn | **15,5 sn** |
-| Kod | **750 satır / 4 dosya** | 786 / 6 | 1008 / 7 | 2825 / 18 |
-| Kendi testi | **1268** | — | 47 | — |
-| Ajan | 0 (base yok) | **0 (kendi kararı)** | 4 | ilk oturumda açıldı, sayı kayıp |
-| Token | **~113.000** | ~157.709 | 226.856 | ölçüm eksik (kesinti) |
-| Süre | 37 dk | 27 dk | 28 dk | ~45 dk (kesintili) |
-| Ön araştırma | 0 depo | 0 depo (tavan 1) | 0 depo (bilerek atlandı) | — |
+| | yalin | eco | normal | premium | premium-2 |
+|---|---|---|---|---|---|
+| kiwipete d5 | 23,2 sn | 19,8 sn | 20,3 sn | 14,0 sn | **12,2 sn** |
+| Kod | **750 / 4** | 786 / 6 | 1008 / 7 | 2825 / 18 | 1411 / 10 |
+| Kendi testi | **1268** | — | 47 | — | 73 |
+| Ajan | 0 (base yok) | **0 (kendi kararı)** | 4 | sayı kayıp | 5 |
+| Token | **~113.000** | ~157.709 | 226.856 | ölçüm eksik | ~350.000 |
+| Süre | 37 dk | 27 dk | 28 dk | ~45 dk (kesintili) | 27 dk |
+| En derin perft | d8 | d7 | d7 | — | **d8** |
 
-Premium en hızlı üreteci yazdı — yalın koşudan **iki kat hızlı** — ve bunu dört kat fazla
-satırla yaptı. Yalın en az token harcadı ve en yavaş kodu yazdı, ama en çok testi o yazdı:
-1268'e karşı 47.
+Premium iki turda da en hızlı üreteci yazdı; ikinci tur yalın koşunun **iki katı** hızlı.
+
+**Varyans büyük.** Aynı profil iki kez koştu ve kod boyutu iki katına yakın ayrıştı:
+2825 satıra karşı 1411. İkinci tur hem daha küçük hem daha hızlı. Tek koşunun neden kanıt
+sayılmadığı burada görünüyor — profil sabitken bile çıktı bu kadar oynuyor.
 
 ---
 
@@ -82,6 +84,31 @@ bakıyor. Bench'in ana skoru (en derin doğru perft) üç profili ayırt etmedi;
 Denetçinin bulduğu diğer üçü de aynı sınıftan: bozuk FEN'in sessizce başka bir konuma
 dönüşmesi, test koşucusunun import hatasını yutması, ve adını taşıdığı senaryoyu hiç
 kurmayan bir test.
+
+---
+
+## Denetim iki kez perft'in kör noktasını buldu
+
+Bu bench'in en sağlam sonucu bu, çünkü **iki bağımsız koşuda tekrarlandı.**
+
+`premium-2`'nin denetçisi motoru satır satır okudu ve şunu buldu:
+
+> Sahte en passant alanı — FEN'den gelen ep karesi doğrulanmıyordu. Arkasında düşman piyonu
+> olmayan bir ep alanı verildiğinde `makeMove` hiçbir şey almıyor ama `unmakeMove` koşulsuz
+> piyon yazıyordu; **tahtaya yoktan taş geliyordu.**
+
+Ajanın kendi gerekçesi meselenin özü:
+
+> *"Referans perft bunu yakalamaz, çünkü referans FEN'lerin hepsinde ep alanı tutarlı."*
+
+Aynı denetim iki hata daha buldu: 512 yarım hamleden sonra sessiz `MAX_PLY` taşması, ve
+README'nin "test dosyası yok" demesi — oysa dört dosya ve 66 test vardı.
+
+`normal` koşusunda da aynı sınıftan bir bulgu çıkmıştı: `@types/node` eksikliği, temiz
+klonda derlenmeyen depo. İkisi de perft yeşilken bulundu.
+
+**Örüntü şu: denetçi açan koşular, doğruluk testinin göremediği kusurları buldu; açmayanlar
+bulamadı.** Bir kez olsa tesadüf sayılırdı, iki kez oldu.
 
 ---
 
@@ -142,14 +169,18 @@ sonuç verir; bu tablo eğilim gösterir, kanıt değil.
 
 Tek turluk bir ölçüm, ve cevabı tek yönlü değil.
 
-**Base'in lehine:** `normal` profilinin denetçisi, perft'in asla yakalayamayacağı bir kusur
-buldu — temiz klonda derlenmeyen bir depo. Denetçi açan profil buldu, açmayanlar bulamadı.
-Premium en hızlı kodu yazdı, yalın koşunun iki katı.
+**Base'in lehine:** denetçi açan iki koşu da, perft'in yakalayamayacağı gerçek kusurlar
+buldu — biri temiz klonda derlenmeyen depo, öteki tahtaya yoktan taş koyan bir unmake.
+İkisi de bütün testler yeşilken bulundu ve bu iki bağımsız koşuda tekrarlandı. Premium iki
+turda da en hızlı kodu yazdı, ikincisi yalın koşunun iki katı.
 
 **Base'in aleyhine:** yalın koşu en az token harcadı (~113.000, normal'in yarısı) ve en çok
 testi yazdı (1268'e karşı 47). Referans doğrulamasında da en titiz o davrandı.
 
 **Ayırt etmeyen:** doğruluk. Dördü de aynı perft sayılarını üretti.
+
+**Ölçülemeyen:** varyans. Premium iki turda 2825 ve 1411 satır yazdı — aynı profil, aynı
+görev, iki kat fark. Tek turluk her satır bu kadar oynayabilir.
 
 Dürüst özet: base bu görevde **hız ve denetim** kattı, **token ve test yoğunluğu** açısından
 maliyet getirdi. Görev tek başına bir modelin bitirebileceği boyuttaydı — 750 satırlık bir

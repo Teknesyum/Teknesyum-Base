@@ -6,7 +6,10 @@ son 20 commit. Hiçbir dosya değiştirilmedi.
 
 Her bulgu dosya ve satırla kanıtlanmıştır. Kanıtlanamayan hiçbir şey yazılmadı.
 
-Sürüm: 2.37.0 · HEAD `b9c8a3d` · 164/164 test geçiyor.
+Sürüm: 2.37.0 · denetim anındaki HEAD `b9c8a3d` · 164/164 test geçiyordu.
+
+**Onarım durumu** — dalga 1 kapandı, 167/167 test geçiyor. Kapanan bulgular başlıklarında
+işaretli. Kapanmayanlar dalga 2 ve 3'te.
 
 ---
 
@@ -60,7 +63,7 @@ duran garantiyi yazacak şekilde güncellenmeli.
 
 ---
 
-## B2 · `[object Object]` klasörü hâlâ üretiliyor ve depoda duruyor
+## B2 · `[object Object]` klasörü hâlâ üretiliyor ve depoda duruyor — **kapandı**
 
 **Boy:** küçük (düzeltmesi), orta (etkisi)
 
@@ -102,7 +105,7 @@ kullanımlarını `cfg` yap; klasörü depodan çıkar; CI'ya testten sonra
 
 ---
 
-## B3 · `SON.json` oturum işaretçisi yazılıyor ama hiç okunmuyor
+## B3 · `SON.json` oturum işaretçisi yazılıyor ama hiç okunmuyor — **kapandı**
 
 **Boy:** orta
 
@@ -167,7 +170,7 @@ iki kanca aynı kökü görmek zorunda.
 
 ---
 
-## B5 · Ölçü ve fark satırı biçimi SKILL.md'de eski kalmış
+## B5 · Ölçü ve fark satırı biçimi SKILL.md'de eski kalmış — **kapandı**
 
 **Boy:** küçük
 
@@ -253,7 +256,7 @@ B1 ile birlikte okunmalı: denetçi zaten yazabiliyor.
 
 ---
 
-## B8 · `CLAUDE.md` kapısı yalnız `Write`'ta duruyor
+## B8 · `CLAUDE.md` kapısı yalnız `Write`'ta duruyor — **kapandı**
 
 **Boy:** küçük
 
@@ -270,7 +273,7 @@ kuralını bozuyorsa engelle.
 
 ---
 
-## B9 · Ölü kod: `CONTRACT_DIZIN`
+## B9 · Ölü kod: `CONTRACT_DIZIN` — **kapandı**
 
 **Boy:** küçük
 
@@ -334,7 +337,7 @@ süreç açmak 20-60 ms"); burada aynı önlem yok.
 
 ---
 
-## B13 · Yetim ve yanlış yerdeki belgeler
+## B13 · Yetim ve yanlış yerdeki belgeler — **kapandı**
 
 **Boy:** küçük
 
@@ -366,7 +369,7 @@ kullanıcıya bastığı metni İngilizceye al.
 
 ---
 
-## B15 · Hafıza taşımada çakışma eki tek seferlik
+## B15 · Hafıza taşımada çakışma eki tek seferlik — **kapandı**
 
 **Boy:** küçük
 
@@ -412,7 +415,7 @@ de girecekse etiketi ondan sonra at.
 
 ---
 
-## B18 · Ajan hafızası depoya sızabiliyor
+## B18 · Ajan hafızası depoya sızabiliyor — **kapandı**
 
 **Boy:** küçük
 

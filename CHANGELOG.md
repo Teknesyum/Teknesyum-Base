@@ -6,6 +6,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.38.0] - 2026-08-22
+
 ### Added
 
 - **Second opinion.** With `second_opinion` on — the premium default — the manager no longer
@@ -31,6 +33,27 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - The premium behaviour note and the session-start line mention the second opinion; the
   `/premium` output and `durum` report the new knob next to the council.
 
+
+- **One relay root, one git probe, one config root.** Finding the relay root existed three
+  times under three names, and `gitSor` differed between the two hooks: one trimmed a
+  trailing `.git` conditionally, the other always went up a directory. Outside the standard
+  `<root>/.git` layout those land in different places, so the guard could protect contracts
+  the watcher never looked at. The conditional trim wins — failing to find a root is
+  recoverable, guarding a stranger's directory is not. The shared helpers live in
+  `hooks/ortak.js`.
+- **Transcript paths honour `CLAUDE_CONFIG_DIR`.** `/save`, `/load`, `/saveall`, `/loadall`
+  and the "previous session" notice went through `os.homedir()`, so they were broken for
+  anyone who had moved their config directory. The tests overrode `USERPROFILE` and never
+  saw it.
+- The declared model and effort are compared against what actually ran, closing a promise
+  the comment above `kimlikOku` had been making since it was written; a mismatch reaches
+  `_sorun.log`. A model named at call time counts as the declaration, since `Agent`'s
+  `model` field overrides the definition.
+- `kok()` and `projeMi()` cache per process the way `gitBilgisi` already did — the container
+  check ran a `readdirSync` plus three `existsSync` per subdirectory on every single tool
+  call.
+- Prior-art scans live under `docs/taramalar/`, where the skill says scan output belongs.
+
 ### Fixed
 
 - **The auditor's "cannot write" guarantee was documentation, not enforcement.**
@@ -53,9 +76,39 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   contracts moved by hand outside the relay are not locked out, and writes what it could not
   verify to `live/_sorun.log`.
 
+
+- **`/load` handed back the wrong chat's session.** `SON.json` has kept a per-session
+  pointer since 2.30.0 and nothing ever read it, so `kayitSec` returned whichever record
+  was newest. With two chats open in one project, the record you got was as likely to be
+  the other one's. It now resolves `CLAUDE_CODE_SESSION_ID` against the pointer table and
+  falls back to the newest record when there is none. The test asserted that two keys
+  existed in the file rather than which record came back.
+- **The container tests littered the repository.** `konfig()` returns an env object and two
+  tests wrapped it a second time, so the hook received the string `[object Object]` as its
+  config directory, resolved it relative to the repo root and created a directory there —
+  which had been committed and churned on every run. Those tests were also not exercising
+  the config they claimed to. CI now fails when a test run leaves anything behind.
+- **The debug log grew forever in exactly the projects that use the plugin.** `supur()` only
+  ran when no relay was installed. It now runs everywhere behind an hourly stamp, leaves the
+  project's own `live/` alone and spares `kullanim.json` — sweeping a cumulative counter
+  erases what it measures. The log is capped and trimmed to its last thousand lines.
+- `genelKok()` resolved through `izYolu`, which appends the worktree segment, so a session
+  opened in a worktree started its reminder counter from zero and split the usage stats.
+- The `CLAUDE.md` router rule only ran on `Write`; a body could be edited into an existing
+  file without the gate seeing it.
+- Agent memory moves appended a fixed `-2` suffix, so a third file with the same name
+  silently overwrote the second.
+- `.claude/agent-memory/` was outside `.gitignore`; every agent runs with `memory: project`,
+  so the first write dropped an untracked directory into the tree.
+- Steering-line examples in `skills/relay/SKILL.md` and `SETTINGS.md` still taught the format
+  `613d59b` replaced, so the skill and the hook were teaching the model two different shapes.
+  One example also contradicted the premium profile by escalating haiku to sonnet.
+- A closed route kept re-entering context after every compaction. Routes carry a `Durum`
+  field now and `sikismaSonrasi` skips the closed ones.
+
 ### Removed
 
-- Dead `canonicalDone()` helper in `contract-guard.js`.
+- Dead `canonicalDone()` and `CONTRACT_DIZIN` in `contract-guard.js`.
 
 ## [2.37.0] - 2026-08-22
 

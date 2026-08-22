@@ -1,6 +1,6 @@
 {
   "name": "teknesyum-base",
-  "version": "2.37.0",
+  "version": "2.38.0",
   "private": true,
   "description": "Test harness for the Teknesyum Base plugin — hooks, statusline, packaging",
   "scripts": {

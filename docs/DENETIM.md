@@ -8,12 +8,13 @@ Her bulgu dosya ve satırla kanıtlanmıştır. Kanıtlanamayan hiçbir şey yaz
 
 Sürüm: 2.37.0 · denetim anındaki HEAD `b9c8a3d` · 164/164 test geçiyordu.
 
-**Onarım durumu** — dalga 2 kapandı, 175/175 test geçiyor. Kapanan bulgular başlıklarında
+**Onarım durumu** — Faz 1 kapandı, 187/187 test geçiyor. B14 dışındaki bütün bulgular
+düştü; B14 (isimlendirme ve kurulum dili) son turda. Kapanan bulgular başlıklarında
 işaretli. Kapanmayanlar dalga 2 ve 3'te.
 
 ---
 
-## B1 · Denetçinin "yazamaz" garantisi gerçekte tutmuyor
+## B1 · Denetçinin "yazamaz" garantisi gerçekte tutmuyor — **kapandı**
 
 **Boy:** büyük
 
@@ -135,7 +136,7 @@ kaydına baksın, bulamazsa en yeniye düşsün. Test, iki oturumlu bir projede 
 
 ---
 
-## B4 · Röle kökünü bulan üç ayrı uygulama, biri farklı davranıyor
+## B4 · Röle kökünü bulan üç ayrı uygulama, biri farklı davranıyor — **kapandı**
 
 **Boy:** orta
 
@@ -202,7 +203,7 @@ uygulanmalı.
 
 ---
 
-## B6 · Transkript yolu `CLAUDE_CONFIG_DIR`'i yok sayıyor
+## B6 · Transkript yolu `CLAUDE_CONFIG_DIR`'i yok sayıyor — **kapandı**
 
 **Boy:** orta
 
@@ -227,7 +228,7 @@ görünmüyor.
 
 ---
 
-## B7 · `done/` mührü doğrulanmıyor, yalnızca dolu olup olmadığına bakılıyor
+## B7 · `done/` mührü doğrulanmıyor, yalnızca dolu olup olmadığına bakılıyor — **kapandı**
 
 **Boy:** orta
 

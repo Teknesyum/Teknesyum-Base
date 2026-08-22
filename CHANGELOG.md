@@ -6,6 +6,14 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.36.1] - 2026-08-22
+
+### Fixed
+
+- A session that opened and was never used leaves a 0-byte transcript behind, and being
+  the newest file it won it: `/saveall` wrote an empty record and `/load son` would have
+  handed back nothing. Transcripts with no body are skipped.
+
 ## [2.36.0] - 2026-08-22
 
 ### Changed

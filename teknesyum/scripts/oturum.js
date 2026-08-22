@@ -732,7 +732,13 @@ function sonTranskript(kok) {
     .filter((f) => f.endsWith('.jsonl'))
     .map((f) => ({ yol: path.join(dizin, f), ad: f.replace(/\.jsonl$/, '') }))
     .filter((x) => x.ad !== simdi)
-    .map((x) => ({ ...x, zaman: fs.statSync(x.yol).mtimeMs }))
+    .map((x) => {
+      const st = fs.statSync(x.yol);
+      return { ...x, zaman: st.mtimeMs, boyut: st.size };
+    })
+    // ÖLÇÜLDÜ: açılıp hiç kullanılmamış oturumlar 0 baytlık transkript bırakıyor ve en
+    // yeni dosya oluyorlar; toplu kayıt boş bir kayıt yazdı. Gövdesi olmayan devralınmaz.
+    .filter((x) => x.boyut > 512)
     .sort((a, b) => b.zaman - a.zaman);
   return aday[0] || null;
 }

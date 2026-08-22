@@ -525,15 +525,17 @@ const S = {
 
   sendenEksik: {
     tr:
-      'Teknesyum: iş yarıda duruyor ama kullanıcıdan ne istediğin yazmıyor. Mesajın en ' +
-      'altına numaralı **Senden istediklerim** bölümü ekle: her madde ne yapılacağını ve ' +
-      'kopyalanacak tam metni versin (komut, dosya yolu, yazılacak cümle). Gerekçe yazma. ' +
-      'Beklediğin bir şey yoksa duraklamayı da bildirme — iş sürüyor demektir.',
+      'Teknesyum: kullanıcıdan bir şey bekliyorsun ama **Senden istediklerim** başlığı yok. ' +
+      'Kural: kullanıcıdan aksiyon veya karar bekleniyorsa yanıtın sonunda bu başlığı aç ve ' +
+      'numaralı maddelerde tam kopyalanabilir metni ver — komut, dosya yolu, yazılacak ' +
+      'cümle. Gerekçe yazma; nedenini değil ne yapacağını söyle. Hiçbir şey beklemiyorsan ' +
+      'başlığı hiç açma ve beklemediğini de duyurma.',
     en:
-      'Teknesyum: the work is paused but you never say what you need from the user. Add a ' +
-      'numbered **What I need from you** section at the very bottom: each item states the ' +
-      'action and the exact text to copy (command, file path, sentence to write). No ' +
-      'rationale. If you need nothing, do not announce a pause either.',
+      'Teknesyum: you are waiting on the user but there is no **What I need from you** ' +
+      'section. The rule: when an action or decision is expected from the user, open that ' +
+      'heading at the end and give the exact text to copy in numbered items — command, file ' +
+      'path, sentence to write. No rationale; say what to do, not why. If you expect ' +
+      'nothing, do not open the heading and do not announce that either.',
   },
 
   kayitBayat: {

@@ -762,9 +762,16 @@ const DURAKLAMA =
   /(oturum limiti|kullanım limiti|kullanim limiti|usage limit|limite takıl|limite takil|durdurdum|yarıda kal|yarida kal|devam edilecek|kaldığı yerden|kaldigi yerden|limit dön|limit don|resets? (at|on)|rate limit)/i;
 const SENDEN_ALAN = /^[ \t#*]*(senden|needed|from you|senden istediklerim)[ \t]*:?/im;
 
+// ÖLÇÜLDÜ (22.08.2026): kapı yalnız duraklamada ve yalnız açık sözleşme varken
+// duruyordu. Kullanıcıdan iş isteyen ama duraklamayan turlar hiç yakalanmadı —
+// kural yazılıydı, dört tur üst üste unutuldu ve kullanıcı fark etti. Kalıp listesi
+// kasten dar: yanlış pozitif bir turu yakar, yanlış negatifi kullanıcı görür.
+const ISTEK =
+  /(yeniden başlat|yeniden baslat|kapatıp aç|kapatip ac|restart|onayla|onayını|onayini|kararını (yaz|ver)|karar ver|hangisini seç|hangisini sec|sen (yap|aç|ac|çalıştır|calistir|seç|sec)\b)/i;
+
 function sendenEksik(root, govde) {
-  if (!root || !acikIs(root)) return;
-  if (!DURAKLAMA.test(govde.slice(-1500))) return;
+  const son = govde.slice(-1500);
+  if (!ISTEK.test(son) && !(root && acikIs(root) && DURAKLAMA.test(son))) return;
   if (SENDEN_ALAN.test(govde)) return;
   return ceviri('sendenEksik');
 }

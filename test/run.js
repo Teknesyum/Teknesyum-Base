@@ -275,6 +275,28 @@ ol('normal kod bloğu ve tek satırlık teslim engellenmez', () => {
   esit(bos('```\n# GÖREV: kısa\nDepo: x\n```'), '', 'kısa blok');
 });
 
+ol('kullanicidan is isteyen tur baslik olmadan kapanamaz', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-senden-'));
+  const dur = (m) =>
+    calistir(
+      IZLE,
+      { ...ort(p), hook_event_name: 'Stop', transcript_path: transcript(m) },
+      konfig(true)
+    ).out;
+
+  const engel = JSON.parse(dur("Bitti. Claude Code'u yeniden başlat, profil o zaman yüklenir."));
+  esit(engel.decision, 'block', 'istek var, başlık yok');
+  icerir(engel.reason, 'Senden istediklerim');
+
+  esit(
+    dur("Bitti. Claude Code'u yeniden başlat.\n\n## Senden istediklerim\n\n1. Yeniden başlat."),
+    '',
+    'başlık varsa geçer'
+  );
+  esit(dur('İki dosya değişti, testler geçti.'), '', 'istek yoksa geçer');
+  esit(dur('Sen bu işi nasıl yapardın diye düşündüm.'), '', 'dar kalıp: anlatı yakalanmaz');
+});
+
 ol('sohbete basılan rapor gövdesi engellenir', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
   const blok = '```\n## Rapor\n' + '- yapıldı\n'.repeat(30) + '```';

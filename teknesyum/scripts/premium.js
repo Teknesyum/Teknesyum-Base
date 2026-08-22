@@ -41,6 +41,8 @@ const DUGME = {
     plan_council: 'off',
     second_opinion: 'off',
     research_repos: '10',
+    agent_stall: '10',
+    agent_loop: '5',
   },
   premium: {
     ask_threshold: 'critical',
@@ -56,6 +58,8 @@ const DUGME = {
     plan_council: 'on',
     second_opinion: 'on',
     research_repos: '50',
+    agent_stall: '10',
+    agent_loop: '5',
   },
 };
 

@@ -162,8 +162,6 @@ function kayitBayat(hedef) {
 // ÖLÇÜLDÜ: sıfırdan projede mimari, benzerleri görülmeden kuruluyordu; üçüncü dalgada
 // sökülüyordu. Ön araştırma bir kere yapılır, kalıcıdır. Kapı yalnızca hiç iş yapılmamış
 // ve gerçekten yeni olan projede kapalıdır — atlamak serbest, sessizce atlamak değil.
-const CONTRACT_DIZIN = /^(.*)[/]\.claude[/]relay[/]contracts[/][^/]+\.md$/i;
-
 function yeniProje(kok) {
   try {
     if (fs.existsSync(path.join(kok, 'docs', 'taramalar'))) return false;
@@ -202,13 +200,30 @@ function onArastirma(hedef) {
   return engelle(...ceviri('onArastirma'));
 }
 
+const YONLENDIRICI_AD = /(^|\/)CLAUDE\.md$/i;
+
+function duzenlenmis(hedef, t) {
+  const yeni = String(t.new_string || '');
+  let govde;
+  try {
+    govde = fs.readFileSync(hedef, 'utf8');
+  } catch {
+    return yeni;
+  }
+  const eski = String(t.old_string || '');
+  if (!eski) return govde + yeni;
+  if (t.replace_all) return govde.split(eski).join(yeni);
+  const i = govde.indexOf(eski);
+  return i === -1 ? govde : govde.slice(0, i) + yeni + govde.slice(i + eski.length);
+}
+
 // ÖLÇÜLDÜ: yönlendirici dosyanın adı `AGENTS.md` diye kararlaştırıldı ama oturumlar
 // klasör başına gövdeli `CLAUDE.md` yazmaya devam etti — bu projeyi okuyan tek araç
 // Claude Code değil. Tek satırlık işaretçi (`@AGENTS.md`) serbest, gövdelisi değil.
 // Ev dizinindeki `~/.claude/CLAUDE.md` kuralın dışındadır.
 function yonlendirici(hedef, icerik) {
   const yol = norm(path.resolve(hedef));
-  if (!/(^|\/)CLAUDE\.md$/i.test(yol)) return;
+  if (!YONLENDIRICI_AD.test(yol)) return;
   if (/(^|\/)\.claude\/CLAUDE\.md$/i.test(yol)) return;
   const satir = String(icerik)
     .split('\n')
@@ -228,6 +243,8 @@ function karar(j) {
     if (!hedef) return;
     if (arac === 'Write') onArastirma(hedef);
     if (arac === 'Write') yonlendirici(hedef, t.content || '');
+    else if (arac === 'Edit' && YONLENDIRICI_AD.test(norm(path.resolve(hedef))))
+      yonlendirici(hedef, duzenlenmis(hedef, t));
     gerileme(hedef, arac === 'Write' ? t.content || '' : t.new_string || '');
     if (!DONE.test(norm(hedef))) return;
     // Write mührü taşıyorsa denetimden geçmiş sözleşmenin yerleşmesidir; Edit hiçbir

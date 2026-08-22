@@ -20,23 +20,29 @@ function dil() {
   return (_dil = 'en');
 }
 
-let _premium = null;
+let _profil = null;
 
-function premium() {
-  if (_premium !== null) return _premium;
+function profil() {
+  if (_profil !== null) return _profil;
   const e = process.env.TEKNESYUM_PREMIUM;
-  if (e === '0' || e === 'off') return (_premium = false);
-  if (e === '1' || e === 'on') return (_premium = true);
+  if (e === '0' || e === 'off') return (_profil = 'normal');
+  if (e === '1' || e === 'on') return (_profil = 'premium');
   const kok = konfigKok();
   try {
     const c = JSON.parse(fs.readFileSync(path.join(kok, 'teknesyum.json'), 'utf8'));
-    return (_premium = c.premium === true);
+    if (c.profil === 'eco' || c.profil === 'normal' || c.profil === 'premium')
+      return (_profil = c.profil);
+    return (_profil = c.premium === true ? 'premium' : 'normal');
   } catch {}
-  return (_premium = false);
+  return (_profil = 'normal');
+}
+
+function premium() {
+  return profil() === 'premium';
 }
 
 function depoSayisi() {
-  return premium() ? 50 : 10;
+  return { eco: 5, normal: 10, premium: 50 }[profil()];
 }
 
 const KONSEY = 'fable + opus';
@@ -196,12 +202,12 @@ const S = {
   },
   premiumAcik: {
     tr: () =>
-      'premium mod · her ajan opus · 6 paralele kadar · plan konseyi ' +
+      'premium mod · her ajan opus · 20 paralele kadar · plan konseyi ' +
       KONSEY +
       ' · ikinci görüş ' +
       GORUS,
     en: () =>
-      'premium mode · every agent on opus · up to 6 in parallel · plan council ' +
+      'premium mode · every agent on opus · up to 20 in parallel · plan council ' +
       KONSEY +
       ' · second opinion ' +
       GORUS,
@@ -209,7 +215,7 @@ const S = {
   premiumNotu: {
     tr:
       'Premium mod açık (Max 20x). Sonnet ve haiku kullanma; her ajan opus çalışır. ' +
-      'Bağımsız sözleşmeleri sıraya dizme, aynı anda yürüt — altı paralel ajana kadar ' +
+      'Bağımsız sözleşmeleri sıraya dizme, aynı anda yürüt — yirmi paralel ajana kadar ' +
       'çıkabilirsin, üçü geçtiğinde worktree izolasyonuyla. Paralel açmak bu modda ' +
       'varsayılandır, tek ajanla gitmek gerekçe ister: işi bölebiliyorsan böl, beş on ' +
       'elden hallet, bitince sonraki basamağa geç. Ajan açmak için kullanıcıdan izin ' +
@@ -223,7 +229,7 @@ const S = {
       'önce aynı brifingle iki planner ajanı aç — biri fable, biri opus. İkisi de iş ' +
       'yapmaz, yalnız öneri döner; ortak çıkan kararı doğrulanmış say, ayrıştıkları yeri ' +
       'PLAN.md içinde Konsey ayrışması başlığına gerekçesiyle yaz. İkinci görüş de açık: ' +
-      'doğru kararı bilmediğin düğümde planner ajanını GÖRÜŞ: ile başlayan brifingle aç, ' +
+      'doğru kararı bilmediğin düğümde advisor ajanını aç, ' +
       GORUS +
       ' üç başlıkta kısa cevap verir. Geri alınması pahalı seçim, üç turdur çözülmeyen ' +
       'hata, bozulacak kural, iki türlü okunan istek ve kullanıcının plan istediği her ' +
@@ -235,7 +241,7 @@ const S = {
       'tavanı bu modda 50 depodur.',
     en:
       'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
-      'Do not queue independent contracts, run them at once — up to six agents in ' +
+      'Do not queue independent contracts, run them at once — up to twenty agents in ' +
       'parallel, with worktree isolation past three. Going parallel is the default here ' +
       'and going with a single agent needs a reason: split the work when it can be ' +
       'split, get it done five or ten hands at a time, then move to the next step. Do ' +
@@ -251,8 +257,7 @@ const S = {
       'one opus. Neither does the work, they only return proposals; treat what both agree ' +
       'on as confirmed and record every disagreement under a Konsey ayrışması heading in ' +
       'PLAN.md with your reasoning. The second opinion is on as well: at a node where you ' +
-      'do not know the right call, open the planner agent with a briefing that starts with ' +
-      'GÖRÜŞ: and ' +
+      'do not know the right call, open the advisor agent and ' +
       GORUS +
       ' answers short, under three headings. Open it for a choice that is expensive to ' +
       'undo, a bug unsolved for three rounds, a rule you are about to break, a request ' +
@@ -753,4 +758,4 @@ function s(anahtar, ...arg) {
   return typeof m === 'function' ? m(...arg) : m;
 }
 
-module.exports = { dil, s, premium, depoSayisi, KONSEY };
+module.exports = { dil, s, profil, premium, depoSayisi, KONSEY };

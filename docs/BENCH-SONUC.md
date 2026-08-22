@@ -93,10 +93,6 @@ profilin o an ne olduğunu ele veriyor:
 Yine de bu bir tasarım kusuru: paralel koşu önerisi bana ait ve makine geneli anahtarı
 hesaba katmıyordu. Bir sonraki turda profiller sıralı koşuluyor.
 
-Bu bench tasarımının kusuru: paralel koşu önerisi bana ait ve makine geneli anahtarı
-hesaba katmıyordu. Sonraki turda profiller sıralı koşulmalı, ya da `TEKNESYUM_PREMIUM`
-ortam değişkeniyle oturum başına ayrılmalı.
-
 **Premium'un token ölçümü eksik.** Oturum düştü, ara turların `Total Süre` / `Tahmini
 Token` satırları bağlamla birlikte gitti. Bu koşunun token sütunu kullanılamaz — premium
 ikinci kez koşuluyor ve karşılaştırma o turla yapılacak.

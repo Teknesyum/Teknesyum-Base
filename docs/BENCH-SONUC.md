@@ -1,5 +1,25 @@
 # Bench sonucu — Chess960 hamle üreteci
 
+> ## Bu tur geçersizdir
+>
+> Dalga 0 ölçümü (`docs/OLCUM-TABAN.md`, `docs/OLCUM-CAGRI.md`) iki kusur buldu ve
+> ikisi de tabloyu kullanılamaz kılıyor. Rapor silinmedi — hangi hatanın nasıl
+> yapıldığı kaydın kendisidir.
+>
+> **1. eco koşusu eco'yu ölçmedi.** `UserPromptSubmit` istem başına bir kez çalışıyor ve
+> `/teknesyum:premium eco` görev isteminden **sonra** uygulandı. Bağlamdaki profil metni
+> 72 tur boyunca premium kaldı. Aynı kusur öteki profiller için de geçerli olabilir.
+>
+> **2. Token sütunu dayanaksız.** Aşağıdaki ~157.709 ve 226.856 rakamları transkriptin
+> hiçbir `usage` toplamına denk gelmiyor; `yalin`'in 113.257'si hiç doğrulanamadı,
+> transkripti başka makinede kaldı.
+>
+> Geçerli kalan tek bulgu §"Denetim iki kez perft'in kör noktasını buldu" — o iki bulgu
+> koşuların çıktısında, ölçümünde değil.
+>
+> Yeniden koşum `docs/BENCH-YONTEM.md` standardıyla yapılacak (plan Dalga 7).
+
+
 Dört durum tamamlandı, premium iki kez koşuldu — beşinci sütun varyansı gösteriyor. `yalin` başka bir makinede koşuldu (base kurulu değil, aynı
 model ve efor); kodu buraya alınıp **bütün ölçümler tek makinede** yapıldı, yani CPU farkı
 tabloya girmiyor.

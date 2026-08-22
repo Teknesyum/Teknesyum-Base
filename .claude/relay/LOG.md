@@ -4,3 +4,4 @@
 =======
 2026-08-22 | T2 eco-kayit-profil | teknesyum-builder | submitted | eco: gzipli ham transkript + tek satirlik filo dokumu + 64 kB baslik tamponu; /premium uc profili esit anlatir | 230/230
 >>>>>>> worktree-agent-abfa76c4461ab35fa
+2026-08-22 | T1 scan | teknesyum-builder | submitted | /scan uc profil sertifikasi + kalici kapsam kaydi + 15 test | 271/271

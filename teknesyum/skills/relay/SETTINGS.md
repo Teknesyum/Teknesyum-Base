@@ -163,6 +163,14 @@ düşerse ölçü tutmaz.
 **normal** varsayılandır ve eski `standart` profilin aynısıdır — yalnız adı değişti.
 `/premium kapat` hâlâ buraya götürür.
 
+Bu tablo yalnız neyin nasıl çalışacağını değil, **neyin sertifika sayılacağını** da
+belirler: `/scan <profil>` projenin şu anki halini bu düğmelere karşı denetler. Ölçüyü
+yaptığı yer `scripts/tarama.js`'tir ve eşikleri buradan değil, bu satırları yazan
+`scripts/premium.js` içindeki `DUGME` tablosundan okur — düğme ile sertifika aynı sayıyı
+görmek zorunda. Denetimin "hangi dosya incelendi" sorusuna `.claude/relay/kapsam.json`
+cevap verir; kayıt ajan bitişinde ve ana oturumun her düzenlemesinde kendiliğinden düşer,
+`live/` gibi süpürülmez.
+
 **premium**, Max 20x planı içindir: token bütçesi kısıt olmaktan çıkar, sonnet ve haiku
 tamamen bırakılır, efor tavanı `xhigh` olur. Tek istisna `advisor`: modeli `fable`,
 eforu `low`. Danışma sık olacaksa ucuz olmak zorundadır.

@@ -134,7 +134,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,setup.md,uicheckup.md,uisetup.md,update.md'
+    'help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
   );
   const yuru = (d) =>
     fs
@@ -2386,7 +2386,10 @@ function oturumProjesi() {
 }
 
 function oturumCalistir(...ek) {
-  const r = spawnSync(process.execPath, [OTURUM, ...ek], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [OTURUM, ...ek], {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: BOS_CFG },
+  });
   return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
 }
 
@@ -4426,6 +4429,262 @@ ol('/update komutu marketplace adli cagriyi verir', () => {
   icerir(k, '/premium');
   const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
   icerir(h, '| `/update` |');
+});
+
+const TARAMA = path.join(KOK, 'scripts', 'tarama.js');
+
+function taramaProje(depo) {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tarama-'));
+  fs.mkdirSync(path.join(p, '.claude', 'relay', 'contracts', 'done'), { recursive: true });
+  fs.mkdirSync(path.join(p, 'docs', 'taramalar'), { recursive: true });
+  fs.mkdirSync(path.join(p, 'src'), { recursive: true });
+  for (let i = 0; i < (depo || 0); i++)
+    fs.writeFileSync(path.join(p, 'docs', 'taramalar', 'depo' + i + '.md'), '# depo\n');
+  fs.writeFileSync(path.join(p, 'src', 'a.js'), 'module.exports = 1;\n');
+  fs.writeFileSync(path.join(p, 'src', 'b.js'), 'module.exports = 2;\n');
+  fs.writeFileSync(path.join(p, 'README.md'), '# proje\n');
+  fs.writeFileSync(path.join(p, 'CHANGELOG.md'), '## [1.0.0]\n');
+  fs.writeFileSync(path.join(p, 'package.json'), JSON.stringify({ name: 'x', version: '1.0.0' }));
+  return p;
+}
+
+function taramaCalistir(p, ...arg) {
+  const r = spawnSync(process.execPath, [TARAMA, ...arg, '--proje', p], { encoding: 'utf8' });
+  return { out: r.stdout || '', err: r.stderr || '', kod: r.status };
+}
+
+function kapsamKur(p, kayit) {
+  fs.writeFileSync(path.join(p, '.claude', 'relay', 'kapsam.json'), JSON.stringify(kayit));
+}
+
+function agac(kok) {
+  const out = [];
+  const yigin = [kok];
+  while (yigin.length) {
+    const d = yigin.pop();
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const tam = path.join(d, e.name);
+      if (e.isDirectory()) yigin.push(tam);
+      else out.push(path.relative(kok, tam) + ':' + fs.statSync(tam).size);
+    }
+  }
+  return out.sort();
+}
+
+ol('tarama profil verilmeden kullanimi basip cikar', () => {
+  const r = spawnSync(process.execPath, [TARAMA], { encoding: 'utf8' });
+  esit(r.status, 2, 'kullanim kodu');
+  icerir(r.stdout, 'kullanım:');
+  esit(
+    spawnSync(process.execPath, [TARAMA, '--json'], { encoding: 'utf8' }).status,
+    2,
+    'bayrak profil yerine gecmez'
+  );
+});
+
+ol('tarama esikleri premium.js DUGME tablosundan okur, kopyalamaz', () => {
+  const t = require(TARAMA).dugmeTablosu();
+  esit(t.eco.research_repos, '1', 'eco');
+  esit(t.normal.research_repos, '10', 'normal');
+  esit(t.premium.research_repos, '50', 'premium');
+  esit(t.premium.default_model, 'opus', 'premium modeli');
+  esit(t.eco.audit, 'critical', 'eco denetimi');
+  esit(
+    /research_repos[ \t]*:/.test(fs.readFileSync(TARAMA, 'utf8')),
+    false,
+    'esik ikinci kez yazilmamali'
+  );
+});
+
+ol('uc profil uc farkli on arastirma esigi uygular', () => {
+  const p = taramaProje(3);
+  const madde = (profil) => JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[0];
+  esit(madde('eco').esik, 1, 'eco esigi');
+  esit(madde('normal').esik, 10, 'normal esigi');
+  esit(madde('premium').esik, 50, 'premium esigi');
+  esit(madde('eco').gecti, true, '3 depo eco esigini gecer');
+  esit(madde('normal').gecti, false, '3 depo normal esiginin altinda');
+});
+
+ol('uc profil uc farkli kapsam kipi uygular', () => {
+  const p = taramaProje(50);
+  const kapsam = (profil) => JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[1];
+  esit(kapsam('premium').hedef, 2, 'premium her kaynak dosyayi ister');
+  esit(kapsam('premium').gereken.model, 'opus', 'premium modeli');
+  esit(kapsam('premium').gereken.efor, 'high', 'premium eforu');
+  esit(kapsam('eco').gereken.model, 'haiku', 'eco modeli');
+  esit(kapsam('eco').gereken.efor, null, 'eco efor sarti koymaz');
+  esit(kapsam('normal').gereken.model, 'sonnet', 'normal modeli');
+});
+
+ol('tarama incelenmemis dosyayi raporlar', () => {
+  const p = taramaProje(50);
+  kapsamKur(p, {
+    'src/a.js': { model: 'claude-opus-4-5', effort: 'xhigh', t: '2026-08-22 10:00:00', ajan: 'T0' },
+  });
+  const r = taramaCalistir(p, 'premium');
+  esit(r.kod, 1, 'eksik varken kaldi');
+  icerir(r.out, 'incelenmemiş: src/b.js');
+  if (r.out.includes('incelenmemiş: src/a.js')) throw new Error('incelenen dosya sayilmali');
+});
+
+ol('tarama profilin altinda model ve efor ile incelenmis dosyayi ayirir', () => {
+  const p = taramaProje(50);
+  kapsamKur(p, {
+    'src/a.js': { model: 'claude-haiku-4-5', effort: 'xhigh', t: '2026-08-22 10:00:00', ajan: 'x' },
+    'src/b.js': { model: 'claude-opus-4-5', effort: 'medium', t: '2026-08-22 10:00:00', ajan: 'y' },
+  });
+  const r = taramaCalistir(p, 'premium');
+  icerir(r.out, 'src/a.js — claude-haiku-4-5, opus gerekli');
+  icerir(r.out, 'src/b.js — efor medium, high gerekli');
+  const j = JSON.parse(taramaCalistir(p, 'premium', '--json').out);
+  esit(j.maddeler[1].incelenmemis.length, 0, 'ikisi de kayitta');
+  esit(j.maddeler[1].dusuk.length, 2, 'ikisi de profilin altinda');
+});
+
+ol('tarama muhursuz sozlesmeyi sayar, mühürlüyü gecirir', () => {
+  const p = taramaProje(50);
+  const done = path.join(p, '.claude', 'relay', 'contracts', 'done');
+  fs.writeFileSync(path.join(done, 'T1.md'), MUHURLU + '# is\n');
+  fs.writeFileSync(path.join(done, 'T2.md'), '---\nstatus: done\naudit: —\n---\n');
+  const j = JSON.parse(taramaCalistir(p, 'premium', '--json').out);
+  esit(j.maddeler[2].muhursuz.join(','), 'T2.md', 'yalniz muhursuz olan');
+  icerir(taramaCalistir(p, 'premium').out, 'mühürsüz: T2.md');
+});
+
+ol('eco denetimi yalniz kritik sozlesmeye bakar', () => {
+  const p = taramaProje(50);
+  const done = path.join(p, '.claude', 'relay', 'contracts', 'done');
+  fs.writeFileSync(path.join(done, 'T1.md'), '---\nowns:\n  - a\n  - b\n  - c\naudit: —\n---\n');
+  fs.writeFileSync(path.join(done, 'T2.md'), '---\nowns:\n  - a\naudit: —\n---\n');
+  esit(JSON.parse(taramaCalistir(p, 'eco', '--json').out).maddeler[2].muhursuz.length, 1, 'eco');
+  esit(
+    JSON.parse(taramaCalistir(p, 'premium', '--json').out).maddeler[2].muhursuz.length,
+    2,
+    'premium'
+  );
+});
+
+ol('tarama belge tutarliligini surumle karsilastirir', () => {
+  const p = taramaProje(50);
+  esit(JSON.parse(taramaCalistir(p, 'normal', '--json').out).maddeler[3].gecti, true, 'README var');
+  fs.writeFileSync(path.join(p, 'package.json'), JSON.stringify({ name: 'x', version: '2.0.0' }));
+  const r = taramaCalistir(p, 'premium');
+  icerir(r.out, 'CHANGELOG.md — 1.0.0 ≠ 2.0.0');
+  esit(JSON.parse(taramaCalistir(p, 'eco', '--json').out).maddeler[3].gecti, true, 'eco sart yok');
+});
+
+ol('tarama --json ayristirilabilir', () => {
+  const p = taramaProje(1);
+  const r = taramaCalistir(p, 'eco', '--json');
+  const j = JSON.parse(r.out);
+  esit(j.profil, 'eco');
+  esit(j.maddeler.length, 4, 'dort madde');
+  esit(
+    j.maddeler.map((m) => m.ad).join(','),
+    'Ön araştırma,Kapsam,Denetim,Belge tutarlılığı',
+    'madde adlari'
+  );
+  esit(Array.isArray(j.maddeler[1].incelenmemis), true, 'incelenmemis listesi');
+});
+
+ol('tarama --tamamla hicbir dosyayi degistirmez', () => {
+  const p = taramaProje(2);
+  const once = agac(p).join('|');
+  const r = taramaCalistir(p, 'premium', '--tamamla');
+  icerir(r.out, '--tamamla · bu betik hiçbir dosyaya yazmadı');
+  icerir(r.out, 'paralel tavan 20');
+  esit(agac(p).join('|'), once, 'dosya agaci degismemeli');
+  const b = taramaCalistir(p, 'premium');
+  if (b.out.includes('--tamamla ·')) throw new Error('bayraksiz cagride tamamla boumu cikti');
+});
+
+ol('kapsam kaydi SubagentStop ile dolar', () => {
+  const { p } = proje(1, 0);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapsam-'));
+  const at = path.join(d, 'agent-k1.jsonl');
+  fs.writeFileSync(
+    at,
+    JSON.stringify({ type: 'assistant', effort: 'xhigh', message: { model: 'claude-opus-4-5' } }) +
+      '\n'
+  );
+  const olay = (ek) =>
+    calistir(
+      IZLE,
+      { ...ort(p), agent_id: 'k1', agent_type: 'teknesyum:builder', ...ek },
+      konfig(true)
+    );
+  olay({
+    hook_event_name: 'PostToolUse',
+    tool_name: 'Write',
+    tool_input: { file_path: path.join(p, 'src', 'x.js') },
+  });
+  olay({ hook_event_name: 'SubagentStop', agent_transcript_path: at, effort: { level: 'high' } });
+  const k = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'relay', 'kapsam.json'), 'utf8'));
+  esit(k['src/x.js'].model, 'claude-opus-4-5', 'model');
+  esit(k['src/x.js'].effort, 'xhigh', 'efor');
+  esit(k['src/x.js'].ajan, 'builder', 'ajan');
+});
+
+ol('kapsam kaydi ana oturum dokunusunu da alir', () => {
+  const { p } = proje(1, 0);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-anakapsam-'));
+  const tp = path.join(d, 'oturum-1.jsonl');
+  fs.writeFileSync(
+    tp,
+    JSON.stringify({ type: 'assistant', effort: 'high', message: { model: 'claude-opus-4-5' } }) +
+      '\n'
+  );
+  calistir(
+    IZLE,
+    {
+      cwd: p,
+      session_id: 'oturum-1',
+      transcript_path: tp,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Edit',
+      tool_input: { file_path: path.join(p, 'src', 'y.js') },
+    },
+    konfig(true)
+  );
+  const k = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'relay', 'kapsam.json'), 'utf8'));
+  esit(k['src/y.js'].ajan, 'ana oturum', 'ana oturum sayilmali');
+  esit(k['src/y.js'].model, 'claude-opus-4-5', 'model');
+});
+
+ol('kapsam kaydi sozlesme dosyasini incelenen dosya saymaz', () => {
+  const { p } = proje(1, 0);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapsam-s-'));
+  const tp = path.join(d, 'oturum-1.jsonl');
+  fs.writeFileSync(tp, JSON.stringify({ type: 'assistant', message: { model: 'x' } }) + '\n');
+  const dokun = (hedef) =>
+    calistir(
+      IZLE,
+      {
+        cwd: p,
+        session_id: 'oturum-1',
+        transcript_path: tp,
+        hook_event_name: 'PostToolUse',
+        tool_name: 'Edit',
+        tool_input: { file_path: hedef },
+      },
+      konfig(true)
+    );
+  dokun(path.join(p, '.claude', 'relay', 'contracts', 'T0.md'));
+  dokun(path.join(p, 'src', 'z.js'));
+  const k = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'relay', 'kapsam.json'), 'utf8'));
+  esit(Object.keys(k).join(','), 'src/z.js', 'yalniz kaynak dosya kayda girmeli');
+});
+
+ol('/scan komutu uc profili esit anlatir ve betigi cagirir', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'scan.md'), 'utf8');
+  icerir(k, 'scripts/tarama.js');
+  icerir(k, '$ARGUMENTS');
+  for (const profil of ['eco', 'normal', 'premium']) icerir(k, '`' + profil + '`');
+  icerir(k, '--tamamla');
+  icerir(k, 'kapsam.json');
+  const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
+  icerir(h, '| `/scan` |');
 });
 
 console.log(

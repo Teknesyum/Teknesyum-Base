@@ -6,6 +6,37 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- **`/scan` — a certificate against a profile.** `/scan <eco|normal|premium>` audits the
+  project as it stands against one of the three profiles and reports what falls short:
+  how many repositories of prior art were studied against the threshold of 1, 10 or 50;
+  which source files have never been reviewed or were reviewed below the profile's model
+  and effort; whether the finished contracts carry their seal; whether the required
+  documents exist and agree with the version. The scan is read-only — no file is written,
+  no agent is opened. It refuses to run without a profile, because a premium scan means
+  fifty repositories and that should never start by accident. `--tamamla` does not change
+  what the script does; it appends the list of work needed to close the gaps, and the work
+  is the model's.
+- **A durable coverage record, `.claude/relay/kapsam.json`.** Which file was last touched
+  by which model at which effort, when, and by which agent. It is written when an agent
+  finishes, from the file list already kept in its trace, and on every edit the main
+  session makes — a file the main session opened and corrected has been reviewed just as
+  surely as one an agent was given. The `live/` traces are swept after a day; this record
+  is not, because a certificate has to answer for work done weeks ago. It is capped at
+  4000 entries and drops the oldest, which is far above the source-file count of any one
+  project.
+
+### Changed
+
+- The scan's thresholds are read from the same `DUGME` table that `/premium` writes the
+  relay knobs from, rather than copied. A profile cannot mean one thing to the switch and
+  another to the certificate.
+- `oturumCalistir` in the test harness was reading the machine's real `~/.claude`
+  configuration, so a session-save test passed or failed depending on which profile
+  happened to be live. It now runs against the empty config directory the rest of the
+  harness already uses.
+
 ## [2.41.0] - 2026-08-22
 
 ### Added

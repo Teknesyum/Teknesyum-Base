@@ -140,7 +140,10 @@ function run(j) {
   // kendi transcript dosyasının adı. İkincisi yedektir — eski sürümlerde ve bazı
   // olaylarda `agent_id` gelmiyor. Biri düşerse diğeri ajanı tanımaya devam eder.
   const agentId = j.agent_id || transcriptKimligi(j);
-  if (!agentId) return;
+  if (!agentId) {
+    if (j.hook_event_name === 'PostToolUse') anaKapsam(root, j);
+    return;
+  }
 
   const file = path.join(live, safe(agentId) + '.json');
   if (j.agent_id) birlestir(live, file, transcriptKimligi(j));
@@ -224,6 +227,16 @@ function run(j) {
       Object.assign(s, kimlikOku(j));
       kimlikDenetle(live, j.agent_type, s, c);
       debugBildir(live, aksama(j), true);
+      kapsamYaz(
+        root,
+        (s.files || []).map((f) => ({
+          dosya: f,
+          model: s.model || null,
+          effort: s.effort || null,
+          t: now,
+          ajan: rolAdi(s),
+        }))
+      );
       break;
     }
   }
@@ -414,6 +427,50 @@ function ayarSayi(root, anahtar, varsayilan) {
 
 function rolAdi(a) {
   return String((a && a.agent_type) || 'ajan').replace(/^teknesyum:/, '');
+}
+
+// Kapsam kaydı `live/` gibi süpürülmez: "bu dosya incelendi mi" sorusu haftalar sonra da
+// cevaplanmalı — `/scan` sertifikası bunun üstünde durur. `live/<ajan>.json` bir günü
+// geçince atılır, kayıt kalıcıdır. Dosya yolu başına tek giriş tutulur, en son inceleyen
+// kazanır. Tavan proje başına kaynak dosya sayısının çok üstündedir; aşılırsa en eski
+// giriş düşer, dosya sınırsız büyümez.
+const KAPSAM_TAVAN = 4000;
+
+function kapsamYaz(root, giris) {
+  if (!root || !giris || !giris.length) return;
+  const f = path.join(root, 'kapsam.json');
+  const d = read(f) || {};
+  for (const g of giris) {
+    if (!g.dosya) continue;
+    d[g.dosya] = { model: g.model || null, effort: g.effort || null, t: g.t, ajan: g.ajan };
+  }
+  const anahtar = Object.keys(d);
+  if (anahtar.length > KAPSAM_TAVAN) {
+    anahtar.sort((a, b) => String(d[a].t || '').localeCompare(String(d[b].t || '')));
+    for (const a of anahtar.slice(0, anahtar.length - KAPSAM_TAVAN)) delete d[a];
+  }
+  yaz(f, d);
+}
+
+// Ana oturumun dokunuşu da incelemedir: T0 bir dosyayı açıp düzelttiyse o dosya
+// görülmüştür. Ajan kaydı burada yok — `agent_id` gelmiyor — o yüzden kayıt doğrudan
+// yazılır; model ve efor ajandakiyle aynı iki kanaldan okunur.
+function anaKapsam(root, j) {
+  if (!root || !/^(Write|Edit|NotebookEdit)$/.test(j.tool_name || '')) return;
+  const t = j.tool_input || {};
+  const hedef = t.file_path || t.notebook_path || '';
+  if (!hedef) return;
+  if (/\/relay\/contracts\/(?:done\/)?T[^/]+\.md$/i.test(norm(hedef))) return;
+  const k = kimlikOku(j);
+  kapsamYaz(root, [
+    {
+      dosya: short(hedef, path.dirname(path.dirname(root))),
+      model: k.model || null,
+      effort: k.effort || null,
+      t: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      ajan: 'ana oturum',
+    },
+  ]);
 }
 
 function dongu(live, root, s) {

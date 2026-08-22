@@ -50,7 +50,19 @@ değer mi" sorusunun cevabı olmaz.
    `/premium durum`. Yürürlükteki profil ile klasör adı tutmuyorsa **dur ve söyle**;
    yanlış profille koşulan bench ölçüm değil gürültüdür.
 
-4. `BENCH.md` dosyasına başlangıç zamanını ve (varsa) `/premium durum` çıktısını yaz.
+4. **Ana oturumun modeli ve eforu dört koşuda da aynı: `opus` + `high`.** Bunu koşuya
+   başlamadan ayarla ve `BENCH.md`'ye yaz.
+
+   Profil yalnız **ajanların** modelini değiştirir; ana oturumunkini değiştirmez. İkisi
+   birden değişirse çıkan farkın base'den mi modelden mi geldiği ayrılamaz ve ölçüm
+   hiçbir şey söylemez. `yalin` ile `premium` karşılaştırması ancak ana model sabitken
+   base'in katkısını izole eder.
+
+   Bilinen sınır, rapora yazılacak: eco felsefesi ana oturumun da ucuz olmasını ister,
+   biz onu opus'ta koşuyoruz. Ölçülen şey "eco profilinin katkısı", "eco kullanıcısının
+   gerçek deneyimi" değil.
+
+5. `BENCH.md` dosyasına başlangıç zamanını ve (varsa) `/premium durum` çıktısını yaz.
 
 ## Görev
 

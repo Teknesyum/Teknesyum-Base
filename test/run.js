@@ -217,7 +217,7 @@ ol('UserPromptSubmit her istekte ölçü satırını zorunlu kılar', () => {
   );
   const o = JSON.parse(r.out);
   esit(o.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
-  icerir(o.hookSpecificOutput.additionalContext, 'Ölçü ▸');
+  icerir(o.hookSpecificOutput.additionalContext, 'Ölçüm ▸');
   icerir(o.hookSpecificOutput.additionalContext, 'ters tırnak içinde');
 });
 
@@ -3866,7 +3866,7 @@ ol('tur ozeti sure ve token tahminini tek satirda verir', () => {
     calistir(IZLE, { ...ort(p), transcript_path: t, hook_event_name: 'Stop' }, ek)
   );
   icerir(m, 'Total Süre: ~');
-  icerir(m, 'sn     Tahmini Token: ~');
+  icerir(m, 'sn        Tahmini Token: ~');
   const tok = parseInt(m.match(/Token: ~(\d+)/)[1], 10);
   if (tok < 900 || tok > 1200) throw new Error('token tahmini bekleneni tutmadi: ' + tok);
 });

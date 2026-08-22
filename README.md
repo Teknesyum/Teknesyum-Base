@@ -723,8 +723,8 @@ Every work request also gets a sizing verdict — including the requests that ne
 at all, so silence never means "is this thing even loaded?":
 
 ```
-`Teknesyum ▸ Size ▸ One file, verifiable by eye — no agent needed, I did it myself`
-`Teknesyum ▸ Size ▸ New project, three skill areas — split into 8 contracts as task packets`
+`Teknesyum ▸ Measure ▸ One file, verifiable by eye — no agent needed, I did it myself`
+`Teknesyum ▸ Measure ▸ New project, three skill areas — split into 8 contracts as task packets`
 ```
 
 The sizing and difference lines are printed as code spans, so they read as a block instead

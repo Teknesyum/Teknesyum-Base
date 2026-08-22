@@ -79,8 +79,8 @@ const S = {
     en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
   },
   turOzeti: {
-    tr: (sure, token) => 'Total Süre: ~' + sure + '     Tahmini Token: ~' + token,
-    en: (sure, token) => 'Total Time: ~' + sure + '     Estimated Tokens: ~' + token,
+    tr: (sure, token) => 'Total Süre: ~' + sure + '        Tahmini Token: ~' + token,
+    en: (sure, token) => 'Total Time: ~' + sure + '        Estimated Tokens: ~' + token,
   },
   turOzetiYonerge: {
     tr: (satir) =>
@@ -189,31 +189,31 @@ const S = {
   olcu: {
     tr:
       'Teknesyum Base: iş talebiyse relay §1 ile ölç ve ilk satırı **ters tırnak içinde** ' +
-      'bas — `Teknesyum ▸ Ölçü ▸ <iş ne kadar> — <ne yaptım>`. Satırın tamamı tek kod ' +
+      'bas — `Teknesyum ▸ Ölçüm ▸ <iş ne kadar> — <ne yaptım>`. Satırın tamamı tek kod ' +
       'parçası olacak, arkası bloklu görünsün; başlık işareti, kalın yazı ya da madde imi ' +
       'ekleme. Etiket büyük harfle başlar, ayraç ▸ işaretidir, kalan cümle sıradan tümce ' +
       'düzenindedir: ilk harf büyük, gerisi küçük. Günlük dille yaz, kısaltma yapma ve ' +
       'cümlenin içinde ok kullanma: ' +
-      '`Teknesyum ▸ Ölçü ▸ Tek dosyalık iş — ajan açmadım, kendim yaptım`. Ajan açmasan da ' +
+      '`Teknesyum ▸ Ölçüm ▸ Tek dosyalık iş — ajan açmadım, kendim yaptım`. Ajan açmasan da ' +
       'yaz. Salt soru/sohbette satırı hiç yazma.',
     en:
       'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
-      'line **inside backticks** — `Teknesyum ▸ Size ▸ <how big> — <what I did>`. The whole ' +
+      'line **inside backticks** — `Teknesyum ▸ Measure ▸ <how big> — <what I did>`. The whole ' +
       'line is one code span so it reads as a block; no heading marks, bold or bullets. ' +
       'The label is capitalised, the separator is ▸, and the rest is ordinary sentence ' +
       'case: first letter capital, the rest lower. Use plain words, no shorthand, and no ' +
       'arrows inside the sentence: ' +
-      '`Teknesyum ▸ Size ▸ One file — no agent needed, I did it myself`. Write it even when ' +
+      '`Teknesyum ▸ Measure ▸ One file — no agent needed, I did it myself`. Write it even when ' +
       'no agent is opened. Skip the line entirely for plain questions.',
   },
   olcuKisa: {
     tr:
       'Teknesyum Base: iş talebiyse relay §1 ile ölç ve ilk satırı tek kod parçası olarak ' +
-      'bas — `Teknesyum ▸ Ölçü ▸ <iş ne kadar> — <ne yaptım>`. Başlık işareti, kalın yazı ' +
+      'bas — `Teknesyum ▸ Ölçüm ▸ <iş ne kadar> — <ne yaptım>`. Başlık işareti, kalın yazı ' +
       've madde imi yok. Salt soru/sohbette yazma.',
     en:
       'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
-      'line as one code span — `Teknesyum ▸ Size ▸ <how big> — <what I did>`. No heading ' +
+      'line as one code span — `Teknesyum ▸ Measure ▸ <how big> — <what I did>`. No heading ' +
       'marks, bold or bullets. Skip it for plain questions.',
   },
   premiumAcik: {

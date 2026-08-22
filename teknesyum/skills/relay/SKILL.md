@@ -100,15 +100,15 @@ Sınıflandırmayı **sessizce yap, kararı tek satır bildir** — kullanıcı 
 davrandığını görsün, gerekçeni değil:
 
 ```
-Teknesyum ▸ Ölçü ▸ Altı dosyalık tek alan işi — oturum içi röle kurdum, üç sözleşme açtım
+Teknesyum ▸ Ölçüm ▸ Altı dosyalık tek alan işi — oturum içi röle kurdum, üç sözleşme açtım
 ```
 
 **Bu satır iş talebinde zorunlu — ajan açmadığında da yaz.** Kullanıcı eklentinin ölçtüğünü
 görmeli; sessizlik "devrede değil" demektir.
 
 ```
-Teknesyum ▸ Ölçü ▸ Tek dosyalık, gözle doğrulanabilir iş — ajan açmadım, kendim yapıyorum
-Teknesyum ▸ Ölçü ▸ Sıfırdan proje, üç ayrı yetenek alanı — görev paketi kurdum, sekiz sözleşme açtım
+Teknesyum ▸ Ölçüm ▸ Tek dosyalık, gözle doğrulanabilir iş — ajan açmadım, kendim yapıyorum
+Teknesyum ▸ Ölçüm ▸ Sıfırdan proje, üç ayrı yetenek alanı — görev paketi kurdum, sekiz sözleşme açtım
 ```
 
 Salt soru, açıklama veya sohbette yazma; ölçülecek iş yok.
@@ -118,14 +118,14 @@ sonunda **koda nerede dokunduğunu ve hangi kuralın yönlendirdiğini** söyler
 eklentinin çalıştığını başka türlü göremez.
 
 ```
-Teknesyum ▸ etki
+Teknesyum ▸ Etki
   src/api/reset.ts:40   builder/sonnet   T2 · owns: api/**    denetim: geçti
   src/ui/ResetForm.tsx  ui-builder       T3 · teknesyum-ui §2, §8 uygulandı
   — kural: git güvenlik noktası atıldı (.gitignore yazıldı, .env eklenmedi)
 ```
 
 Ajan açılmayan işte de yaz; satır kısalır, kaybolmaz:
-`Teknesyum ▸ etki · tek dosya, kendim yaptım · kural: kod yorumu yazılmadı (RULES)`.
+`Teknesyum ▸ Etki · tek dosya, kendim yaptım · kural: kod yorumu yazılmadı (RULES)`.
 Arayüz işinde ayrıntılı biçim `teknesyum-ui` §9'da.
 
 Kararsızsan küçük tarafı seç. Röle kurmanın kendi maliyeti var; sonradan büyütmek,
@@ -383,7 +383,7 @@ tek satırla bildirilir:
 ```
 
 Satırın tamamı ters tırnak içindedir, etiket büyük harfle başlar, ayraç `▸` işaretidir,
-kalan cümle sıradan tümce düzenindedir ve cümlenin içinde ok kullanılmaz — `Ölçü ▸` ve
+kalan cümle sıradan tümce düzenindedir ve cümlenin içinde ok kullanılmaz — `Ölçüm ▸` ve
 `Fark ▸` satırlarıyla aynı kalıp.
 
 `second_opinion` kapalıyken (eco ve normal profil) görüş açılmaz; kararı T0 tek başına

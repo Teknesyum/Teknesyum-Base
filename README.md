@@ -459,6 +459,36 @@ applies where `ask_threshold` does not allow asking. And it binds nothing: where
 disagrees it writes down why, and the user is told an opinion was taken with a
 `Teknesyum ▸ Opinion ▸ …` line.
 
+### Watching the agents
+
+Six agents in parallel is six chances for one of them to spin. The hooks already recorded
+enough to notice — they just were not reading it back.
+
+An agent that has produced no event for `agent_stall` minutes and never sent
+`SubagentStop` is **stuck**. One whose last action repeats `agent_loop` times while its
+transcript keeps growing is **looping** — the growth matters, because an agent waiting on a
+long tool call also repeats its last action and is perfectly healthy. Both land on one line
+and in `live/_sorun.log`.
+
+A hook cannot stop a subagent. It says what it found and the main session decides, with
+`TaskStop`. The report says which agent, how long, and what can be done about it.
+
+With `debug` on, an agent that fails or stops unexpectedly gets a `Teknesyum ▸ Debug ▸`
+line as well. It is the same detection, not a second one beside it — one measurement, two
+readers.
+
+Every turn closes with its own receipt:
+
+```
+Total Süre: 3dk 35sn // Tahmini Token: ~5000
+```
+
+The time is stamped between `UserPromptSubmit` and `Stop`. The token figure is the growth
+of the transcript files — main session and subagents together — divided by four. The line
+says `~` because that is honestly what it is: `stat` the size, no parsing, no second pass
+over megabytes of JSONL. The health scan needs the same numbers, so it is one measurement
+shared by two features rather than two that drift apart.
+
 ### Session save and load
 
 Relay resumes work on its own, but what it resumes are *contracts* — the plan, not the

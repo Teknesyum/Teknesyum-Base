@@ -6,6 +6,53 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.39.0] - 2026-08-22
+
+### Added
+
+- **Agent health.** Six agents run in parallel and one of them can spin without anyone
+  noticing. The watcher now reads what it was already recording: an agent whose `last_seen`
+  is older than `agent_stall` minutes with no `SubagentStop` is **stuck**, and one whose
+  `last_action` repeats `agent_loop` times while its transcript keeps growing is **looping**.
+  Both reach the main session on one line and land in `live/_sorun.log`. A hook cannot stop
+  a subagent — the report says so, and the decision to stop belongs to the main session with
+  `TaskStop`.
+- **A debug channel.** With `debug` on, an agent that fails or stops unexpectedly says so on
+  a `Teknesyum ▸ Debug ▸ …` line. It is the same detection that feeds the health check
+  rather than a second path beside it, and it is silent when `debug` is off — the health
+  check is not.
+- **A turn summary.** Every turn closes with `Total Süre: 3dk 35sn // Tahmini Token: ~5000`.
+  The time is stamped by the hook between `UserPromptSubmit` and `Stop`. The token figure
+  comes from how much the transcript files grew, main session and subagents together,
+  divided by four — the line already says `~`, so the estimate is the contract and there is
+  no parsing. The health scan stats the same files.
+- `agent_stall` and `agent_loop` knobs, identical on both profiles: ten minutes of silence,
+  five repeats of the same action.
+
+### Changed
+
+- **Opening an agent is a call to make, not permission to wait for.** The skill read as
+  though agents were something the user authorises. On the premium profile going parallel is
+  now the default and going with a single agent needs a reason. The sizing table is
+  unchanged — what changed is the hesitation above the threshold.
+- **Agents are named `<Model>-<Job>`** — `Opus-Ajan Sağlığı ve Tur Özeti`. Each word is
+  capitalised and short conjunctions stay lower. This does not collide with the sentence-case
+  rule for headings and filenames; both are written down now so the next session does not
+  fold one into the other. The dispatch line keeps printing the `model` parameter separately:
+  the name is free text, the parameter is what actually got dispatched, and a divergence
+  between them is worth seeing.
+- **Asking for a plan is the fifth trigger for the second opinion.** The skill now says
+  plainly where the council ends and the check begins: the council opens two members for
+  `PLAN.md` on a from-scratch project, the check is one member on `fable` whenever the user
+  asks for a plan.
+
+### Fixed
+
+- Everything writing to stdout collects into one body that `ciktiBas()` writes once. A `Stop`
+  that both blocks and summarises used to produce two JSON documents that corrupted each
+  other.
+
+
 ### Added
 
 - **Agent names carry the model.** An agent is now called `<Model>-<Job Name>` —

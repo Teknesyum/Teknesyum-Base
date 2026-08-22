@@ -6,6 +6,46 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- **A third profile, `eco`.** There were two; there are now three — `premium`, `normal`,
+  `eco` — and `/premium` moves between them. Eco is for the case where tokens genuinely are
+  the constraint: every role on haiku, one agent at a time, the audit back to `critical`,
+  prior art down to five repositories, council and second opinion off. Effort stays at
+  `medium` for the three roles that produce or verify code and drops to `low` everywhere
+  else, because haiku already cuts the cost by an order of magnitude and taking the coding
+  roles below that buys work which fails its acceptance criteria — the extra rounds cost
+  more than the tokens saved. Model escalation stays on for the same reason.
+- **An `advisor` agent.** The second opinion used to be a mode of `planner`, selected by a
+  `GÖRÜŞ:` prefix on the briefing. It is its own agent now. The reason is a measured
+  constraint: the `Agent` tool's schema carries `model` but not `effort`, so effort can only
+  come from the agent definition's frontmatter — two modes in one file meant one effort for
+  both. `advisor` runs at **low effort even on premium**, holds no write tool and declares
+  no `memory`, and `planner` is left with the council alone.
+
+### Changed
+
+- **`standart` is now `normal`.** Same values, new name. Old calls keep working: `/premium
+  kapat` and `off` land on `normal`, `ac`/`aç`/`on` on `premium`, and `standart` is still
+  accepted.
+- **The parallel ceiling on premium is 20, not 6.** The cap is not there for tokens: with
+  `worktree_isolation` on, every agent is a repo copy and a process, and if the manager
+  enters a bad loop the cap is the safety net. Twenty covers "as many as it takes" in
+  practice. How many to open is the manager's call and **the measure is wall-clock time, not
+  tokens** — leaving splittable work unsplit is what now needs a reason. Eco caps at 1,
+  normal stays at 2.
+- **The second opinion has nine triggers, not five.** Added: a finding that cannot be shown
+  to be a bug because no reproduction step, failing test or log line can be written for it;
+  two agent reports that disagree about the same file or measurement with no run that
+  settles it; an acceptance criterion with no command that makes it pass or fail; and any
+  expensive-to-undo release step. Every trigger names a missing or conflicting artifact on
+  purpose — one phrased as "when you are unsure" either never fires or always fires. More
+  triggers is why the consultation had to get cheaper, not a coincidence beside it.
+- **`~/.claude/teknesyum.json` carries a `profil` field** holding `eco`, `normal` or
+  `premium`. Installs that predate it carry a boolean `premium`; that is read as `premium`
+  when true and `normal` otherwise. Both fields are written from then on, so a hook reading
+  the old flag keeps working and `true` still means premium.
+
 ## [2.39.0] - 2026-08-22
 
 ### Added

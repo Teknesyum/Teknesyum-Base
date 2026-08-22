@@ -2,7 +2,6 @@
 name: scout
 description: Ön araştırma işçisi. Sıfırdan bir projeye başlarken aynı problemi çözmüş depoları inceler ve alınmaya değer fikirleri çıkarır. Kod kopyalamaz, kod yazmaz - tek çıktısı docs/taramalar/ altındaki inceleme dosyasıdır. Sana 2-3 depo adı ve projenin ne yapacağı verilir.
 tools: Read, Grep, Glob, WebSearch, WebFetch, Bash, Write
-model: sonnet
 effort: high
 maxTurns: 45
 memory: project

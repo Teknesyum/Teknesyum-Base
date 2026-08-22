@@ -170,65 +170,17 @@ function ajanYolu(kok, ad) {
   return path.join(kok, 'agents', ad + '.md');
 }
 
-function alanYaz(metin, anahtar, deger) {
-  const d = new RegExp('^(' + anahtar + ':[ \\t]*)(.+)$', 'm');
-  if (!d.test(metin)) return metin;
-  return metin.replace(d, (_, bas) => bas + deger);
-}
+// Taban `normal`: ajan dosyaları ve `SETTINGS.md` bu profilin değerlerinde donar, hiçbir
+// koşuda yazılmaz. Profilin oturuma taşıdığı tek şey tabandan **sapan** düğmelerdir;
+// tam liste her isteme yazılırsa enjeksiyon kendi ölçtüğü kalemi büyütür.
+const TABAN = 'normal';
 
-function ajanlariYaz(kok, profil) {
-  const p = PROFIL[profil];
-  const degisen = [];
-  for (const ad of Object.keys(p)) {
-    const yol = ajanYolu(kok, ad);
-    if (!fs.existsSync(yol)) dur('ajan dosyası yok: ' + yol);
-    const eski = fs.readFileSync(yol, 'utf8');
-    let yeni = alanYaz(eski, 'model', p[ad].model);
-    yeni = alanYaz(yeni, 'effort', p[ad].effort);
-    yeni = alanYaz(yeni, 'maxTurns', String(p[ad].maxTurns));
-    if (yeni !== eski) {
-      fs.writeFileSync(yol, yeni, 'utf8');
-      degisen.push(ad);
-    }
-  }
-  return degisen;
-}
-
-function ayarYolu(kok) {
-  return path.join(kok, 'skills', 'relay', 'SETTINGS.md');
-}
-
-function dugmeleriYaz(kok, profil) {
-  const yol = ayarYolu(kok);
-  if (!fs.existsSync(yol)) dur('SETTINGS.md yok: ' + yol);
-  let metin = fs.readFileSync(yol, 'utf8');
-  const d = DUGME[profil];
-  for (const anahtar of Object.keys(d)) {
-    const kalip = new RegExp('^([ \\t]*' + anahtar + '[ \\t]*:[ \\t]*)(\\S+)([ \\t]*)(#.*)?$', 'm');
-    metin = metin.replace(kalip, (satir, bas, eski, bosluk, not) => {
-      if (!not) return bas + d[anahtar];
-      const sutun = satir.indexOf('#');
-      return (bas + d[anahtar]).padEnd(sutun) + not;
-    });
-  }
-  fs.writeFileSync(yol, metin, 'utf8');
-}
-
-function dugmeProfili(kok) {
-  let metin;
-  try {
-    metin = fs.readFileSync(ayarYolu(kok), 'utf8');
-  } catch {
-    return 'okunamadı';
-  }
-  const oku = (a) => {
-    const m = metin.match(new RegExp('^[ \\t]*' + a + '[ \\t]*:[ \\t]*(\\S+)', 'm'));
-    return m ? m[1] : '';
-  };
-  for (const ad of PROFILLER) {
-    if (Object.keys(DUGME[ad]).every((k) => oku(k) === DUGME[ad][k])) return ad;
-  }
-  return 'karışık';
+function sapmalar(profil) {
+  const t = DUGME[TABAN];
+  const d = DUGME[profil] || t;
+  const s = {};
+  for (const k of Object.keys(d)) if (d[k] !== t[k]) s[k] = d[k];
+  return s;
 }
 
 function ajanProfili(kok) {
@@ -241,31 +193,18 @@ function ajanProfili(kok) {
       const b = m.match(new RegExp('^' + a + ':[ \\t]*(.+)$', 'm'));
       return b ? b[1].trim() : '';
     };
-    sonuc[ad] = { model: al('model'), effort: al('effort'), maxTurns: al('maxTurns') };
+    sonuc[ad] = { effort: al('effort'), maxTurns: al('maxTurns') };
   }
   return sonuc;
 }
 
-function profilAdi(kok) {
-  const simdi = ajanProfili(kok);
-  for (const ad of ['premium', 'normal', 'eco']) {
-    const bekle = PROFIL[ad];
-    const tam = Object.keys(bekle).every(
-      (a) =>
-        simdi[a] &&
-        simdi[a].model === bekle[a].model &&
-        simdi[a].effort === bekle[a].effort &&
-        simdi[a].maxTurns === String(bekle[a].maxTurns)
-    );
-    if (tam) return ad;
-  }
-  return 'karışık';
+function sapmaMetni(profil) {
+  const s = sapmalar(profil);
+  const anahtar = Object.keys(s);
+  return anahtar.length ? anahtar.map((k) => k + ' ' + s[k]).join(' · ') : 'yok — taban profil';
 }
 
 function uygula(profil) {
-  const kok = eklentiKok();
-  const degisen = ajanlariYaz(kok, profil);
-  dugmeleriYaz(kok, profil);
   const sid = oturumKimligi();
   const kayit = sid ? oturumYaz(sid, profil) : path.join(konfigKok(), 'teknesyum.json');
   if (!sid) konfigYaz(profil);
@@ -287,7 +226,8 @@ function uygula(profil) {
         ' · ön araştırma: ' +
         d.research_repos +
         '+ depo',
-      'değişen ajan dosyası: ' + (degisen.length ? degisen.join(', ') : 'yok, zaten uygundu'),
+      'sapan düğme: ' + sapmaMetni(profil),
+      'dosya yazılmadı: ajan frontmatter’ı ve SETTINGS.md makine tabanıdır',
       ...(profil === 'eco'
         ? ['/save ham transkripti gzipli yazar (ham.jsonl.gz), /loadall tek satıra iner']
         : []),
@@ -299,17 +239,16 @@ function uygula(profil) {
 function durum() {
   const kok = eklentiKok();
   const c = konfigOku();
-  const p = profilAdi(kok);
   const simdi = ajanProfili(kok);
   const sid = oturumKimligi();
   const oturum = sid ? oturumProfili(sid) : null;
   const beklenen = oturum || konfigProfili(c);
-  const dp = dugmeProfili(kok);
+  const p = PROFIL[beklenen];
   const d = DUGME[beklenen];
   const satir = [
     'yürürlükteki profil: ' + beklenen + ' (kaynak: ' + (oturum ? 'oturum' : 'makine') + ')',
-    'ajan dosyaları: ' + p + ' — makine geneli, oturuma izole değil',
-    'relay düğmeleri: ' + dp + ' — makine geneli, oturuma izole değil',
+    'sapan düğme: ' + sapmaMetni(beklenen),
+    'düğme tabanı: SETTINGS.md — makine varsayılanı, profil onu ezmez',
     'konfig profili: ' +
       konfigProfili(c) +
       (c.profil === undefined ? ' (eski premium alanından)' : ''),
@@ -322,29 +261,13 @@ function durum() {
     'plan konseyi: ' +
       (d.plan_council === 'on' ? KONSEY.join(' + ') : 'off') +
       ' · ikinci görüş: ' +
-      (d.second_opinion === 'on' ? (simdi.advisor || {}).model || GORUS : 'off'),
+      (d.second_opinion === 'on' ? p.advisor.model : 'off'),
     ...Object.keys(simdi).map(
       (a) =>
-        '  ' + a.padEnd(11) + simdi[a].model + '/' + simdi[a].effort + ' · tur ' + simdi[a].maxTurns
+        '  ' + a.padEnd(11) + p[a].model + '/' + simdi[a].effort + ' · tur ' + simdi[a].maxTurns
     ),
     s('eforIzole'),
   ];
-  const sapan = [];
-  if (p !== beklenen) sapan.push('ajan dosyaları ' + p);
-  if (dp !== beklenen) sapan.push('relay düğmeleri ' + dp);
-  if (sapan.length) {
-    satir.push(
-      'UYUŞMAZLIK: profil ' +
-        beklenen +
-        ' diyor, ' +
-        sapan.join(' ve ') +
-        '. Yukarıdaki düğme satırları ' +
-        beklenen +
-        ' profilinin değerleridir, dosyada yazan değil. /premium ' +
-        beklenen +
-        ' ile eşitle.'
-    );
-  }
   process.stdout.write(satir.join('\n') + '\n');
 }
 
@@ -358,10 +281,12 @@ function yardim() {
       '  node premium.js premium  opus/xhigh · 20 paralel ajan · 50 depo · her sözleşme denetlenir',
       '  node premium.js durum    hangi profilin yürürlükte olduğunu söyler',
       '',
-      'Üçü de ajan frontmatter’ını ve relay düğmelerini yazar. Profil kaydı oturuma iner:',
-      'oturum kimliği varsa ~/.claude/teknesyum/oturumlar/<oturum>.json yazılır ve',
-      '~/.claude/teknesyum.json değişmez; kimlik yoksa makine varsayılanı yazılır. Eski',
-      'çağrılar durur: `ac` premium, `kapat` normal demektir.',
+      'Hiçbiri depo dosyası yazmaz. Ajan frontmatter’ı ve relay `SETTINGS.md` makine',
+      'tabanıdır ve `' + TABAN + '` profilin değerlerinde donar; profilin tabandan sapan düğmeleri',
+      'oturumun kanca enjeksiyonuyla gider. Profil kaydı oturuma iner: oturum kimliği varsa',
+      '~/.claude/teknesyum/oturumlar/<oturum>.json yazılır ve ~/.claude/teknesyum.json',
+      'değişmez; kimlik yoksa makine varsayılanı yazılır. Eski çağrılar durur: `ac` premium,',
+      '`kapat` normal demektir.',
       '',
       'eco — token kısıtken. Her rol ' +
         PROFIL.eco.builder.model +
@@ -380,14 +305,20 @@ function yardim() {
         GORUS +
         ' modelindeki `advisor` ajanı üç başlıklı kısa bir görüş verir; karar T0’da kalır.',
       '',
-      'Eklenti güncellemesi ajan dosyalarını geri alabilir; `durum` uyuşmazlığı söyler.',
+      'Dosya yazılmadığı için eklenti güncellemesiyle profil arasında uyuşmazlık da oluşmaz.',
     ].join('\n') + '\n'
   );
 }
 
-const komut = process.argv[2];
-const secilen = TAKMA[komut] || (PROFILLER.includes(komut) ? komut : '');
-if (!komut || komut === '--help' || komut === '-h' || komut === 'yardim') yardim();
-else if (secilen) uygula(secilen);
-else if (komut === 'durum' || komut === 'status') durum();
-else dur('bilinmeyen komut: ' + komut);
+function main() {
+  const komut = process.argv[2];
+  const secilen = TAKMA[komut] || (PROFILLER.includes(komut) ? komut : '');
+  if (!komut || komut === '--help' || komut === '-h' || komut === 'yardim') yardim();
+  else if (secilen) uygula(secilen);
+  else if (komut === 'durum' || komut === 'status') durum();
+  else dur('bilinmeyen komut: ' + komut);
+}
+
+module.exports = { PROFIL, DUGME, TABAN, sapmalar };
+
+if (require.main === module) main();

@@ -18,16 +18,28 @@ altındadır. Argüman boşsa `durum` çalıştır — kendiliğinden profil de�
 
 Eski çağrılar durur: `aç` premium, `kapat` normal demektir. `standart` da `normal`'e gider.
 
-Betik ajan frontmatter'ını (`model`, `effort`, `maxTurns`) ve relay düğmelerini
-(`skills/relay/SETTINGS.md`) yazar. **Profil kaydı oturuma iner:** oturum kimliği varsa
-`~/.claude/teknesyum/oturumlar/<oturum>.json` yazılır ve `~/.claude/teknesyum.json`'a
-dokunulmaz. Kimlik yoksa eski davranış sürer, makine varsayılanı yazılır. Aynı makinede
-iki oturum artık birbirinin profilini ezmez. Çıktıyı olduğu gibi bas, kendin dosya
-düzenleme.
+**Betik hiçbir depo dosyası yazmaz.** Ajan frontmatter'ı ve relay düğmeleri
+(`skills/relay/SETTINGS.md`) **makine tabanıdır** ve `normal` profilin değerlerinde durur;
+profil onları ezmez. Yazdığı tek yer profil kaydıdır: oturum kimliği varsa
+`~/.claude/teknesyum/oturumlar/<oturum>.json`, `~/.claude/teknesyum.json`'a dokunulmaz.
+Kimlik yoksa eski davranış sürer, makine varsayılanı yazılır. Çıktıyı olduğu gibi bas,
+kendin dosya düzenleme.
 
-Oturuma bağlanan şey **profil kaydı ve model**tir, **efor değildir.** Efor yalnız ajan
+Profilin tabandan **sapan** düğmeleri oturumun kanca enjeksiyonuyla gider — tam liste
+değil, yalnız sapanlar. Tam listeyi her isteme yazmak enjeksiyonun kendi ölçtüğü kalemi,
+konuşma hacmini, büyütür. Düğme okuma sırası üç katmandır: **oturum profili → proje
+`.claude/relay/SETTINGS.md` → eklentinin `SETTINGS.md`'si.** `agent_stall` ve `agent_loop`
+gibi kanca düğmeleri metne hiç girmez; onları model değil kanca okur.
+
+Ajan dosyalarında **`model` alanı yoktur.** Modeli her çağrıda T0 geçer ve çağrı anındaki
+değer frontmatter'ı ezer — bu ölçüldü: tek `planner` tanımıyla aynı anda `fable` ve `opus`
+açıldı. Alan hiç bulunmayınca ezme ihtimali de kalmaz.
+
+Oturuma bağlanan şey **profil kaydı ve model**dir, **efor değildir.** Efor yalnız ajan
 tanım dosyasından gelir — `Agent` aracının şemasında `effort` alanı yoktur, oturum başına
-ayrılamaz. `durum` bunu her seferinde tek satırla söyler; yarım çözümü tam gibi
+ayrılamaz. Taban `normal`'dir: tek taban kalınca eco `xhigh` öderse eco anlamını, premium
+`medium`'da kalırsa premium anlamını yitirirdi. Premium farkını `model` taşır, efor ikinci
+derece kaldıraçtır. `durum` bunu her seferinde tek satırla söyler; yarım çözümü tam gibi
 göstermemek için oradadır.
 
 Oturum kayıtları 7 günden eskiyse yok sayılır ve makine varsayılanına düşülür; bayat
@@ -37,14 +49,16 @@ dosyalar yeni kayıt yazılırken silinir.
 edici üç değerini basar: **paralel ajan sayısı, ön araştırma tavanı, denetim eşiği.** Üçü
 profilden profile değişen asıl değerlerdir; gerisi bu üçünün sonucudur.
 
+Profilden profile değişen tek ajan alanı **model**dir; onu da dosya değil çağrı taşır.
+
 | | eco | normal | premium |
 |---|---|---|---|
-| builder · ui-builder | haiku / medium / 40 tur | sonnet / medium / 60 tur | opus / xhigh / 80 tur |
-| auditor | haiku / medium / 20 tur | sonnet / high / 30 tur | opus / xhigh / 40 tur |
-| scout | haiku / low / 25 tur | sonnet / high / 45 tur | opus / high / 60 tur |
-| scribe | haiku / low / 30 tur | haiku / low / 40 tur | opus / low / 40 tur |
-| planner | haiku / low / 30 tur | sonnet / high / 40 tur | opus / xhigh / 40 tur |
-| advisor | haiku / low / 12 tur | sonnet / low / 15 tur | fable / low / 20 tur |
+| builder · ui-builder | haiku | sonnet | opus |
+| auditor | haiku | sonnet | opus |
+| scout | haiku | sonnet | opus |
+| scribe | haiku | haiku | opus |
+| planner | haiku | sonnet | opus |
+| advisor | haiku | sonnet | fable |
 | paralel ajan | 1 | 2 | 20 |
 | worktree izolasyonu | kapalı | kapalı | açık |
 | model tırmanışı | açık | açık | kapalı — zaten tepede |
@@ -56,8 +70,11 @@ profilden profile değişen asıl değerlerdir; gerisi bu üçünün sonucudur.
 | /save ham transkript | `ham.jsonl.gz` gzipli | `ham.jsonl` bire bir | `ham.jsonl` bire bir |
 | /loadall proje bloğu | tek satır durum | dört satır durum | dört satır durum |
 
-`scribe` premium'da da düşük eforla çalışır: model yükseldi diye isim değiştirme işine
-uzun uzun düşünmek kazanç değil kayıptır. Efor tavanı `xhigh`.
+**Efor ve tur tavanı üç profilde de aynıdır** — ajan dosyasındaki taban değerlerdir:
+`builder` · `ui-builder` `medium`/60, `auditor` `high`/30, `scout` `high`/45, `planner`
+`high`/40, `scribe` `low`/40, `advisor` `low`/15. `scribe` ve `advisor` premiumda da
+düşük eforda kalır: model yükseldi diye isim değiştirme işine ya da kısa bir görüşe uzun
+uzun düşünmek kazanç değil kayıptır.
 
 ## eco
 
@@ -131,6 +148,6 @@ eski `premium` bayrağı okunur: `true` premium, gerisi normal sayılır. Betik 
 yalnız oturum kimliği yokken yazar ve ikisini birlikte yazar. Profil okuma sırası:
 `TEKNESYUM_PREMIUM` → oturum kaydı → `teknesyum.json` → `normal`.
 
-Eklenti güncellemesi ajan dosyalarını normal profile geri alabilir. `durum` konfig ile
-dosyaları karşılaştırır ve uyuşmazlığı söyler; tek satırlık düzeltmesi `/premium premium`.
+Betik dosya yazmadığı için eklenti güncellemesiyle profil arasında uyuşmazlık da oluşmaz;
+`durum` artık uyuşmazlık satırı basmaz, yürürlükteki profili ve sapan düğmeleri basar.
 `TEKNESYUM_PREMIUM=1|0` tek oturumluk ezer, dosyalara dokunmaz.

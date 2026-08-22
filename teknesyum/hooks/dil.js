@@ -99,9 +99,22 @@ const S = {
     tr: (dk, sn) => (dk ? dk + 'dk ' + sn + 'sn' : sn + 'sn'),
     en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
   },
+  // Harness bütçe sayacı yalnız ana oturumu sayar, base'in tahmini alt ajanları da
+  // sayar. İkisi "Tahmini Token" adıyla yan yana görününce aynı koşu iki farklı rakamla
+  // raporlanıyordu; ad artık neyi saydığını söylüyor.
   turOzeti: {
-    tr: (sure, token) => '`Total Süre: ~' + sure + '     Tahmini Token: ~' + token + '`',
-    en: (sure, token) => '`Total Time: ~' + sure + '     Estimated Tokens: ~' + token + '`',
+    tr: (sure, token) =>
+      '`Total Süre: ~' +
+      sure +
+      '     Base tahmini, ana oturum + alt ajanlar: ~' +
+      token +
+      ' token`',
+    en: (sure, token) =>
+      '`Total Time: ~' +
+      sure +
+      '     Base estimate, main session + subagents: ~' +
+      token +
+      ' tokens`',
   },
   turOzetiYonerge: {
     tr: (satir) =>
@@ -327,6 +340,12 @@ const S = {
       'work, still think on decisions. Answer in one sentence; tables, bullets and detail ' +
       'come only when asked. When `rg`, `sed`, `biome` or `--check` does the job, do not ' +
       'call a model.',
+  },
+  // Yalnız tabandan sapanlar yazılır. Tam listeyi her isteme yazmak, `docs/OLCUM-TABAN.md`
+  // farkın %89'unu yüklediği kalemi — konuşma hacmini — büyütür.
+  dugmeSapma: {
+    tr: (satir) => 'Tabandan sapan düğmeler: ' + satir,
+    en: (satir) => 'Buttons deviating from the baseline: ' + satir,
   },
   dilTalimati: {
     tr: 'Kullanıcıya ve diğer ajanlara Türkçe yaz — sözleşmeler, paketler, raporlar dahil.',

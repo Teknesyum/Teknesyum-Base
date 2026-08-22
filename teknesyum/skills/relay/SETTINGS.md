@@ -1,7 +1,12 @@
 # Relay ayarları
 
+**Bu dosya makine varsayılanıdır ve `normal` profilin değerlerinde durur. `/premium` onu
+ezmez, hiç yazmaz.** Profilin tabandan sapan düğmeleri oturumun kanca enjeksiyonuyla
+gelir ve buradaki satırı geçer; sapmayan düğme buradan okunur.
+
 Davranış düğmeleri. Değiştirmek için satırı düzenle — skill her yüklendiğinde okunur.
 Proje bazında ezmek için `.claude/relay/SETTINGS.md` oluştur; oradaki satırlar buradakini geçer.
+Sıralama üç katmandır: **oturum profili → proje `SETTINGS.md` → bu dosya.**
 
 ```
 ask_threshold      : critical       # never | critical | ambiguity | often
@@ -140,9 +145,16 @@ tek oturumluk ezer. Satırların çoğunu hook basar — model unutsa da gelir, 
 
 ## Üç profil
 
-Yukarıdaki blok üç profilden birini taşır ve elle değil `/premium` ile değiştirilir —
-düğmeler, ajan frontmatter'ı ve `~/.claude/teknesyum.json` birlikte yazılır, üçü ayrı
-düşerse ölçü tutmaz.
+Yukarıdaki blok **taban**dır: `normal` profilin değerleridir ve `/premium` ona dokunmaz.
+Profil oturuma yazılır (`~/.claude/teknesyum/oturumlar/<oturum>.json`), tabandan sapan
+düğmeleri de oturumun enjeksiyonuyla taşır. Böylece iki pencere aynı makinede iki farklı
+profille çalışabilir; eskiden üçü aynı dosyaya yazıldığı için son çalışan komut ötekini
+eziyordu.
+
+Ajan frontmatter'ı da tabandır: `effort` ve `maxTurns` `normal` değerlerinde donar,
+`model` alanı dosyalarda hiç yoktur — modeli her çağrıda T0 geçer ve çağrı anındaki
+değer frontmatter'ı ezer. `effort` çağrı anında geçilemediği için **oturuma izole
+edilemez**; premium farkını `model` taşır, efor ikinci derece kaldıraçtır.
 
 | Düğme | eco | normal | premium |
 |---|---|---|---|

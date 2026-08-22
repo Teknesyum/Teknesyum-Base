@@ -38,10 +38,13 @@ değer mi" sorusunun cevabı olmaz.
    `/premium` komutu **bulunamamalı**; bulunuyorsa eklenti hâlâ yüklü demektir, dur ve
    söyle. Koşu bitince `claude plugin enable teknesyum@teknesyum` ile geri aç.
 
-   `yalin` oturumunda bu dosyayı okuyacak bir kanca yok; görev metnini oturuma sen
-   taşıyacaksın. Aşağıdaki **Görev** bölümünü olduğu gibi ver, ölçüm kurallarından
-   yalnızca "kabul testlerini göremezsin" ve "eksikleri dürüstçe yaz" maddelerini ekle —
-   ötekiler base'e özgü.
+   `yalin` oturumu başka bir klasörde açılacağı için bu dosyayı göreli yolla bulamaz;
+   komutta **mutlak yol** verilir. Base kapalı olduğundan profil, ölçü satırı ve tur
+   özeti yoktur — model dosyadaki **Görev** ve **Ölçüm kuralları** bölümlerini okur,
+   base'e özgü maddeleri kendiliğinden atlar.
+
+   **Eklentiyi kapatmak makine geneli bir işlemdir.** Yalın koşu sürerken başka bir
+   Teknesyum oturumu açma; koşu bitmeden eklentiyi geri açma.
 
 3. **Üç profil için:** profili uygula ve doğrula — `/premium <durum>` ardından
    `/premium durum`. Yürürlükteki profil ile klasör adı tutmuyorsa **dur ve söyle**;

@@ -2266,6 +2266,51 @@ ol('adsiz kayit oturum kimligini tasir, yukle hepsini listeler', () => {
   icerir(t.out, 'oteki sohbetin istegi');
 });
 
+ol('argumansiz yukle cagiran oturumun kaydini acar', () => {
+  const p = oturumProjesi();
+  const kaynak = path.join(p, 'kaynak.jsonl');
+  const ikinci = path.join(p, 'ikinci.jsonl');
+  fs.writeFileSync(
+    ikinci,
+    fs
+      .readFileSync(kaynak, 'utf8')
+      .replace(/"S1"/g, '"S2"')
+      .replace('ilk istek', 'oteki sohbetin istegi')
+  );
+  oturumCalistir('kaydet', '--proje', p, '--transkript', kaynak);
+  oturumCalistir('kaydet', '--proje', p, '--transkript', ikinci);
+
+  const isaretli = (out) => out.split('\n').find((s) => s.startsWith('▸ ')) || '';
+  const sonYolu = path.join(p, '.claude', 'oturumlar', 'SON.json');
+  const onceki = process.env.CLAUDE_CODE_SESSION_ID;
+  try {
+    process.env.CLAUDE_CODE_SESSION_ID = 'S1';
+    const kendi = oturumCalistir('yukle', '--proje', p);
+    esit(kendi.kod, 0, 'yukle cikis kodu');
+    icerir(isaretli(kendi.out), 'oturum S1');
+    icerir(kendi.out, 'ilk istek');
+    if (kendi.out.includes('oteki sohbetin istegi'))
+      throw new Error('cagiran oturum otekinin kaydini acti');
+
+    process.env.CLAUDE_CODE_SESSION_ID = 'YOK';
+    const dusen = oturumCalistir('yukle', '--proje', p);
+    esit(dusen.kod, 0, 'bilinmeyen kimlikte de acilmali');
+    icerir(isaretli(dusen.out), 'oturum S2');
+    icerir(dusen.out, 'oteki sohbetin istegi');
+
+    process.env.CLAUDE_CODE_SESSION_ID = 'S1';
+    fs.writeFileSync(sonYolu, '{bozuk', 'utf8');
+    esit(oturumCalistir('yukle', '--proje', p).kod, 0, 'bozuk SON.json cokertmemeli');
+    fs.writeFileSync(sonYolu, JSON.stringify({ son: 'eski-bicim' }) + '\n', 'utf8');
+    const eski = oturumCalistir('yukle', '--proje', p);
+    esit(eski.kod, 0, 'eski bicimli SON.json cokertmemeli');
+    icerir(isaretli(eski.out), 'oturum S2');
+  } finally {
+    if (onceki === undefined) delete process.env.CLAUDE_CODE_SESSION_ID;
+    else process.env.CLAUDE_CODE_SESSION_ID = onceki;
+  }
+});
+
 ol('olmayan kayit ve kacis denemesi reddedilir', () => {
   const p = oturumProjesi();
   esit(oturumCalistir('yukle', '--proje', p).kod, 1, 'kayitsiz yukle cikis kodu');

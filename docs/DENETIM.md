@@ -8,7 +8,7 @@ Her bulgu dosya ve satırla kanıtlanmıştır. Kanıtlanamayan hiçbir şey yaz
 
 Sürüm: 2.37.0 · denetim anındaki HEAD `b9c8a3d` · 164/164 test geçiyordu.
 
-**Onarım durumu** — dalga 1 kapandı, 167/167 test geçiyor. Kapanan bulgular başlıklarında
+**Onarım durumu** — dalga 2 kapandı, 175/175 test geçiyor. Kapanan bulgular başlıklarında
 işaretli. Kapanmayanlar dalga 2 ve 3'te.
 
 ---
@@ -284,7 +284,7 @@ eşleşme kendi tanımı). Muhtemelen `canonical()` yazılırken yerini kaybetmi
 
 ---
 
-## B10 · Debug izleme varsayılan açık ve hiç temizlenmiyor
+## B10 · Debug izleme varsayılan açık ve hiç temizlenmiyor — **kapandı**
 
 **Boy:** küçük
 
@@ -300,7 +300,7 @@ röle kurulu projede de çalıştır.
 
 ---
 
-## B11 · `genelKok()` worktree'ye göre kayıyor
+## B11 · `genelKok()` worktree'ye göre kayıyor — **kapandı**
 
 **Boy:** küçük
 
@@ -322,7 +322,7 @@ yolunu kursun.
 
 ---
 
-## B12 · `kapsayici.kok()` her araç çağrısında dizin okuyor
+## B12 · `kapsayici.kok()` her araç çağrısında dizin okuyor — **kapandı**
 
 **Boy:** küçük
 
@@ -385,7 +385,7 @@ farklı projeden aynı adlı hafıza dosyası gelirse biri sessizce kayboluyor.
 
 ---
 
-## B16 · Model ve efor doğrulaması yarım kalmış
+## B16 · Model ve efor doğrulaması yarım kalmış — **kapandı**
 
 **Boy:** küçük
 

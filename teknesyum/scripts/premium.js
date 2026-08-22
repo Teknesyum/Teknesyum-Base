@@ -170,10 +170,9 @@ function ajanYolu(kok, ad) {
   return path.join(kok, 'agents', ad + '.md');
 }
 
-// Taban `normal`: ajan dosyaları ve `SETTINGS.md` bu profilin değerlerinde donar, hiçbir
-// koşuda yazılmaz. Profilin oturuma taşıdığı tek şey tabandan **sapan** düğmelerdir;
-// tam liste her isteme yazılırsa enjeksiyon kendi ölçtüğü kalemi büyütür.
 const TABAN = 'normal';
+
+const KANCA_DUGME = ['agent_stall', 'agent_loop'];
 
 function sapmalar(profil) {
   const t = DUGME[TABAN];
@@ -181,6 +180,14 @@ function sapmalar(profil) {
   const s = {};
   for (const k of Object.keys(d)) if (d[k] !== t[k]) s[k] = d[k];
   return s;
+}
+
+function sapmaSatiri(profil) {
+  const s = sapmalar(profil);
+  return Object.keys(s)
+    .filter((k) => !KANCA_DUGME.includes(k))
+    .map((k) => k + ' ' + s[k])
+    .join(' · ');
 }
 
 function ajanProfili(kok) {
@@ -199,9 +206,7 @@ function ajanProfili(kok) {
 }
 
 function sapmaMetni(profil) {
-  const s = sapmalar(profil);
-  const anahtar = Object.keys(s);
-  return anahtar.length ? anahtar.map((k) => k + ' ' + s[k]).join(' · ') : 'yok — taban profil';
+  return sapmaSatiri(profil) || 'yok — taban profil';
 }
 
 function uygula(profil) {
@@ -264,7 +269,14 @@ function durum() {
       (d.second_opinion === 'on' ? p.advisor.model : 'off'),
     ...Object.keys(simdi).map(
       (a) =>
-        '  ' + a.padEnd(11) + p[a].model + '/' + simdi[a].effort + ' · tur ' + simdi[a].maxTurns
+        '  ' +
+        a.padEnd(11) +
+        'çağrı ' +
+        p[a].model +
+        ' · efor ' +
+        simdi[a].effort +
+        ' · tur ' +
+        simdi[a].maxTurns
     ),
     s('eforIzole'),
   ];
@@ -319,6 +331,6 @@ function main() {
   else dur('bilinmeyen komut: ' + komut);
 }
 
-module.exports = { PROFIL, DUGME, TABAN, sapmalar };
+module.exports = { PROFIL, DUGME, TABAN, KANCA_DUGME, sapmalar, sapmaSatiri };
 
 if (require.main === module) main();

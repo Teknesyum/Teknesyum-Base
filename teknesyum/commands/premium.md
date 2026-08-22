@@ -134,7 +134,7 @@ aracının şemasında `model` var, `effort` yok; efor yalnızca ajan tanımınd
 tek dosyada dururken aynı eforu paylaşıyordu. Ayrılınca `advisor` premiumda bile `low`
 eforda kalabiliyor — tetikleyici sayısı arttıkça danışmanın ucuz olması önem kazanır.
 
-**Ön araştırma tavanı** profille değişir: eco 5, normal 10, premium 50 depo (SKILL §1.4).
+**Ön araştırma tavanı** profille değişir: eco 1, normal 10, premium 50 depo (SKILL §1.4).
 Derinlik değişmez, kapsam değişir: elli depo dalgalar hâlinde okunur ve her dalga bir
 sonrakinin aday listesini eler.
 

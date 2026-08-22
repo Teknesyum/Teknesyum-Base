@@ -321,6 +321,8 @@ guarantee cannot quietly erode.
 | `/premium` | Switches the Max 20x profile on or off, and reports which one is live |
 | `/save` | Writes this session to disk — transcript, context, git state, unsent text |
 | `/load` | Reads a saved session back and picks up where it stopped |
+| `/saveall` | Saves every project's last session into its own folder |
+| `/loadall` | Loads the state of every project onto one screen |
 | `/rc` | Opens a remote-control session so the project can be driven from a phone |
 | `/rcall` | Does the same for every project in the parent folder |
 | `/rcadvanced` | Remote control with the choices left to you: mode, permissions, capacity |
@@ -401,7 +403,17 @@ chat has a record waiting. `/load hepsi` opens all of them; anything else opens 
 /load relay-refactor  a specific one
 /load hepsi           every record
 /load son             pick the previous session up from its transcript, no record needed
+/saveall              save every project's last session into its own folder
+/loadall              the state of every project on one screen
 ```
+
+`/saveall` and `/loadall` work across the whole folder of projects, with the same
+exclusion rule as `/rcall` — `!`, `.` and `_` folders stay out. Saving writes each
+project's own record under its `.claude/oturumlar/`, never into a shared pile, and the
+folder gitignores itself so a multi-megabyte transcript never reaches a repository.
+Loading reads nothing back into context wholesale: per project you get the git state, the
+open contracts with their status, when the last session ran and whether it has a record —
+enough to choose where to continue, and no more.
 
 A session that dies does not get to take the thread with it. When the remote-control
 window closes, the process crashes, or you simply never typed `/save`, the transcript is

@@ -32,6 +32,8 @@ sadece ne istediğini söyle.
 | `/premium` | Max 20x profili: opus, xhigh efor, altı paralel ajan. `durum` ile bak |
 | `/save` | Bu oturumu diske yazar: konuşma, bağlam, git durumu, gönderilmemiş metin |
 | `/load` | Kayıtlı oturumu geri okur, kaldığın yerden devam eder |
+| `/saveall` | Bütün projelerin son oturumunu kendi klasörlerine kaydeder |
+| `/loadall` | Bütün projelerin genel durumunu tek ekranda yükler |
 | `/rc` | Bu projeyi telefondan sürülebilir yapar: uzak denetim oturumu açar |
 | `/rcall` | Aynısını üst klasördeki bütün projeler için yapar |
 | `/rcadvanced` | Uzak denetimi seçenekleriyle açar: kip, izin, kapasite |

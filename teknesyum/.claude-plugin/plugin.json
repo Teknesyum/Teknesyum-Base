@@ -1,7 +1,7 @@
 {
   "name": "teknesyum",
   "displayName": "Teknesyum Base",
-  "version": "2.34.0",
+  "version": "2.35.0",
   "description": "Neon arayüz standardı + çok ajanlı iş rölesi. Kullanıcı ne istediğini söyler; iş büyüklüğü, ajan dağılımı, model ve denetim otomatik kurulur.",
   "author": {
     "name": "Teknesyum",

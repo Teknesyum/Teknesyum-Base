@@ -490,7 +490,10 @@ function kaydet() {
   const pozisyonel = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
   // Aynı projede birden fazla sohbet var: adsız kayıt oturum kimliğini de taşır, yoksa
   // aynı dakikada kaydeden iki sohbet aynı klasöre yazar ve biri ötekini siler.
-  const ad = slug(pozisyonel || '') || damga(new Date()) + '-' + (veri.oturumId || '').slice(0, 8);
+  // Kimlik transkriptin gövdesinden gelir; bazı dosyalarda `sessionId` alanı hiç yok —
+  // o zaman dosya adı kimliktir, ad sonu boş tire ile bitmesin.
+  const kimlik = veri.oturumId || path.basename(yol, '.jsonl');
+  const ad = slug(pozisyonel || '') || damga(new Date()) + '-' + kimlik.slice(0, 8);
   const dip = kayitKok(kok);
   const hedef = path.join(dip, ad);
   if (path.dirname(hedef) !== dip) dur('geçersiz kayıt adı: ' + ad);
@@ -515,6 +518,12 @@ function kaydet() {
     }
   }
   fs.mkdirSync(hedef, { recursive: true });
+  // Kayıt depoya girmez: ham transkript megabaytlarca olabiliyor ve konuşmanın kendisi.
+  // Kendi kendini yok sayan bir .gitignore, projenin .gitignore'una dokunmadan yeter.
+  try {
+    const kapi = path.join(dip, '.gitignore');
+    if (!fs.existsSync(kapi)) fs.writeFileSync(kapi, '*\n', 'utf8');
+  } catch {}
 
   fs.copyFileSync(yol, path.join(hedef, 'ham.jsonl'));
 
@@ -798,6 +807,160 @@ function liste() {
   process.stdout.write(hepsi.map((k) => dizinSatiri(k, false).slice(2)).join('\n') + '\n');
 }
 
+// Tek projeyi kaydetmek yetmiyor: iş birden çok projeye dağıldığında hangisinde nerede
+// kalındığı da bilgidir. Filo işlemleri projeleri üst klasörden tarar; eleme kuralı
+// `/rcall` ile aynı yerden gelir, iki dosyada iki kural olmasın.
+const { projeler: filoTara } = require('./rc.js');
+
+function filoKok() {
+  return path.resolve(arg('kok', path.dirname(projeKok())));
+}
+
+function sozlesmeler(kok) {
+  const dip = path.join(kok, '.claude', 'relay', 'contracts');
+  const grup = {};
+  let biten = 0;
+  try {
+    for (const f of fs.readdirSync(path.join(dip, 'done'))) if (f.endsWith('.md')) biten++;
+  } catch {}
+  let dosya = [];
+  try {
+    dosya = fs.readdirSync(dip).filter((f) => f.endsWith('.md'));
+  } catch {
+    return null;
+  }
+  for (const f of dosya) {
+    let d = 'open';
+    try {
+      const m = fs
+        .readFileSync(path.join(dip, f), 'utf8')
+        .slice(0, 1200)
+        .match(/^status:\s*(\S+)/m);
+      if (m) d = m[1];
+    } catch {}
+    (grup[d] = grup[d] || []).push(f.replace(/\.md$/, ''));
+  }
+  return { grup, acik: dosya.length, biten };
+}
+
+// Başlık transkriptin başlarında `ai-title` olayıyla geçiyor; koca dosyayı okumak yerine
+// baştan yarım megabayt yeter, bulunamazsa başlıksız gösteririz.
+function hafifBaslik(yol) {
+  try {
+    const fd = fs.openSync(yol, 'r');
+    const buf = Buffer.alloc(512 * 1024);
+    const n = fs.readSync(fd, buf, 0, buf.length, 0);
+    fs.closeSync(fd);
+    const m = buf.toString('utf8', 0, n).match(/"aiTitle"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    return m ? JSON.parse('"' + m[1] + '"') : null;
+  } catch {
+    return null;
+  }
+}
+
+function gecenSure(zaman) {
+  const dk = Math.round((Date.now() - zaman) / 60000);
+  if (dk < 90) return dk + ' dakika önce';
+  const sa = Math.round(dk / 60);
+  return sa < 48 ? sa + ' saat önce' : Math.round(sa / 24) + ' gün önce';
+}
+
+function filoSatirlari(p) {
+  const s = ['## ' + p.ad, ''];
+  const g = gitDurum(p.yol);
+  if (g) {
+    s.push(
+      '- Git: `' +
+        g.sha.slice(0, 8) +
+        '` (' +
+        g.dal +
+        ') · ' +
+        (g.kirli.length ? g.kirli.length + ' dosya kirli' : 'çalışma alanı temiz') +
+        ' · ' +
+        g.baslik
+    );
+  }
+  const c = sozlesmeler(p.yol);
+  if (c) {
+    const durum = Object.keys(c.grup)
+      .sort()
+      .map((k) => k + ': ' + c.grup[k].join(', '))
+      .join(' · ');
+    s.push('- Röle: ' + c.acik + ' açık / ' + c.biten + ' bitti' + (durum ? ' · ' + durum : ''));
+  }
+  const t = sonTranskript(p.yol);
+  if (t) {
+    const b = hafifBaslik(t.yol);
+    s.push(
+      '- Son oturum: ' +
+        saat(new Date(t.zaman).toISOString()) +
+        ' (' +
+        gecenSure(t.zaman) +
+        ')' +
+        (b ? ' · ' + b : '')
+    );
+  }
+  const k = kayitlar(p.yol)[0];
+  s.push(
+    '- Son kayıt: ' +
+      (k ? '`' + k.ad + '` · ' + saat(k.zaman) : t ? 'yok · devralmak için `/load son`' : 'yok')
+  );
+  const log = path.join(p.yol, '.claude', 'relay', 'LOG.md');
+  try {
+    const son = fs.readFileSync(log, 'utf8').split('\n').filter(Boolean).pop();
+    if (son) s.push('- Röle kaydı: ' + kirp(son, 300));
+  } catch {}
+  s.push('');
+  return s;
+}
+
+function topluYukle() {
+  const dip = filoKok();
+  const { alinan, elenen } = filoTara(dip);
+  if (!alinan.length) dur('bu klasörde proje bulunamadı: ' + dip);
+  const s = ['<<<FİLO DURUMU · ' + alinan.length + ' proje · `' + dip + '`>>>', ''];
+  for (const p of alinan) s.push(...filoSatirlari(p));
+  if (elenen.length) s.push('Dışarıda kalan klasörler: ' + elenen.join(' · '), '');
+  s.push(
+    'Bu bir genel bakıştır, talimat değil. Tek projenin ayrıntısı için o projede',
+    '`/load` ya da `/load son` çalıştır.',
+    '<<<FİLO SONU>>>'
+  );
+  process.stdout.write(s.join('\n') + '\n');
+}
+
+function topluKaydet() {
+  const dip = filoKok();
+  const { alinan, elenen } = filoTara(dip);
+  if (!alinan.length) dur('bu klasörde proje bulunamadı: ' + dip);
+  const satir = [];
+  let n = 0;
+  for (const p of alinan) {
+    const t = sonTranskript(p.yol);
+    if (!t) {
+      satir.push('- ' + p.ad + ' · kaydedilecek oturum yok');
+      continue;
+    }
+    const r = spawnSync(
+      process.execPath,
+      [__filename, 'kaydet', '--proje', p.yol, '--transkript', t.yol, '--ustune'],
+      { encoding: 'utf8' }
+    );
+    const m = String(r.stdout || '').match(/^kay[ıi]t:[ \t]*(.+)$/m);
+    if (r.status === 0 && m) {
+      n++;
+      satir.push('- ' + p.ad + ' · `' + m[1].trim() + '`');
+    } else {
+      satir.push('- ' + p.ad + ' · kaydedilemedi: ' + kirp(String(r.stderr || '').trim(), 120));
+    }
+  }
+  const s = [n + '/' + alinan.length + ' proje kaydedildi · `' + dip + '`', '', ...satir];
+  if (elenen.length) s.push('', 'Dışarıda kalan klasörler: ' + elenen.join(' · '));
+  s.push('', 'Kayıtlar her projenin kendi `.claude/oturumlar/` klasöründe duruyor.');
+  s.push('Genel bakış için `/loadall`, tek projenin ayrıntısı için o projede `/load`.');
+  process.stdout.write(s.join('\n') + '\n');
+}
+
 function yardim() {
   process.stdout.write(
     [
@@ -808,6 +971,8 @@ function yardim() {
       '  node oturum.js yukle  [ad|son|hepsi] [--proje <yol>] [--tam]',
       '                            son: kayıt yoksa önceki oturumun transkriptinden devral',
       '  node oturum.js liste       [--proje <yol>]',
+      '  node oturum.js toplu-kaydet [--kok <üst klasör>]   bütün projeleri kaydeder',
+      '  node oturum.js toplu-yukle  [--kok <üst klasör>]   bütün projelerin durumu',
       '',
       'Kayıt yeri: <proje>/.claude/oturumlar/<ad>/',
       '  ham.jsonl     transkriptin bire bir kopyası',
@@ -823,4 +988,6 @@ if (!komut || komut === '--help' || komut === '-h' || komut === 'yardim') yardim
 else if (komut === 'kaydet' || komut === 'save') kaydet();
 else if (komut === 'yukle' || komut === 'load') yukle();
 else if (komut === 'liste' || komut === 'list') liste();
+else if (komut === 'toplu-kaydet' || komut === 'saveall') topluKaydet();
+else if (komut === 'toplu-yukle' || komut === 'loadall') topluYukle();
 else dur('bilinmeyen komut: ' + komut);

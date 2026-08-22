@@ -133,7 +133,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'help.md,load.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,setup.md,uicheckup.md,uisetup.md'
+    'help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,setup.md,uicheckup.md,uisetup.md'
   );
   const yuru = (d) =>
     fs
@@ -2489,6 +2489,60 @@ ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
   const durum = path.join(p, '.claude', 'oturumlar', 'uzak', 'durum.json');
   esit(fs.existsSync(durum), true, 'kayit yazilmali');
   esit(JSON.parse(fs.readFileSync(durum, 'utf8')).oturumId, 'S1', 'dogru oturum');
+});
+
+function filoKur() {
+  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-filo-'));
+  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  const kaynak = oturumProjesi();
+  for (const ad of ['Alfa', 'Beta']) {
+    const p = path.join(dip, ad);
+    fs.mkdirSync(path.join(p, '.git'), { recursive: true });
+    const t = path.join(evDizin, '.claude', 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
+    fs.mkdirSync(t, { recursive: true });
+    fs.copyFileSync(path.join(kaynak, 'kaynak.jsonl'), path.join(t, ad + '-1.jsonl'));
+  }
+  fs.mkdirSync(path.join(dip, '!Tamamlandı', '.git'), { recursive: true });
+  const c = path.join(dip, 'Alfa', '.claude', 'relay', 'contracts');
+  fs.mkdirSync(path.join(c, 'done'), { recursive: true });
+  fs.writeFileSync(path.join(c, 'T1.md'), 'status: submitted\n');
+  fs.writeFileSync(path.join(c, 'done', 'T0.md'), 'status: done\n');
+  return { dip, evDizin };
+}
+
+ol('loadall butun projelerin durumunu tek ekranda verir', () => {
+  const { dip, evDizin } = filoKur();
+  const r = spawnSync(process.execPath, [OTURUM, 'toplu-yukle', '--kok', dip], {
+    encoding: 'utf8',
+    env: { ...process.env, USERPROFILE: evDizin, HOME: evDizin, TEKNESYUM_DIL: 'tr' },
+  });
+  esit(r.status, 0, 'filo durumu calismali');
+  icerir(r.stdout, 'FİLO DURUMU · 2 proje');
+  icerir(r.stdout, '## Alfa');
+  icerir(r.stdout, '## Beta');
+  icerir(r.stdout, 'submitted: T1');
+  icerir(r.stdout, '1 açık / 1 bitti');
+  icerir(r.stdout, 'Dışarıda kalan klasörler: !Tamamlandı');
+});
+
+ol('saveall her projeyi kendi klasorune kaydeder ve depoya sizdirmaz', () => {
+  const { dip, evDizin } = filoKur();
+  const r = spawnSync(process.execPath, [OTURUM, 'toplu-kaydet', '--kok', dip], {
+    encoding: 'utf8',
+    env: { ...process.env, USERPROFILE: evDizin, HOME: evDizin, TEKNESYUM_DIL: 'tr' },
+  });
+  esit(r.status, 0, 'toplu kayit calismali');
+  icerir(r.stdout, '2/2 proje kaydedildi');
+  for (const ad of ['Alfa', 'Beta']) {
+    const dizin = path.join(dip, ad, '.claude', 'oturumlar');
+    const kayit = fs
+      .readdirSync(dizin, { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name);
+    esit(kayit.length, 1, ad + ' icin bir kayit olmali');
+    esit(fs.existsSync(path.join(dizin, kayit[0], 'ozet.md')), true, 'ozet yazilmali');
+    esit(fs.readFileSync(path.join(dizin, '.gitignore'), 'utf8').trim(), '*', 'kayit git disi');
+  }
 });
 
 ol('load son kayit olmadan onceki oturumu transkriptten devralir', () => {

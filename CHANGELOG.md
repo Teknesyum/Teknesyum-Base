@@ -6,6 +6,19 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.35.0] - 2026-08-22
+
+### Added
+
+- `/saveall` saves every project's last session into that project's own
+  `.claude/oturumlar/`, using the same folder exclusion rule as `/rcall`. The records
+  folder now gitignores itself, so a multi-megabyte transcript never reaches a repository
+  — this applies to plain `/save` as well.
+- `/loadall` puts the whole fleet on one screen: per project the git state, the open
+  contracts with their status, when the last session ran, whether it has a record, and the
+  last relay log line. It is a state overview, not a context dump — the conversation of a
+  single project is still `/load` or `/load son` inside it.
+
 ## [2.34.0] - 2026-08-20
 
 ### Added

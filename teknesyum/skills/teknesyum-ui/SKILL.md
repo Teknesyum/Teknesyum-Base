@@ -210,8 +210,9 @@ Panel: `bg-[#08090a]/95 backdrop-blur-xl border border-neon-blue/20 rounded-2xl 
 shadow-[0_0_40px_rgba(0,0,0,0.8)]`
 Radius: kutu `16px`, buton/kart `12px`, hücre `8px`, çip `6px`. Başka değer yok.
 Aralık: 4 / 8 / 12 / 16 / 24. Panel padding `24px`, bölüm arası `24px`, satır arası `12px`.
-Geçiş: `200ms` mikro, `300ms` renk/glow, `500ms` panel aç-kapa. Hover `scale(1.02)` buton,
-`1.1` ikon.
+Geçiş süresi burada tekrar edilmez — tek kaynağı §5.4'ün token ölçeğidir
+(`--tk-t-instant` · `--tk-t-fast` · `--tk-t-base` · `--tk-t-slow`). Hover `scale(1.02)`
+buton, `1.1` ikon.
 
 **Yerleşim, piksel disiplini, gradient ve geri bildirim yüzeyleri:** `references/layout.md`.
 Bir panel, pencere veya sayfa yerleşimi kurarken o dosya okunur.

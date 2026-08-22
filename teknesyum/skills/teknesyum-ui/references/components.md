@@ -24,24 +24,27 @@ lbl text-sm font-bold tracking-widest text-[var(--color-neon-blue)]
 ```
 birincil  w-full bg-[var(--color-neon-blue)] hover:bg-[var(--color-neon-blue)]/80 text-black
           font-bold tracking-widest py-4 rounded-xl flex items-center justify-center gap-3
-          transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(0,243,255,0.3)]
+          transition-[opacity,transform] duration-[--tk-t-instant]
+          hover:scale-[1.02] shadow-[0_0_20px_rgba(0,243,255,0.3)]
 
 tehlike   aynısı, neon-blue → neon-pink, gölge rgba(255,0,234,0.3)
 
 hayalet   bg-[var(--color-neon-purple)]/10 hover:bg-[var(--color-neon-purple)]/20
           border border-[var(--color-neon-purple)]/50 text-[var(--color-neon-purple)]
-          font-bold tracking-widest py-4 rounded-xl transition-all hover:scale-[1.02]
+          font-bold tracking-widest py-4 rounded-xl hover:scale-[1.02]
+          transition-[opacity,transform] duration-[--tk-t-instant]
 
 ikon      w-8 h-8 rounded-lg flex items-center justify-center text-gray-500
           hover:text-[var(--color-neon-pink)] hover:bg-[var(--color-neon-pink)]/10
-          border border-transparent hover:border-[var(--color-neon-pink)]/30 transition-all
+          border border-transparent hover:border-[var(--color-neon-pink)]/30
+          transition-[opacity,transform] duration-[--tk-t-instant]
 
 pasif     disabled:opacity-30 disabled:pointer-events-none
 ```
 
 ## Toggle (anahtar)
 ```html
-<button class="w-11 h-6 rounded-full border transition-all
+<button class="w-11 h-6 rounded-full border transition-opacity duration-[--tk-t-instant]
   {on ? 'bg-[var(--color-neon-blue)]/30 border-[var(--color-neon-blue)]/60'
       : 'bg-gray-800 border-gray-700'}">
   <div class="w-4 h-4 rounded-full transition-transform
@@ -58,7 +61,8 @@ Değeri sağda göster: `w-16 text-right font-mono text-sm text-[var(--color-neo
 
 ## Değer hücresi / grid
 ```
-w-10 h-10 rounded flex items-center justify-center font-mono text-xs transition-all cursor-pointer
+w-10 h-10 rounded flex items-center justify-center font-mono text-xs cursor-pointer
+transition-[opacity,transform] duration-[--tk-t-instant]
 seçili   bg-[var(--color-neon-blue)]/20 border border-[var(--color-neon-blue)]/50
          text-[var(--color-neon-blue)] shadow-[0_0_8px_var(--color-neon-blue)_inset]
 tamam    text-emerald-400 ring-2 ring-inset ring-emerald-400/70 shadow-[0_0_8px_rgba(52,211,153,0.5)]
@@ -72,11 +76,16 @@ bg-[var(--color-neon-pink)]/10 border border-[var(--color-neon-pink)]/30 rounded
 ```
 
 ## İlerleme çubuğu
+
+Genişlik değil **`scaleX`** animasyonlanır: `width` her karede yerleşimi yeniden
+hesaplattırır, `transform` GPU'da kalır (§5.4). Dolgu tam genişlikte durur, ölçek
+küçültür.
 ```html
 <div class="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
-  <div class="h-full rounded-full bg-[var(--color-neon-blue)]
-              shadow-[0_0_10px_var(--color-neon-blue)] transition-[width] duration-500"
-       style="width:{pct}%"></div>
+  <div class="h-full w-full origin-left rounded-full bg-[var(--color-neon-blue)]
+              shadow-[0_0_10px_var(--color-neon-blue)]
+              transition-transform duration-[--tk-t-base] ease-[--tk-e-out]"
+       style="transform:scaleX({pct/100})"></div>
 </div>
 <div class="tk-label mt-1">{done}/{total} · {phase}</div>
 ```

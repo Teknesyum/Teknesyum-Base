@@ -4,6 +4,7 @@ node_modules
 .tani/
 .claude/worktrees/
 .claude/relay/live/
+.claude/agent-memory/
 .claude/harita.json
 .claude/harita.md
 .claude/oturumlar/

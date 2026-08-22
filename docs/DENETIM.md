@@ -412,6 +412,26 @@ de girecekse etiketi ondan sonra at.
 
 ---
 
+## B18 · Ajan hafızası depoya sızabiliyor
+
+**Boy:** küçük
+
+`.gitignore` `.claude/relay/live/`, `.claude/worktrees/`, `.claude/oturumlar/` ve harita
+çıktılarını kapsıyor ama `.claude/agent-memory/` kapsamıyor. Bütün ajanlarda
+`memory: project` açık; ajan hafıza yazdığı anda dosya takipsiz olarak beliriyor ve ilk
+`git add -A` ile depoya giriyor.
+
+Onarım dalgasının ilk turunda üç ajandan biri gerçekten hafıza yazdı ve worktree'de
+takipsiz `.claude/agent-memory/` klasörü olarak göründü.
+
+Hafıza ajan başına yerel öğrenmedir, üretilen içeriktir ve okuduğu dosyalardan alıntı
+taşıyabilir; `live/` gibi makine alanıdır.
+
+**Önerilen düzeltme:** `.gitignore`'a `.claude/agent-memory/` ekle. (Faz 1.1 içinde
+yapıldı.)
+
+---
+
 # Onarım planı
 
 ## Faz 1 — Mantık hataları ve eksikler

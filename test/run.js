@@ -5469,6 +5469,309 @@ ol('ekran kapisi hooks.json ile baglidir ve tek blokla sokulur', () => {
   icerir(d, 'hooks/ekran-kapisi.js');
 });
 
+const UI_CSS = [
+  '.tk-btn {',
+  '  padding: 14px 20px;',
+  '}',
+  '.tk-btn:hover {',
+  '  background: rgba(0, 243, 255, 0.2);',
+  '}',
+  '.kart {',
+  '  transition: all 500ms ease;',
+  '}',
+  '',
+].join('\n');
+
+function uiProje(secenek) {
+  const o = secenek || {};
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-uikip-'));
+  const yaz = (gorece, govde) => {
+    const tam = path.join(p, gorece);
+    fs.mkdirSync(path.dirname(tam), { recursive: true });
+    fs.writeFileSync(tam, govde);
+  };
+  yaz(
+    'package.json',
+    JSON.stringify({
+      name: 'uikip',
+      version: '1.0.0',
+      dependencies: o.bagimlilik || { motion: '^13.1.1' },
+    })
+  );
+  if (o.css !== false) yaz('src/app.css', o.css || UI_CSS);
+  if (o.yabanci !== false) {
+    yaz('src/gizli.ts', 'export const x = "transition: all 900ms";\n');
+    yaz('NOTLAR.md', 'transition: all 900ms ease;\n');
+  }
+  return { p, yaz, css: path.join(p, 'src', 'app.css') };
+}
+
+function uiCalistir(p, ...arg) {
+  const r = spawnSync(process.execPath, [TARAMA, 'ui', ...arg, '--proje', p], { encoding: 'utf8' });
+  return { out: r.stdout || '', err: r.stderr || '', kod: r.status };
+}
+
+function uiJson(p, ...arg) {
+  return JSON.parse(uiCalistir(p, '--json', ...arg).out);
+}
+
+function uiDepo(p) {
+  const vcs = (...a) => spawnSync('git', ['-C', p, ...a], { encoding: 'utf8' });
+  vcs('init', '-q');
+  vcs('add', '-A');
+  vcs('-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'ilk');
+  return vcs;
+}
+
+ol('ui kipi yalniz arayuz dosyalarina bakar, ajan acmaz', () => {
+  const { p } = uiProje();
+  const j = uiJson(p);
+  esit(j.kip, 'ui', 'kip alani');
+  esit(j.dosya, 1, 'yalniz src/app.css taranmali');
+  esit(
+    j.bulgular.every((b) => !b.dosya || b.dosya === 'src/app.css'),
+    true,
+    'ts ve md dosyasi bulguya girmemeli'
+  );
+  const r = uiCalistir(p);
+  icermez(r.out, 'gizli.ts');
+  icermez(r.out, 'NOTLAR.md');
+  icermez(r.out, 'ajan');
+  icermez(r.out, 'scout');
+});
+
+ol('ui durgunluk kolu motion kurulu ama import yoksa basliga yazar', () => {
+  const { p, yaz } = uiProje();
+  const r = uiCalistir(p);
+  icerir(r.out, 'başlık: motion kurulu');
+  icerir(r.out, 'hiç import edilmemiş');
+  const j = uiJson(p);
+  esit(j.baslik.startsWith('motion kurulu'), true, 'baslik alani');
+  esit(
+    j.bulgular.some((b) => b.tur === 'kuruluKullanilmamis' && b.kol === 'durgunluk'),
+    true,
+    'bulgu turu'
+  );
+  yaz(
+    'src/Kutu.tsx',
+    "import { motion } from 'motion/react';\nexport const Kutu = () => <motion.div />;\n"
+  );
+  esit(
+    uiJson(p).bulgular.some((b) => b.tur === 'kuruluKullanilmamis'),
+    false,
+    'import varken bulgu kalkmali'
+  );
+  icermez(uiCalistir(p).out, 'başlık: motion kurulu');
+  esit(
+    uiJson(p).bulgular.some((b) => b.tur === 'motionConfigYok'),
+    true,
+    'import var ama sarmalayici yok'
+  );
+});
+
+ol('ui hoveri olup gecisi olmayan ogeyi bulur', () => {
+  const { p, yaz } = uiProje();
+  const h = uiJson(p).bulgular.filter((b) => b.tur === 'hoverGecisYok');
+  esit(h.length, 1, 'tek hover bulgusu');
+  esit(h[0].dosya, 'src/app.css', 'dosya');
+  esit(h[0].satir, 4, 'kural satiri');
+  esit(h[0].kol, 'durgunluk', 'durgunluk kolu');
+  yaz(
+    'src/app.css',
+    [
+      '.tk-btn {',
+      '  transition: opacity var(--tk-t-instant) var(--tk-e-out);',
+      '}',
+      '.tk-btn:hover {',
+      '  background: rgba(0, 243, 255, 0.2);',
+      '}',
+      '',
+    ].join('\n')
+  );
+  esit(
+    uiJson(p).bulgular.some((b) => b.tur === 'hoverGecisYok'),
+    false,
+    'taban secicide transition varsa bulgu yok'
+  );
+});
+
+ol('ui ihlal kolu yasak ozellik, tavan, token disi renk ve metne glow bulur', () => {
+  const { p } = uiProje({
+    css: [
+      '.a { transition: width 200ms ease; }',
+      '.b { transition: opacity 900ms var(--tk-e-out); }',
+      '.c { color: #ff0000; }',
+      '.d { text-shadow: 0 0 8px #00f3ff; }',
+      '.e { transition-property: all; }',
+      '.f { color: #6b7280; }',
+      '',
+    ].join('\n'),
+  });
+  const tur = uiJson(p)
+    .bulgular.filter((b) => b.kol === 'ihlal')
+    .map((b) => b.tur);
+  for (const beklenen of [
+    'yasakOzellik',
+    'sureTavani',
+    'tokenDisiRenk',
+    'metneGlow',
+    'transitionAll',
+    'kontrast',
+  ])
+    esit(tur.includes(beklenen), true, beklenen + ' bulunmali');
+});
+
+ol('ui kipi WPF yerlesim ve golge animasyonunu ayirir', () => {
+  const { p, yaz } = uiProje({ css: false, yabanci: false });
+  yaz(
+    'ui/Ana.xaml',
+    [
+      '<Window>',
+      '  <DoubleAnimation Storyboard.TargetProperty="(UIElement.LayoutTransform).(ScaleTransform.ScaleX)" />',
+      '  <DoubleAnimation Storyboard.TargetProperty="(UIElement.Effect).(BlurEffect.Radius)" />',
+      '</Window>',
+      '',
+    ].join('\n')
+  );
+  const j = uiJson(p);
+  const tur = j.bulgular.map((b) => b.tur);
+  esit(tur.includes('wpfYerlesim'), true, 'LayoutTransform animasyon hedefi');
+  esit(tur.includes('wpfGolge'), true, 'Effect animasyon hedefi');
+  esit(
+    j.bulgular.some((b) => b.tur === 'odakHalkasiYok' && b.mesaj.includes('FocusVisualStyle')),
+    true,
+    'xaml odak halkasi'
+  );
+});
+
+ol('ui --tamamla yalniz mekanik olani duzeltir', () => {
+  const { p, css } = uiProje({
+    css: [
+      '.kart {',
+      '  transition: all 500ms ease;',
+      '  color: #6b7280;',
+      '}',
+      '.rozet:hover {',
+      '  background: #123456;',
+      '}',
+      '',
+    ].join('\n'),
+  });
+  const vcs = uiDepo(p);
+  const r = uiCalistir(p, '--tamamla');
+  const govde = fs.readFileSync(css, 'utf8');
+  icerir(govde, 'transition: opacity var(--tk-t-slow) ease, transform var(--tk-t-slow) ease;');
+  icermez(govde, 'transition: all');
+  icerir(govde, 'prefers-reduced-motion');
+  icerir(govde, '#6b7280');
+  icerir(govde, '#123456');
+  icermez(govde.split('.rozet:hover')[1].split('}')[0], 'transition');
+  icermez(govde, '@keyframes');
+  icerir(r.out, '[düzeltildi]');
+  icerir(r.out, 'karar gerektirdiği için düzeltilmedi');
+  icerir(r.out, '- yazıldı: src/app.css:2');
+  esit(
+    vcs('status', '--porcelain').stdout.trim().length > 0,
+    true,
+    'degisiklik geri alinabilir olmali'
+  );
+  const kalan = uiCalistir(p).out;
+  icerir(kalan, '#6b7280 — palet dışı renk');
+  icerir(kalan, 'hover var, geçiş yok');
+});
+
+ol('ui --tamamla kirli calisma agacinda calismaz', () => {
+  const { p, css } = uiProje();
+  uiDepo(p);
+  fs.writeFileSync(css, fs.readFileSync(css, 'utf8') + '.ek { color: #ff0000; }\n');
+  const once = fs.readFileSync(css, 'utf8');
+  const r = uiCalistir(p, '--tamamla');
+  esit(r.kod, 2, 'kirli agac kullanim hatasidir, kaldi degil');
+  icerir(r.out, 'DURDU');
+  icerir(r.out, 'çalışma ağacı temiz değil');
+  icermez(r.out, 'SONUÇ:');
+  icermez(r.out, '[düzeltildi]');
+  esit(fs.readFileSync(css, 'utf8'), once, 'hicbir dosya degismemeli');
+  const b = uiCalistir(p);
+  esit(b.kod, 1, 'bayraksiz cagri kirli agacta da calisir');
+  icerir(b.out, 'SONUÇ:');
+  esit(fs.readFileSync(css, 'utf8'), once, 'bayraksiz cagri salt okur');
+});
+
+ol('ui kipinde kapsayici kapisi gecerli', () => {
+  const kap = taramaKapsayici();
+  const r = uiCalistir(kap);
+  esit(r.kod, 2, 'kapsayici kullanim hatasidir');
+  icerir(r.out, 'DURDU');
+  icerir(r.out, 'kapsayıcı klasör');
+  icerir(r.out, 'node tarama.js ui --proje');
+  icermez(r.out, 'SONUÇ:');
+  const j = uiJson(kap);
+  esit(j.durum, 'kapsayici', 'durum alani');
+  esit(j.kip, 'ui', 'kip alani');
+  icermez(uiCalistir(kap, '--kapsayici').out, 'DURDU');
+});
+
+ol('ui kipi uc profil kipini bozmaz', () => {
+  const p = taramaProje(1);
+  const j = JSON.parse(taramaCalistir(p, 'eco', '--json').out);
+  esit(j.profil, 'eco', 'profil alani');
+  esit(j.maddeler.length, 4, 'dort madde');
+  esit(j.kip, undefined, 'profil ciktisinda kip alani olmamali');
+  const t = taramaCalistir(p, 'premium', '--tamamla');
+  icerir(t.out, '--tamamla · bu betik hiçbir dosyaya yazmadı');
+  icermez(t.out, 'başlık:');
+  esit(uiJson(p).kip, 'ui', 'ui kipi profilden bagimsiz');
+  const kap = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-uiad-'));
+  fs.mkdirSync(path.join(kap, 'ui'), { recursive: true });
+  fs.writeFileSync(path.join(kap, 'ui', 'package.json'), '{"name":"ui","version":"1.0.0"}');
+  const a = spawnSync(process.execPath, [TARAMA, 'eco', '--proje', 'ui'], {
+    encoding: 'utf8',
+    cwd: kap,
+  });
+  icerir(a.stdout, 'tarama: eco', 'ui adli klasor bayrak degeriyken kip sanilmamali');
+});
+
+ol('ui suresini rapora yazar ve bes saniyenin altinda kalir', () => {
+  const { p, yaz } = uiProje();
+  for (let i = 0; i < 120; i++) yaz('src/b' + i + '.css', '.a { transition: all 400ms ease; }\n');
+  const bas = Date.now();
+  const r = uiCalistir(p);
+  const gecen = Date.now() - bas;
+  icerir(r.out, 'süre: ');
+  icerir(r.out, ' sn · ');
+  icerir(r.out, ' arayüz dosyası');
+  const j = uiJson(p);
+  esit(j.dosya, 121, 'butun arayuz dosyalari taranmali');
+  esit(j.sure_ms < 5000, true, 'olcum bes saniyenin altinda: ' + j.sure_ms + ' ms');
+  esit(gecen < 5000, true, 'surec toplami bes saniyenin altinda: ' + gecen + ' ms');
+});
+
+ol('ui olculeri teknesyum-ui theme.css dosyasindan okur, kopyalamaz', () => {
+  const govde = fs.readFileSync(TARAMA, 'utf8');
+  icerir(govde, 'theme.css');
+  icermez(govde, '#00f3ff');
+  icermez(govde, '--tk-t-base');
+  const { p } = uiProje({ css: '.a { transition: opacity 380ms ease; }\n' });
+  const j = uiJson(p);
+  esit(
+    j.bulgular.some((b) => b.tur === 'sureTavani'),
+    true,
+    '380 ms tavanin ustunde sayilmali'
+  );
+  icerir(uiCalistir(p).out, '360 ms tavanının üstünde');
+});
+
+ol('scan.md ui kipini anlatir', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'scan.md'), 'utf8');
+  icerir(k, 'eco | normal | premium | ui');
+  icerir(k, '/teknesyum:scan ui');
+  icerir(k, 'durgunluk');
+  icerir(k, '--tamamla');
+  const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
+  icerir(h, '/scan');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

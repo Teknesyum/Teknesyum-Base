@@ -963,6 +963,37 @@ function acilis(root, kapNotu, oturumId) {
     if (n) parca.push(ceviri('sorunBirikim', n));
   }
   if (parca.length) duyur(parca.join('   ·   '));
+  const g = guncellemeBak();
+  if (g) duyur(ceviri('guncellemeVar', g.uzak, g.kurulu));
+}
+
+// Eklenti kendi güncellemesini haber vermiyordu: kullanıcı yeni sürüm çıktığını ancak
+// elle bakarsa öğreniyordu. Açılışta günde bir kez sorulur.
+//
+// Damga ağ çağrısından ÖNCE yazılır. Sonra yazılsaydı ağ yokken her oturum zaman
+// aşımını baştan öderdi; açılış kullanıcının beklediği yer. Kaybedilen şey bir günlük
+// gecikme, kazanılan şey ağsız makinede sıfır bekleme.
+//
+// Ağ yoksa, git yoksa, depo erişilemezse hiçbir şey yazılmaz. Uyarının yokluğu
+// "güncelsin" demek değil; bunu her açılışta söylemek bilgi değil gürültü olur.
+const SURUM_DAMGA = '_surum';
+const SURUM_ARA = 24 * 60 * 60 * 1000;
+
+function guncellemeBak() {
+  const damga = path.join(genelKok(), SURUM_DAMGA);
+  try {
+    if (Date.now() - fs.statSync(damga).mtimeMs < SURUM_ARA) return null;
+  } catch {}
+  try {
+    fs.mkdirSync(path.dirname(damga), { recursive: true });
+    fs.writeFileSync(damga, '');
+  } catch {}
+  try {
+    const d = require('../scripts/surum.js').durum();
+    return d.yeni ? d : null;
+  } catch {
+    return null;
+  }
 }
 
 // Alt ajanın yaşadığı aksaklık kullanıcıya ekran görüntüsüyle ulaşmamalı. Araç

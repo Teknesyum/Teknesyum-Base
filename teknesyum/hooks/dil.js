@@ -179,6 +179,12 @@ const S = {
     tr: (n) => n + ' ajan worktree’si duruyor · iş bittiyse `git worktree remove` ile temizle',
     en: (n) => n + ' agent worktrees left behind · clear them with `git worktree remove`',
   },
+  guncellemeVar: {
+    tr: (yeni, simdi) =>
+      'Güncelleme ▸ ' + yeni + ' çıktı, kurulu sürüm ' + simdi + ' — /update ile güncelle',
+    en: (yeni, simdi) =>
+      'Update ▸ ' + yeni + ' is out, installed version is ' + simdi + ' — update with /update',
+  },
 
   olcu: {
     tr:

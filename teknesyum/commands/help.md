@@ -20,6 +20,8 @@ sadece ne istediğini söyle.
   yerden devam edilir. "Devam" demene bile gerek yok. Sürdürülen şey sözleşmelerdir;
   konuşmanın kendisini taşımak istersen `/save` ile mühürler, `/load` ile açarsın.
 - **Arayüz standardı.** Arayüz yazılan her yerde aynı palet, tipografi ve imza.
+- **Sürüm haberi.** Yeni sürüm çıktığında açılışta günde bir kez söylenir. Ağ yoksa
+  hiçbir şey yazılmaz — satırın çıkmaması "güncelsin" demek değildir, `/update` sorar.
 
 **Komutlar — hepsi isteğe bağlı**
 
@@ -37,6 +39,7 @@ sadece ne istediğini söyle.
 | `/rc` | Bu projeyi telefondan sürülebilir yapar: uzak denetim oturumu açar |
 | `/rcall` | Aynısını üst klasördeki bütün projeler için yapar |
 | `/rcadvanced` | Uzak denetimi seçenekleriyle açar: kip, izin, kapasite |
+| `/update` | Yeni sürüm çıkmış mı bakar, güncelleme komutunu kopyalanabilir verir |
 | `/help` | Bu ekran |
 
 **Bilmek işine yarayacak iki sınır**

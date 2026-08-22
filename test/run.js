@@ -133,7 +133,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,setup.md,uicheckup.md,uisetup.md'
+    'help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,setup.md,uicheckup.md,uisetup.md,update.md'
   );
   const yuru = (d) =>
     fs
@@ -3876,6 +3876,171 @@ ol('premium turu sagligi dugmelerini kaydirmaz', () => {
     icerir(once, satir);
     icerir(sonra, satir);
   }
+});
+
+console.log('\nSürüm kontrolü');
+
+const SURUM = path.join(KOK, 'scripts', 'surum.js');
+const surum = require(SURUM);
+
+// Uzak sorgu hiç gerçek ağa çıkmamalı: `origin` yerel bir bare depoya bakar, `ls-remote`
+// dosya sisteminden okur. CI ağsız koşabilir.
+function git(a, d) {
+  spawnSync('git', a, { cwd: d, stdio: 'ignore' });
+}
+
+function surumKur(kuruluSurum, etiket, pazarsiz) {
+  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-surum-'));
+  const bare = path.join(c, 'bare');
+  fs.mkdirSync(bare);
+  git(['init', '-q', '--bare'], bare);
+  const w = path.join(c, 'w');
+  fs.mkdirSync(w);
+  git(['init', '-q'], w);
+  git(['config', 'user.email', 't@t'], w);
+  git(['config', 'user.name', 't'], w);
+  fs.writeFileSync(path.join(w, 'a'), 'x');
+  git(['add', 'a'], w);
+  git(['commit', '-qm', 'x'], w);
+  for (const e of [].concat(etiket)) git(['tag', e], w);
+  git(['remote', 'add', 'origin', bare], w);
+  git(['push', '-q', 'origin', 'HEAD', '--tags'], w);
+  const mp = path.join(c, 'plugins', 'marketplaces', 'teknesyum');
+  if (!pazarsiz) {
+    fs.mkdirSync(mp, { recursive: true });
+    git(['init', '-q'], mp);
+    git(['remote', 'add', 'origin', bare], mp);
+  }
+  if (kuruluSurum) {
+    fs.mkdirSync(path.join(c, 'plugins'), { recursive: true });
+    fs.writeFileSync(
+      path.join(c, 'plugins', 'installed_plugins.json'),
+      JSON.stringify({
+        version: 2,
+        plugins: { 'teknesyum@teknesyum': [{ version: kuruluSurum, gitCommitSha: 'abc123' }] },
+      })
+    );
+  }
+  return { cfg: c, pazar: mp, damga: path.join(c, 'teknesyum', 'live', '_surum') };
+}
+
+function surumAcilis(cfg) {
+  const { p } = proje(1, 0);
+  const r = calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'SessionStart' },
+    { CLAUDE_CONFIG_DIR: cfg }
+  );
+  return JSON.parse(r.out || '{}').systemMessage || '';
+}
+
+function surumCalistir(cfg, ek) {
+  const r = spawnSync(process.execPath, [SURUM].concat(ek || []), {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg },
+  });
+  return { out: (r.stdout || '').trim(), kod: r.status };
+}
+
+ol('karsilastir semveri sayisal siralar, dizgi olarak degil', () => {
+  esit(surum.karsilastir('2.10.0', '2.9.0'), 1, '2.10.0 > 2.9.0');
+  esit(surum.karsilastir('2.9.0', '2.10.0'), -1, '2.9.0 < 2.10.0');
+  esit(surum.karsilastir('2.40.0', '2.40.0'), 0, '2.40.0 == 2.40.0');
+  esit(surum.karsilastir('3.0.0', '2.99.9'), 1, '3.0.0 > 2.99.9');
+});
+
+ol('uzak en yuksek etiketi secer, v onekini kirpar', () => {
+  const { pazar } = surumKur(null, ['v2.9.0', 'v2.10.0', 'v2.10.0-rc1', 'bozuk']);
+  esit(surum.uzak(pazar), '2.10.0');
+});
+
+ol('uzak erisilemeyen depoda null doner, cokmez', () => {
+  const { cfg, pazar } = surumKur(null, 'v1.0.0');
+  fs.rmSync(path.join(pazar, '.git', 'config'), { force: true });
+  esit(surum.uzak(pazar), null, 'origin okunamayinca null');
+  esit(surum.uzak(path.join(cfg, 'boyle-bir-depo-yok')), null, 'depo yokken null');
+});
+
+ol('uzak cagrisi zaman asimiyla sinirli — acilis askida kalmaz', () => {
+  const src = fs.readFileSync(SURUM, 'utf8');
+  icerir(src, 'timeout: UZAK_ZAMAN_ASIMI');
+  const m = src.match(/UZAK_ZAMAN_ASIMI\s*=\s*(\d+)/);
+  if (!m) throw new Error('UZAK_ZAMAN_ASIMI sabiti yok');
+  if (Number(m[1]) > 3000) throw new Error('zaman asimi cok uzun: ' + m[1]);
+});
+
+ol('--json ciktisi ayristirilabilir', () => {
+  const { cfg } = surumKur('1.0.0', 'v9.9.9');
+  const r = surumCalistir(cfg, ['--json']);
+  esit(r.kod, 0, 'cikis kodu');
+  const j = JSON.parse(r.out);
+  esit(j.kurulu, '1.0.0');
+  esit(j.uzak, '9.9.9');
+  esit(j.yeni, true);
+  esit(j.sha, 'abc123');
+  esit(j.komut, 'claude plugin update teknesyum@teknesyum');
+});
+
+ol('bayraksiz calistirmada insan okur satir cikar', () => {
+  const { cfg } = surumKur('9.9.9', 'v9.9.9');
+  const r = surumCalistir(cfg);
+  esit(r.kod, 0, 'cikis kodu');
+  icerir(r.out, 'güncel');
+  icerir(r.out, '9.9.9');
+});
+
+ol('yeni surum varken acilis satiri cikar', () => {
+  const { cfg } = surumKur('1.0.0', 'v9.9.9');
+  const m = surumAcilis(cfg);
+  icerir(m, 'Teknesyum ▸ Güncelleme ▸ 9.9.9 çıktı, kurulu sürüm 1.0.0 — /update ile güncelle');
+});
+
+ol('guncelken acilis satiri cikmaz', () => {
+  const { cfg } = surumKur('9.9.9', 'v9.9.9');
+  const m = surumAcilis(cfg);
+  if (m.includes('Güncelleme ▸')) throw new Error('guncelken satir cikti: ' + m);
+});
+
+ol('damga tazeyken ikinci kontrol yapilmaz', () => {
+  const { cfg, damga } = surumKur('1.0.0', 'v9.9.9');
+  icerir(surumAcilis(cfg), 'Güncelleme ▸');
+  if (!fs.existsSync(damga)) throw new Error('damga yazilmadi: ' + damga);
+  const ikinci = surumAcilis(cfg);
+  if (ikinci.includes('Güncelleme ▸')) throw new Error('damga tazeyken tekrar bakildi');
+  fs.rmSync(damga);
+  icerir(surumAcilis(cfg), 'Güncelleme ▸', 'damga silinince tekrar bakilmali');
+});
+
+ol('damga eskiyince yeniden bakilir', () => {
+  const { cfg, damga } = surumKur('1.0.0', 'v9.9.9');
+  surumAcilis(cfg);
+  const eski = Date.now() - 25 * 60 * 60 * 1000;
+  fs.utimesSync(damga, eski / 1000, eski / 1000);
+  icerir(surumAcilis(cfg), 'Güncelleme ▸');
+});
+
+ol('pazar deposu yokken acilis sessiz kalir ve beklemez', () => {
+  const { cfg } = surumKur('1.0.0', 'v9.9.9', true);
+  const t = Date.now();
+  const m = surumAcilis(cfg);
+  if (m.includes('Güncelleme ▸')) throw new Error('depo yokken satir cikti: ' + m);
+  if (Date.now() - t > 3000) throw new Error('acilis bekledi: ' + (Date.now() - t) + 'ms');
+});
+
+ol('kurulu kayit okunamayinca acilis sessiz kalir', () => {
+  const { cfg } = surumKur(null, 'v9.9.9');
+  const m = surumAcilis(cfg);
+  if (m.includes('Güncelleme ▸')) throw new Error('kayit yokken satir cikti: ' + m);
+});
+
+ol('/update komutu marketplace adli cagriyi verir', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'update.md'), 'utf8');
+  icerir(k, 'claude plugin update teknesyum@teknesyum');
+  icerir(k, 'scripts/surum.js');
+  icerir(k, '--json');
+  icerir(k, '/premium');
+  const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
+  icerir(h, '| `/update` |');
 });
 
 console.log(

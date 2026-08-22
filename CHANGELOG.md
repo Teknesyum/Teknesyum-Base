@@ -6,6 +6,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.41.0] - 2026-08-22
+
 ### Added
 
 - **A third profile, `eco`.** There were two; there are now three — `premium`, `normal`,

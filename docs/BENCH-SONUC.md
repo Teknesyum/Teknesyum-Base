@@ -77,18 +77,29 @@ kurmayan bir test.
 
 ## Ölçümün bilinen sınırları
 
-**Paralel koşu profilleri karıştırdı.** Üç koşu aynı anda başlatıldı, ama `/premium`
-makine geneline yazıyor — eco penceresi profili değiştirince premium koşusu bunu gördü.
-Premium ajanı durumu doğru okudu ve profili geri çevirmedi (öteki koşunun ölçümünü
-bozmamak için), ama o koşu artık "baştan sona premium" değil, "premium üretim + eco
-altında doğrulama".
+**Paralel koşu profilleri karıştırdı — ama üretimi bozmadı.** Üç koşu aynı anda
+başlatıldı ve `/premium` makine geneline yazıyor; eco penceresi profili değiştirince
+premium koşusu bunu gördü.
+
+Etkisi sonradan ölçüldü ve sanılandan küçük çıktı. Ajanların hangi modelle açıldığı
+profilin o an ne olduğunu ele veriyor:
+
+- **normal geçerli.** Dört ajanın dördü de sonnet (2 builder `sonnet/medium`, 2 auditor
+  `sonnet/high`). Auditor'lar koşunun sonlarına doğru açılıyor; profil ortada eco'ya
+  kaysaydı onlar haiku çıkardı. Çıkmadı.
+- **premium'un üretimi geçerli.** İşin tamamı ilk oturumda premium profille üretildi;
+  profilin eco göründüğü ikinci oturumda hiç ajan açılmadı, yalnız doğrulama koşuldu.
+
+Yine de bu bir tasarım kusuru: paralel koşu önerisi bana ait ve makine geneli anahtarı
+hesaba katmıyordu. Bir sonraki turda profiller sıralı koşuluyor.
 
 Bu bench tasarımının kusuru: paralel koşu önerisi bana ait ve makine geneli anahtarı
 hesaba katmıyordu. Sonraki turda profiller sıralı koşulmalı, ya da `TEKNESYUM_PREMIUM`
 ortam değişkeniyle oturum başına ayrılmalı.
 
 **Premium'un token ölçümü eksik.** Oturum düştü, ara turların `Total Süre` / `Tahmini
-Token` satırları bağlamla birlikte gitti. Bu koşunun token sütunu kullanılamaz.
+Token` satırları bağlamla birlikte gitti. Bu koşunun token sütunu kullanılamaz — premium
+ikinci kez koşuluyor ve karşılaştırma o turla yapılacak.
 
 **Ana oturum eco felsefesine aykırı koştu.** Dört koşuda da `opus` + `high` sabitlendi —
 tek değişken kuralı için doğru, ama eco kullanıcısının gerçek deneyimi bu değil. Ölçülen

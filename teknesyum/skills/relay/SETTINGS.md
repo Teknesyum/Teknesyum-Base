@@ -83,7 +83,7 @@ tercihi olduğu için:
 |---|---|
 | `0` | Hiç `Teknesyum ▸` satırı yok. Base sessizce çalışır. |
 | `1` | Temel yönlenmeler: oturum açılışı, görev dağıtımı, ajan bitişi, ölçü satırı. Varsayılan. |
-| `2` | Hepsi + `Teknesyum ▸ fark · …` satırları: base olmasaydı farklı sonuçlanacak her karar. |
+| `2` | Hepsi + `Teknesyum ▸ Fark ▸ …` satırları: base olmasaydı farklı sonuçlanacak her karar. |
 
 **Dil** de aynı dosyadadır: `dil` alanı `en` (varsayılan) ya da `tr`. Tek alan iki
 yeri birden yönetir — kullanıcıya çıkan bildirimler ve ajanların birbirine yazdığı metin

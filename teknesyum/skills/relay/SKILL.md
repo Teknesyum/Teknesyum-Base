@@ -62,15 +62,15 @@ Sınıflandırmayı **sessizce yap, kararı tek satır bildir** — kullanıcı 
 davrandığını görsün, gerekçeni değil:
 
 ```
-Teknesyum ▸ ölçü: 6 dosya / tek yetenek → oturum içi röle · 3 sözleşme · builder/sonnet
+Teknesyum ▸ Ölçü ▸ Altı dosyalık tek alan işi — oturum içi röle kurdum, üç sözleşme açtım
 ```
 
 **Bu satır iş talebinde zorunlu — ajan açmadığında da yaz.** Kullanıcı eklentinin ölçtüğünü
 görmeli; sessizlik "devrede değil" demektir.
 
 ```
-Teknesyum ▸ ölçü: tek dosya / gözle doğrulanabilir → ajan gerekmedi, kendim yapıyorum
-Teknesyum ▸ ölçü: sıfırdan proje / 3 yetenek → görev paketi · 8 sözleşme
+Teknesyum ▸ Ölçü ▸ Tek dosyalık, gözle doğrulanabilir iş — ajan açmadım, kendim yapıyorum
+Teknesyum ▸ Ölçü ▸ Sıfırdan proje, üç ayrı yetenek alanı — görev paketi kurdum, sekiz sözleşme açtım
 ```
 
 Salt soru, açıklama veya sohbette yazma; ölçülecek iş yok.
@@ -448,6 +448,7 @@ Rota `docs/ROTA-<is-adi>.md` dosyasıdır. İşe başlamadan yazılır, boş bı
 ```markdown
 # Rota: <iş adı>
 
+**Durum:** açık                        <- iş bitince `kapandı` yazılır
 **Kaldığım yer:** D4 (sürüyor)          <- her turda güncellenen tek satır
 **Amaç:** <bir cümle>
 
@@ -460,6 +461,10 @@ Rota `docs/ROTA-<is-adi>.md` dosyasıdır. İşe başlamadan yazılır, boş bı
 ```
 
 Durum yalnızca üç değer alır: `bekliyor`, `sürüyor`, `bitti`. Ara ifade yok.
+
+Baştaki **Durum** alanı iki değer alır: `açık` ve `kapandı`. İş bittiğinde `kapandı`
+yazılır; sıkışma sonrası bildirimi bu işareti taşıyan rotayı atlar, kapanmış rota bir daha
+bağlama girmez.
 
 **Her durak bitince rota güncellenir ve commit atılır.** Bulgu rotanın içine değil, ayrı
 bir çıktı dosyasına yazılır; rota yalnızca nerede olduğunu söyler. Rota şişerse işini
@@ -627,10 +632,10 @@ Seviyeyi hook `UserPromptSubmit`'te sana bildirir; kendin dosya okumaya gitme.
 içinde kaybolmaz. Kalın yazı, başlık işareti, madde imi ekleme:
 
 ```
-`Teknesyum ▸ fark · işi 4 sözleşmeye bölüp 2 ajana verdim — tek oturumda sırayla giderdi`
-`Teknesyum ▸ fark · bağları harita.js ile taradım — 30 dosya okumak yerine tek disk taraması`
-`Teknesyum ▸ fark · denetçi T2'yi geri çevirdi — kabul kriteri 3 karşılanmamıştı`
-`Teknesyum ▸ fark · builder'ı sonnet'e yükselttim — haiku 3 turda çözemedi`
+`Teknesyum ▸ Fark ▸ İşi dört sözleşmeye bölüp iki ajana verdim — tek oturumda sırayla giderdi`
+`Teknesyum ▸ Fark ▸ Bağları harita.js ile taradım — otuz dosya okumak yerine tek disk taraması oldu`
+`Teknesyum ▸ Fark ▸ Denetçi T2'yi geri çevirdi — üçüncü kabul kriteri karşılanmamıştı`
+`Teknesyum ▸ Fark ▸ Bağımsız üç sözleşmeyi aynı anda yürüttüm — tek sırada gitse iş üç kat uzardı`
 ```
 
 Cümle günlük dilde kurulur: önce ne yaptığın, sonra kısa çizgiyle base olmasaydı ne

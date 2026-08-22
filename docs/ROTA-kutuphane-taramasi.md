@@ -1,10 +1,11 @@
 # Rota: kütüphane ve ekosistem taraması
 
+**Durum:** kapandı
 **Kaldığım yer:** tarama kapandı — durma ölçütü D15'te devreye girdi
 **Amaç:** Teknesyum Base'i güçlendirecek kütüphane, standart ve eklentileri tarayıp
 alınabilir olanları standarda katmak, kurulması gerekenleri kullanıcıya bildirmek.
 
-**Çıktı dosyası:** `docs/tarama-bulgulari.md`
+**Çıktı dosyası:** `docs/taramalar/tarama-bulgulari.md`
 
 | # | Durak | Durum | Bulgu |
 |---|---|---|---|
@@ -30,7 +31,7 @@ Seri tarama. Alt ajan açılmaz.
 
 Her durak bitince bu dosya güncellenir ve commit atılır.
 
-Bulgular `docs/tarama-bulgulari.md` içine yazılır; burada yalnızca durum tutulur.
+Bulgular `docs/taramalar/tarama-bulgulari.md` içine yazılır; burada yalnızca durum tutulur.
 
 Her bulgu için üç alan zorunlu: **lisans**, **alınacak kural**, **alınmayacak kısım**.
 

@@ -856,6 +856,7 @@ function sikismaSonrasi(root) {
   for (const f of dosyalar(path.join(proje, 'docs'))) {
     if (!f.startsWith('ROTA-') || !f.endsWith('.md')) continue;
     const govde = metin(path.join(proje, 'docs', f));
+    if (govde && /^\*\*Durum:\*\*\s*kapandı\s*$/m.test(govde)) continue;
     const m = govde && govde.match(/^\*\*Kaldığım yer:\*\*(.*)$/m);
     satir.push(ceviri('sikismaRota', f, m ? m[1].trim() : ''));
   }

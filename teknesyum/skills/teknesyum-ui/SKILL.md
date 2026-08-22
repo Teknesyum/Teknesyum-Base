@@ -472,7 +472,7 @@ Arayüz üreten veya değiştiren her işin sonunda, özetin **önüne** şu blo
 kuralın adı, ne yaptığın, hangi madde. Uydurma — gerçekten dokunduğun yeri yaz.
 
 ```
-Teknesyum ▸ etki · teknesyum-ui
+Teknesyum ▸ Etki · teknesyum-ui
   MainWindow.xaml:14   başlık çubuğu  sistem bandı kaldırıldı → 36px neon şerit   §8
   MainWindow.xaml:52   palet          #00f3ff / #ff00ea token; ara renk yok       §2
   MainWindow.xaml:88   tipografi      sayılar Consolas'a alındı                    §3
@@ -482,4 +482,4 @@ Teknesyum ▸ etki · teknesyum-ui
 
 **Uygulamadığın maddeyi de yaz.** Sessizce atlanan kural, hiç var olmamış kuraldır; gerekçesi
 yazılınca kullanıcı katılmıyorsa itiraz edebilir. Ayar kapalıysa (`"kapali": true`) blok yerine
-tek satır: `Teknesyum ▸ etki · teknesyum-ui kapalı, projenin kendi tarzı korundu`.
+tek satır: `Teknesyum ▸ Etki · teknesyum-ui kapalı, projenin kendi tarzı korundu`.

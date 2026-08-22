@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { projeMi } = require('./ortak.js');
 
 // Oturum projenin kendisinde değil, projeleri barındıran üst klasörde açıldığında
 // Claude Code'un proje başına tuttuğu her şey o üst klasöre yazılır: ajan hafızası
@@ -7,28 +8,7 @@ const path = require('path');
 // seçimini kullanıcıdan beklemek yerine hangi projede çalışıldığını izleriz ve turun
 // sonunda üst klasörde biriken hafızayı ait olduğu projeye taşırız.
 
-function varMi(...p) {
-  try {
-    return fs.existsSync(path.join(...p));
-  } catch {
-    return false;
-  }
-}
-
-// ÖLÇÜLDÜ: `kok` her araç çağrısında bir `readdirSync` ve alt klasör başına üç
-// `existsSync` yapıyordu; yirmi projelik üst klasörde altmışın üzerinde dosya sorgusu.
-// Yanıt aynı dizin için değişmez, kanca süreci tek olay yaşar — bir kez sorulur.
-const _projeBellek = new Map();
 const _kokBellek = new Map();
-
-function projeMi(d) {
-  const anahtar = path.resolve(d);
-  if (_projeBellek.has(anahtar)) return _projeBellek.get(anahtar);
-  const sonuc =
-    varMi(anahtar, '.git') || varMi(anahtar, 'package.json') || varMi(anahtar, '.claude', 'relay');
-  _projeBellek.set(anahtar, sonuc);
-  return sonuc;
-}
 
 function altlar(d) {
   try {

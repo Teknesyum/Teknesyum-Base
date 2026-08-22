@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { konfigKok } = require('../hooks/ortak.js');
 
 const PROFIL = {
   standart: {
@@ -71,12 +72,6 @@ function dur(mesaj) {
 
 function eklentiKok() {
   return path.resolve(arg('kok', path.join(__dirname, '..')));
-}
-function konfigKok() {
-  return (
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude')
-  );
 }
 
 function konfigOku() {

@@ -5,6 +5,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { s: ceviri } = require('../hooks/dil.js');
+const { ev, konfigKok, projeMi, PROJE_IZI } = require('../hooks/ortak.js');
 
 // Masaüstü uygulamasında `/rc` yok: uzak denetim yalnız terminal istemcisinde açılıyor.
 // Bu betik o boşluğu kapatır — istemciyi bulur, yoksa kurar, projenin kökünde bir uzak
@@ -20,10 +21,6 @@ function arg(ad) {
   return i > 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--')
     ? process.argv[i + 1]
     : null;
-}
-
-function ev() {
-  return process.env.USERPROFILE || process.env.HOME || '';
 }
 
 function tirnak(s) {
@@ -197,7 +194,7 @@ function kaydet(kok) {
 
 function teknesyumAyari() {
   try {
-    return JSON.parse(fs.readFileSync(path.join(ev(), '.claude', 'teknesyum.json'), 'utf8'));
+    return JSON.parse(fs.readFileSync(path.join(konfigKok(), 'teknesyum.json'), 'utf8'));
   } catch {
     return {};
   }
@@ -208,12 +205,6 @@ function teknesyumAyari() {
 function elenir(ad, atla) {
   if (/^[!._~]/.test(ad)) return true;
   return atla.some((x) => String(x).toLowerCase() === ad.toLowerCase());
-}
-
-function projeMi(yol) {
-  return ['.git', 'AGENTS.md', 'package.json', '.claude', 'CLAUDE.md'].some((f) =>
-    fs.existsSync(path.join(yol, f))
-  );
 }
 
 function projeler(dip) {
@@ -233,7 +224,7 @@ function projeler(dip) {
       elenen.push(g.name);
       continue;
     }
-    if (projeMi(yol)) alinan.push({ ad: g.name, yol });
+    if (projeMi(yol, PROJE_IZI.filo)) alinan.push({ ad: g.name, yol });
   }
   alinan.sort((a, b) => a.ad.localeCompare(b.ad));
   return { alinan, elenen };

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { transkriptKok, transkriptDizini } = require('../hooks/ortak.js');
 
 const KLASOR = 'oturumlar';
 const YAKIN_TUR = 10;
@@ -83,16 +83,12 @@ function kayitKok(kok) {
   return path.join(kok, '.claude', KLASOR);
 }
 
-function transkriptDizini(kok) {
-  return path.join(os.homedir(), '.claude', 'projects', kok.replace(/[^a-zA-Z0-9]/g, '-'));
-}
-
 // ÖLÇÜLDÜ: oturum `Projeler` üst klasöründe açılıp iş alt projede yapılınca kayıt
 // "oturum bulunamadı" diyordu — transkript oturumun açıldığı klasörün altında duruyor,
 // kaydedilen proje başka. Kimlik elimizdeyken doğru dosyayı bulmak bir taramalık iş.
 function transkriptAra(oturum) {
   if (!oturum) return null;
-  const dip = path.join(os.homedir(), '.claude', 'projects');
+  const dip = transkriptKok();
   let dizinler = [];
   try {
     dizinler = fs.readdirSync(dip);

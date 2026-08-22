@@ -1606,6 +1606,86 @@ ol('worktree sözleşme durumu canonical yoldan korunur', () => {
   icerir(r.err, 'geriye alınamaz');
 });
 
+// `--separate-git-dir` kurulumunda `--git-common-dir` çıktısı `.git` ile bitmez. Koşulsuz
+// bir üst dizine çıkan sürüm burada deponun rastgele komşusunu röle kökü sanıyordu,
+// koşullu kırpan sürüm hiçbir şey bulmuyordu: iki kanca iki ayrı köke varıyordu. `kap`
+// bilerek kurulmuş tuzak — depoyla ilgisi yok, kimse oraya sahip çıkmamalı.
+function ayriGitDizini() {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ayrigit-'));
+  const kap = path.join(p, 'kap');
+  const depo = path.join(p, 'depo');
+  const store = path.join(kap, 'store');
+  fs.mkdirSync(depo, { recursive: true });
+  fs.mkdirSync(path.join(kap, '.claude', 'relay', 'contracts'), { recursive: true });
+  spawnSync('git', ['init', '--separate-git-dir=' + store, depo], { encoding: 'utf8' });
+  return { depo, kap, store };
+}
+
+function ortakOku(cwd, ifade) {
+  const r = spawnSync(
+    process.execPath,
+    [
+      '-e',
+      'const o=require(' +
+        JSON.stringify(path.join(KOK, 'hooks', 'ortak.js')) +
+        ');process.stdout.write(String(' +
+        ifade +
+        '))',
+    ],
+    { cwd, encoding: 'utf8' }
+  );
+  return ((r.stdout || '') + (r.stderr || '')).trim();
+}
+
+ol('git ortak dizini `.git` ile bitmiyorsa bir üst dizine kaçılmaz', () => {
+  const { depo, store } = ayriGitDizini();
+  esit(
+    path.basename(ortakOku(depo, '(o.gitSor(process.cwd())||{}).common')),
+    path.basename(store),
+    'ortak dizin bir üst dizine kaydırılmamalı'
+  );
+  esit(
+    ortakOku(depo, 'o.roleKoku(process.cwd()) === null'),
+    'true',
+    'deponun komşusundaki röle sahiplenilmemeli'
+  );
+});
+
+ol('iki kanca da git kökünü ortak tabandan sorar', () => {
+  for (const f of ['relay-watch.js', 'contract-guard.js']) {
+    const govde = fs.readFileSync(path.join(KOK, 'hooks', f), 'utf8');
+    if (govde.includes('git-common-dir')) throw new Error(f + ' git kökünü kendi hesaplıyor');
+    icerir(govde, "require('./ortak.js')", f + ' ortak tabana bağlanmalı');
+  }
+});
+
+ol("worktree cwd'sinde iki kanca aynı röle kökünü görür", () => {
+  const { wt, relay } = worktreeProje();
+  // Windows 8.3 kısa adı: `os.tmpdir()` `ADMINI~1` döner, git uzun adı. Aynı dizin.
+  esit(
+    ortakOku(wt, 'require("fs").realpathSync.native(o.roleKoku(process.cwd()).relay)'),
+    fs.realpathSync.native(relay),
+    'ortak taban ana depoyu bulmalı'
+  );
+  const izleme = calistir(IZLE, {
+    ...ort(wt),
+    hook_event_name: 'PostToolUse',
+    agent_id: 'a1',
+    agent_type: 'builder',
+    tool_input: { file_path: path.join(relay, 'contracts', 'T1.md') },
+  });
+  esit(izleme.kod, 0, "izleyici worktree'den röleyi bulmalı");
+  const koruma = calistir(KORU, {
+    cwd: wt,
+    tool_name: 'Write',
+    tool_input: {
+      file_path: path.join(relay, 'contracts', 'T1.md'),
+      content: '---\nstatus: open\n---\n',
+    },
+  });
+  esit(koruma.kod, 2, 'kanca aynı kökteki sözleşmeyi korumalı');
+});
+
 ol('bozuk girdide çökmez', () => {
   const r = spawnSync(process.execPath, [DURUM], { input: 'bu json degil', encoding: 'utf8' });
   esit(r.status, 0);
@@ -2524,7 +2604,15 @@ function rcCalistir(arg, ek) {
 
 function rcEv() {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcev-'));
-  return { USERPROFILE: d, HOME: d };
+  return { USERPROFILE: d, HOME: d, CLAUDE_CONFIG_DIR: path.join(d, '.claude') };
+}
+
+// Transkriptler konfig kökünün altında durur. Yalnız `USERPROFILE`'ı ezen fikstür
+// sonucu makinedeki `CLAUDE_CONFIG_DIR`'e bırakır: ayarı taşımış geliştiricide test
+// başka bir dizine bakar. Kök açıkça sabitlenir.
+function oturumEvi() {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  return { ev: d, ort: { USERPROFILE: d, HOME: d, CLAUDE_CONFIG_DIR: path.join(d, '.claude') } };
 }
 
 ol('rc metin kipinde pencere acmaz, komutu basar', () => {
@@ -2630,13 +2718,13 @@ ol('rc komutu betigi cagirir ve pencere acmayi kendine birakmaz', () => {
 
 ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
   const p = oturumProjesi();
-  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  const { ev: evDizin, ort: evOrt } = oturumEvi();
   const baska = path.join(evDizin, '.claude', 'projects', 'C--baska-klasor');
   fs.mkdirSync(baska, { recursive: true });
   fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(baska, 'S1.jsonl'));
   const r = spawnSync(process.execPath, [OTURUM, 'kaydet', 'uzak', '--proje', p], {
     encoding: 'utf8',
-    env: { ...process.env, USERPROFILE: evDizin, HOME: evDizin, CLAUDE_CODE_SESSION_ID: 'S1' },
+    env: { ...process.env, ...evOrt, CLAUDE_CODE_SESSION_ID: 'S1' },
   });
   esit(r.status, 0, 'baska klasordeki transkript bulunmali');
   const durum = path.join(p, '.claude', 'oturumlar', 'uzak', 'durum.json');
@@ -2646,7 +2734,7 @@ ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
 
 function filoKur() {
   const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-filo-'));
-  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  const { ev: evDizin, ort: evOrt } = oturumEvi();
   const kaynak = oturumProjesi();
   for (const ad of ['Alfa', 'Beta']) {
     const p = path.join(dip, ad);
@@ -2660,14 +2748,14 @@ function filoKur() {
   fs.mkdirSync(path.join(c, 'done'), { recursive: true });
   fs.writeFileSync(path.join(c, 'T1.md'), 'status: submitted\n');
   fs.writeFileSync(path.join(c, 'done', 'T0.md'), 'status: done\n');
-  return { dip, evDizin };
+  return { dip, evDizin, evOrt };
 }
 
 ol('loadall butun projelerin durumunu tek ekranda verir', () => {
-  const { dip, evDizin } = filoKur();
+  const { dip, evOrt } = filoKur();
   const r = spawnSync(process.execPath, [OTURUM, 'toplu-yukle', '--kok', dip], {
     encoding: 'utf8',
-    env: { ...process.env, USERPROFILE: evDizin, HOME: evDizin, TEKNESYUM_DIL: 'tr' },
+    env: { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' },
   });
   esit(r.status, 0, 'filo durumu calismali');
   icerir(r.stdout, 'FİLO DURUMU · 2 proje');
@@ -2685,10 +2773,10 @@ ol('loadall butun projelerin durumunu tek ekranda verir', () => {
 });
 
 ol('saveall her projeyi kendi klasorune kaydeder ve depoya sizdirmaz', () => {
-  const { dip, evDizin } = filoKur();
+  const { dip, evOrt } = filoKur();
   const r = spawnSync(process.execPath, [OTURUM, 'toplu-kaydet', '--kok', dip], {
     encoding: 'utf8',
-    env: { ...process.env, USERPROFILE: evDizin, HOME: evDizin, TEKNESYUM_DIL: 'tr' },
+    env: { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' },
   });
   esit(r.status, 0, 'toplu kayit calismali');
   icerir(r.stdout, '2/2 proje kaydedildi');
@@ -2706,11 +2794,11 @@ ol('saveall her projeyi kendi klasorune kaydeder ve depoya sizdirmaz', () => {
 
 ol('load son kayit olmadan onceki oturumu transkriptten devralir', () => {
   const p = oturumProjesi();
-  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  const { ev: evDizin, ort: evOrt } = oturumEvi();
   const dizin = path.join(evDizin, '.claude', 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
   fs.mkdirSync(dizin, { recursive: true });
   fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(dizin, 'ONCEKI.jsonl'));
-  const ort = { ...process.env, USERPROFILE: evDizin, HOME: evDizin, TEKNESYUM_DIL: 'tr' };
+  const ort = { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' };
   const r = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
     encoding: 'utf8',
     env: { ...ort, CLAUDE_CODE_SESSION_ID: 'BASKA' },
@@ -2733,16 +2821,55 @@ ol('load son kayit olmadan onceki oturumu transkriptten devralir', () => {
   esit(c.status, 1, 'kendi transkripti devralinmamali');
 });
 
+// Transkript konfig kökünün altında aranır. Ev dizini bilerek boş bırakılır: eski
+// sürüm `USERPROFILE`'a baktığı için konfig dizinini taşımış kullanıcıda bildirim hiç
+// çıkmıyordu; test o kör noktayı ölçer.
+// Konfig dizinini taşımış kullanıcıda transkriptler de onunla taşınır. Ev dizini
+// boş bırakılır: `os.homedir()` okuyan sürüm burada hiçbir transkript bulamaz ve
+// `/save`, `/load`, `/saveall`, `/loadall` sessizce çalışmaz olur.
+ol('transkript konfig kökünü izler, ev dizinini değil', () => {
+  const p = oturumProjesi();
+  const bosEv = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bosev-'));
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfgtr-'));
+  const dizin = path.join(cfg, 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
+  fs.mkdirSync(dizin, { recursive: true });
+  fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(dizin, 'ONCEKI.jsonl'));
+  const taban = {
+    ...process.env,
+    USERPROFILE: bosEv,
+    HOME: bosEv,
+    CLAUDE_CONFIG_DIR: cfg,
+    TEKNESYUM_DIL: 'tr',
+  };
+  const y = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
+    encoding: 'utf8',
+    env: { ...taban, CLAUDE_CODE_SESSION_ID: 'BASKA' },
+  });
+  esit(y.status, 0, 'konfig kökündeki transkript bulunmalı');
+  icerir(y.stdout, 'ONCEKI');
+  const k = spawnSync(process.execPath, [OTURUM, 'kaydet', 'sinav', '--proje', p], {
+    encoding: 'utf8',
+    env: { ...taban, CLAUDE_CODE_SESSION_ID: 'ONCEKI' },
+  });
+  esit(k.status, 0, 'kayıt konfig kökündeki transkripti bulmalı');
+  esit(
+    fs.existsSync(path.join(p, '.claude', 'oturumlar', 'sinav', 'durum.json')),
+    true,
+    'kayıt yazılmalı'
+  );
+});
+
 ol('acilis acik sozlesme varken onceki oturumu haber verir', () => {
   const { p } = proje(2, 1);
-  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
-  const dizin = path.join(evDizin, '.claude', 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
+  const k = konfig(true);
+  const bosEv = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bosev-'));
+  const dizin = path.join(k.CLAUDE_CONFIG_DIR, 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
   fs.mkdirSync(dizin, { recursive: true });
   fs.writeFileSync(path.join(dizin, 'ESKI.jsonl'), '{}\n');
   const r = calistir(
     IZLE,
     { ...ort(p), hook_event_name: 'SessionStart', session_id: 'YENI' },
-    { ...konfig(true), USERPROFILE: evDizin, HOME: evDizin }
+    { ...k, USERPROFILE: bosEv, HOME: bosEv }
   );
   icerir(JSON.parse(r.out).systemMessage, '/load son');
 });
@@ -2817,11 +2944,7 @@ ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () =
   const dip = kapsayiciKur();
   const cfg = konfig(true);
   const oturum = { cwd: dip, session_id: 'kap-1', transcript_path: '/x/kap-1.jsonl' };
-  const a = calistir(
-    IZLE,
-    { ...oturum, hook_event_name: 'SessionStart' },
-    cfg
-  );
+  const a = calistir(IZLE, { ...oturum, hook_event_name: 'SessionStart' }, cfg);
   icerir(JSON.parse(a.out).systemMessage, 'üst klasör');
   calistir(
     IZLE,

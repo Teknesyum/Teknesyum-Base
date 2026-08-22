@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { konfigKok, roleKoku, izKoku } = require('../hooks/ortak.js');
 
 const C = {
   blue: '\x1b[38;2;0;243;255m',
@@ -42,29 +43,20 @@ function izDizini(dir, sessionId) {
   const p = releKoku(dir);
   if (p) return p;
   if (!sessionId) return null;
-  const ev =
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
   const ad = String(sessionId).replace(/[^a-zA-Z0-9._-]/g, '_');
   for (const k of ['live', 'canli']) {
-    const g = path.join(ev, 'teknesyum', k, ad);
+    const g = path.join(konfigKok(), 'teknesyum', k, ad);
     if (fs.existsSync(g)) return g;
   }
   return null;
 }
 
+// Statusline her istemde yeniden koşuyor: röle kökü dosya sisteminde aranır, git'e
+// sorulmaz. Bir `git rev-parse` süreci Windows'ta 20-60 ms ve buradaki gecikme
+// doğrudan kullanıcının gördüğü satıra biniyor.
 function releKoku(start) {
-  let d = path.resolve(start || '.');
-  for (let i = 0; i < 6; i++) {
-    const c = path.join(d, '.claude', 'relay', 'live');
-    if (fs.existsSync(c)) return c;
-    const eski = path.join(d, '.claude', 'relay', 'canli');
-    if (fs.existsSync(eski)) return eski;
-    const up = path.dirname(d);
-    if (up === d) break;
-    d = up;
-  }
-  return null;
+  const r = roleKoku(start || '.', { git: false });
+  return r ? izKoku(r.relay) : null;
 }
 
 // Adım sayacı yok: alt ajanın araç kullanımları hook'a yansımıyor (ölçüldü).

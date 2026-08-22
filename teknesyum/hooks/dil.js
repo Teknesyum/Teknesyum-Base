@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { konfigKok } = require('./ortak.js');
 
 // Tek dil ayarı: `~/.claude/teknesyum.json` → `dil`. Geçerli değerler `en` ve `tr`,
 // varsayılan `en`. Ayar hem kullanıcıya basılan bildirimleri hem ajanlara enjekte edilen
@@ -11,9 +12,7 @@ function dil() {
   if (_dil) return _dil;
   const e = process.env.TEKNESYUM_DIL;
   if (e === 'tr' || e === 'en') return (_dil = e);
-  const kok =
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const kok = konfigKok();
   try {
     const c = JSON.parse(fs.readFileSync(path.join(kok, 'teknesyum.json'), 'utf8'));
     if (c.dil === 'tr' || c.dil === 'en') return (_dil = c.dil);
@@ -28,9 +27,7 @@ function premium() {
   const e = process.env.TEKNESYUM_PREMIUM;
   if (e === '0' || e === 'off') return (_premium = false);
   if (e === '1' || e === 'on') return (_premium = true);
-  const kok =
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const kok = konfigKok();
   try {
     const c = JSON.parse(fs.readFileSync(path.join(kok, 'teknesyum.json'), 'utf8'));
     return (_premium = c.premium === true);

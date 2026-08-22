@@ -3,6 +3,16 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { s: ceviri, premium } = require('./dil.js');
 const kapsayici = require('./kapsayici.js');
+const {
+  konfigKok,
+  transkriptDizini,
+  read,
+  yaz,
+  norm,
+  safe,
+  roleKoku,
+  izKoku,
+} = require('./ortak.js');
 
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
@@ -366,9 +376,7 @@ function seviye() {
     const n = parseInt(e, 10);
     if (n === 0 || n === 1 || n === 2) return (_seviye = n);
   }
-  const kok =
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const kok = konfigKok();
   const c = read(path.join(kok, 'teknesyum.json'));
   const v = c && c.steering;
   return (_seviye = v === 0 || v === 2 ? v : 1);
@@ -654,12 +662,7 @@ function worktreeSayisi(proje) {
 // çalışmadığı için yeni sohbet önceki oturumun varlığından habersiz açılıyordu.
 // Sözleşme açıkken önceki oturumun transkripti duruyorsa devralınacağını söyleriz.
 function oncekiOturum(proje, simdiki) {
-  const dizin = path.join(
-    process.env.USERPROFILE || process.env.HOME || '.',
-    '.claude',
-    'projects',
-    path.resolve(proje).replace(/[^a-zA-Z0-9]/g, '-')
-  );
+  const dizin = transkriptDizini(proje);
   let l = [];
   try {
     l = fs.readdirSync(dizin);
@@ -727,9 +730,7 @@ function sorunYaz(live, satir) {
 // Plugin kendini kuramaz: statusline kullanıcının settings.json'ına yazılır. Eksikse
 // oturum açılışında bir kez söyleriz — kullanıcının komut ezberlemesini bekleme.
 function kurulumEksik() {
-  const kok =
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const kok = konfigKok();
   if (!fs.existsSync(path.join(kok, 'teknesyum-statusline.js'))) return true;
   const s = read(path.join(kok, 'settings.json'));
   return !(s && s.statusLine && /teknesyum-statusline/.test(String(s.statusLine.command || '')));
@@ -791,9 +792,7 @@ let _debug = null;
 function debugAcik() {
   if (_debug !== null) return _debug;
   if (process.env.TEKNESYUM_DEBUG) return (_debug = true);
-  const kok =
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  const kok = konfigKok();
   const c = read(path.join(kok, 'teknesyum.json'));
   return (_debug = !!(c && c.debug));
 }
@@ -874,16 +873,8 @@ function izKirp(f) {
   } catch {}
 }
 
-// 2.0.0'da `canli/` → `live/` oldu. Eski klasörü olan projede oraya yazmaya devam
-// ederiz; yoksa yeni adı kullanırız. Kimsenin izi kaybolmaz.
-function temelYol(root) {
-  const yeni = path.join(root, 'live');
-  const eski = path.join(root, 'canli');
-  return !fs.existsSync(yeni) && fs.existsSync(eski) ? eski : yeni;
-}
-
 function izYolu(root) {
-  const temel = temelYol(root);
+  const temel = izKoku(root);
   return _worktree ? path.join(temel, 'worktrees', safe(_worktree)) : temel;
 }
 
@@ -891,10 +882,7 @@ function izYolu(root) {
 // buraya düşer. Worktree eki proje içindeki izler içindir; genel köke uygulanırsa
 // worktree'de açılan oturum sayacı sıfırdan başlatır, kullanım istatistiğini böler.
 function genelKok() {
-  const ev =
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
-  return temelYol(path.join(ev, 'teknesyum'));
+  return izKoku(path.join(konfigKok(), 'teknesyum'));
 }
 
 // Genel kökteki izler kalıcı değil; bir günü geçeni at. Röle kurulu projede de
@@ -1029,84 +1017,10 @@ function kullanimSay(anahtar) {
 let _worktree = null;
 
 function findRelay(start) {
-  let d = path.resolve(start);
-  for (;;) {
-    const c = path.join(d, '.claude', 'relay');
-    if (fs.existsSync(c)) return c;
-    const up = path.dirname(d);
-    if (up === d) break;
-    d = up;
-  }
-  const git = gitBilgisi(start);
-  if (!git) return null;
-  const common = path.join(git.common, '.claude', 'relay');
-  if (!fs.existsSync(common)) return null;
-  if (norm(git.top) !== norm(git.common)) _worktree = git.top;
-  return common;
-}
-
-// ÖLÇÜLDÜ: her araç çağrısında iki `git rev-parse` süreci açılıyordu; Windows'ta süreç
-// açmak 20-60 ms. Yanıt aynı kök için değişmez, hook süreci kısa ömürlüdür — bir kez
-// sorulur, başarısızlık da önbelleklenir.
-const _gitBellek = new Map();
-
-function gitBilgisi(start) {
-  const anahtar = path.resolve(start);
-  if (_gitBellek.has(anahtar)) return _gitBellek.get(anahtar);
-  const sonuc = gitSor(anahtar);
-  _gitBellek.set(anahtar, sonuc);
-  return sonuc;
-}
-
-function gitSor(start) {
-  try {
-    const top = path.resolve(
-      execFileSync('git', ['-C', path.resolve(start), 'rev-parse', '--show-toplevel'], {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim()
-    );
-    let common = execFileSync('git', ['-C', top, 'rev-parse', '--git-common-dir'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
-    common = path.resolve(top, common);
-    if (path.basename(common).toLowerCase() === '.git') common = path.dirname(common);
-    return { top, common };
-  } catch {
-    return null;
-  }
-}
-
-function read(f) {
-  try {
-    return JSON.parse(fs.readFileSync(f, 'utf8'));
-  } catch {
-    return null;
-  }
-}
-
-// Paralel ajanlarda birden çok hook süreci aynı dosyaya yazıyor. Doğrudan writeFileSync
-// truncate ile başlar: okuyan taraf yarım JSON yakalayabilir. Geçici dosya + rename
-// atomiktir — okuyan ya eski ya yeni içeriği görür, arada bir hal yok.
-function yaz(f, veri) {
-  const tmp = f + '.' + process.pid + '.tmp';
-  try {
-    fs.writeFileSync(tmp, JSON.stringify(veri, null, 2));
-    fs.renameSync(tmp, f);
-  } catch {
-    try {
-      fs.unlinkSync(tmp);
-    } catch {}
-  }
-}
-function norm(p) {
-  return path.normalize(p).replace(/\\/g, '/');
-}
-function safe(s) {
-  return String(s)
-    .replace(/[^a-zA-Z0-9._-]/g, '_')
-    .slice(0, 80);
+  const r = roleKoku(start);
+  if (!r) return null;
+  if (r.worktree) _worktree = r.worktree;
+  return r.relay;
 }
 function short(p, proj) {
   const n = norm(p);

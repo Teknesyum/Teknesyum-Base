@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 const { s: ceviri, dil } = require('./dil.js');
+const { read, norm, safe, roleKoku } = require('./ortak.js');
 
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
@@ -96,20 +96,6 @@ function sebep(anahtar, ek) {
   return (dil() === 'tr' ? g.tr : g.en) + ek;
 }
 
-function read(f) {
-  try {
-    return JSON.parse(fs.readFileSync(f, 'utf8'));
-  } catch {
-    return null;
-  }
-}
-
-function safe(x) {
-  return String(x)
-    .replace(/[^a-zA-Z0-9._-]/g, '_')
-    .slice(0, 80);
-}
-
 function sorunYaz(live, satir) {
   try {
     fs.mkdirSync(live, { recursive: true });
@@ -134,50 +120,9 @@ const YAZMA_FIILI =
 // `blocked` her iki yönde serbesttir — engel gerçek bir durumdur, kurtarma da öyle.
 const SIRA = { open: 0, active: 1, submitted: 2, accepted: 3, done: 3 };
 
-// ÖLÇÜLDÜ: her araç çağrısında iki `git rev-parse` süreci açılıyordu; Windows'ta süreç
-// açmak 20-60 ms. Yanıt aynı kök için değişmez, hook süreci kısa ömürlüdür — bir kez
-// sorulur, başarısızlık da önbelleklenir.
-const _gitBellek = new Map();
-
-function gitBilgisi(start) {
-  const anahtar = path.resolve(start);
-  if (_gitBellek.has(anahtar)) return _gitBellek.get(anahtar);
-  const sonuc = gitSor(anahtar);
-  _gitBellek.set(anahtar, sonuc);
-  return sonuc;
-}
-
-function gitSor(start) {
-  try {
-    const top = path.resolve(
-      execFileSync('git', ['-C', path.resolve(start), 'rev-parse', '--show-toplevel'], {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim()
-    );
-    const git = execFileSync('git', ['-C', top, 'rev-parse', '--git-common-dir'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
-    return { top, common: path.dirname(path.resolve(top, git)) };
-  } catch {
-    return null;
-  }
-}
-
 function relayKoku(start) {
-  let d = path.resolve(start);
-  for (;;) {
-    const relay = path.join(d, '.claude', 'relay');
-    if (fs.existsSync(relay)) return relay;
-    const up = path.dirname(d);
-    if (up === d) break;
-    d = up;
-  }
-  const git = gitBilgisi(start);
-  if (!git) return null;
-  const relay = path.join(git.common, '.claude', 'relay');
-  return fs.existsSync(relay) ? relay : null;
+  const r = roleKoku(start);
+  return r ? r.relay : null;
 }
 
 function canonical(hedef) {
@@ -367,10 +312,6 @@ function yollar(komut) {
   const out = [];
   for (const m of komut.matchAll(/["']?([\w.~\-/\\:]+\.md)["']?/g)) out.push(m[1]);
   return out;
-}
-
-function norm(p) {
-  return path.normalize(String(p)).replace(/\\/g, '/');
 }
 
 function engelle(...satir) {

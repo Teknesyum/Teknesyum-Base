@@ -2433,6 +2433,35 @@ ol('plan konseyi uyesi hicbir sey yazamaz', () => {
   icerir(m, 'İş yapmazsın');
 });
 
+ol('premium ikinci gorusu acar, kapatinca geri alir', () => {
+  const { p, cfg } = premiumKopya();
+  const acikCikti = premiumCalistir('ac', p, cfg);
+  esit(acikCikti.kod, 0, 'premium ac cikis kodu');
+  icerir(acikCikti.out, 'ikinci görüş: fable');
+  const s = fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  icerir(s, 'second_opinion     : on');
+  premiumCalistir('kapat', p, cfg);
+  const k = fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  icerir(k, 'second_opinion     : off');
+  icerir(premiumCalistir('durum', p, cfg).out, 'ikinci görüş: off');
+});
+
+ol('planner gorus kipini brifing onekiyle secer', () => {
+  const m = fs.readFileSync(path.join(KOK, 'agents', 'planner.md'), 'utf8');
+  icerir(m, 'GÖRÜŞ:');
+  const i = m.indexOf('## Görüş kipi');
+  const j = m.indexOf('## İletişim');
+  if (i < 0 || j < i) throw new Error('planner görüş kipini bilmiyor');
+  const konsey = m.slice(0, i);
+  const gorus = m.slice(i, j);
+  icerir(konsey, '## Konsey kipi');
+  icerir(konsey, '## Ayrım noktaları');
+  for (const b of ['## Görüş\n', '## Gerekçe\n', '## Kaçırdığın şey\n']) icerir(gorus, b);
+  icerir(gorus, '20 satır');
+  for (const b of ['## Ayrım noktaları', '## Kavrayış', '## Reddettiklerim'])
+    if (gorus.includes(b)) throw new Error('görüş kipine konsey başlığı karışmış: ' + b);
+});
+
 ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
   const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
   const oku = (premium) => {

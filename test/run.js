@@ -3244,6 +3244,316 @@ function norm2(p) {
   return p.replace(/\\/g, '/');
 }
 
+console.log('\nAjan sağlığı');
+
+function damga(dk) {
+  return new Date(Date.now() - dk * 60000).toISOString().replace('T', ' ').slice(0, 19);
+}
+
+function saglikProje(kayit) {
+  const { p, live } = proje(1, 0);
+  fs.mkdirSync(live, { recursive: true });
+  fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify(kayit));
+  return { p, live };
+}
+
+const TETIK = (p) => ({
+  ...ort(p),
+  hook_event_name: 'PostToolUse',
+  tool_name: 'Read',
+  tool_input: {},
+});
+
+ol('sessiz kalmis ajan bildirilir, tazesi bildirilmez', () => {
+  const eski = saglikProje({
+    agent_id: 'a1',
+    agent_type: 'teknesyum:builder',
+    last_seen: damga(25),
+    ended: null,
+    stop_reason: null,
+    last_action: 'Bash npm test',
+    steps: 4,
+  });
+  const r = calistir(IZLE, TETIK(eski.p));
+  icerir(JSON.parse(r.out).systemMessage, 'Sağlık ▸');
+  icerir(JSON.parse(r.out).systemMessage, 'dakikadır sessiz');
+  icerir(JSON.parse(r.out).systemMessage, 'TaskStop');
+  icerir(fs.readFileSync(path.join(eski.live, '_sorun.log'), 'utf8'), 'sessiz');
+
+  const taze = saglikProje({
+    agent_id: 'a1',
+    agent_type: 'teknesyum:builder',
+    last_seen: damga(1),
+    ended: null,
+    stop_reason: null,
+    last_action: 'Bash npm test',
+    steps: 4,
+  });
+  const t = calistir(IZLE, TETIK(taze.p));
+  if (t.out.includes('Sağlık ▸')) throw new Error('taze ajan sessiz sayildi: ' + t.out);
+});
+
+ol('bitmis ajan sessiz sayilmaz ve uyari bir kez cikar', () => {
+  const bitmis = saglikProje({
+    agent_id: 'a1',
+    agent_type: 'teknesyum:builder',
+    last_seen: damga(30),
+    ended: damga(29),
+    stop_reason: 'end_turn',
+    last_action: 'Read x',
+  });
+  if (calistir(IZLE, TETIK(bitmis.p)).out.includes('Sağlık ▸'))
+    throw new Error('biten ajan icin sessizlik uyarisi');
+
+  const { p, live } = saglikProje({
+    agent_id: 'a1',
+    agent_type: 'teknesyum:builder',
+    last_seen: damga(30),
+    ended: null,
+    stop_reason: null,
+    last_action: 'Read x',
+  });
+  icerir(calistir(IZLE, TETIK(p)).out, 'Sağlık ▸');
+  esit(JSON.parse(fs.readFileSync(path.join(live, 'a1.json'), 'utf8')).sessiz_bildirildi, true);
+  fs.unlinkSync(path.join(live, '_saglik'));
+  if (calistir(IZLE, TETIK(p)).out.includes('Sağlık ▸'))
+    throw new Error('ayni sessizlik ikinci kez bildirildi');
+});
+
+ol('sessizlik esigi SETTINGS.md dugmesinden okunur', () => {
+  const { p } = saglikProje({
+    agent_id: 'a1',
+    agent_type: 'teknesyum:builder',
+    last_seen: damga(4),
+    ended: null,
+    stop_reason: null,
+    last_action: 'Read x',
+  });
+  fs.writeFileSync(
+    path.join(p, '.claude', 'relay', 'SETTINGS.md'),
+    '```\nagent_stall        : 2\n```\n'
+  );
+  icerir(calistir(IZLE, TETIK(p)).out, 'Sağlık ▸');
+});
+
+function dongulu(eylem, buyut) {
+  const { p, live } = proje(1, 0);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dongu-'));
+  const tp = path.join(d, 'agent-a1.jsonl');
+  fs.writeFileSync(tp, 'x\n');
+  let son = '';
+  for (let i = 0; i < 6; i++) {
+    if (buyut) fs.appendFileSync(tp, 'y'.repeat(500) + '\n');
+    son = calistir(IZLE, {
+      ...ort(p),
+      hook_event_name: 'PostToolUse',
+      agent_id: 'a1',
+      agent_type: 'teknesyum:builder',
+      agent_transcript_path: tp,
+      tool_name: 'Bash',
+      tool_input: { file_path: path.join(p, eylem(i)) },
+    }).out;
+    if (son.includes('döngüde')) break;
+  }
+  return { son, live };
+}
+
+ol('ayni eylemi tekrarlayan ajan donguye takildi sayilir', () => {
+  const { son, live } = dongulu(() => 'src/a.js', true);
+  icerir(son, 'Sağlık ▸');
+  icerir(son, 'döngüde');
+  icerir(son, 'TaskStop');
+  icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'döngü');
+});
+
+ol('eylemi degisen ajan donguye takilmis sayilmaz', () => {
+  const { son, live } = dongulu((i) => 'src/a' + i + '.js', true);
+  if (son.includes('döngüde')) throw new Error('ilerleyen ajan dongu sayildi: ' + son);
+  esit(fs.existsSync(path.join(live, '_sorun.log')), false, 'gereksiz sorun kaydi');
+});
+
+ol('transkripti buyumeyen ajan dongu degil sessizlik hanesine yazilir', () => {
+  const { son } = dongulu(() => 'src/a.js', false);
+  if (son.includes('döngüde')) throw new Error('duran transkriptle dongu bildirildi: ' + son);
+});
+
+console.log('\nDebug bildirimi');
+
+const DEBUG_YUK = (p) => ({
+  ...ort(p),
+  hook_event_name: 'PostToolUseFailure',
+  agent_id: 'a1',
+  agent_type: 'teknesyum:builder',
+  tool_name: 'Edit',
+  tool_input: { file_path: 'src/a.js' },
+  error: 'string_not_found',
+});
+
+ol('debug kapaliyken Debug satiri cikmaz, acikken cikar', () => {
+  const { p } = proje(1, 0);
+  const kapali = calistir(IZLE, DEBUG_YUK(p), { TEKNESYUM_DEBUG: '' });
+  if (kapali.out.includes('Debug ▸')) throw new Error('debug kapaliyken satir cikti');
+  const { p: p2, live } = proje(1, 0);
+  const acik = calistir(IZLE, DEBUG_YUK(p2), { TEKNESYUM_DEBUG: '1' });
+  const m = JSON.parse(acik.out).systemMessage;
+  icerir(m, '`Teknesyum ▸ Debug ▸ ');
+  icerir(m, 'Edit aracı hata verdi');
+  icerir(m, 'builder ajanı, a1');
+  if (m.includes('→')) throw new Error('cumle icinde ok var: ' + m);
+  icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'string_not_found');
+});
+
+ol('kesilen arac cagrisi hata degil kesinti diye bildirilir', () => {
+  const { p } = proje(1, 0);
+  const r = calistir(IZLE, { ...DEBUG_YUK(p), is_interrupt: true }, { TEKNESYUM_DEBUG: '1' });
+  icerir(JSON.parse(r.out).systemMessage, 'Edit aracı kesildi');
+});
+
+ol('ajan kapanisi debug acikken bildirilir ve gunluge dusser', () => {
+  const { p, live } = proje(1, 0);
+  const r = calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'SubagentStop',
+      agent_id: 'a1',
+      agent_type: 'teknesyum:builder',
+      agent_transcript_path: '/x/a1.jsonl',
+    },
+    { TEKNESYUM_DEBUG: '1' }
+  );
+  const m = JSON.parse(r.out).systemMessage;
+  icerir(m, 'Debug ▸ bir ajan durdu');
+  icerir(m, 'builder ajanı, a1');
+  icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'bir ajan durdu');
+});
+
+ol('debug bildirimi ingilizce kurulumda ingilizce konusur', () => {
+  const { p } = proje(1, 0);
+  const r = calistir(IZLE, DEBUG_YUK(p), { TEKNESYUM_DEBUG: '1', TEKNESYUM_DIL: 'en' });
+  icerir(JSON.parse(r.out).systemMessage, 'the Edit tool failed');
+});
+
+console.log('\nTur özeti');
+
+function turProje() {
+  const { p } = proje(1, 0);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tur-'));
+  return { p, ek: { CLAUDE_CONFIG_DIR: cfg } };
+}
+
+ol('tur ozeti sure ve token tahminini tek satirda verir', () => {
+  const { p, ek } = turProje();
+  const t = transcript('merhaba');
+  calistir(IZLE, { ...ort(p), transcript_path: t, hook_event_name: 'UserPromptSubmit' }, ek);
+  fs.appendFileSync(t, 'z'.repeat(4000) + '\n');
+  const r = calistir(IZLE, { ...ort(p), transcript_path: t, hook_event_name: 'Stop' }, ek);
+  const m = JSON.parse(r.out).systemMessage;
+  icerir(m, 'Total Süre: ');
+  icerir(m, 'sn // Tahmini Token: ~');
+  const tok = parseInt(m.match(/~(\d+)/)[1], 10);
+  if (tok < 900 || tok > 1200) throw new Error('token tahmini bekleneni tutmadi: ' + tok);
+});
+
+ol('damgasiz Stop tur ozeti basmaz', () => {
+  const { p, ek } = turProje();
+  esit(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out, '', 'damgasiz ozet cikti');
+});
+
+ol('tur ozeti Stop engelini bozmaz, tek JSON kalir', () => {
+  const { p, ek } = turProje();
+  fs.writeFileSync(
+    path.join(p, '.claude', 'relay', 'contracts', 'T0.md'),
+    '---\nstatus: active\n---\n'
+  );
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'devam' }, ek);
+  const r = calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'Stop',
+      transcript_path: transcript('T0 tamamlandı, tüm kabul kriterleri karşılandı.'),
+    },
+    ek
+  );
+  const o = JSON.parse(r.out);
+  esit(o.decision, 'block');
+  icerir(o.reason, 'dönüş bloğu');
+  icerir(o.systemMessage, 'Total Süre: ');
+});
+
+ol('bir dakikayi asan tur dakika ve saniye ile yazilir', () => {
+  const { p, ek } = turProje();
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  const f = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'live', 'oturum-1.tur');
+  const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+  d.t = Date.now() - 215000;
+  fs.writeFileSync(f, JSON.stringify(d));
+  const m = JSON.parse(
+    calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out
+  ).systemMessage;
+  icerir(m, 'Total Süre: 3dk 35sn');
+});
+
+ol('ingilizce kurulumda tur ozeti ingilizce yazilir', () => {
+  const { p, ek } = turProje();
+  calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'UserPromptSubmit' },
+    {
+      ...ek,
+      TEKNESYUM_DIL: 'en',
+    }
+  );
+  const m = JSON.parse(
+    calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, { ...ek, TEKNESYUM_DIL: 'en' }).out
+  ).systemMessage;
+  icerir(m, 'Total Time: ');
+  icerir(m, 'Estimated Tokens: ~');
+});
+
+ol('alt ajan transkripti de token tahminine girer', () => {
+  const { p, ek } = turProje();
+  const at = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-alt-')), 'agent-a1.jsonl');
+  fs.writeFileSync(at, 'x\n');
+  calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'SubagentStart',
+    agent_id: 'a1',
+    agent_type: 'teknesyum:builder',
+    agent_transcript_path: at,
+  });
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  fs.appendFileSync(at, 'y'.repeat(8000) + '\n');
+  const m = JSON.parse(
+    calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out
+  ).systemMessage;
+  const tok = parseInt(m.match(/~(\d+)/)[1], 10);
+  if (tok < 1900 || tok > 2200) throw new Error('alt ajan transkripti sayilmadi: ' + tok);
+});
+
+ol('dugmeler premium profilinin iki tarafinda da tanimli', () => {
+  const src = fs.readFileSync(PREMIUM, 'utf8');
+  const govde = src.slice(src.indexOf('const DUGME'), src.indexOf('function arg'));
+  for (const anahtar of ['agent_stall', 'agent_loop']) {
+    esit((govde.match(new RegExp(anahtar + ':', 'g')) || []).length, 2, anahtar + ' iki profilde');
+  }
+  const s = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  icerir(s, 'agent_stall        : 10');
+  icerir(s, 'agent_loop         : 5');
+});
+
+ol('premium turu sagligi dugmelerini kaydirmaz', () => {
+  const { p, cfg } = premiumKopya();
+  const once = fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  premiumCalistir('ac', p, cfg);
+  const sonra = fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  for (const satir of ['agent_stall        : 10', 'agent_loop         : 5']) {
+    icerir(once, satir);
+    icerir(sonra, satir);
+  }
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

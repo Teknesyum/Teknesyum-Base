@@ -20,8 +20,24 @@ process.stdin.on('end', () => {
   try {
     run(JSON.parse(raw));
   } catch {}
+  ciktiBas();
   process.exit(0);
 });
+
+let _cikti = null;
+
+function ciktiEkle(alan) {
+  _cikti = Object.assign(_cikti || {}, alan);
+}
+
+function ciktiBas() {
+  if (!_cikti) return;
+  const o = _cikti;
+  _cikti = null;
+  try {
+    process.stdout.write(JSON.stringify(o));
+  } catch {}
+}
 
 function run(j) {
   const root = findRelay(j.cwd || process.cwd());
@@ -32,7 +48,7 @@ function run(j) {
   if (j.hook_event_name === 'PostToolUse') {
     if (kap) kapsayici.izle(kap, kapDurum, j);
     const bozuk = sozdizim(j);
-    if (bozuk) process.stdout.write(JSON.stringify({ decision: 'block', reason: bozuk }));
+    if (bozuk) ciktiEkle({ decision: 'block', reason: bozuk });
   }
 
   if (j.hook_event_name === 'SessionStart') {
@@ -41,11 +57,13 @@ function run(j) {
   if (j.hook_event_name === 'UserPromptSubmit') {
     const k = String(j.prompt || '').match(/^[ ]*\/([a-z0-9:-]+)/i);
     if (k) kullanimSay('komut:' + k[1].toLowerCase());
+    turBasla(j, root);
     return hatirlat(j, root, kap && kapsayici.etkin(kapDurum));
   }
   if (j.hook_event_name === 'Stop') {
     if (kap) kapsayiciTopla(kap, kapDurum);
-    return paketDenetle(j, root);
+    paketDenetle(j, root);
+    return turBitir(j, root);
   }
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
   if (j.hook_event_name === 'SessionEnd') {
@@ -64,6 +82,7 @@ function run(j) {
     return;
   }
   supur();
+  saglikTara(live, root);
 
   if (debugAcik()) iz(live, j);
 
@@ -94,6 +113,7 @@ function run(j) {
         String(j.error || j.error_type || 'hata').slice(0, 200),
       ].join(' | ')
     );
+    debugBildir(live, aksama(j), false);
     if (!kim) return;
     const f = path.join(live, safe(kim) + '.json');
     const k = read(f);
@@ -146,11 +166,16 @@ function run(j) {
   }
   s.last_seen = now;
   s.identity = j.agent_id ? 'agent_id' : 'transcript';
+  s.transcript = ajanTranskripti(j) || s.transcript || null;
 
   switch (j.hook_event_name) {
     case 'SubagentStart':
       s.started = now;
       s.stop_reason = null;
+      s.tekrar = 0;
+      s.dongu_boy = null;
+      s.dongu_bildirildi = false;
+      s.sessiz_bildirildi = false;
       break;
 
     case 'PostToolUse': {
@@ -158,7 +183,19 @@ function run(j) {
       const t = j.tool_input || {};
       const target = t.file_path || t.notebook_path || '';
       const proj = root ? path.dirname(path.dirname(root)) : j.cwd || process.cwd();
-      s.last_action = (j.tool_name || '?') + (target ? ' ' + short(target, proj) : '');
+      const eylem = (j.tool_name || '?') + (target ? ' ' + short(target, proj) : '');
+      if (eylem === s.last_action) {
+        s.tekrar = (s.tekrar || 0) + 1;
+      } else {
+        s.tekrar = 0;
+        s.dongu_boy = null;
+        s.dongu_bildirildi = false;
+      }
+      s.last_action = eylem;
+      s.sessiz_bildirildi = false;
+      s.boy = transkriptBoyu(s.transcript);
+      if (s.dongu_boy === null || s.dongu_boy === undefined) s.dongu_boy = s.boy;
+      dongu(live, root, s);
 
       if (target) {
         const n = norm(target);
@@ -185,6 +222,7 @@ function run(j) {
       if (j.last_assistant_message) s.last_word = String(j.last_assistant_message).slice(0, 300);
       Object.assign(s, kimlikOku(j));
       kimlikDenetle(live, j.agent_type, s, c);
+      debugBildir(live, aksama(j), true);
       break;
     }
   }
@@ -329,6 +367,161 @@ function sonAsistan(tp) {
   return null;
 }
 
+function transkriptBoyu(yol) {
+  if (!yol) return 0;
+  try {
+    return fs.statSync(yol).size;
+  } catch {
+    return 0;
+  }
+}
+
+function ajanTranskripti(j) {
+  if (j.agent_transcript_path) return String(j.agent_transcript_path);
+  const tp = j.transcript_path;
+  if (!tp) return null;
+  const base = path.basename(String(tp)).replace(/\.jsonl$/i, '');
+  return base && base !== j.session_id ? String(tp) : null;
+}
+
+function toplamTranskript(j, live) {
+  let toplam = transkriptBoyu(j.transcript_path);
+  for (const f of dosyalar(live)) {
+    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    const a = read(path.join(live, f));
+    if (a && a.transcript) toplam += transkriptBoyu(a.transcript);
+  }
+  return toplam;
+}
+
+const AYAR_DOSYASI = path.join(__dirname, '..', 'skills', 'relay', 'SETTINGS.md');
+const SESSIZLIK_DK = 10;
+const DONGU_TEKRAR = 5;
+const SAGLIK_ARA = 60 * 1000;
+const SAGLIK_DAMGA = '_saglik';
+
+function ayarSayi(root, anahtar, varsayilan) {
+  for (const f of [root ? path.join(root, 'SETTINGS.md') : null, AYAR_DOSYASI]) {
+    if (!f) continue;
+    const govde = metin(f);
+    if (!govde) continue;
+    const m = govde.match(new RegExp('^[ \\t]*' + anahtar + '[ \\t]*:[ \\t]*(\\d+)', 'm'));
+    if (m) return parseInt(m[1], 10);
+  }
+  return varsayilan;
+}
+
+function rolAdi(a) {
+  return String((a && a.agent_type) || 'ajan').replace(/^teknesyum:/, '');
+}
+
+function dongu(live, root, s) {
+  if (s.dongu_bildirildi) return;
+  if ((s.tekrar || 0) + 1 < ayarSayi(root, 'agent_loop', DONGU_TEKRAR)) return;
+  if (!(s.boy > s.dongu_boy)) return;
+  s.dongu_bildirildi = true;
+  const kim = s.agent_id || '?';
+  const n = (s.tekrar || 0) + 1;
+  duyur(ceviri('ajanDongu', rolAdi(s), kim, n, s.last_action), 1, true);
+  sorunYaz(live, ['döngü', rolAdi(s), kim, n + ' kez ' + s.last_action].join(' | '));
+}
+
+function saglikTara(live, root) {
+  const damga = path.join(live, SAGLIK_DAMGA);
+  try {
+    if (Date.now() - fs.statSync(damga).mtimeMs < SAGLIK_ARA) return;
+  } catch {}
+  try {
+    fs.writeFileSync(damga, '');
+  } catch {}
+  const sinir = ayarSayi(root, 'agent_stall', SESSIZLIK_DK) * 60 * 1000;
+  for (const f of dosyalar(live)) {
+    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    const yol = path.join(live, f);
+    const a = read(yol);
+    if (!a || a.ended || a.stop_reason || a.sessiz_bildirildi) continue;
+    const t = Date.parse(String(a.last_seen || '').replace(' ', 'T') + 'Z');
+    if (isNaN(t)) continue;
+    const gecen = Date.now() - t;
+    if (gecen < sinir) continue;
+    a.sessiz_bildirildi = true;
+    yaz(yol, a);
+    const kim = a.agent_id || f.slice(0, -5);
+    const dk = Math.round(gecen / 60000);
+    duyur(ceviri('ajanSessiz', rolAdi(a), kim, dk, a.last_action || '—'), 1, true);
+    sorunYaz(live, ['sessiz', rolAdi(a), kim, dk + ' dakika', a.last_action || '—'].join(' | '));
+  }
+}
+
+function aksama(j) {
+  const kim = j.agent_id || transcriptKimligi(j) || 'ana oturum';
+  const rol = String(j.agent_type || 'ajan').replace(/^teknesyum:/, '');
+  if (j.hook_event_name === 'PostToolUseFailure') {
+    const t = j.tool_input || {};
+    const arac = j.tool_name || '?';
+    return {
+      ne: j.is_interrupt ? ceviri('debugKesinti', arac) : ceviri('debugAracHatasi', arac),
+      nerede: ceviri('debugNerede', rol, kim),
+      ayrinti: String(
+        (t.file_path || t.path || t.command || '') + ' ' + (j.error || j.error_type || '')
+      )
+        .trim()
+        .slice(0, 200),
+    };
+  }
+  if (j.hook_event_name === 'SubagentStop') {
+    return {
+      ne: ceviri('debugAjanDurdu'),
+      nerede: ceviri('debugNerede', rol, kim),
+      ayrinti: String(j.stop_reason || 'end_turn').slice(0, 80),
+    };
+  }
+  return null;
+}
+
+function debugBildir(live, a, gunluk) {
+  if (!a || !debugAcik()) return;
+  duyur(ceviri('debugOlay', a.ne, a.nerede), 1, true);
+  if (gunluk) sorunYaz(live, ['debug', a.ne, a.nerede, a.ayrinti].filter(Boolean).join(' | '));
+}
+
+const TUR_EK = '.tur';
+
+function turYolu(j) {
+  return path.join(genelKok(), safe(j.session_id || 'oturum') + TUR_EK);
+}
+
+function turIzi(j, root) {
+  return root ? izYolu(root) : path.join(genelKok(), safe(j.session_id || 'oturum'));
+}
+
+function turBasla(j, root) {
+  const f = turYolu(j);
+  try {
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(
+      f,
+      JSON.stringify({ t: Date.now(), boy: toplamTranskript(j, turIzi(j, root)) })
+    );
+  } catch {}
+}
+
+function turBitir(j, root) {
+  const f = turYolu(j);
+  const d = read(f);
+  if (!d || !d.t) return;
+  try {
+    fs.unlinkSync(f);
+  } catch {}
+  const sn = Math.max(0, Math.round((Date.now() - d.t) / 1000));
+  const artis = Math.max(0, toplamTranskript(j, turIzi(j, root)) - (d.boy || 0));
+  duyur(ceviri('turOzeti', sureMetni(sn), Math.round(artis / 4)), 1, true);
+}
+
+function sureMetni(sn) {
+  return sn < 60 ? ceviri('turSuresi', 0, sn) : ceviri('turSuresi', Math.floor(sn / 60), sn % 60);
+}
+
 const CALISAN = '_running.json';
 
 function calisanEkle(live, j) {
@@ -382,11 +575,12 @@ function seviye() {
   return (_seviye = v === 0 || v === 2 ? v : 1);
 }
 
-function duyur(mesaj, min) {
+const _duyuru = [];
+
+function duyur(mesaj, min, tam) {
   if (seviye() < (min || 1)) return;
-  try {
-    process.stdout.write(JSON.stringify({ systemMessage: 'Teknesyum ▸ ' + mesaj }));
-  } catch {}
+  _duyuru.push(tam ? mesaj : 'Teknesyum ▸ ' + mesaj);
+  ciktiEkle({ systemMessage: _duyuru.join('\n') });
 }
 
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını
@@ -417,24 +611,16 @@ function hatirlat(j, root, etkinProje) {
   // Seviye 2'de kullanıcı her dokunuşu görmek istiyor: base olmasaydı olmayacak her
   // kararın kendi satırı olur. Biçim relay SKILL 7.2'de.
   if (seviye() === 2) metin += ' ' + ceviri('seviye2');
-  try {
-    process.stdout.write(
-      JSON.stringify({
-        hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
-      })
-    );
-  } catch {}
+  ciktiEkle({
+    hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
+  });
 }
 
 function kapEkle(metin) {
   if (!metin) return;
-  try {
-    process.stdout.write(
-      JSON.stringify({
-        hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
-      })
-    );
-  } catch {}
+  ciktiEkle({
+    hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
+  });
 }
 
 // Oturum başına kaç kez yazdığımızı sayar. Sayaç dosyası oturuma özel; `supur()`
@@ -469,7 +655,7 @@ function paketDenetle(j, root) {
   const govde = sonMesaj(j.transcript_path);
   if (!govde) return;
   const engel = devirIhlali(govde) || donusEksik(root, govde) || sendenEksik(root, govde);
-  if (engel) process.stdout.write(JSON.stringify({ decision: 'block', reason: engel }));
+  if (engel) ciktiEkle({ decision: 'block', reason: engel });
 }
 
 // ÖLÇÜLDÜ: tavan vardı, taban yoktu. Uzun bloğu engelliyorduk ama işini bitiren işçi

@@ -65,6 +65,78 @@ const S = {
   saniye: { tr: (n) => n + ' sn', en: (n) => n + ' s' },
   dakika: { tr: (n) => n + ' dk', en: (n) => n + ' min' },
 
+  turSuresi: {
+    tr: (dk, sn) => (dk ? dk + 'dk ' + sn + 'sn' : sn + 'sn'),
+    en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
+  },
+  turOzeti: {
+    tr: (sure, token) => 'Total Süre: ' + sure + ' // Tahmini Token: ~' + token,
+    en: (sure, token) => 'Total Time: ' + sure + ' // Estimated Tokens: ~' + token,
+  },
+
+  ajanSessiz: {
+    tr: (rol, kim, dk, eylem) =>
+      '`Teknesyum ▸ Sağlık ▸ ' +
+      rol +
+      ' ajanı ' +
+      dk +
+      ' dakikadır sessiz — ' +
+      kim +
+      ', son eylemi ' +
+      eylem +
+      '; ana oturum TaskStop ile durdurabilir`',
+    en: (rol, kim, dk, eylem) =>
+      '`Teknesyum ▸ Health ▸ the ' +
+      rol +
+      ' agent has been silent for ' +
+      dk +
+      ' minutes — ' +
+      kim +
+      ', last action ' +
+      eylem +
+      '; the main session can stop it with TaskStop`',
+  },
+  ajanDongu: {
+    tr: (rol, kim, n, eylem) =>
+      '`Teknesyum ▸ Sağlık ▸ ' +
+      rol +
+      ' ajanı döngüde — ' +
+      kim +
+      ', ' +
+      eylem +
+      ' eylemini ' +
+      n +
+      ' kez üst üste yaptı; ana oturum TaskStop ile durdurabilir`',
+    en: (rol, kim, n, eylem) =>
+      '`Teknesyum ▸ Health ▸ the ' +
+      rol +
+      ' agent is looping — ' +
+      kim +
+      ', it repeated ' +
+      eylem +
+      ' ' +
+      n +
+      ' times in a row; the main session can stop it with TaskStop`',
+  },
+
+  debugOlay: {
+    tr: (ne, nerede) => '`Teknesyum ▸ Debug ▸ ' + ne + ' — ' + nerede + '`',
+    en: (ne, nerede) => '`Teknesyum ▸ Debug ▸ ' + ne + ' — ' + nerede + '`',
+  },
+  debugNerede: {
+    tr: (rol, kim) => rol + ' ajanı, ' + kim,
+    en: (rol, kim) => 'the ' + rol + ' agent, ' + kim,
+  },
+  debugAracHatasi: {
+    tr: (arac) => arac + ' aracı hata verdi',
+    en: (arac) => 'the ' + arac + ' tool failed',
+  },
+  debugKesinti: {
+    tr: (arac) => arac + ' aracı kesildi',
+    en: (arac) => 'the ' + arac + ' tool was interrupted',
+  },
+  debugAjanDurdu: { tr: 'bir ajan durdu', en: 'an agent stopped' },
+
   kurulumEksik: {
     tr: 'kurulum eksik · /setup çalıştır, gerekeni sorarım',
     en: 'setup incomplete · run /setup, I will ask for what is missing',

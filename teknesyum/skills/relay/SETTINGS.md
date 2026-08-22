@@ -17,6 +17,8 @@ briefing           : milestone      # quiet | milestone | every-step
 plan_council       : off            # off | on — planı iki model bağımsız önerir
 second_opinion     : off            # off | on — karar düğümünde fable kısa görüş verir
 research_repos     : 10             # ön araştırmada taranacak en az depo sayısı
+agent_stall        : 10             # kaç dakika sessiz kalan ajan bildirilir
+agent_loop         : 5              # aynı eylem kaç kez üst üste tekrarlarsa döngü sayılır
 ```
 
 ## Anlamları
@@ -85,6 +87,19 @@ kapalıdır, premiumda açılır. Hangi dört durumda tetiklendiği relay SKILL 
 profilde 10, premium profilde 50. Elli depo, on depoyla aynı derinlikte okunmaz: ilk
 tarama tabakası sığdır, konsey ve planlama derinleşeceği yeri kendi seçer.
 
+**agent_stall** — bir ajan kaç dakika olay üretmezse sağlıksız sayılır. Kanca her ajanın
+`live/<agent_id>.json` kaydındaki `last_seen` alanına bakar; süre dolmuş ve `SubagentStop`
+gelmemişse ana oturuma tek satır bildirim çıkar ve `live/_sorun.log` dosyasına yazılır.
+Kanca ajanı durduramaz — durdurma kararı ana oturumdadır, `TaskStop` aracıyla verilir.
+Statusline'ın kayıp ajan eşiği de 10 dakikadır; ikisini birlikte değiştir.
+
+**agent_loop** — ajan ilerliyor ama aynı yerde: `last_action` bu sayı kadar üst üste aynı
+kalır ve ajanın transkript dosyası bu sırada büyümeye devam ederse döngü sayılır. Büyüme
+şartı takılmayı döngüden ayırır: transkript büyümüyorsa ajan dönmüyor, susuyor demektir —
+o durumu `agent_stall` yakalar. Bildirim ve günlük kaydı `agent_stall` ile aynı yoldan gider.
+
+Bu iki düğme `steering` 0 olmadıkça çalışır ve `debug` bayrağından bağımsızdır.
+
 **Hook bildirimleri** bu düğmeden bağımsızdır ve buradan değil, `~/.claude/teknesyum.json`
 içindeki `steering` alanından yönetilir — makine başına tek ayar, proje değil kullanıcı
 tercihi olduğu için:
@@ -121,6 +136,8 @@ düşerse ölçü tutmaz.
 | `plan_council` | off | on — fable + opus |
 | `second_opinion` | off | on — fable |
 | `research_repos` | 10 | 50 |
+| `agent_stall` | 10 | 10 |
+| `agent_loop` | 5 | 5 |
 
 Premium, Max 20x planı içindir: token bütçesi kısıt olmaktan çıkar, sonnet ve haiku
 tamamen bırakılır, efor tavanı `xhigh` olur. Değişmeyen tek şey deterministik araç

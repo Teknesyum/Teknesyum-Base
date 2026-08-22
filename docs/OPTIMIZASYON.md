@@ -105,91 +105,133 @@ Fable'ın görmemesi kusur değil; opus bench raporunu farklı okumuş.
 
 ## Dalgalar
 
-Sıra kazanca göre, ölçüm kapıları açıkça yazılı.
+Dalga 0 koştu ve planın gerekçesini çürüttü. Aşağıdaki dalgalar **ölçüm sonrası** halidir;
+ölçüm öncesi sıralama git geçmişinde duruyor.
 
-### Dalga 0 — ölçüm (bloklayıcı)
+### Dalga 0 — ölçüm · TAMAMLANDI
 
-Hiçbir dosya değişmez. Dördü paralel yürür.
+Hiçbir dosya değişmedi. Üç ajan paralel koştu (`Ö1` ve `Ö2` aynı veriye baktığı için birleşti).
 
-| | İş | Cevaplayacağı tek soru |
-|---|---|---|
-| `Ö1` | Relay çağrı defteri | İkinci çağrı gövdeyi yeniden mi yazıyor, cache'ten mi okuyor |
-| `Ö2` | Bölüm kullanım sayımı | 80 çağrının kaçında §1.4 · §1.5 · §3.1 gerçekten iş yaptı |
-| `Ö3` | Description bütçe sayımı | 8.000 karakterlik liste bütçesi aşılıyor mu |
-| `Ö4` | eco taban koşusu | 157.709'un kalem dökümü |
+| | Soru | Cevap | Rapor |
+|---|---|---|---|
+| `Ö1` | İkinci relay çağrısı gövdeyi yeniden mi yazıyor | **Yeniden yazıyor.** Delta birincinin %103'ü, `cache_creation` on iki çağrının hepsinde 0 | `OLCUM-CAGRI.md` |
+| `Ö2` | Bölümlerin kaçı gerçekten iş yaptı | **Azı.** En yaygın bölüm relaylı oturumların yarısında; §1.6 hiç okunmadı, §3.2 toplam 1 kez | `OLCUM-CAGRI.md` |
+| `Ö3` | 8.000 karakterlik bütçe aşılıyor mu | **Hayır.** Bütçe sabit değil, `pencere × 4 × 0,01`; 1M'de 40.000, liste 13.938 | `OLCUM-BUTCE.md` |
+| `Ö4` | 157.709'un kalem dökümü | **Kalemlenen %10,9.** Base'in tüm ayak izi 4.826 token | `OLCUM-TABAN.md` |
 
-**Kapı:** `Ö4` farkın en az %80'ini kalemlemezse Dalga 2 ve 3 başlamaz — hipotez yanlış
-demektir ve plan baskın kaleme yeniden hedeflenir.
+#### Kapı: GEÇİLMEDİ
 
-`Ö2` deterministik vekil kullanır: `references/*.md` Read sayısı, açılan scout/planner/advisor
-sayısı, yazılan görev paketi ve rota dosyası sayısı. Bölüm okunmuşsa iz bırakır.
+> `Ö4` farkın en az %80'ini kalemlemezse Dalga 2 ve 3 başlamaz — hipotez yanlış demektir
+> ve plan baskın kaleme yeniden hedeflenir.
 
-### Dalga 1 — ölçümsüz kesin kazançlar
+Kalemlenen %10,9, eşik %80'di. **Üç hipotezin üçü de çürüdü:**
 
-`Ö1`'i beklemez, çünkü kazancı ölçümden bağımsız.
+1. **Relay gövdesi bench farkını açıklamıyor.** eco ve normal koşularında `teknesyum:relay`
+   sıfır kez çağrıldı. `OLCUM-MALIYET.md`'nin "10.112 × 4 = 40.448, farka çok yakın"
+   akıl yürütmesi tesadüftü.
+2. **Description bütçesi aşılmıyor.** `OLCUM-METIN.md`'nin "Base bütçenin %65'ini
+   dolduruyor" cümlesi iki sayım hatasından geliyordu; gerçek pay %5,5.
+3. **Base'in enjeksiyonu pahalı değil.** eco koşusunun toplam maliyetinin %2,5'i.
 
-- **`ecoNotu` tek cümleye iner** (532 → ~80 B), `premiumNotu` 1.758 → ≤600 B. `SETTINGS.md`'de
-  zaten yazılı olanın kopyası atılır.
-- **Tur özeti yönergesi bir kez verilir**, sonraki turlarda yalnız satır (155 → 48 B).
-  Otuz turluk oturumda `Stop` trafiği 3.906 → ≤1.700 B.
-- **eco'da `duyur()` bildirimleri asgariye iner** — `systemMessage` bağlama giriyor, bedava
-  değil.
-- **Enjeksiyon tek noktaya toplanır ve yazılı bayt tavanı konur.** Referans: `superpowers`
-  3.108 B. eco tek enjeksiyon ≤400 B.
+#### Baskın kalem nerede çıktı
 
-**Kabul:** 271 test geçer · eco tek enjeksiyonu normal'inkinden **küçük** · profil adları ve
-komutlar değişmez.
+Farkın %89'u **konuşma hacmi**: 72 tur, 67.814 token çıktı, ve o çıktının her turda
+bağlama geri yazılması. eco'nun parasının %71'i kendi ürettiği metni yazıp geri okumaya
+gitti. Araç sonuçlarının tamamı 4.814 token — **iş girdisi değil, tur sayısı pahalı.**
 
-### Dalga 2 — profil kapsamı ve görünürlük
+#### Ölçümün bulduğu iki hata
 
-- **`S4` profil oturuma bağlanır.** Makine kaydı varsayılan kalır, oturum kaydı üzerine yazar.
-  `/teknesyum:premium` aynı adla çalışır.
-- **`S5` ajan bütçe defteri.** `SubagentStop`'ta altı kalem: input, cache_creation, cache_read,
-  output, brifing baytı, rapor baytı. **Denetim ayrı kalem** — maliyeti savunulabilsin diye
-  (SWE-agent deseni). Oturum toplamı profil eşiğini geçince tek satır uyarı.
+**eco koşusu eco'yu hiç ölçmedi.** `UserPromptSubmit` istem başına bir kez çalışıyor ve
+bench isteminde `/premium eco` uygulanmadan **önce** çalıştı. Bağlamdaki profil metni 72 tur
+boyunca premium kaldı: *"yirmi paralel ajana kadar çıkabilirsin, paralel açmak bu modda
+varsayılandır."* Ajan açmaması modelin kendi kararıydı, profilin değil.
 
-**Tavan uyarır, kesmez.** SWE-agent aşımda hata fırlatıyor ama o denemeyi baştan alabiliyor;
-bizim oturumumuz alamaz. İş ortasında sert kesmek yazılmış işi çöpe atar.
+**Profil değiştirmek bağlamdan tek bayt silmiyor.** Tur 1 tabanı eco 60.498, normal 60.490 —
+8 token fark. eco yalnız model ve ajan ayarlarını değiştiriyor.
 
-**Kabul:** bir sonraki bench "227k'ya karşı 113k" yerine kalem dökümü verir.
+---
 
-### Dalga 3 — eco ince giriş (en büyük kazanç, `Ö1`'e bağlı)
+### Dalga 1 — tur ve çıktı hacmi · yeni baskın kalem
 
-eco'da §1 sınıflandırma tablosu ve eco davranış maddeleri enjeksiyona gömülür; relay yalnız
-sınıf "oturum içi röle" ya da üstüyse çağrılır. Enjeksiyon ~1.500 bayt büyür, 10.112 tokenlik
-yükleme düşer.
+Ölçümün gösterdiği tek büyük kalem. Kazanç ölçüme bağlı değil.
 
-**İki konsey üyesi de bu noktada buluştu** — fable "hiç yüklemez", opus "küçük ve orta işte
-hiç yüklemez". Bench'te eco zaten ajan açmamıştı; protokolün çoğu o koşuda ölü ağırlıktı.
+- **eco'da cevap uzunluğu ve tur sayısı bağlayıcı hale gelir.** Bugün eco felsefesi
+  "token tasarrufu önceliği en yüksek" diyor ama bunu davranışa çeviren tek satır yok.
+- **Uzun koşuları tur harcamadan bekle.** Base'siz koşu 13 satırlık bir döngüyle bitirdi;
+  eco 72 tur harcadı. Arka plan koşusu + tek okuma, tur başına bağlam yazmaktan ucuz.
+- **`edited_text_file` yankısı eco'da kapanır** — tek başına 6.882 token, Base'in bütün
+  ayak izinden büyük.
 
-**Risk:** eco protokolü kaybeder. Karşılığı: enjeksiyona "sınıf röle ve üstüyse relay'i çağır"
-eşiği yazılır; ilk çağrı hiçbir koşulda engellenmez.
+**Kabul:** aynı görevde tur sayısı ≥%40 düşer · 271 test geçer · doğruluk düşmez.
 
-**Kabul:** eco'da tek dosyalık iş relay'i hiç çağırmaz.
+### Dalga 2 — eco'yu gerçekten eco yapmak
 
-### Dalga 4 — gövdeyi böl (yalnız `Ö2` onay verirse)
+`Ö4`'ün bulduğu iki hatanın kapatılması. Bunlar optimizasyon değil **düzeltme**.
 
-`Ö2`'de "işlerin çoğunda kullanılmıyor" çıkan bölümler `references/` altına taşınır, yerinde
-tek satır işaretçi kalır. Hedef 53.147 B → ≤33.000 B, ≤500 satır.
+- **`S4` profil oturuma bağlanır** ve `UserPromptSubmit` profil değişince bloğu yeniler.
+  Bugün profil sonradan değişse bağlamdaki metin eski profilde kalıyor.
+- **eco sistem promptunu gerçekten küçültür.** Bugün 8 token fark ediyor. eco'da skill
+  listesi, ajan listesi ve enjeksiyon bloğu kısalır.
+- **`S5` ajan bütçe defteri.** `SubagentStop`'ta altı kalem; denetim ayrı kalem.
+
+Ayrıca ölçüm bir raporlama karışıklığı buldu: `normal` koşusunun `Stop` satırı ~313.500
+token diyor, harness bütçe sayacı 171.114. Base'in tahmini alt ajanları sayıyor, sayaç
+saymıyor. **İki rakam aynı isimle raporlanıyor** — tur makbuzunun adı ayrışmalı.
+
+**Kabul:** eco'nun tur 1 tabanı normal'inkinden ölçülebilir biçimde küçük · bir sonraki
+bench kalem dökümü verir.
+
+### Dalga 3 — alt ajan başına relay yüklemesi
+
+`Ö1`'in bulduğu asıl çarpan. Bench farkını açıklamıyor ama **gerçek oturumlarda** en pahalı
+tek mekanizma bu.
+
+83 relay çağrısının **59'u alt ajan transkriptinde**. Tek bir oturumda 56 çağrı — 8'i ana
+oturum, 48'i alt ajanlar. O oturum yalnız relay gövdesine ~76.000 token ödedi. Çarpan
+tekrar eden ana çağrı değil, **her alt ajanın relay'i kendi bağlamında baştan yüklemesi.**
+
+Alt ajanın relay'in tamamına ihtiyacı yok: sözleşmesini, `owns` kümesini ve mühür kurallarını
+okuması yeter. Ajan brifingine gömülecek olan bu; protokolün tamamı değil.
+
+**Kabul:** builder/auditor açılan bir oturumda alt ajan başına relay yüklemesi sıfıra iner ·
+mühür ve denetim bağımsızlığı testleri geçer.
+
+### Dalga 4 — gövdeyi böl · `Ö2` onay verdi
+
+`Ö2` "çoğu çağrıda kullanılmıyor" tarafında çıktı: en yaygın bölüm (§3.1 görev paketi)
+relaylı oturumların 8/15'inde, §1.6 ürün standardı 87 oturum grubunun **tamamında sıfır**,
+§3.2 rota bütün transkriptlerde toplam 1 kez.
+
+İz bırakmayan bölümler `references/` altına taşınır, yerinde tek satır işaretçi kalır.
+Hedef 53.147 B → ≤33.000 B, ≤500 satır.
 
 **Çift kabul kriteri:** çağrı başına delta ≤3.500 token **ve** on gerçek oturumda
-`references/` Read toplamı kazanılan tokenden küçük. İkincisi tutmuyorsa **taşıma geri
-alınır** — bölme tek çağrıyı iki okumaya çevirdiyse zarar etmişizdir.
+`references/` Read toplamı kazanılan tokenden küçük. İkincisi tutmuyorsa taşıma geri alınır.
 
-`Ö2` "çoğunda okunuyor" derse bu dalga iptal; o bölümler yerinde kısaltılır.
+`Ö2` bir uyarı da yazdı: bu bir vekil ölçüm, bölümün okunduğunu değil sonucunun görüldüğünü
+sayıyor. Bölüm okunup "gerekmiyor" denerek atlandıysa bu tabloda kullanılmamış görünür.
 
-### Dalga 5 — description bütçesi (`Ö3` aşım diyorsa öne alınır)
+### Dalga 5 — description kısaltma · İPTAL, yerine pencere koruması
 
-Komut ve profil adları **değişmez**, yalnız açıklama metni kısalır. Hedef 5.217 → ≤3.400 B.
+`Ö3` bütçenin aşılmadığını ölçtü. Kısaltma matematik olarak da çözüm değil: Base'in bütün
+payı 1.842 karakter, 200k senaryosundaki açık 3.635. **Base'i sıfıra indirsen bile liste
+aşar.**
 
-**Kabul:** yirmi promptluk tetikleme testinde relay ve teknesyum-ui isabeti kısaltma
-öncesiyle aynı. İsabet düşerse metin geri uzatılır — kısa description işlevi bozarsa kazanç
-değil kayıptır.
+Yerine geçen iş — gerçek bir kırılganlık:
 
-Bu bir token meselesi değil **işlev** meselesi: 8.000 karakterlik bütçe aşılırsa girdiler
-`name-only`'a düşüyor ve çağrılamaz hale geliyor.
+Bağlam penceresi 200k'ya düştüğü an Base'in **18 girdisinin tamamı** aynı anda `name-only`'a
+düşüyor ve model onları çağıramıyor. Ara durum yok, uyarı yok. Sebep Base değil: gömülü
+girdiler dokunulmaz sayılıp tabana yazılıyor, kalan bütçe negatife düşüyor.
+
+- `/scan` bu eşiği denetler ve aşımda tek satır uyarır.
+- Kaçış kapısı belgelenir: `SLASH_COMMAND_TOOL_CHAR_BUDGET=16000` ya da
+  `skillListingBudgetFraction: 0.02`.
+
+**Kabul:** 200k pencereli bir oturumda `/scan` uyarıyı basar.
 
 ### Dalga 6 — süreç maliyeti (token değil, saniye)
+
+Ölçümden etkilenmedi, olduğu gibi duruyor.
 
 - `PostToolUse` eşleyicisi durum değiştiren araçlara iner (Write/Edit/NotebookEdit/Task).
 - `sozdizim` ayrı `node --check` süreci yerine süreç içi `vm.Script` ile denetler; ESM
@@ -202,7 +244,20 @@ koşuda aynı sonuç.
 **Geri alma şartı:** ajan takılma uyarısı beş dakikadan geç gelirse eşleyiciye `Bash` geri
 eklenir.
 
----
+### Dalga 7 — bench yeniden koşulur
+
+Mevcut bench sonucu iki sebeple kullanılamaz:
+
+1. **eco koşusu eco'yu ölçmedi** (yukarıda). Aynı hata her profil için geçerli olabilir —
+   `/premium <profil>` ilk kullanıcı isteminden **önce** uygulanmalı.
+2. **Token sütunu dayanaksız.** `Ö1` ve `Ö4`, `BENCH-SONUC.md`'deki ~157.709 ve 226.856
+   rakamlarının transkriptin hiçbir `usage` toplamına denk gelmediğini ölçtü. `yalin`
+   koşusunun 113.257'si hiç doğrulanamadı — transkripti başka makinede.
+
+**Şart:** koşular sıralı · profil ilk istemden önce · her koşu kendi klasöründe açılır
+(bu turda transkriptler üst klasöre düştü, eşleme elle yapıldı) · görev 45 dakikada tek
+modelin bitiremeyeceği boyutta.
+
 
 ## Ne yapılmayacak
 

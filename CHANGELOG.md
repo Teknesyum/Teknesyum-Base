@@ -6,6 +6,16 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.36.0] - 2026-08-22
+
+### Changed
+
+- `/loadall` now prints a block per project instead of a compressed table: the folder
+  path, the state, and a **continuation prompt** in a copyable code block, generated from
+  what the project says on disk — which record to open, which contracts wait, whether the
+  working tree is dirty. Ten projects means ten blocks, each pasteable straight into that
+  project's session.
+
 ## [2.35.0] - 2026-08-22
 
 ### Added

@@ -411,9 +411,13 @@ chat has a record waiting. `/load hepsi` opens all of them; anything else opens 
 exclusion rule as `/rcall` — `!`, `.` and `_` folders stay out. Saving writes each
 project's own record under its `.claude/oturumlar/`, never into a shared pile, and the
 folder gitignores itself so a multi-megabyte transcript never reaches a repository.
-Loading reads nothing back into context wholesale: per project you get the git state, the
-open contracts with their status, when the last session ran and whether it has a record —
-enough to choose where to continue, and no more.
+Loading reads nothing back into context wholesale: per project you get its folder path,
+the git state, the open contracts with their status, when the last session ran and whether
+it has a record — enough to choose where to continue, and no more. Each project also gets
+a **continuation prompt** in a copyable block, built from what the project says on disk:
+which record to open, which contracts are waiting, whether the working tree is dirty. Ten
+projects means ten blocks; you paste one into that project's session and the work resumes
+from there.
 
 A session that dies does not get to take the thread with it. When the remote-control
 window closes, the process crashes, or you simply never typed `/save`, the transcript is

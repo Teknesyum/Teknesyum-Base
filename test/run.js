@@ -2523,6 +2523,12 @@ ol('loadall butun projelerin durumunu tek ekranda verir', () => {
   icerir(r.stdout, 'submitted: T1');
   icerir(r.stdout, '1 açık / 1 bitti');
   icerir(r.stdout, 'Dışarıda kalan klasörler: !Tamamlandı');
+  icerir(r.stdout, '- Klasör: `' + path.join(dip, 'Alfa') + '`');
+  icerir(r.stdout, 'Alfa projesinde kaldığımız yerden devam ediyoruz.');
+  icerir(r.stdout, 'Kayıt yok, önceki oturumu transkriptten devral: /load son');
+  icerir(r.stdout, 'T1 submitted');
+  icerir(r.stdout, 'Denetim bekleyenden başla.');
+  esit((r.stdout.match(/Devam promptu:/g) || []).length, 2, 'her proje kendi promptunu almali');
 });
 
 ol('saveall her projeyi kendi klasorune kaydeder ve depoya sizdirmaz', () => {

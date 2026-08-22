@@ -865,8 +865,34 @@ function gecenSure(zaman) {
   return sa < 48 ? sa + ' saat önce' : Math.round(sa / 24) + ' gün önce';
 }
 
+// Devam promptu kullanıcının kopyalayıp o projenin oturumuna yapıştıracağı metindir:
+// nereden devam edileceğini, kaydın nasıl açılacağını ve açık işleri kendisi taşır.
+// Model tarafından üretilmez — proje diskte ne diyorsa o yazılır.
+function devamPromptu(p, g, c, k, t) {
+  const s = [p.ad + ' projesinde kaldığımız yerden devam ediyoruz.'];
+  if (k) s.push('Önce kaydı aç: /load ' + k.ad);
+  else if (t) s.push('Kayıt yok, önceki oturumu transkriptten devral: /load son');
+  if (c && c.acik) {
+    const oncelik = ['submitted', 'active', 'blocked', 'open'];
+    const sira = Object.keys(c.grup).sort((a, b) => {
+      const i = oncelik.indexOf(a);
+      const j = oncelik.indexOf(b);
+      return (i < 0 ? 9 : i) - (j < 0 ? 9 : j);
+    });
+    s.push(
+      'Açık sözleşmeler: ' + sira.map((d) => c.grup[d].join(', ') + ' ' + d).join(' · ') + '.'
+    );
+    if (c.grup.submitted) s.push('Denetim bekleyenden başla.');
+  }
+  if (g && g.kirli.length) {
+    s.push('Çalışma alanında ' + g.kirli.length + ' dosya kirli, işe başlamadan önce bak.');
+  }
+  if (s.length === 1) s.push('Bu projede kayıtlı iş yok, sıfırdan başlıyoruz.');
+  return s;
+}
+
 function filoSatirlari(p) {
-  const s = ['## ' + p.ad, ''];
+  const s = ['## ' + p.ad, '', '- Klasör: `' + p.yol + '`'];
   const g = gitDurum(p.yol);
   if (g) {
     s.push(
@@ -910,7 +936,7 @@ function filoSatirlari(p) {
     const son = fs.readFileSync(log, 'utf8').split('\n').filter(Boolean).pop();
     if (son) s.push('- Röle kaydı: ' + kirp(son, 300));
   } catch {}
-  s.push('');
+  s.push('', 'Devam promptu:', '```', ...devamPromptu(p, g, c, k, t), '```', '');
   return s;
 }
 

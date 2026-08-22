@@ -120,7 +120,7 @@ written, comparable repositories are split across parallel `scout` agents; each 
 `docs/taramalar/<name>.md` under six fixed headings, and the manager merges them into
 `docs/taramalar/RAPOR.md` as **adopted**, **deliberately rejected**, and **suspicious**.
 
-How many repositories is a profile setting, not a mood: **ten** on the standard profile,
+How many repositories is a profile setting, not a mood: **five** on eco, **ten** on normal,
 **fifty** on premium. Depth does not scale with the count — every file carries the same six
 headings either way; what grows is coverage. Fifty repositories are read in waves, and the
 reports from one wave prune the candidates for the next, with the reason written down.
@@ -308,10 +308,12 @@ finish silently.
 | `scribe` | Mechanical bulk work — naming, formatting, documentation | haiku |
 | `scout` | Prior-art research — scans comparable repos, writes no code | sonnet |
 | `planner` | Plan council member — proposes, **is not allowed to write** | fable · opus |
+| `advisor` | One-question second opinion — writes nothing, runs at low effort | fable |
 
 Role determines the kind of work, model the weight; they are separate axes, and the model
 is chosen at call time. `planner` is the exception: its two council members are two
-different models by definition, so the choice is not the manager's to make.
+different models by definition, so the choice is not the manager's to make. `advisor` is
+the other: `fable` at low effort on every profile, premium included.
 
 Agents are named `<Model>-<Job Name>`. The model comes first, capitalised — `Opus`,
 `Fable`, `Sonnet`, `Haiku` — and every word of the job name is capitalised except short
@@ -330,9 +332,9 @@ three layers because no single one of them holds.
    `Grep`, `Glob` and `LSP` — no `Write`, no `Edit`, and no `Bash`, because a shell is a
    write tool. A test asserts that line.
 2. **The agent declares no `memory`.** Agents that ask for project memory were measured
-   being opened with `Write` and `Edit` added on top of what they declared, so the auditor
-   and the planner give the memory up. `tools:` is a floor for the harness, not a ceiling —
-   layers 1 and 2 are a request, not an enforcement.
+   being opened with `Write` and `Edit` added on top of what they declared, so the auditor,
+   the planner and the advisor give the memory up. `tools:` is a floor for the harness, not
+   a ceiling — layers 1 and 2 are a request, not an enforcement.
 3. **The seal gate checks what actually happened.** `contract-guard.js` refuses to let a
    contract into `done/` unless `auditor_id` resolves to a real `live/` record whose
    `agent_type` is `auditor` and whose `files` list is **empty**, and unless `diff` carries
@@ -354,7 +356,7 @@ than silently passing.
 | `/setup` | Wires this machine up. Once, at install time |
 | `/uisetup` | Configures or disables the UI standard |
 | `/uicheckup` | Scans UI files and prepares an approved relay manifest |
-| `/premium` | Switches the Max 20x profile on or off, and reports which one is live |
+| `/premium` | Switches between the premium, normal and eco profiles, and reports which one is live |
 | `/save` | Writes this session to disk — transcript, context, git state, unsent text |
 | `/load` | Reads a saved session back and picks up where it stopped |
 | `/saveall` | Saves every project's last session into its own folder |
@@ -367,39 +369,59 @@ than silently passing.
 There is no command to set a relay up and none to resume interrupted work — both happen on
 their own.
 
-### Premium profile
+### Three profiles
 
-The defaults are sized for a budget that runs out. On a Max 20x plan it does not, and the
-same defaults become a handbrake: work is queued that could have run at once, and a model
-is picked to be cheap rather than to be right. `/premium ac` swaps the whole profile in one
-move — agent frontmatter, relay knobs, and the machine-level flag are written together,
-because a profile that only half applies is worse than either half.
+There are three, and `/premium` moves between them: **premium**, **normal**, **eco**. The
+whole profile swaps in one move — agent frontmatter, relay knobs, and the machine-level
+field are written together, because a profile that only half applies is worse than either
+half. `normal` is the default and is what used to be called `standard`; `/premium kapat`
+still lands there.
 
-| | Standard | Premium |
-|---|---|---|
-| builder · ui-builder | sonnet / medium / 60 turns | opus / xhigh / 80 turns |
-| auditor | sonnet / high / 30 turns | opus / xhigh / 40 turns |
-| scout | sonnet / high / 45 turns | opus / high / 60 turns |
-| scribe | haiku / low / 40 turns | opus / low / 40 turns |
-| parallel agents | 2 | 6 |
-| worktree isolation | off | on |
-| model escalation | on | off — already at the top |
-| report · briefing | short · milestone | detailed · every-step |
-| plan council | off | on — fable + opus |
-| second opinion | off | on — fable |
-| prior-art repositories | 10 | 50 |
+| | eco | normal | premium |
+|---|---|---|---|
+| builder · ui-builder | haiku / medium / 40 turns | sonnet / medium / 60 turns | opus / xhigh / 80 turns |
+| auditor | haiku / medium / 20 turns | sonnet / high / 30 turns | opus / xhigh / 40 turns |
+| scout | haiku / low / 25 turns | sonnet / high / 45 turns | opus / high / 60 turns |
+| scribe | haiku / low / 30 turns | haiku / low / 40 turns | opus / low / 40 turns |
+| planner | haiku / low / 30 turns | sonnet / high / 40 turns | opus / xhigh / 40 turns |
+| advisor | haiku / low / 12 turns | sonnet / low / 15 turns | fable / low / 20 turns |
+| parallel agents | 1 | 2 | 20 |
+| worktree isolation | off | off | on |
+| model escalation | on | on | off — already at the top |
+| audit | critical | every contract | every contract |
+| report · briefing | short · quiet | short · milestone | detailed · every-step |
+| plan council | off | off | on — fable + opus |
+| second opinion | off | off | on — fable |
+| prior-art repositories | 5 | 10 | 50 |
 
-Sonnet and haiku are dropped entirely; the difference between roles moves from the model to
-the effort. `scribe` still runs at low effort on opus, because labouring over a rename is a
-loss at any price. Effort tops out at `xhigh`, the highest value the frontmatter accepts.
+**Premium** is for a budget that does not run out. Sonnet and haiku are dropped entirely;
+the difference between roles moves from the model to the effort. `scribe` still runs at low
+effort on opus, because labouring over a rename is a loss at any price. Effort tops out at
+`xhigh`, the highest value the frontmatter accepts. `advisor` is the deliberate exception —
+`fable` at low effort, for reasons in [the second opinion](#the-second-opinion).
 
-The parallel ceiling is meant to be used, not admired. With the profile on, splitting the
-work across five or ten agents at once is the expected move; a contract that runs alone is
-the one that has to justify itself.
+**Eco** is for the case where tokens genuinely are the constraint. Every role runs `haiku`.
+Effort stays at `medium` for the three roles that produce or verify code, and drops to `low`
+everywhere else: haiku already cuts the cost by an order of magnitude, and taking the coding
+roles below `medium` on top of that buys work that fails its acceptance criteria — the extra
+rounds cost more than the tokens saved. `audit` falls back to `critical`, because the
+largest lever in eco is the number of agents and the auditor is a second agent per contract.
+Model escalation stays on: when haiku is not enough, raising the model beats spending rounds.
 
-Two things do not change. A deterministic tool still comes before a model call — `biome`,
-`rg` and `sed` are chosen for being right, not for being cheap. And the auditor still cannot
-write. Premium buys depth, not permission.
+The parallel ceiling is meant to be used, not admired. On premium, splitting the work across
+five or ten agents at once is the expected move; **failing to split work that could be split
+is what has to justify itself.** The cap is 20 and it is not there for tokens — with
+`worktree_isolation` on, every agent is a repo copy and a process, and if the manager enters
+a bad loop the cap is the safety net. The decision of how many to open belongs to the
+manager, and the measure is wall-clock time, not tokens.
+
+Two things do not change on any profile. A deterministic tool still comes before a model
+call — `biome`, `rg` and `sed` are chosen for being right, not for being cheap. And the
+auditor still cannot write. Premium buys depth, not permission.
+
+The machine-level field is `profil` in `~/.claude/teknesyum.json`, holding `eco`, `normal`
+or `premium`. Installs that predate it carry a boolean `premium` instead; that is read as
+`premium` when true and `normal` otherwise, and both fields are written from then on.
 
 ### The plan council
 
@@ -435,16 +457,31 @@ is smaller than that: one node where the manager genuinely does not know which w
 `second_opinion` — also a premium default — covers that case with one agent and one
 question.
 
-The `planner` agent has a second mode for it. A briefing that starts with `GÖRÜŞ:` puts it
-in opinion mode, where it answers `fable`-short under three headings and no more than
-twenty lines: the call it would make, at most three reasons, and what the asker missed. The
+A separate agent answers it: `advisor`, on `fable`, under three headings and no more than
+twenty lines — the call it would make, at most three reasons, and what the asker missed. The
 third heading is why the feature exists; the first two often only confirm what the manager
 already thought.
 
-It opens on five occasions: a choice between two roads where being wrong is expensive to
-undo, a bug that has survived three rounds with the root cause still unclear, a rule about
-to be broken, a request that reads two ways, and every time the user asks for a plan. It
-does not open for mechanical work, pattern-fixed work, or anything with one right answer.
+It used to be a second mode of `planner`, selected by a `GÖRÜŞ:` prefix on the briefing.
+Splitting it out was forced by a measured constraint: the `Agent` tool's schema carries
+`model` but not `effort`, so effort can only come from the agent definition's frontmatter.
+Two modes in one file meant one effort for both. As its own agent, `advisor` runs at **low
+effort even on premium** — which is the point, because the trigger list is nine items long
+and a consultation that is expensive is a consultation that never happens.
+
+The nine: a choice between two roads where being wrong is expensive to undo; a bug that has
+survived three rounds with the root cause still unclear; a rule about to be broken; a
+request that reads two ways; every time the user asks for a plan; a finding that cannot be
+shown to be a bug, because no reproduction step, failing test or log line can be written for
+it; two agents whose reports disagree about the same file or the same measurement with no
+run that settles it; an acceptance criterion written into a contract with no command that
+makes it pass or fail; and any expensive-to-undo release step — a version tag, a merge to
+`main`, a change to a published interface or schema.
+
+Each of them names a missing or conflicting artifact, which is deliberate: a trigger phrased
+as "when you are unsure" either never fires or always fires. Nine items did not lower the
+bar — if the artifact is not missing, the item does not fire. It still does not open for
+mechanical work, pattern-fixed work, or anything with one right answer.
 
 The fifth occasion is not the council. The council runs once on a from-scratch project,
 after the prior-art research and before `PLAN.md`, with two members returning full
@@ -461,7 +498,7 @@ disagrees it writes down why, and the user is told an opinion was taken with a
 
 ### Watching the agents
 
-Six agents in parallel is six chances for one of them to spin. The hooks already recorded
+Twenty agents in parallel is twenty chances for one of them to spin. The hooks already recorded
 enough to notice — they just were not reading it back.
 
 An agent that has produced no event for `agent_stall` minutes and never sent
@@ -831,7 +868,7 @@ Behavior knobs live in `skills/relay/SETTINGS.md`:
 | `audit` | `every-contract` | When the auditor runs |
 | `fix_ceiling` | `5` | After how many rounds the decision comes to you |
 | `model_escalation` | `on` | Whether round 4 escalates to a stronger model |
-| `parallel_width` | `2` | Cap on concurrent agents |
+| `parallel_width` | `2` | Cap on concurrent agents — 1 on eco, 20 on premium |
 | `worktree_isolation` | `off` | Whether agents work in an isolated repo copy |
 | `report_length` | `short` | How much an agent reports back to the manager |
 | `briefing` | `milestone` | How often the manager reports to you |
@@ -867,8 +904,9 @@ only the conclusion comes back.
 Opening an agent is not something the manager asks permission for. There is no rule that
 holds agents back until the user requests one — the call is made on the size of the job,
 and when the user does ask for agents they get opened without debate. On premium the
-posture inverts: going parallel is the default and going with a single agent is what needs
-a reason, because the binding constraint there is wall-clock time rather than tokens. The
+posture inverts: going parallel is the default and leaving splittable work unsplit is what
+needs a reason, because the binding constraint there is wall-clock time rather than tokens.
+The cap is 20, the call is the manager's, and "it would cost tokens" is not a reason. The
 sizing table itself does not move; a small job stays a small job.
 
 ---

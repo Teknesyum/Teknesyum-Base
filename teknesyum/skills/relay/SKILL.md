@@ -166,8 +166,8 @@ Netleştirme turu bitince, **tek sözleşme yazılmadan önce** aynı problemi �
 taranır. Amaç kopyalamak değil: inşa edilmişin nerede doğru, nerede yanlış yaptığını
 görüp onun üstüne çıkmak. Sıfırdan tasarlanan mimari, üçüncü dalgada sökülür.
 
-**Kaç depo:** `SETTINGS.md` içindeki `research_repos` söyler — standart profilde **10**,
-premium profilde **50**. Sayı profille değişir, kural değişmez.
+**Kaç depo:** `SETTINGS.md` içindeki `research_repos` söyler — eco profilinde **5**,
+normal profilde **10**, premium profilde **50**. Sayı profille değişir, kural değişmez.
 
 Bildirim — dağıtmadan önce tek satır:
 
@@ -259,20 +259,29 @@ seçenek üretimidir. Soğuk başlayan ajanın kötü plan yapmasının sebebi b
 konsey üyesi aynı brifingi, aynı araştırma raporunu ve aynı kod tabanını görür. Kararı
 hâlâ bağlamı taşıyan T0 verir.
 
-`plan_council` kapalıyken (standart profil) plan doğrudan T0 tarafından yazılır, konsey
-açılmaz. Tek üyeyle konsey kurulmaz — bir öneri, öneri değil plandır.
+`plan_council` kapalıyken (eco ve normal profil) plan doğrudan T0 tarafından yazılır,
+konsey açılmaz. Tek üyeyle konsey kurulmaz — bir öneri, öneri değil plandır.
 
 ## 1.5.1 İkinci görüş — tek soruluk konsey
 
 `SETTINGS.md` içindeki `second_opinion` açıksa (premium profilde varsayılan), T0 doğru
-kararın ne olduğunu bilmediği bir düğümde `planner` ajanını **görüş kipinde** açar.
-Brifing `GÖRÜŞ:` ile başlar; ajan bu ön eki görünce plan değil görüş yazar.
+kararın ne olduğunu bilmediği bir düğümde **`advisor` ajanını** açar. Ayrı bir ajandır,
+`planner`'ın bir kipi değil: brifingde ön ek yoktur, doğrudan `advisor` açılır ve soru
+yazılır.
 
 Konseyden iki yerde ayrılır: konsey **planın tamamı** içindir ve **iki** üyelidir, görüş
 **tek bir karar** içindir ve **tek** üyelidir — `fable`. Konsey ön araştırmadan sonra bir
 kez açılır; görüş iş sürerken, takıldığın yerde açılır.
 
-Beş durumda açılır:
+**Neden ayrı ajan.** `Agent` aracının şemasında `model` alanı var ama `effort` alanı yok;
+efor yalnızca ajan tanımının frontmatter'ından gelir. Konsey ve görüş aynı dosyada
+durduğu sürece aynı eforu paylaşıyorlardı. `advisor` premiumda bile `low` eforla
+çalışır — aşağıdaki liste dokuz tetikleyiciye çıktığı için danışma sık olacaktır ve
+**sık olan şeyin ucuz olması gerekir.** Pahalı bir görüş mekanizması, kullanılmayan bir
+görüş mekanizmasıdır.
+
+Dokuz durumda açılır. Her madde ölçülebilir bir eksik ya da çelişki gösterir; "kararsız
+kaldığında" gibi bir cümle ya hiç tetiklenir ya her zaman tetiklenir, o yüzden yok:
 
 1. İki yol arasında kalındı ve seçim geri alınması pahalı — mimari sınır, veri modeli,
    bağımlılık kararı.
@@ -282,9 +291,21 @@ Beş durumda açılır:
 4. İstek iki farklı okunabiliyor ve sormak yerine varsayım yapılacak.
 5. Kullanıcı "plan oluştur" ya da "plan yap" dedi. Plan kullanıcıya verilmeden önce
    `fable`'dan kısa bir teyit alınır.
+6. Bir bulgunun gerçekten hata olduğu gösterilemedi: kodu okudun ama onu **yeniden
+   üreten adımı, kalan bir testi ya da bir günlük satırını** yazamıyorsun. Düzeltmeden
+   önce sorulur — olmayan hatayı düzeltmek çalışan kodu bozar.
+7. İki ajanın raporu aynı dosya ya da aynı ölçü hakkında farklı şey söylüyor ve ikisini
+   birden doğrulayan bir koşu yok.
+8. Bir kabul kriteri sözleşmeye yazıldı ama onu **geçti/kaldı yapan komut yazılamadı.**
+   Ölçüsü olmayan kriter sözleşmeye girmeden önce sorulur.
+9. Geri alınması pahalı bir yayın adımından önce: sürüm etiketi, `main`'e birleştirme,
+   yayımlanmış bir arayüzün ya da şemanın değişmesi, bir sürümün geri çekilmesi.
 
 **Dördüncü maddede sormak önce gelir.** Görüş, kullanıcıya sormanın yerini tutmaz;
 yalnızca `ask_threshold` sormaya izin vermediğinde devreye girer. Eşik soruyorsa sor.
+
+**Altıncı ve yedinci madde düzeltmeden önce gelir.** İkisi de "bir şey yanlış görünüyor
+ama yanlış olduğu ölçülmedi" durumudur; görüşün kazancı orada düzeltmeyi geciktirmesidir.
 
 **Beşinci maddeyi plan konseyiyle karıştırma.** İkisi ayrı tetikleyicidir ve ayrı yerde
 çalışır:
@@ -292,7 +313,9 @@ yalnızca `ask_threshold` sormaya izin vermediğinde devreye girer. Eşik soruyo
 | | Plan konseyi (§1.5) | Plan teyidi (bu bölüm) |
 |---|---|---|
 | Ne zaman | sıfırdan projede, ön araştırma bittiğinde | kullanıcı her "plan oluştur" dediğinde |
+| Ajan | `planner` ×2 | `advisor` ×1 |
 | Üye | iki — `fable` + `opus` | tek — `fable` |
+| Efor | `xhigh` | `low` |
 | Çıktı | beş başlıklı iki bağımsız öneri | üç başlıklı kısa teyit, ≤20 satır |
 | Sonuç | T0 sentezler, `PLAN.md` yazar | T0 planı düzeltir ya da gerekçesini yazar |
 
@@ -300,7 +323,8 @@ Sıfırdan projede `PLAN.md` yazılıyorsa konsey çalışır, teyit ayrıca al�
 zaten baktı. Konsey kapalıyken veya iş sıfırdan proje değilken teyit tek üyeyle alınır.
 
 **Açılmayacağı yerler:** mekanik iş, kalıbı belli iş, tek doğru cevabı olan şey. Cevabını
-bildiğin soruyu sorma — ikinci görüşün maliyeti tur değil dikkattir.
+bildiğin soruyu sorma — ikinci görüşün maliyeti tur değil dikkattir. Liste dokuz maddeye
+çıktı diye eşik düşmedi: her madde bir eksiği adlandırır, o eksik yoksa madde tetiklenmez.
 
 Çıktı üç başlıktır ve 20 satırı geçmez: görüş, gerekçe, kaçırdığın şey. Üçüncüsü bu işin
 asıl kazancıdır — soruyu soranın görmediği şey oradadır.
@@ -316,7 +340,8 @@ Satırın tamamı ters tırnak içindedir, etiket büyük harfle başlar, ayraç
 kalan cümle sıradan tümce düzenindedir ve cümlenin içinde ok kullanılmaz — `Ölçü ▸` ve
 `Fark ▸` satırlarıyla aynı kalıp.
 
-`second_opinion` kapalıyken (standart profil) görüş açılmaz; kararı T0 tek başına verir.
+`second_opinion` kapalıyken (eco ve normal profil) görüş açılmaz; kararı T0 tek başına
+verir.
 
 ## 1.6 Ürün standardı — üç platform ve kendini güncelleme
 
@@ -556,6 +581,7 @@ Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `mod
 | `scribe` | mekanik toplu iş — AGENTS.md, isim, biçim | haiku |
 | `scout` | ön araştırma — benzer depoları tarar, kod yazmaz | sonnet |
 | `planner` | plan konseyi üyesi — öneri verir, **hiçbir şey yazmaz** | fable · opus |
+| `advisor` | tek soruluk ikinci görüş — **hiçbir şey yazmaz**, düşük efor | fable |
 | `Explore` | geniş arama (yerleşik, devam ettirilemez) | — |
 
 **opus**: mimari kararı taşıyan, algoritmik, belirsiz, zor hata ayıklama.
@@ -568,16 +594,26 @@ veri kaybı veya mimari sınır içeren işlerde opus'a çıkar.
 **Premium mod açıkken bu tablo geçersizdir.** Her rol opus çalışır; ayrım modelde değil
 eforda olur — mekanik işte düşük, kod ve denetimde `xhigh`. Model tırmanışı kapanır:
 zaten tepedesin, çözülmeyen sözleşmede modeli değil sözleşmeyi düzelt. Paralel tavanı
-altıdır ve üçü geçtiğinde worktree izolasyonu açılır. `/premium durum` hangi profilin
+**yirmidir** ve üçü geçtiğinde worktree izolasyonu açılır. `/premium durum` hangi profilin
 yürürlükte olduğunu söyler.
 
-Tavanı da hevesle kullan. Premiumda paralel açmak varsayılandır: işi bölebiliyorsan böl,
-altı ajana kadar aynı anda yürüt, bitince sonraki basamağa geç. Tek ajanla gitmek burada
-gerekçe ister — ayrıntısı §5'te.
+**Kaç ajan açılacağına premiumda T0 karar verir ve ölçüsü hızdır, token değil.** Tavanı
+hevesle kullan: işi bölebiliyorsan böl, yirmi ajana kadar aynı anda yürüt, bitince
+sonraki basamağa geç. **Bölünebilen işi bölmemek gerekçe ister** — ayrıntısı §5'te.
+
+Tavan yine de duruyor ve sebebi token değil. `worktree_isolation` açıkken her ajan bir
+repo kopyası ve bir süreç demektir; makinenin de bir sınırı var. İkincisi, T0 hatalı bir
+döngüye girerse tavan güvenlik ağıdır — sınırsız bir sayı, yanlış bir kararı yirmi kat
+değil bin kat büyütür. Yirmi, "ne kadar lazımsa o kadar"ı fiilen karşılar: pratikte bir
+dalgada yirmi bağımsız sözleşme çıkmaz, çıkıyorsa plan fazla parçalanmıştır.
+
+eco profilinde tavan 1'dir, normalde 2. eco'da paralellik ilk kesilen şeydir: her ajan
+bağımsız bir bağlam yükü taşır ve orada kısıt tam olarak odur.
 
 `planner` bu tablonun dışındadır: modeli işin ağırlığına göre seçilmez, **konseyin iki
 üyesi tanım gereği iki farklı modeldir** — biri `fable`, biri `opus`. İkisini de aynı
-modele almak konseyi ortadan kaldırır.
+modele almak konseyi ortadan kaldırır. `advisor` da dışındadır: modeli `fable`, eforu
+premiumda bile `low` — bkz. §1.5.1.
 
 **Ajan adı `<Model>-<İş Adı>` biçiminde yazılır.** Model adının ilk harfi büyüktür —
 `Opus`, `Fable`, `Sonnet`, `Haiku`. İş adında her kelime büyük harfle başlar; `ile`, `ve`,
@@ -608,9 +644,14 @@ eşiğin üstündeki işte tereddüt etmemektir.
 
 **Premium mod açıkken varsayılan tutum paralele açmaktır.** Orada asıl kısıt token değil
 süredir. Bağımsız parçaları sıraya dizme, aynı anda beş on ajanla yürüt ve sonraki
-basamağa geç. Bu modda gerekçe isteyen taraf tersine döner: **paralel açmak varsayılan,
-tek ajanla gitmek gerekçe ister.** Tek ajan yalnız iş gerçekten küçükken — tek dosya,
-tek fonksiyon, bölünecek bağımsız parçası olmayan iş — doğru cevaptır.
+basamağa geç. Tavan yirmidir ve kararı sen verirsin: **ölçün hız, token değil.** Bu modda
+gerekçe isteyen taraf tersine döner: **paralel açmak varsayılan, bölünebilen işi bölmemek
+gerekçe ister.** Tek ajan yalnız iş gerçekten küçükken — tek dosya, tek fonksiyon,
+bölünecek bağımsız parçası olmayan iş — doğru cevaptır.
+
+Gerekçe "token harcarız" olamaz. Geçerli gerekçe şudur: parçalar gerçekten bağımsız değil
+(`owns` kümeleri kesişiyor), ya da bölmenin kendisi işten pahalı (sözleşme yazmak işi
+yapmaktan uzun sürüyor).
 
 Alt ajan soğuk başlar; üretken iş başlamadan ~4-15k token yanar. Karar kuralı,
 **ara çıktı / geri dönen rapor oranı**:

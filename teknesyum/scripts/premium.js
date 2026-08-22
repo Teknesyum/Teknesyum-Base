@@ -5,7 +5,17 @@ const path = require('path');
 const { konfigKok } = require('../hooks/ortak.js');
 
 const PROFIL = {
-  standart: {
+  eco: {
+    advisor: { model: 'haiku', effort: 'low', maxTurns: 12 },
+    auditor: { model: 'haiku', effort: 'medium', maxTurns: 20 },
+    builder: { model: 'haiku', effort: 'medium', maxTurns: 40 },
+    planner: { model: 'haiku', effort: 'low', maxTurns: 30 },
+    scout: { model: 'haiku', effort: 'low', maxTurns: 25 },
+    scribe: { model: 'haiku', effort: 'low', maxTurns: 30 },
+    'ui-builder': { model: 'haiku', effort: 'medium', maxTurns: 40 },
+  },
+  normal: {
+    advisor: { model: 'sonnet', effort: 'low', maxTurns: 15 },
     auditor: { model: 'sonnet', effort: 'high', maxTurns: 30 },
     builder: { model: 'sonnet', effort: 'medium', maxTurns: 60 },
     planner: { model: 'sonnet', effort: 'high', maxTurns: 40 },
@@ -14,6 +24,7 @@ const PROFIL = {
     'ui-builder': { model: 'sonnet', effort: 'medium', maxTurns: 60 },
   },
   premium: {
+    advisor: { model: 'fable', effort: 'low', maxTurns: 20 },
     auditor: { model: 'opus', effort: 'xhigh', maxTurns: 40 },
     builder: { model: 'opus', effort: 'xhigh', maxTurns: 80 },
     planner: { model: 'opus', effort: 'xhigh', maxTurns: 40 },
@@ -23,11 +34,39 @@ const PROFIL = {
   },
 };
 
+const PROFILLER = ['eco', 'normal', 'premium'];
+
+const TAKMA = {
+  ac: 'premium',
+  aç: 'premium',
+  on: 'premium',
+  kapat: 'normal',
+  off: 'normal',
+  standart: 'normal',
+};
+
 const KONSEY = ['fable', 'opus'];
 const GORUS = 'fable';
 
 const DUGME = {
-  standart: {
+  eco: {
+    ask_threshold: 'critical',
+    approval_gate: 'none',
+    audit: 'critical',
+    fix_ceiling: '3',
+    model_escalation: 'on',
+    parallel_width: '1',
+    default_model: 'haiku',
+    worktree_isolation: 'off',
+    report_length: 'short',
+    briefing: 'quiet',
+    plan_council: 'off',
+    second_opinion: 'off',
+    research_repos: '5',
+    agent_stall: '10',
+    agent_loop: '5',
+  },
+  normal: {
     ask_threshold: 'critical',
     approval_gate: 'none',
     audit: 'every-contract',
@@ -50,7 +89,7 @@ const DUGME = {
     audit: 'every-contract',
     fix_ceiling: '8',
     model_escalation: 'off',
-    parallel_width: '6',
+    parallel_width: '20',
     default_model: 'opus',
     worktree_isolation: 'on',
     report_length: 'detailed',
@@ -85,10 +124,17 @@ function konfigOku() {
     return {};
   }
 }
-function konfigYaz(deger) {
+function konfigProfili(c) {
+  if (PROFILLER.includes(c.profil)) return c.profil;
+  if (c.premium === true) return 'premium';
+  return 'normal';
+}
+
+function konfigYaz(profil) {
   const kok = konfigKok();
   const c = konfigOku();
-  c.premium = deger;
+  c.profil = profil;
+  c.premium = profil === 'premium';
   fs.mkdirSync(kok, { recursive: true });
   fs.writeFileSync(path.join(kok, 'teknesyum.json'), JSON.stringify(c, null, 2) + '\n', 'utf8');
 }
@@ -153,7 +199,7 @@ function dugmeOku(kok, anahtar) {
 
 function ajanProfili(kok) {
   const sonuc = {};
-  for (const ad of Object.keys(PROFIL.standart)) {
+  for (const ad of Object.keys(PROFIL.normal)) {
     const yol = ajanYolu(kok, ad);
     if (!fs.existsSync(yol)) continue;
     const m = fs.readFileSync(yol, 'utf8');
@@ -168,7 +214,7 @@ function ajanProfili(kok) {
 
 function profilAdi(kok) {
   const simdi = ajanProfili(kok);
-  for (const ad of ['premium', 'standart']) {
+  for (const ad of ['premium', 'normal', 'eco']) {
     const bekle = PROFIL[ad];
     const tam = Object.keys(bekle).every(
       (a) =>
@@ -186,7 +232,7 @@ function uygula(profil) {
   const kok = eklentiKok();
   const degisen = ajanlariYaz(kok, profil);
   dugmeleriYaz(kok, profil);
-  konfigYaz(profil === 'premium');
+  konfigYaz(profil);
   const p = PROFIL[profil];
   const d = DUGME[profil];
   process.stdout.write(
@@ -201,7 +247,7 @@ function uygula(profil) {
       'plan konseyi: ' +
         (d.plan_council === 'on' ? KONSEY.join(' + ') : 'kapalı') +
         ' · ikinci görüş: ' +
-        (d.second_opinion === 'on' ? GORUS : 'kapalı') +
+        (d.second_opinion === 'on' ? p.advisor.model : 'kapalı') +
         ' · ön araştırma: ' +
         d.research_repos +
         '+ depo',
@@ -219,13 +265,14 @@ function durum() {
   const konsey = dugmeOku(kok, 'plan_council');
   const gorus = dugmeOku(kok, 'second_opinion');
   const depo = dugmeOku(kok, 'research_repos');
+  const beklenen = konfigProfili(c);
   const satir = [
-    'konfig premium: ' + (c.premium === true ? 'açık' : 'kapalı'),
-    'dosyalardaki profil: ' + p,
+    'yürürlükteki profil: ' + p,
+    'konfig profili: ' + beklenen + (c.profil === undefined ? ' (eski premium alanından)' : ''),
     'plan konseyi: ' +
       (konsey === 'on' ? KONSEY.join(' + ') : konsey || 'okunamadı') +
       ' · ikinci görüş: ' +
-      (gorus === 'on' ? GORUS : gorus || 'okunamadı') +
+      (gorus === 'on' ? (simdi.advisor || {}).model || GORUS : gorus || 'okunamadı') +
       ' · ön araştırma: ' +
       (depo ? depo + '+ depo' : 'okunamadı'),
     ...Object.keys(simdi).map(
@@ -233,7 +280,6 @@ function durum() {
         '  ' + a.padEnd(11) + simdi[a].model + '/' + simdi[a].effort + ' · tur ' + simdi[a].maxTurns
     ),
   ];
-  const beklenen = c.premium === true ? 'premium' : 'standart';
   if (p !== beklenen) {
     satir.push(
       'UYUŞMAZLIK: konfig ' +
@@ -241,7 +287,7 @@ function durum() {
         ' diyor, dosyalar ' +
         p +
         '. /premium ' +
-        (beklenen === 'premium' ? 'aç' : 'kapat') +
+        beklenen +
         ' ile eşitle.'
     );
   }
@@ -251,27 +297,29 @@ function durum() {
 function yardim() {
   process.stdout.write(
     [
-      'premium.js — Max 20x profilini açar ve kapatır',
+      'premium.js — üç profil arasında geçiş yapar',
       '',
-      '  node premium.js ac      opus + xhigh + 6 paralel ajan + plan konseyi + ikinci görüş',
-      '  node premium.js kapat   standart profile döner',
-      '  node premium.js durum   hangi profilin yürürlükte olduğunu söyler',
+      '  node premium.js premium  opus + xhigh + 20 paralel ajan + plan konseyi + ikinci görüş',
+      '  node premium.js normal   sonnet + 2 paralel ajan, konsey ve görüş kapalı',
+      '  node premium.js eco      haiku + tek ajan + 5 depo ön araştırma, token kısıtlıyken',
+      '  node premium.js durum    hangi profilin yürürlükte olduğunu söyler',
       '',
+      'Eski çağrılar durur: `ac` premium, `kapat` normal demektir.',
       "Ajan frontmatter'ı, relay düğmeleri ve ~/.claude/teknesyum.json birlikte yazılır.",
       'Premiumda plan konseyi açılır (' +
         KONSEY.join(' + ') +
-        ') ve ön araştırma tavanı 10 depodan 50 depoya çıkar.',
-      'İkinci görüş de açılır: karar düğümünde ' +
+        ') ve ön araştırma tavanı 5 · 10 · 50 depo olarak profille değişir.',
+      'İkinci görüş de premiumda açılır: karar düğümünde ' +
         GORUS +
-        ' üç başlıklı kısa bir görüş verir, karar T0’da kalır.',
+        ' modelindeki `advisor` ajanı üç başlıklı kısa bir görüş verir, karar T0’da kalır.',
       'Eklenti güncellemesi ajan dosyalarını geri alabilir; `durum` uyuşmazlığı söyler.',
     ].join('\n') + '\n'
   );
 }
 
 const komut = process.argv[2];
+const secilen = TAKMA[komut] || (PROFILLER.includes(komut) ? komut : '');
 if (!komut || komut === '--help' || komut === '-h' || komut === 'yardim') yardim();
-else if (komut === 'ac' || komut === 'aç' || komut === 'on') uygula('premium');
-else if (komut === 'kapat' || komut === 'off') uygula('standart');
+else if (secilen) uygula(secilen);
 else if (komut === 'durum' || komut === 'status') durum();
 else dur('bilinmeyen komut: ' + komut);

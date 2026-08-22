@@ -24,9 +24,15 @@ Kaydın içinde ne var:
 | Dosya | İçerik |
 |---|---|
 | `ham.jsonl` | Transkriptin bire bir kopyası — hiçbir şey kaybolmaz |
+| `ham.jsonl.gz` | eco profilinde aynı kopya, gzipli — yine hiçbir şey kaybolmaz |
 | `ozet.md` | `/load` ile geri okunan özet: her tur, araç çağrıları, son 10 tur uzun |
 | `durum.json` | Oturum kimliği, model, bağlam kullanımı, git, relay, taslak, kuyruk |
 | `calisma.diff` | Kaydetme anındaki kirli çalışma alanının yaması |
+
+**eco profilinde ham transkript sıkıştırılarak yazılır.** Ölçüm: medyan transkript
+aslının %29'una iniyor, 3,28 MB'lık bir oturum dosyası 0,98 MB'a. İçerik aynıdır,
+`/load --tam` gzipliyi de düz kopyayı da okur. Betiğin çıktısındaki `ham transkript:`
+satırı hangisinin yazıldığını ve boyutu söyler. Normal ve premiumda kopya bire birdir.
 
 Betik çıktısında **gönderilmemiş metin: var** yazıyorsa kutuda duran, hiç gönderilmemiş
 yazı da kaydedilmiştir — Claude Code bunu 200 karakterlik önizleme olarak tuttuğu için

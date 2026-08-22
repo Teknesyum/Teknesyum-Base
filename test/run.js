@@ -2,6 +2,7 @@ const { spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const zlib = require('zlib');
 
 const KOK = path.join(__dirname, '..', 'teknesyum');
 const IZLE = path.join(KOK, 'hooks', 'relay-watch.js');
@@ -3876,6 +3877,178 @@ ol('premium turu sagligi dugmelerini kaydirmaz', () => {
     icerir(once, satir);
     icerir(sonra, satir);
   }
+});
+
+// Profil `~/.claude/teknesyum.json` içinden okunuyor; test makinedeki gerçek ayara
+// bakmasın diye her koşu kendi konfig kökünü kurar.
+function profilKonfigi(ad) {
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-profil-cfg-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ profil: ad }) + '\n');
+  return cfg;
+}
+
+function profilliOturum(ad, ...ek) {
+  const r = spawnSync(process.execPath, [OTURUM, ...ek], {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: profilKonfigi(ad) },
+  });
+  return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
+}
+
+ol('eco kaydi ham transkripti sikistirir, normal bire bir kopyalar', () => {
+  const p = oturumProjesi();
+  const kaynak = path.join(p, 'kaynak.jsonl');
+  esit(
+    profilliOturum('eco', 'kaydet', 'eko', '--proje', p, '--transkript', kaynak).kod,
+    0,
+    'eco kaydet cikis kodu'
+  );
+  const dip = path.join(p, '.claude', 'oturumlar', 'eko');
+  esit(fs.existsSync(path.join(dip, 'ham.jsonl.gz')), true, 'eco gzipli yazmali');
+  esit(fs.existsSync(path.join(dip, 'ham.jsonl')), false, 'eco duz kopya birakmamali');
+  esit(
+    zlib.gunzipSync(fs.readFileSync(path.join(dip, 'ham.jsonl.gz'))).toString('utf8'),
+    fs.readFileSync(kaynak, 'utf8'),
+    'gzipli kopya kaynakla ayni olmali'
+  );
+  esit(
+    JSON.parse(fs.readFileSync(path.join(dip, 'durum.json'), 'utf8')).ham,
+    'ham.jsonl.gz',
+    'durum.json hangi ham dosyasi yazildigini soylemeli'
+  );
+
+  for (const ad of ['normal', 'premium']) {
+    const q = oturumProjesi();
+    const k = path.join(q, 'kaynak.jsonl');
+    esit(
+      profilliOturum(ad, 'kaydet', 'duz', '--proje', q, '--transkript', k).kod,
+      0,
+      ad + ' kaydet cikis kodu'
+    );
+    const d = path.join(q, '.claude', 'oturumlar', 'duz');
+    esit(fs.existsSync(path.join(d, 'ham.jsonl.gz')), false, ad + ' gzip yazmamali');
+    esit(
+      fs.readFileSync(path.join(d, 'ham.jsonl'), 'utf8'),
+      fs.readFileSync(k, 'utf8'),
+      ad + ' bire bir kopyalamali'
+    );
+  }
+
+  // Profil değişip aynı kayıt tazelenince eski ham dosyası kalmamalı: `--tam` bayat
+  // döküm açmasın.
+  esit(
+    profilliOturum('normal', 'kaydet', 'eko', '--proje', p, '--transkript', kaynak).kod,
+    0,
+    'ayni kayit normalde tazelenebilmeli'
+  );
+  esit(fs.existsSync(path.join(dip, 'ham.jsonl.gz')), false, 'gzipli kalinti silinmeli');
+  esit(fs.existsSync(path.join(dip, 'ham.jsonl')), true, 'duz kopya yazilmali');
+});
+
+ol('eco kaydi --tam ile acilir, ham kaybolunca anlasilir hata verir', () => {
+  const p = oturumProjesi();
+  const kaynak = path.join(p, 'kaynak.jsonl');
+  profilliOturum('eco', 'kaydet', 'eko', '--proje', p, '--transkript', kaynak);
+  const tam = profilliOturum('eco', 'yukle', 'eko', '--proje', p, '--tam');
+  esit(tam.kod, 0, 'gzipli kayitta --tam calismali');
+  icerir(tam.out, 'ilk cevap');
+
+  fs.unlinkSync(path.join(p, '.claude', 'oturumlar', 'eko', 'ham.jsonl.gz'));
+  const kaynaktan = profilliOturum('eco', 'yukle', 'eko', '--proje', p, '--tam');
+  esit(kaynaktan.kod, 0, 'kaynak transkript diskteyken --tam calismali');
+  icerir(kaynaktan.out, 'ilk cevap');
+
+  fs.unlinkSync(kaynak);
+  const yok = profilliOturum('eco', 'yukle', 'eko', '--proje', p, '--tam');
+  esit(yok.kod, 1, 'ham kaynagi yokken --tam durmali');
+  icerir(yok.err, 'ham transkript yok');
+  const uyarili = profilliOturum('eco', 'yukle', 'eko', '--proje', p);
+  esit(uyarili.kod, 0, 'ozet yine acilmali');
+  icerir(uyarili.out, 'UYARI:');
+  icerir(uyarili.out, 'ham transkript yok');
+});
+
+ol('eco filo dokumu tek satira iner, devam promptu kisalmaz', () => {
+  const { dip, evOrt } = filoKur();
+  fs.mkdirSync(evOrt.CLAUDE_CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(
+    path.join(evOrt.CLAUDE_CONFIG_DIR, 'teknesyum.json'),
+    JSON.stringify({ profil: 'eco' }) + '\n'
+  );
+  const r = spawnSync(process.execPath, [OTURUM, 'toplu-yukle', '--kok', dip], {
+    encoding: 'utf8',
+    env: { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' },
+  });
+  esit(r.status, 0, 'eco filo durumu calismali');
+  icerir(r.stdout, '## Alfa');
+  icerir(r.stdout, 'röle 1 açık / 1 bitti');
+  if (r.stdout.includes('- Klasör:')) throw new Error('eco dort satirlik blogu basti');
+  if (r.stdout.includes('submitted: T1')) throw new Error('eco sozlesme adlarini dokmemeli');
+  esit((r.stdout.match(/^- /gm) || []).length, 2, 'proje basina tek durum satiri olmali');
+  icerir(r.stdout, 'Alfa projesinde kaldığımız yerden devam ediyoruz.');
+  icerir(r.stdout, 'T1 submitted');
+  icerir(r.stdout, 'Denetim bekleyenden başla.');
+  esit((r.stdout.match(/Devam promptu:/g) || []).length, 2, 'her proje kendi promptunu almali');
+});
+
+ol('eco baslik tamponu kucultur, normal yarim megabayt okur', () => {
+  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-baslik-'));
+  const { ev: evDizin, ort: evOrt } = oturumEvi();
+  const p = path.join(dip, 'Gama');
+  fs.mkdirSync(path.join(p, '.git'), { recursive: true });
+  const t = path.join(evDizin, '.claude', 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
+  fs.mkdirSync(t, { recursive: true });
+  const dolgu = JSON.stringify({
+    type: 'user',
+    message: { role: 'user', content: 'x'.repeat(200) },
+  });
+  const satir = [];
+  for (let i = 0; i < 600; i++) satir.push(dolgu);
+  satir.push(JSON.stringify({ type: 'ai-title', aiTitle: 'GEC GELEN BASLIK' }));
+  const govde = satir.join('\n') + '\n';
+  fs.writeFileSync(path.join(t, 'Gama-1.jsonl'), govde);
+  if (govde.length < 64 * 1024 || govde.length > 512 * 1024)
+    throw new Error('fikstur iki tampon arasinda olmali: ' + govde.length);
+
+  const filo = (ad) => {
+    fs.mkdirSync(evOrt.CLAUDE_CONFIG_DIR, { recursive: true });
+    fs.writeFileSync(
+      path.join(evOrt.CLAUDE_CONFIG_DIR, 'teknesyum.json'),
+      JSON.stringify({ profil: ad }) + '\n'
+    );
+    return spawnSync(process.execPath, [OTURUM, 'toplu-yukle', '--kok', dip], {
+      encoding: 'utf8',
+      env: { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' },
+    }).stdout;
+  };
+  if (filo('eco').includes('GEC GELEN BASLIK')) throw new Error('eco 64 kB tamponun otesini okudu');
+  icerir(filo('normal'), 'GEC GELEN BASLIK');
+});
+
+ol('durum uc profilin ayirt edici degerlerini basar', () => {
+  const { p, cfg } = premiumKopya();
+  const beklenen = {
+    eco: ['paralel: 1 ajan', 'ön araştırma: 5+ depo', 'denetim: critical'],
+    normal: ['paralel: 2 ajan', 'ön araştırma: 10+ depo', 'denetim: every-contract'],
+    premium: ['paralel: 20 ajan', 'ön araştırma: 50+ depo', 'denetim: every-contract'],
+  };
+  for (const ad of ['eco', 'normal', 'premium']) {
+    esit(premiumCalistir(ad, p, cfg).kod, 0, ad + ' cikis kodu');
+    const out = premiumCalistir('durum', p, cfg).out;
+    icerir(out, 'yürürlükteki profil: ' + ad);
+    for (const s of beklenen[ad]) icerir(out, s);
+  }
+});
+
+ol('premium yardimi ve belgesi uc profili esit anlatir', () => {
+  const y = spawnSync(process.execPath, [PREMIUM], { encoding: 'utf8' }).stdout || '';
+  for (const s of ['node premium.js eco', 'node premium.js normal', 'node premium.js premium'])
+    icerir(y, s);
+  icerir(y, 'ham.jsonl.gz');
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'premium.md'), 'utf8');
+  icerir(k, 'üç profil arasında geçiş');
+  for (const b of ['## eco', '## normal', '## premium']) icerir(k, b);
+  icerir(k, 'ham.jsonl.gz');
 });
 
 console.log(

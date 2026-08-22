@@ -262,6 +262,47 @@ hâlâ bağlamı taşıyan T0 verir.
 `plan_council` kapalıyken (standart profil) plan doğrudan T0 tarafından yazılır, konsey
 açılmaz. Tek üyeyle konsey kurulmaz — bir öneri, öneri değil plandır.
 
+## 1.5.1 İkinci görüş — tek soruluk konsey
+
+`SETTINGS.md` içindeki `second_opinion` açıksa (premium profilde varsayılan), T0 doğru
+kararın ne olduğunu bilmediği bir düğümde `planner` ajanını **görüş kipinde** açar.
+Brifing `GÖRÜŞ:` ile başlar; ajan bu ön eki görünce plan değil görüş yazar.
+
+Konseyden iki yerde ayrılır: konsey **planın tamamı** içindir ve **iki** üyelidir, görüş
+**tek bir karar** içindir ve **tek** üyelidir — `fable`. Konsey ön araştırmadan sonra bir
+kez açılır; görüş iş sürerken, takıldığın yerde açılır.
+
+Dört durumda açılır:
+
+1. İki yol arasında kalındı ve seçim geri alınması pahalı — mimari sınır, veri modeli,
+   bağımlılık kararı.
+2. Bir hata üç turdur çözülmedi ve kök neden hâlâ belirsiz.
+3. Bir kural bozulacak. §0 bunu serbest bırakıyor ama gerekçe istiyor; görüş o gerekçeyi
+   sınar.
+4. İstek iki farklı okunabiliyor ve sormak yerine varsayım yapılacak.
+
+**Dördüncü maddede sormak önce gelir.** Görüş, kullanıcıya sormanın yerini tutmaz;
+yalnızca `ask_threshold` sormaya izin vermediğinde devreye girer. Eşik soruyorsa sor.
+
+**Açılmayacağı yerler:** mekanik iş, kalıbı belli iş, tek doğru cevabı olan şey. Cevabını
+bildiğin soruyu sorma — ikinci görüşün maliyeti tur değil dikkattir.
+
+Çıktı üç başlıktır ve 20 satırı geçmez: görüş, gerekçe, kaçırdığın şey. Üçüncüsü bu işin
+asıl kazancıdır — soruyu soranın görmediği şey oradadır.
+
+**Görüş bağlayıcı değildir.** T0 katılmazsa gerekçesini yazar. Görüş alındığı kullanıcıya
+tek satırla bildirilir:
+
+```
+`Teknesyum ▸ Görüş ▸ <ne sordum> — <fable ne dedi, tek cümle>`
+```
+
+Satırın tamamı ters tırnak içindedir, etiket büyük harfle başlar, ayraç `▸` işaretidir,
+kalan cümle sıradan tümce düzenindedir ve cümlenin içinde ok kullanılmaz — `Ölçü ▸` ve
+`Fark ▸` satırlarıyla aynı kalıp.
+
+`second_opinion` kapalıyken (standart profil) görüş açılmaz; kararı T0 tek başına verir.
+
 ## 1.6 Ürün standardı — üç platform ve kendini güncelleme
 
 Ayrıntı `references/standartlar.md`. Burada geçerli olan iki karar:

@@ -15,6 +15,7 @@ worktree_isolation : off            # on | off
 report_length      : short          # short | normal | detailed
 briefing           : milestone      # quiet | milestone | every-step
 plan_council       : off            # off | on — planı iki model bağımsız önerir
+second_opinion     : off            # off | on — karar düğümünde fable kısa görüş verir
 research_repos     : 10             # ön araştırmada taranacak en az depo sayısı
 ```
 
@@ -71,6 +72,15 @@ sentezler ve planı kendisi yazar. Ayrıntı relay SKILL §1.5.
 Bu, "planlamayı asla delege etme" kuralını delmez: delege edilen **karar** değil
 **seçenek üretimi**. Kararı hâlâ T0 verir ve gerekçesi `PLAN.md`'ye girer.
 
+**second_opinion** — `on` ise T0, doğru kararın ne olduğunu bilmediği bir düğümde
+`planner` ajanını **görüş kipinde** açar ve `fable`'dan kısa bir ikinci görüş alır. Tek
+üye, tek soru, üç başlıklı ve en fazla 20 satırlık cevap. Konseyle karıştırma: konsey
+planın tamamı içindir ve iki üyelidir, görüş tek bir karar içindir ve tek üyelidir.
+
+Görüş bağlayıcı değildir — T0 katılmazsa gerekçesini yazar. Kullanıcıya sormanın yerini
+de tutmaz: `ask_threshold` sormaya izin veriyorsa önce sorulur. Standart profilde
+kapalıdır, premiumda açılır. Hangi dört durumda tetiklendiği relay SKILL §1.5.1.
+
 **research_repos** — ön araştırmada (SKILL §1.4) taranacak en az depo sayısı. Standart
 profilde 10, premium profilde 50. Elli depo, on depoyla aynı derinlikte okunmaz: ilk
 tarama tabakası sığdır, konsey ve planlama derinleşeceği yeri kendi seçer.
@@ -109,6 +119,7 @@ düşerse ölçü tutmaz.
 | `report_length` | short | detailed |
 | `briefing` | milestone | every-step |
 | `plan_council` | off | on — fable + opus |
+| `second_opinion` | off | on — fable |
 | `research_repos` | 10 | 50 |
 
 Premium, Max 20x planı içindir: token bütçesi kısıt olmaktan çıkar, sonnet ve haiku

@@ -356,6 +356,7 @@ because a profile that only half applies is worse than either half.
 | model escalation | on | off — already at the top |
 | report · briefing | short · milestone | detailed · every-step |
 | plan council | off | on — fable + opus |
+| second opinion | off | on — fable |
 | prior-art repositories | 10 | 50 |
 
 Sonnet and haiku are dropped entirely; the difference between roles moves from the model to
@@ -392,6 +393,29 @@ prompts carry a behaviour note into the model: open the parallelism, do not fall
 sonnet, do not use token thrift as a reason. `/premium durum` compares the flag against the
 files and says so when a plugin update has reverted them; `TEKNESYUM_PREMIUM=1|0` overrides
 for one session without touching anything on disk.
+
+### The second opinion
+
+The council is for a whole plan and it costs two agents. Most of the time what is missing
+is smaller than that: one node where the manager genuinely does not know which way to go.
+`second_opinion` — also a premium default — covers that case with one agent and one
+question.
+
+The `planner` agent has a second mode for it. A briefing that starts with `GÖRÜŞ:` puts it
+in opinion mode, where it answers `fable`-short under three headings and no more than
+twenty lines: the call it would make, at most three reasons, and what the asker missed. The
+third heading is why the feature exists; the first two often only confirm what the manager
+already thought.
+
+It opens on four occasions: a choice between two roads where being wrong is expensive to
+undo, a bug that has survived three rounds with the root cause still unclear, a rule about
+to be broken, and a request that reads two ways. It does not open for mechanical work,
+pattern-fixed work, or anything with one right answer.
+
+Asking the user still comes first. The opinion replaces a guess, never a question — it only
+applies where `ask_threshold` does not allow asking. And it binds nothing: where the manager
+disagrees it writes down why, and the user is told an opinion was taken with a
+`Teknesyum ▸ Opinion ▸ …` line.
 
 ### Session save and load
 

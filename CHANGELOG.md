@@ -6,6 +6,31 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- **Second opinion.** With `second_opinion` on — the premium default — the manager no longer
+  guesses alone at a node where it does not know the right call. It opens the `planner`
+  agent in **opinion mode** with a briefing that starts with `GÖRÜŞ:`, and `fable` answers
+  under three headings in at most twenty lines: the call it would make, at most three
+  reasons, and what the asker missed. The third heading is the point of the feature; the
+  first two often only confirm what the manager already thought. One member and one
+  question, where the plan council is two members and a whole plan.
+  It fires on four occasions and no others: a choice that is expensive to undo, a bug
+  unsolved for three rounds with the root cause still unclear, a rule about to be broken,
+  and a request that reads two ways. Asking the user comes first — the opinion replaces a
+  guess, never a question, and only applies where `ask_threshold` does not allow asking.
+  It binds nothing: a manager that disagrees writes down why, and the user is told an
+  opinion was taken with a `Teknesyum ▸ Görüş ▸ …` line.
+- `second_opinion` knob in `skills/relay/SETTINGS.md` — `off` on the standard profile, `on`
+  for premium — written by `/premium` together with `plan_council` and `research_repos`.
+
+### Changed
+
+- The `planner` agent has two modes instead of one, chosen by the briefing: `GÖRÜŞ:` selects
+  opinion mode, anything else stays council mode. It still holds no write tool in either.
+- The premium behaviour note and the session-start line mention the second opinion; the
+  `/premium` output and `durum` report the new knob next to the council.
+
 ## [2.37.0] - 2026-08-22
 
 ### Added

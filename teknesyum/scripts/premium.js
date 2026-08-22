@@ -23,6 +23,7 @@ const PROFIL = {
 };
 
 const KONSEY = ['fable', 'opus'];
+const GORUS = 'fable';
 
 const DUGME = {
   standart: {
@@ -37,6 +38,7 @@ const DUGME = {
     report_length: 'short',
     briefing: 'milestone',
     plan_council: 'off',
+    second_opinion: 'off',
     research_repos: '10',
   },
   premium: {
@@ -51,6 +53,7 @@ const DUGME = {
     report_length: 'detailed',
     briefing: 'every-step',
     plan_council: 'on',
+    second_opinion: 'on',
     research_repos: '50',
   },
 };
@@ -198,6 +201,8 @@ function uygula(profil) {
       'denetim: ' + d.audit + ' · worktree: ' + d.worktree_isolation,
       'plan konseyi: ' +
         (d.plan_council === 'on' ? KONSEY.join(' + ') : 'kapalı') +
+        ' · ikinci görüş: ' +
+        (d.second_opinion === 'on' ? GORUS : 'kapalı') +
         ' · ön araştırma: ' +
         d.research_repos +
         '+ depo',
@@ -213,12 +218,15 @@ function durum() {
   const p = profilAdi(kok);
   const simdi = ajanProfili(kok);
   const konsey = dugmeOku(kok, 'plan_council');
+  const gorus = dugmeOku(kok, 'second_opinion');
   const depo = dugmeOku(kok, 'research_repos');
   const satir = [
     'konfig premium: ' + (c.premium === true ? 'açık' : 'kapalı'),
     'dosyalardaki profil: ' + p,
     'plan konseyi: ' +
       (konsey === 'on' ? KONSEY.join(' + ') : konsey || 'okunamadı') +
+      ' · ikinci görüş: ' +
+      (gorus === 'on' ? GORUS : gorus || 'okunamadı') +
       ' · ön araştırma: ' +
       (depo ? depo + '+ depo' : 'okunamadı'),
     ...Object.keys(simdi).map(
@@ -246,7 +254,7 @@ function yardim() {
     [
       'premium.js — Max 20x profilini açar ve kapatır',
       '',
-      '  node premium.js ac      opus + xhigh + 6 paralel ajan + plan konseyi',
+      '  node premium.js ac      opus + xhigh + 6 paralel ajan + plan konseyi + ikinci görüş',
       '  node premium.js kapat   standart profile döner',
       '  node premium.js durum   hangi profilin yürürlükte olduğunu söyler',
       '',
@@ -254,6 +262,9 @@ function yardim() {
       'Premiumda plan konseyi açılır (' +
         KONSEY.join(' + ') +
         ') ve ön araştırma tavanı 10 depodan 50 depoya çıkar.',
+      'İkinci görüş de açılır: karar düğümünde ' +
+        GORUS +
+        ' üç başlıklı kısa bir görüş verir, karar T0’da kalır.',
       'Eklenti güncellemesi ajan dosyalarını geri alabilir; `durum` uyuşmazlığı söyler.',
     ].join('\n') + '\n'
   );

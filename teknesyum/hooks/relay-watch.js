@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { s: ceviri, premium } = require('./dil.js');
+const { s: ceviri, premium, profil } = require('./dil.js');
 const kapsayici = require('./kapsayici.js');
 const {
   konfigKok,
@@ -675,16 +675,25 @@ function hatirlat(j, root, etkinProje) {
   // ÖLÇÜLDÜ: metin her istekte ~90 token yazıyordu ve geçmişte kalıcı. 60 mesajlık
   // oturumda 5000+ token, hepsi aynı cümlenin kopyası. Kural bir kez okunduğunda
   // geçmişte duruyor; ikinci kopyası bilgi taşımıyor. İlk iki istekte yazılır.
-  if (sayacGecti(j)) return kapEkle(kapMetin);
-  let metin = (kapMetin ? kapMetin + ' ' : '') + ceviri('olcu') + ' ' + ceviri('dilTalimati');
+  // ÖLÇÜLDÜ (22.08.2026): eco profilinde tavan 1, metinler kısa sürümleriyle ve fark
+  // satırları olmadan gidiyor. Oturum başına enjeksiyon 1286 karakterden 778'e iniyor;
+  // steering 2 ayarlıyken 2450 karakterden yine 778'e.
+  const eko = profil() === 'eco';
+  if (sayacGecti(j, eko ? 1 : 2)) return kapEkle(kapMetin);
+  let metin =
+    (kapMetin ? kapMetin + ' ' : '') +
+    ceviri(eko ? 'olcuKisa' : 'olcu') +
+    ' ' +
+    ceviri(eko ? 'dilTalimatiKisa' : 'dilTalimati');
   if (premium()) metin += ' ' + ceviri('premiumNotu');
+  else if (eko) metin += ' ' + ceviri('ecoNotu');
   const rota = yeniIsRotasi(root, j.prompt);
   if (rota) metin += ' ' + rota;
   if (platformNotuYok(j.cwd)) metin += ' ' + ceviri('platformNotu');
   if (yeniProjeIstegi(j)) metin += ' ' + ceviri('onArastirmaHatirlatma');
   // Seviye 2'de kullanıcı her dokunuşu görmek istiyor: base olmasaydı olmayacak her
   // kararın kendi satırı olur. Biçim relay SKILL 7.2'de.
-  if (seviye() === 2) metin += ' ' + ceviri('seviye2');
+  if (!eko && seviye() === 2) metin += ' ' + ceviri('seviye2');
   ciktiEkle({
     hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
   });
@@ -699,14 +708,14 @@ function kapEkle(metin) {
 
 // Oturum başına kaç kez yazdığımızı sayar. Sayaç dosyası oturuma özel; `supur()`
 // bir günü geçenleri zaten atıyor.
-function sayacGecti(j) {
+function sayacGecti(j, tavan) {
   const id = safe((j && j.session_id) || 'oturum');
   const dosya = path.join(genelKok(), id + '.hatirlatma');
   let n = 0;
   try {
     n = parseInt(fs.readFileSync(dosya, 'utf8'), 10) || 0;
   } catch {}
-  if (n >= 2) return true;
+  if (n >= (tavan || 2)) return true;
   try {
     fs.mkdirSync(path.dirname(dosya), { recursive: true });
     fs.writeFileSync(dosya, String(n + 1));

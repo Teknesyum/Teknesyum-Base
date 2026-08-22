@@ -200,6 +200,16 @@ const S = {
       '`Teknesyum ▸ Size ▸ One file — no agent needed, I did it myself`. Write it even when ' +
       'no agent is opened. Skip the line entirely for plain questions.',
   },
+  olcuKisa: {
+    tr:
+      'Teknesyum Base: iş talebiyse relay §1 ile ölç ve ilk satırı tek kod parçası olarak ' +
+      'bas — `Teknesyum ▸ Ölçü ▸ <iş ne kadar> — <ne yaptım>`. Başlık işareti, kalın yazı ' +
+      've madde imi yok. Salt soru/sohbette yazma.',
+    en:
+      'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
+      'line as one code span — `Teknesyum ▸ Size ▸ <how big> — <what I did>`. No heading ' +
+      'marks, bold or bullets. Skip it for plain questions.',
+  },
   premiumAcik: {
     tr: () =>
       'premium mod · her ajan opus · 20 paralele kadar · plan konseyi ' +
@@ -269,9 +279,32 @@ const S = {
       'disagree, and report that you took one with a `Teknesyum ▸ Opinion ▸ …` line. ' +
       'Prior art in this mode means 50 repositories.',
   },
+  ecoNotu: {
+    tr:
+      'Eco mod açık. Token tasarrufu en yüksek öncelik; hız ve zarafet feda edilebilir, ' +
+      'doğruluk edilemez. Önce `Grep`/`Glob` ile ara; tam dosyayı yalnız grep cevap ' +
+      'vermediğinde oku, hangi satır aralığının gerektiğini bilmeden açma. `Explore` ajanı ' +
+      'açma — bulamazsan aramayı genişlet. Tek ajan varsayılandır, ajan açmak gerekçe ' +
+      'ister. Mekanik ve kalıbı belli işte kısa düşün, karar taşıyan işte yine de düşün. ' +
+      'Cevabı tek cümle yaz; tablo, madde ve ayrıntı ancak sorulunca gelir. `rg`, `sed`, ' +
+      '`biome`, `--check` işi görüyorsa model çağırma.',
+    en:
+      'Eco mode is on. Saving tokens is the top priority; speed and polish can go, ' +
+      'correctness cannot. Search with `Grep`/`Glob` first; read a whole file only when ' +
+      'grep does not answer, and never open one without knowing which lines you need. Do ' +
+      'not open an `Explore` agent — widen the search instead. A single agent is the ' +
+      'default and opening one needs a reason. Think briefly on mechanical, pattern-fixed ' +
+      'work, still think on decisions. Answer in one sentence; tables, bullets and detail ' +
+      'come only when asked. When `rg`, `sed`, `biome` or `--check` does the job, do not ' +
+      'call a model.',
+  },
   dilTalimati: {
     tr: 'Kullanıcıya ve diğer ajanlara Türkçe yaz — sözleşmeler, paketler, raporlar dahil.',
     en: 'Write to the user and to other agents in English — contracts, packets and reports included.',
+  },
+  dilTalimatiKisa: {
+    tr: 'Kullanıcıya ve ajanlara Türkçe yaz.',
+    en: 'Write to the user and to agents in English.',
   },
   seviye2: {
     tr:

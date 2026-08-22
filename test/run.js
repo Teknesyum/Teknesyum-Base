@@ -2788,6 +2788,94 @@ ol('premium notu yalnizca acikken enjekte edilir', () => {
   icerir(iste(acik), 'Premium mod açık');
 });
 
+function profilKonfig(ayar) {
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-eco-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr', ...ayar }));
+  return cfg;
+}
+
+function profilIstek(p, cfg) {
+  return calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'yeni bir modül yaz' },
+    { CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_PREMIUM: '', TEKNESYUM_STEERING: '' }
+  ).out;
+}
+
+function enjeksiyonBoyu(cikti) {
+  if (!cikti) return 0;
+  const o = JSON.parse(cikti);
+  const h = o.hookSpecificOutput;
+  return h && h.additionalContext ? h.additionalContext.length : 0;
+}
+
+ol('eco notu yalnizca eco profilinde enjekte edilir', () => {
+  const { p } = proje(1, 0);
+  const eco = profilIstek(p, profilKonfig({ profil: 'eco' }));
+  icerir(eco, 'Eco mod açık');
+  icerir(eco, '`Explore` ajanı');
+  icerir(eco, 'ajan açmak gerekçe');
+  if (profilIstek(p, profilKonfig({ profil: 'normal' })).includes('Eco mod açık'))
+    throw new Error('normal profilde eco notu enjekte edildi');
+  const prem = profilIstek(p, profilKonfig({ profil: 'premium' }));
+  if (prem.includes('Eco mod açık')) throw new Error('premium profilde eco notu enjekte edildi');
+  icerir(prem, 'Premium mod açık');
+});
+
+ol('eco enjeksiyonu tek istekte biter, normal ikinci istekte de yazar', () => {
+  const { p } = proje(1, 0);
+  const eco = profilKonfig({ profil: 'eco' });
+  icerir(profilIstek(p, eco), 'Eco mod açık');
+  if (profilIstek(p, eco).includes('Teknesyum Base'))
+    throw new Error('eco ikinci istekte de enjekte etti');
+  const std = profilKonfig({ profil: 'normal' });
+  icerir(profilIstek(p, std), 'Teknesyum Base', 'normal ilk istek');
+  icerir(profilIstek(p, std), 'Teknesyum Base', 'normal ikinci istek');
+  if (profilIstek(p, std).includes('Teknesyum Base'))
+    throw new Error('normal ucuncu istekte enjeksiyon durmali');
+});
+
+ol('eco fark satirlarini enjekte etmez, steering 2 ayarliyken bile', () => {
+  const { p } = proje(1, 0);
+  const eco = profilIstek(p, profilKonfig({ profil: 'eco', steering: 2 }));
+  icerir(eco, 'Eco mod açık');
+  if (eco.includes('Fark ▸')) throw new Error('eco profilinde seviye 2 metni enjekte edildi');
+  icerir(profilIstek(p, profilKonfig({ profil: 'normal', steering: 2 })), 'Fark ▸');
+});
+
+ol('eco oturum basina normalden az karakter enjekte eder', () => {
+  const { p } = proje(1, 0);
+  const toplam = (ayar) => {
+    const cfg = profilKonfig(ayar);
+    let n = 0;
+    for (let i = 0; i < 3; i++) n += enjeksiyonBoyu(profilIstek(p, cfg));
+    return n;
+  };
+  const e = toplam({ profil: 'eco' });
+  const s = toplam({ profil: 'normal' });
+  if (!(e < s * 0.75)) throw new Error('eco enjeksiyonu kisalmadi: ' + e + ' / ' + s);
+});
+
+ol('eco notu premium notunun yarisini gecmez', () => {
+  const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
+  for (const d of ['tr', 'en']) {
+    const r = spawnSync(
+      process.execPath,
+      [
+        '-e',
+        'const m=require(' +
+          dilYolu +
+          ');process.stdout.write(m.s("ecoNotu").length+" "+m.s("premiumNotu").length)',
+      ],
+      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: BOS_CFG, TEKNESYUM_DIL: d } }
+    );
+    const [eco, prem] = String(r.stdout || '')
+      .split(' ')
+      .map(Number);
+    if (!(eco > 0 && eco * 2 < prem)) throw new Error(d + ' eco notu uzun: ' + eco + ' / ' + prem);
+  }
+});
+
 const RC = path.join(KOK, 'scripts', 'rc.js');
 
 function rcCalistir(arg, ek) {

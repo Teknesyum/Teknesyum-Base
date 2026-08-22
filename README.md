@@ -366,6 +366,7 @@ than silently passing.
 | `/uisetup` | Configures or disables the UI standard |
 | `/uicheckup` | Scans UI files and prepares an approved relay manifest |
 | `/premium` | Switches between the premium, normal and eco profiles, and reports which one is live |
+| `/scan` | "Does this project meet the premium standard?" Certifies it against a profile and lists what is missing |
 | `/save` | Writes this session to disk — transcript, context, git state, unsent text |
 | `/load` | Reads a saved session back and picks up where it stopped |
 | `/saveall` | Saves every project's last session into its own folder |
@@ -378,6 +379,36 @@ than silently passing.
 
 There is no command to set a relay up and none to resume interrupted work — both happen on
 their own.
+
+### Certifying a project against a profile
+
+`/scan <eco|normal|premium>` audits the project as it stands right now against one of the
+three profiles and reports, item by item, what falls short. It is read-only: nothing is
+written, no agent is opened, no model is called.
+
+**It will not run without a profile.** A premium scan means fifty repositories of prior
+art; that is not something to start by accident, so the profile is always explicit.
+
+Four items are measured. **Prior art** — how many repository studies sit under
+`docs/taramalar/`, against the profile's threshold of 1, 10 or 50. **Coverage** — which
+source files have never been reviewed, and which were reviewed by a model or effort below
+what the profile asks. **Audit** — whether the finished contracts carry their seal; eco
+looks only at the critical ones. **Documentation** — whether the required documents exist
+and agree with the version number.
+
+The thresholds are not restated anywhere: the scan reads the same `DUGME` table that
+`/premium` writes the relay knobs from, so a profile can never mean one thing to the
+switch and another to the certificate.
+
+Coverage is answered by `.claude/relay/kapsam.json`, a durable record of which file was
+last touched by which model at which effort. It is written when an agent finishes and on
+every edit the main session makes — the main session's own work counts as review, because
+a file that was opened and corrected has been seen. Unlike the `live/` traces it is never
+swept; a certificate has to answer for work done weeks ago.
+
+Passing `--tamamla` changes nothing about the script — it still writes no files. It only
+appends a section describing what would have to be done to close the gaps; the work itself
+is the model's, and how many agents it opens depends on the profile.
 
 ### Three profiles
 

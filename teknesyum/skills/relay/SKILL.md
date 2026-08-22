@@ -415,6 +415,41 @@ o yoksa güncelleyici yazılmaz.
 
 Denetim modelsizdir: `node teknesyum/scripts/platform-denetim.js <kök>`.
 
+## 1.7 Sertifika — proje profili karşılıyor mu
+
+`/scan <eco|normal|premium>` projenin **şu anki halini** bir profile karşı denetler ve
+eksikleri madde madde sayar. Salt okurdur: dosya yazmaz, ajan açmaz, model çağırmaz.
+
+Dört madde ölçülür ve dördünün de eşiği profille değişir:
+
+| Ölçüt | eco | normal | premium |
+|---|---|---|---|
+| Ön araştırma | 1 depo | 10 depo | 50 depo |
+| İnceleme modeli | haiku+ | sonnet+ | opus, high+ |
+| Kapsam | değişen dosyalar | değişen + komşuları | baştan sona, her kaynak dosya |
+| Denetim | kritik sözleşmeler | her sözleşme | her sözleşme |
+| Belge tutarlılığı | — | README | README + CHANGELOG + skill |
+
+**Ayar verilmeden çalışmaz.** Profil argümanı yoksa betik kullanımı basıp çıkar; sen de
+varsayılana düşme. Elli depoluk bir tarama kullanıcının istemediği yerde başlamamalı.
+
+Eşikler `scripts/tarama.js` içine ikinci kez yazılmaz — `/premium`'un düğmeleri yazdığı
+`DUGME` tablosundan okunur. Düğme ile sertifika aynı sayıyı görmek zorunda.
+
+**Kapsam kaydı.** "Bu dosya incelendi mi" sorusuna `.claude/relay/kapsam.json` cevap
+verir: dosya yolu başına en son hangi model, hangi efor, ne zaman, hangi ajan. Kanca iki
+yerde yazar — ajan bittiğinde kendi izindeki `files` listesinden, ve ana oturumun her
+`Write`/`Edit` işleminde. **Ana oturumun dokunuşu da incelemedir:** T0 bir dosyayı açıp
+düzelttiyse o dosya görülmüştür. Kayıt `live/` gibi süpürülmez; sertifika haftalar
+önceki işin de hesabını verir. Elle doldurulmaz.
+
+**`--tamamla` ayrımı.** Bayraksız çağrı yalnız rapor verir ve hiçbir şey değişmez.
+`--tamamla` betiğin davranışını da değiştirmez — o da hiçbir dosyaya yazmaz, yalnız
+çıktının sonuna "eksikleri kapatmak için ne yapılmalı" bölümünü ekler. **İşi sen
+yaparsın:** eksik depo için `scout` ajanları, incelenmemiş dosya için profilin
+modelinde inceleme, mühürsüz sözleşme için `auditor`, eksik belge için düzeltme.
+Kaç ajan açılacağı profile bağlıdır — eco'da 1, premiumda `parallel_width` kadar.
+
 ## 2. Hazırlık — sormadan yap
 
 Yazma işine başlamadan önce, sırayla kontrol et:

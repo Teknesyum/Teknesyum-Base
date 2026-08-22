@@ -457,7 +457,7 @@ ol('görev dağıtımı rol, model ve açıklamayı bildirir', () => {
     },
   });
   const m = JSON.parse(r.out).systemMessage;
-  icerir(m, 'görev veriliyor');
+  icerir(m, 'Görev ▸ ');
   icerir(m, 'builder');
   icerir(m, 'sonnet');
   icerir(m, 'tab bileseni');
@@ -473,7 +473,7 @@ ol('ikinci ajanda kaç ajanın çalıştığı yazılır', () => {
     tool_input: { subagent_type: 'builder', description: 'a' },
   };
   calistir(IZLE, yuk);
-  icerir(JSON.parse(calistir(IZLE, yuk).out).systemMessage, '[2 ajan çalışıyor]');
+  icerir(JSON.parse(calistir(IZLE, yuk).out).systemMessage, ', 2 ajan çalışıyor');
 });
 
 ol('ajan bitişi süreyle bildirilir', () => {
@@ -655,8 +655,8 @@ ol('iki paralel ajan aynı yeni işte görünür', () => {
   };
   const a = calistir(IZLE, y);
   const b = calistir(IZLE, y);
-  icerir(a.out, 'görev veriliyor');
-  icerir(b.out, '[2 ajan çalışıyor]');
+  icerir(a.out, 'Görev ▸ ');
+  icerir(b.out, ', 2 ajan çalışıyor');
 });
 
 ol('çakışan owns sahipliği ikinci sözleşmeye bırakılmaz', () => {
@@ -3502,17 +3502,33 @@ function turProje() {
   return { p, ek: { CLAUDE_CONFIG_DIR: cfg } };
 }
 
+// Tur özeti `systemMessage` ile basılmıyor: `Stop says:` öneki oluşmasın diye satır
+// `additionalContext` ile modele veriliyor.
+function turSatiri(r) {
+  const o = JSON.parse(r.out);
+  return (o.hookSpecificOutput || {}).additionalContext || '';
+}
+
 ol('tur ozeti sure ve token tahminini tek satirda verir', () => {
   const { p, ek } = turProje();
   const t = transcript('merhaba');
   calistir(IZLE, { ...ort(p), transcript_path: t, hook_event_name: 'UserPromptSubmit' }, ek);
   fs.appendFileSync(t, 'z'.repeat(4000) + '\n');
-  const r = calistir(IZLE, { ...ort(p), transcript_path: t, hook_event_name: 'Stop' }, ek);
-  const m = JSON.parse(r.out).systemMessage;
-  icerir(m, 'Total Süre: ');
-  icerir(m, 'sn // Tahmini Token: ~');
-  const tok = parseInt(m.match(/~(\d+)/)[1], 10);
+  const m = turSatiri(
+    calistir(IZLE, { ...ort(p), transcript_path: t, hook_event_name: 'Stop' }, ek)
+  );
+  icerir(m, 'Total Süre: ~');
+  icerir(m, 'sn     Tahmini Token: ~');
+  const tok = parseInt(m.match(/Token: ~(\d+)/)[1], 10);
   if (tok < 900 || tok > 1200) throw new Error('token tahmini bekleneni tutmadi: ' + tok);
+});
+
+ol('tur ozeti systemMessage kanalina hic yazmaz', () => {
+  const { p, ek } = turProje();
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  const o = JSON.parse(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out);
+  esit(o.systemMessage, undefined, 'ozet systemMessage ile basilmis');
+  esit(o.hookSpecificOutput.hookEventName, 'Stop');
 });
 
 ol('damgasiz Stop tur ozeti basmaz', () => {
@@ -3539,7 +3555,7 @@ ol('tur ozeti Stop engelini bozmaz, tek JSON kalir', () => {
   const o = JSON.parse(r.out);
   esit(o.decision, 'block');
   icerir(o.reason, 'dönüş bloğu');
-  icerir(o.systemMessage, 'Total Süre: ');
+  icerir(o.hookSpecificOutput.additionalContext, 'Total Süre: ');
 });
 
 ol('bir dakikayi asan tur dakika ve saniye ile yazilir', () => {
@@ -3549,10 +3565,8 @@ ol('bir dakikayi asan tur dakika ve saniye ile yazilir', () => {
   const d = JSON.parse(fs.readFileSync(f, 'utf8'));
   d.t = Date.now() - 215000;
   fs.writeFileSync(f, JSON.stringify(d));
-  const m = JSON.parse(
-    calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out
-  ).systemMessage;
-  icerir(m, 'Total Süre: 3dk 35sn');
+  const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
+  icerir(m, 'Total Süre: ~3dk 35sn');
 });
 
 ol('ingilizce kurulumda tur ozeti ingilizce yazilir', () => {
@@ -3565,10 +3579,10 @@ ol('ingilizce kurulumda tur ozeti ingilizce yazilir', () => {
       TEKNESYUM_DIL: 'en',
     }
   );
-  const m = JSON.parse(
-    calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, { ...ek, TEKNESYUM_DIL: 'en' }).out
-  ).systemMessage;
-  icerir(m, 'Total Time: ');
+  const m = turSatiri(
+    calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, { ...ek, TEKNESYUM_DIL: 'en' })
+  );
+  icerir(m, 'Total Time: ~');
   icerir(m, 'Estimated Tokens: ~');
 });
 
@@ -3585,11 +3599,126 @@ ol('alt ajan transkripti de token tahminine girer', () => {
   });
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
   fs.appendFileSync(at, 'y'.repeat(8000) + '\n');
-  const m = JSON.parse(
-    calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out
-  ).systemMessage;
-  const tok = parseInt(m.match(/~(\d+)/)[1], 10);
+  const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
+  const tok = parseInt(m.match(/Token: ~(\d+)/)[1], 10);
   if (tok < 1900 || tok > 2200) throw new Error('alt ajan transkripti sayilmadi: ' + tok);
+});
+
+// Turun `.tur` damgasini geriye alir: `ms` turun basindan bu yana gecen duvar saati,
+// `sonMs` son olaydan bu yana gecen sessizlik. Ikisi ayrilinca duraklama olculebilir.
+function turGeriAl(ek, ms, sonMs) {
+  const f = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'live', 'oturum-1.tur');
+  const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+  const simdi = Date.now();
+  d.t = simdi - ms;
+  d.son = simdi - (sonMs === undefined ? ms : sonMs);
+  fs.writeFileSync(f, JSON.stringify(d));
+}
+
+ol('duraklamali turda sure duvar saatinden kucuk cikar', () => {
+  const { p, ek } = turProje();
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  turGeriAl(ek, 600000, 300000);
+  calistir(IZLE, { ...ort(p), hook_event_name: 'PostToolUse', tool_name: 'Read' }, ek);
+  const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
+  icerir(m, 'Total Süre: ~5dk ');
+  if (m.includes('10dk')) throw new Error('duvar saati düşülmemiş: ' + m);
+});
+
+ol('duraklamasiz kisa turda sure duvar saatine yakin kalir', () => {
+  const { p, ek } = turProje();
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  turGeriAl(ek, 40000);
+  calistir(IZLE, { ...ort(p), hook_event_name: 'PostToolUse', tool_name: 'Read' }, ek);
+  const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
+  const sn = parseInt(m.match(/~(\d+)sn/)[1], 10);
+  if (sn < 38 || sn > 42) throw new Error('duraklamasiz tur duvar saatinden saptı: ' + m);
+});
+
+ol('uzun suren arac duraklama sayilmaz', () => {
+  const { p, ek } = turProje();
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  turGeriAl(ek, 300000);
+  calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'PostToolUse', tool_name: 'Bash', duration_ms: 299000 },
+    ek
+  );
+  const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
+  icerir(m, 'Total Süre: ~5dk ');
+});
+
+console.log('\nBildirim biçimi');
+
+// Kullanicinin canlida cevirecegi sabit budur; testi de o dosyayi kopyalayip sabiti
+// degistirerek kosar, boylece iki bicimin de uretilebildigi gercekten olculur.
+function bicimKopya(bicim) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bicim-'));
+  const kaynak = path.join(KOK, 'hooks');
+  for (const f of fs.readdirSync(kaynak)) {
+    if (!f.endsWith('.js')) continue;
+    let govde = fs.readFileSync(path.join(kaynak, f), 'utf8');
+    if (f === 'relay-watch.js') {
+      const eski = "const BILDIRIM_BICIMI = 'blok';";
+      if (!govde.includes(eski)) throw new Error('BILDIRIM_BICIMI sabiti bulunamadı');
+      govde = govde.replace(eski, "const BILDIRIM_BICIMI = '" + bicim + "';");
+    }
+    fs.writeFileSync(path.join(d, f), govde);
+  }
+  return path.join(d, 'relay-watch.js');
+}
+
+const AJAN_YUK = (p) => ({
+  ...ort(p),
+  hook_event_name: 'PreToolUse',
+  tool_name: 'Agent',
+  tool_input: {
+    subagent_type: 'teknesyum:builder',
+    model: 'opus',
+    description: 'Opus-Ortak Katman',
+  },
+});
+
+ol('ajan bildirimi Görev kalibina cekildi', () => {
+  const { p } = proje(1, 0);
+  const m = JSON.parse(calistir(IZLE, AJAN_YUK(p)).out).systemMessage;
+  icerir(m, 'Teknesyum ▸ Görev ▸ Opus-Ortak Katman — builder rolünde opus ile açıldı');
+});
+
+ol('ajan bitisi de ayni kalibi kullanir', () => {
+  const { p } = proje(1, 0);
+  calistir(IZLE, AJAN_YUK(p));
+  const r = calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'SubagentStop',
+    agent_id: 'a1',
+    agent_type: 'teknesyum:builder',
+    agent_transcript_path: '/x/a1.jsonl',
+  });
+  icerir(JSON.parse(r.out).systemMessage, 'Teknesyum ▸ Görev ▸ builder bitti — ');
+});
+
+ol('acilis satiri alan listesi olarak kalir', () => {
+  const { p } = proje(1, 0);
+  const m = JSON.parse(
+    calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }).out
+  ).systemMessage;
+  icerir(m, 'röle kurulu · sözleşme 0/1 bitti · 1 açık');
+  esit(m.split('▸').length, 2, 'durum satırına etiket oku girmiş');
+});
+
+ol('blok biciminde icerik yeni satirla baslar', () => {
+  const { p } = proje(1, 0);
+  const m = JSON.parse(calistir(bicimKopya('blok'), AJAN_YUK(p)).out).systemMessage;
+  esit(m[0], '\n', 'blok biçiminde satır başı yok');
+  icerir(m, 'Teknesyum ▸ Görev ▸ ');
+});
+
+ol('sabit satir yapilinca icerik onekle ayni satirda kalir', () => {
+  const { p } = proje(1, 0);
+  const m = JSON.parse(calistir(bicimKopya('satir'), AJAN_YUK(p)).out).systemMessage;
+  if (m.startsWith('\n')) throw new Error('satır biçiminde satır başı kalmış: ' + m);
+  icerir(m, 'Teknesyum ▸ Görev ▸ ');
 });
 
 ol('dugmeler premium profilinin iki tarafinda da tanimli', () => {

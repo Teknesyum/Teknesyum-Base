@@ -45,6 +45,7 @@ function run(j) {
   const kapDurum = kap
     ? path.join(genelKok(), safe(j.session_id || 'oturum') + '.kapsayici')
     : null;
+  turDamga(j);
   if (j.hook_event_name === 'PostToolUse') {
     if (kap) kapsayici.izle(kap, kapDurum, j);
     const bozuk = sozdizim(j);
@@ -495,15 +496,54 @@ function turIzi(j, root) {
   return root ? izYolu(root) : path.join(genelKok(), safe(j.session_id || 'oturum'));
 }
 
+// Tur süresi duvar saatiydi: kullanıcı ekrandan uzaklaşsa, oturum dursa, API geri
+// çekilmeye girse hepsi süreye giriyordu. Ölçülebilen boşlukları düşüyoruz.
+// Toplama yerine çıkarma seçildi: araçların `duration_ms` toplamı beklemeyi hiç
+// saymaz ama modelin düşünme süresini de saymaz — turun büyük kısmı düşünmeyken
+// gerçeğin çok altında bir sayı basardı. Çıkarma düşünmeyi korur, yalnız uzun
+// sessizlikleri atar.
+// ÖLÇÜLDÜ (22.08.2026): 1218 olaylık `_hook-debug.log` üzerinde ardışık olay arası
+// boşluk p50 7 sn, p90 25 sn, p95 40 sn. 120 sn'yi yalnız 27 boşluk aşıyor ve
+// duraklamanın tamamı (182487 sn) o 27'nin içinde. Eşik oraya konuldu.
+// ÖLÇÜLDÜ: aynı günlükte 4 olayın `duration_ms` değeri 60 sn'yi aşıyor, en uzunu
+// 140,6 sn. Çıplak çıkarma bu gerçek çalışmayı duraklama sayardı; boşluktan önce
+// olayın kendi `duration_ms` süresi düşülür, kalan eşiği aşarsa duraklamadır.
+// ÖLÇÜLDÜ: izin istemi beklenirken geçen süre hiçbir olayla damgalanmıyor —
+// `PreToolUse` payload'ında `duration_ms` yok, aracın çalışması ile arasında damga
+// yok. O boşluk kapatılamıyor; süre bu yüzden `~` ile yaklaşık işaretlenir.
+const DURAK_ESIGI = 120000;
+
 function turBasla(j, root) {
   const f = turYolu(j);
+  const now = Date.now();
   try {
     fs.mkdirSync(path.dirname(f), { recursive: true });
     fs.writeFileSync(
       f,
-      JSON.stringify({ t: Date.now(), boy: toplamTranskript(j, turIzi(j, root)) })
+      JSON.stringify({ t: now, son: now, durak: 0, boy: toplamTranskript(j, turIzi(j, root)) })
     );
   } catch {}
+}
+
+// Turun içindeki her olay bir damgadır: iki damga arası, aracın kendi süresi
+// düşüldükten sonra eşiği aşıyorsa o aralıkta çalışılmamıştır.
+function durakToplami(d, now, j) {
+  const bosluk = now - (d.son || d.t);
+  const is = Math.max(0, Number(j && j.duration_ms) || 0);
+  const bos = bosluk - is;
+  return (d.durak || 0) + (bos > DURAK_ESIGI ? bos : 0);
+}
+
+function turDamga(j) {
+  const ev = j.hook_event_name;
+  if (ev === 'UserPromptSubmit' || ev === 'Stop') return;
+  const f = turYolu(j);
+  const d = read(f);
+  if (!d || !d.t) return;
+  const now = Date.now();
+  d.durak = durakToplami(d, now, j);
+  d.son = now;
+  yaz(f, d);
 }
 
 function turBitir(j, root) {
@@ -513,9 +553,31 @@ function turBitir(j, root) {
   try {
     fs.unlinkSync(f);
   } catch {}
-  const sn = Math.max(0, Math.round((Date.now() - d.t) / 1000));
+  const now = Date.now();
+  const sn = Math.max(0, Math.round((now - d.t - durakToplami(d, now, null)) / 1000));
   const artis = Math.max(0, toplamTranskript(j, turIzi(j, root)) - (d.boy || 0));
-  duyur(ceviri('turOzeti', sureMetni(sn), Math.round(artis / 4)), 1, true);
+  turOzetiBas(ceviri('turOzeti', sureMetni(sn), Math.round(artis / 4)));
+}
+
+// ÖLÇÜLDÜ (22.08.2026): `Stop` olayı `additionalContext` kabul ediyor — 2.1.237
+// ikilisindeki şema `ye({hookEventName:kt("Stop"),additionalContext:L().optional()})`,
+// açıklaması "non-error feedback delivered to the model; the conversation continues so
+// the model can act on it". Satır modele verilince `Stop says:` öneki hiç oluşmaz,
+// çünkü satırı kullanıcıya model basar. Damga dosyası ilk `Stop`'ta silindiğinden
+// yeniden sorgulanan tur ikinci bir özet üretmez.
+//   'model'     → satır `additionalContext` ile modele gider, önek yok
+//   'kullanici' → satır `systemMessage` ile basılır, `Stop says:` öneki görünür
+const OZET_KANALI = 'model';
+
+function turOzetiBas(satir) {
+  if (OZET_KANALI === 'kullanici') return duyur(satir, 1, true);
+  if (seviye() < 1) return;
+  ciktiEkle({
+    hookSpecificOutput: {
+      hookEventName: 'Stop',
+      additionalContext: ceviri('turOzetiYonerge', satir),
+    },
+  });
 }
 
 function sureMetni(sn) {
@@ -575,12 +637,24 @@ function seviye() {
   return (_seviye = v === 0 || v === 2 ? v : 1);
 }
 
+// ÖLÇÜLDÜ (22.08.2026): `systemMessage` satırının başındaki `PreToolUse:Agent says: `
+// öneki kaldırılamıyor. Claude Code 2.1.237 render katmanı satırı
+// `jsxs(Cg, { children: [Co.hookName, " says: ", Co.content] })` olarak kuruyor ve
+// `hookName` runtime'da üretiliyor, konfigden gelmiyor. Önek kabul edildi; geriye
+// satırın kendisinin düzgün görünmesi kalıyor. İçeriği yeni satırla başlatmak öneki
+// kendi satırında bırakır — ama render'ın baştaki `\n` kırpıp kırpmadığı ölçülmedi.
+// Bu yüzden iki biçim de üretilebilir, seçim tek sabitte:
+//   'blok'  → içerik yeni satırla başlar, önek üstte tek başına kalır
+//   'satir' → içerik önekle aynı satırda kalır (2.39.0'a kadarki davranış)
+const BILDIRIM_BICIMI = 'blok';
+
 const _duyuru = [];
 
 function duyur(mesaj, min, tam) {
   if (seviye() < (min || 1)) return;
   _duyuru.push(tam ? mesaj : 'Teknesyum ▸ ' + mesaj);
-  ciktiEkle({ systemMessage: _duyuru.join('\n') });
+  const govde = _duyuru.join('\n');
+  ciktiEkle({ systemMessage: BILDIRIM_BICIMI === 'blok' ? '\n' + govde : govde });
 }
 
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını

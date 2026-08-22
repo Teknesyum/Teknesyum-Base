@@ -45,21 +45,24 @@ const GORUS = 'fable';
 const S = {
   gorev: {
     tr: (rol, model, tanim, n) =>
-      'görev veriliyor · ' +
+      'Görev ▸ ' +
+      (tanim ? tanim + ' — ' : '') +
       rol +
-      (model ? ' · ' + model : '') +
-      (tanim ? ' · ' + tanim : '') +
-      (n > 1 ? '   [' + n + ' ajan çalışıyor]' : ''),
+      ' rolünde' +
+      (model ? ' ' + model + ' ile' : '') +
+      ' açıldı' +
+      (n > 1 ? ', ' + n + ' ajan çalışıyor' : ''),
     en: (rol, model, tanim, n) =>
-      'dispatching · ' +
+      'Task ▸ ' +
+      (tanim ? tanim + ' — ' : '') +
+      'opened as ' +
       rol +
-      (model ? ' · ' + model : '') +
-      (tanim ? ' · ' + tanim : '') +
-      (n > 1 ? '   [' + n + ' agents running]' : ''),
+      (model ? ' on ' + model : '') +
+      (n > 1 ? ', ' + n + ' agents running' : ''),
   },
   bitti: {
-    tr: (rol, sure) => 'bitti · ' + rol + (sure ? ' · ' + sure : ''),
-    en: (rol, sure) => 'done · ' + rol + (sure ? ' · ' + sure : ''),
+    tr: (rol, sure) => 'Görev ▸ ' + rol + ' bitti' + (sure ? ' — ' + sure : ''),
+    en: (rol, sure) => 'Task ▸ ' + rol + ' finished' + (sure ? ' — ' + sure : ''),
   },
   sureBelirsiz: { tr: 'süre belirsiz', en: 'duration unknown' },
   saniye: { tr: (n) => n + ' sn', en: (n) => n + ' s' },
@@ -70,8 +73,16 @@ const S = {
     en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
   },
   turOzeti: {
-    tr: (sure, token) => 'Total Süre: ' + sure + ' // Tahmini Token: ~' + token,
-    en: (sure, token) => 'Total Time: ' + sure + ' // Estimated Tokens: ~' + token,
+    tr: (sure, token) => 'Total Süre: ~' + sure + '     Tahmini Token: ~' + token,
+    en: (sure, token) => 'Total Time: ~' + sure + '     Estimated Tokens: ~' + token,
+  },
+  turOzetiYonerge: {
+    tr: (satir) =>
+      'Turu kapatırken cevabının en altına şu satırı olduğu gibi, tek satır olarak yaz: ' + satir,
+    en: (satir) =>
+      'When you close the turn write this line at the very bottom of your answer, ' +
+      'verbatim and on one line: ' +
+      satir,
   },
 
   ajanSessiz: {

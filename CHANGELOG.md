@@ -6,6 +6,37 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.37.0] - 2026-08-22
+
+### Added
+
+- **Plan council.** With `plan_council` on — the premium default — the plan stops being one
+  model's work. Once the prior-art research is in, the manager opens two `planner` agents
+  on the same briefing, one `fable` and one `opus`. Neither builds anything: the new
+  `planner` agent holds `Read`, `Grep`, `Glob`, `LSP`, `WebSearch` and `WebFetch` and no
+  write tool at all, so the side that designs the work cannot start it. Each returns a
+  proposal under five headings; the manager synthesises, records every divergence in
+  `PLAN.md` under a `Konsey ayrışması` heading with the reason for the choice, and keeps
+  the pen. What is delegated is the generation of options, never the decision — the rule
+  that planning is never delegated still stands.
+- `plan_council` and `research_repos` knobs in `skills/relay/SETTINGS.md`, both written by
+  `/premium` together with the agent frontmatter and the machine-level flag.
+
+### Changed
+
+- **Prior art scales with the profile.** The research gate asked for at least 10
+  repositories regardless of budget. It now reads `research_repos`: 10 on the standard
+  profile, 50 on premium. Depth is unchanged — every scan file carries the same six
+  headings — but fifty repositories are read in waves, and each wave prunes the next
+  wave's candidate list with the reason written into `RAPOR.md`.
+- The premium behaviour note injected into the first prompts now also opens the council and
+  states the 50-repository ceiling; the session-start line reports the council members.
+- `/premium durum` reads the two new knobs out of `SETTINGS.md` rather than inferring them,
+  so a half-applied profile shows up as what it is.
+- `premium()` had been implemented twice, in `relay-watch.js` and inside the premium
+  script's own view of the world; it now lives in `hooks/dil.js` and both hooks read it
+  from there.
+
 ## [2.36.1] - 2026-08-22
 
 ### Fixed

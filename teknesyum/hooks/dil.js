@@ -21,6 +21,29 @@ function dil() {
   return (_dil = 'en');
 }
 
+let _premium = null;
+
+function premium() {
+  if (_premium !== null) return _premium;
+  const e = process.env.TEKNESYUM_PREMIUM;
+  if (e === '0' || e === 'off') return (_premium = false);
+  if (e === '1' || e === 'on') return (_premium = true);
+  const kok =
+    process.env.CLAUDE_CONFIG_DIR ||
+    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
+  try {
+    const c = JSON.parse(fs.readFileSync(path.join(kok, 'teknesyum.json'), 'utf8'));
+    return (_premium = c.premium === true);
+  } catch {}
+  return (_premium = false);
+}
+
+function depoSayisi() {
+  return premium() ? 50 : 10;
+}
+
+const KONSEY = 'fable + opus';
+
 const S = {
   gorev: {
     tr: (rol, model, tanim, n) =>
@@ -91,8 +114,8 @@ const S = {
       'no agent is opened. Skip the line entirely for plain questions.',
   },
   premiumAcik: {
-    tr: 'premium mod · her ajan opus · 6 paralele kadar',
-    en: 'premium mode · every agent on opus · up to 6 in parallel',
+    tr: () => 'premium mod · her ajan opus · 6 paralele kadar · plan konseyi ' + KONSEY,
+    en: () => 'premium mode · every agent on opus · up to 6 in parallel · plan council ' + KONSEY,
   },
   premiumNotu: {
     tr:
@@ -104,7 +127,11 @@ const S = {
       'aramayı dar tutma, denetimi her sözleşmede çalıştır. Düşünmeyi işe göre ayarla: ' +
       'mekanik ve kalıbı belli işte uzun uzun düşünme, karar taşıyan veya hata ayıklama ' +
       'işinde dibini sıyır. Deterministik araç hâlâ modelden önce gelir; o tercih ' +
-      'tokenden değil doğruluktan.',
+      'tokenden değil doğruluktan. Plan konseyi açık: sıfırdan projede PLAN.md yazmadan ' +
+      'önce aynı brifingle iki planner ajanı aç — biri fable, biri opus. İkisi de iş ' +
+      'yapmaz, yalnız öneri döner; ortak çıkan kararı doğrulanmış say, ayrıştıkları yeri ' +
+      'PLAN.md içinde Konsey ayrışması başlığına gerekçesiyle yaz. Ön araştırma tavanı ' +
+      'bu modda 50 depodur.',
     en:
       'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
       'Do not queue independent contracts, run them at once — up to six agents in ' +
@@ -114,7 +141,11 @@ const S = {
       'search wide, run the audit on every contract. Match thinking to the work: do not ' +
       'labour over mechanical, pattern-fixed tasks; go all the way down on decisions and ' +
       'debugging. A deterministic tool still comes before a model call — that choice is ' +
-      'about correctness, not tokens.',
+      'about correctness, not tokens. The plan council is on: before writing PLAN.md on a ' +
+      'from-scratch project, open two planner agents with the same briefing — one fable, ' +
+      'one opus. Neither does the work, they only return proposals; treat what both agree ' +
+      'on as confirmed and record every disagreement under a Konsey ayrışması heading in ' +
+      'PLAN.md with your reasoning. Prior art in this mode means 50 repositories.',
   },
   dilTalimati: {
     tr: 'Kullanıcıya ve diğer ajanlara Türkçe yaz — sözleşmeler, paketler, raporlar dahil.',
@@ -263,14 +294,16 @@ const S = {
   onArastirma: {
     tr: () => [
       'Sıfırdan projede ilk sözleşmeden önce ön araştırma yapılır (relay SKILL 1.4).',
-      'Aynı problemi çözmüş en az 10 depoyu `scout` ajanlarına dağıt, her biri',
+      'Aynı problemi çözmüş en az ' + depoSayisi() + ' depoyu `scout` ajanlarına dağıt, her biri',
       '`docs/taramalar/<ad>.md` yazsın, sonra `docs/taramalar/RAPOR.md` ile birleştir.',
       'Araştırma istenmiyorsa gerekçesini `docs/taramalar/ATLANDI.md` dosyasına tek satır',
       'yaz — kapı o zaman açılır. Atlamak serbest, sessizce atlamak değil.',
     ],
     en: () => [
       'A from-scratch project gets prior art before its first contract (relay SKILL 1.4).',
-      'Split at least 10 repositories solving the same problem across `scout` agents; each',
+      'Split at least ' +
+        depoSayisi() +
+        ' repositories solving the same problem across `scout` agents; each',
       'writes `docs/taramalar/<name>.md`, then merge them into `docs/taramalar/RAPOR.md`.',
       'If you do not want the research, write one line of reasoning in',
       '`docs/taramalar/ATLANDI.md` — that opens the gate. Skipping is fine, skipping silently is not.',
@@ -302,17 +335,31 @@ const S = {
   },
 
   onArastirmaHatirlatma: {
-    tr:
+    tr: () =>
       'Sıfırdan iş görünüyor. Plan yazmadan önce ön araştırma yapılır (relay §1.4): aynı ' +
-      'problemi çözmüş en az 10 depoyu `scout` ajanlarına dağıt, `docs/taramalar/` altına ' +
+      'problemi çözmüş en az ' +
+      depoSayisi() +
+      ' depoyu `scout` ajanlarına dağıt, `docs/taramalar/` altına ' +
       'yazsınlar. Kullanıcı "sadece fikir/plan" dese de kapı bu — plan araştırmanın ' +
-      'çıktısıdır. Atlanacaksa gerekçeyi `docs/taramalar/ATLANDI.md` dosyasına tek satır yaz.',
-    en:
+      'çıktısıdır. Atlanacaksa gerekçeyi `docs/taramalar/ATLANDI.md` dosyasına tek satır yaz.' +
+      (premium()
+        ? ' Araştırma bitince plan konseyini aç (relay §1.5): aynı brifingle iki `planner` ' +
+          'ajanı, biri `fable` biri `opus`. İkisi de iş yapmaz, öneri döner; sentezi ve ' +
+          '`PLAN.md` kalemini sen tutarsın.'
+        : ''),
+    en: () =>
       'This looks like from-scratch work. Prior art comes before the plan (relay §1.4): split ' +
-      'at least 10 repositories solving the same problem across `scout` agents and have them ' +
+      'at least ' +
+      depoSayisi() +
+      ' repositories solving the same problem across `scout` agents and have them ' +
       'write into `docs/taramalar/`. This holds even when the user asks for "just an idea or ' +
       'plan" — the plan is the output of the research. To skip it, write one line of reasoning ' +
-      'into `docs/taramalar/ATLANDI.md`.',
+      'into `docs/taramalar/ATLANDI.md`.' +
+      (premium()
+        ? ' When the research is done, open the plan council (relay §1.5): two `planner` agents ' +
+          'on the same briefing, one `fable` and one `opus`. Neither does the work, they return ' +
+          'proposals; the synthesis and the `PLAN.md` pen stay with you.'
+        : ''),
   },
 
   sendenEksik: {
@@ -589,4 +636,4 @@ function s(anahtar, ...arg) {
   return typeof m === 'function' ? m(...arg) : m;
 }
 
-module.exports = { dil, s };
+module.exports = { dil, s, premium, depoSayisi, KONSEY };

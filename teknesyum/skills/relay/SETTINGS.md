@@ -14,6 +14,8 @@ default_model      : sonnet         # haiku | sonnet | opus
 worktree_isolation : off            # on | off
 report_length      : short          # short | normal | detailed
 briefing           : milestone      # quiet | milestone | every-step
+plan_council       : off            # off | on — planı iki model bağımsız önerir
+research_repos     : 10             # ön araştırmada taranacak en az depo sayısı
 ```
 
 ## Anlamları
@@ -61,6 +63,18 @@ da ekler, uzun işte gürültü yapar · `quiet` yalnızca brifing, sapma ve kap
 
 `approval_gate` ile karıştırma: o **beklemeyi**, bu **anlatmayı** yönetir.
 
+**plan_council** — `on` ise plan tek modelin işi olmaktan çıkar. T0, `PLAN.md` yazmadan
+önce aynı brifingle **iki `planner` ajanı** açar: biri `fable`, biri `opus`. İkisi de iş
+yapmaz — kod, dosya, sözleşme yazmazlar; tek çıktıları öneridir. T0 iki öneriyi
+sentezler ve planı kendisi yazar. Ayrıntı relay SKILL §1.5.
+
+Bu, "planlamayı asla delege etme" kuralını delmez: delege edilen **karar** değil
+**seçenek üretimi**. Kararı hâlâ T0 verir ve gerekçesi `PLAN.md`'ye girer.
+
+**research_repos** — ön araştırmada (SKILL §1.4) taranacak en az depo sayısı. Standart
+profilde 10, premium profilde 50. Elli depo, on depoyla aynı derinlikte okunmaz: ilk
+tarama tabakası sığdır, konsey ve planlama derinleşeceği yeri kendi seçer.
+
 **Hook bildirimleri** bu düğmeden bağımsızdır ve buradan değil, `~/.claude/teknesyum.json`
 içindeki `steering` alanından yönetilir — makine başına tek ayar, proje değil kullanıcı
 tercihi olduğu için:
@@ -94,6 +108,8 @@ düşerse ölçü tutmaz.
 | `fix_ceiling` | 5 | 8 |
 | `report_length` | short | detailed |
 | `briefing` | milestone | every-step |
+| `plan_council` | off | on — fable + opus |
+| `research_repos` | 10 | 50 |
 
 Premium, Max 20x planı içindir: token bütçesi kısıt olmaktan çıkar, sonnet ve haiku
 tamamen bırakılır, efor tavanı `xhigh` olur. Değişmeyen tek şey deterministik araç

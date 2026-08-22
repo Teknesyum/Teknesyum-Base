@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { s: ceviri } = require('./dil.js');
+const { s: ceviri, premium } = require('./dil.js');
 const kapsayici = require('./kapsayici.js');
 
 let raw = '';
@@ -329,22 +329,6 @@ function seviye() {
   const c = read(path.join(kok, 'teknesyum.json'));
   const v = c && c.steering;
   return (_seviye = v === 0 || v === 2 ? v : 1);
-}
-
-// Premium, ödenen planla ilgili: makine başına tek ayar, proje değil kullanıcı tercihi.
-// `steering` ile aynı dosyada durur; ajan profilini `/premium` betiği yazar.
-let _premium = null;
-
-function premium() {
-  if (_premium !== null) return _premium;
-  const e = process.env.TEKNESYUM_PREMIUM;
-  if (e === '0' || e === 'off') return (_premium = false);
-  if (e === '1' || e === 'on') return (_premium = true);
-  const kok =
-    process.env.CLAUDE_CONFIG_DIR ||
-    path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
-  const c = read(path.join(kok, 'teknesyum.json'));
-  return (_premium = !!(c && c.premium === true));
 }
 
 function duyur(mesaj, min) {

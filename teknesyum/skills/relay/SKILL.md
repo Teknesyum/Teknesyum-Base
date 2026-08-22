@@ -166,25 +166,31 @@ Netleştirme turu bitince, **tek sözleşme yazılmadan önce** aynı problemi �
 taranır. Amaç kopyalamak değil: inşa edilmişin nerede doğru, nerede yanlış yaptığını
 görüp onun üstüne çıkmak. Sıfırdan tasarlanan mimari, üçüncü dalgada sökülür.
 
+**Kaç depo:** `SETTINGS.md` içindeki `research_repos` söyler — standart profilde **10**,
+premium profilde **50**. Sayı profille değişir, kural değişmez.
+
 Bildirim — dağıtmadan önce tek satır:
 
 ```
-Teknesyum ▸ araştırma başlatıldı · <konu> · 10 depo · scout/sonnet
+Teknesyum ▸ araştırma başlatıldı · <konu> · <n> depo · scout/<model>
 ```
 
 Bitince:
 
 ```
-Teknesyum ▸ araştırma bitti · 10 depo · 6 fikir alındı · 3 şüpheli · docs/taramalar/RAPOR.md
+Teknesyum ▸ araştırma bitti · <n> depo · 6 fikir alındı · 3 şüpheli · docs/taramalar/RAPOR.md
 ```
 
 **Nasıl:**
 
-1. **Aday listesi — en az 10.** Aynı problemi çözen, çözmeye yakın duran ya da tek bir
-   parçasını iyi çözmüş depolar. Bir tanesi de "bu işi yanlış yapmış" olsun; neyi
-   yapmayacağını bilmek de kazançtır.
-2. **Dağıt.** Her `scout` ajanına 2-3 depo, paralel. On depoyu tek ajana verme —
-   sonuncuya geldiğinde ilkini unutur.
+1. **Aday listesi — `research_repos` kadar.** Aynı problemi çözen, çözmeye yakın duran ya
+   da tek bir parçasını iyi çözmüş depolar. Bir tanesi de "bu işi yanlış yapmış" olsun;
+   neyi yapmayacağını bilmek de kazançtır.
+2. **Dağıt.** Her `scout` ajanına 2-3 depo, paralel. Bütün listeyi tek ajana verme —
+   sonuncuya geldiğinde ilkini unutur. Elli depoda bu, `parallel_width` tavanına kadar
+   ajan ve birkaç dalga demektir; dalga aralarında biriken raporu okuyup kalan adayları
+   ele — ilk yirmi depo neyin zaten çözülmüş olduğunu gösterir, sonraki otuzun bir kısmı
+   gereksizleşir. Eleme gerekçesi `RAPOR.md` içinde tek satır olarak yazılır.
 3. **Depo başına tek dosya:** `docs/taramalar/<kisa-ad>.md`, sabit altı başlıkla
    (biçim `agents/scout.md` içinde).
 4. **Birleştir.** `docs/taramalar/RAPOR.md` — üç bölüm: **alınanlar** (hangi fikir,
@@ -203,12 +209,60 @@ Teknesyum ▸ araştırma bitti · 10 depo · 6 fikir alındı · 3 şüpheli ·
   kullanım iddiaları `doğrulanamadı` etiketiyle yazılır.
 - Araştırma bir kere yapılır, `docs/taramalar/` kalıcıdır. Altı ay sonra "bunu neden
   böyle yaptık" sorusunun cevabı oradadır.
+- **Derinlik depo sayısıyla artmaz.** Elli depoda her dosya on depodakiyle aynı altı
+  başlığı taşır; fark kapsamdadır, uzunlukta değil. Derinleşilecek yeri plan konseyi
+  seçer.
 
 Araştırma yapılmadan ilk sözleşme yazılmaya kalkılırsa hook geri çevirir. Kullanıcı
 istemiyorsa gerekçesi `docs/taramalar/ATLANDI.md` dosyasına tek satır yazılır — kapı
 o zaman açılır. Atlamak serbest, sessizce atlamak değil.
 
-## 1.5 Ürün standardı — üç platform ve kendini güncelleme
+## 1.5 Plan konseyi — planı iki model önerir
+
+`SETTINGS.md` içindeki `plan_council` açıksa (premium profilde varsayılan), `PLAN.md`
+tek modelin kalemiyle yazılmaz. Ön araştırma bitince T0 **aynı brifingle iki `planner`
+ajanı** açar:
+
+| Üye | Model | Ne yapar |
+|---|---|---|
+| Konsey üyesi 1 | `fable` | bağımsız plan önerisi |
+| Konsey üyesi 2 | `opus` | bağımsız plan önerisi |
+
+**İkisi de iş yapmaz.** Kod, dosya, sözleşme yazmazlar; `planner` ajanının elinde yazma
+aracı yoktur. Tek çıktıları mesajla dönen öneridir — beş başlık: kavrayış, plan, riskler,
+ayrım noktaları, reddettikleri.
+
+Bildirim — açmadan önce ve bitince tek satır:
+
+```
+Teknesyum ▸ plan konseyi açıldı · <konu> · fable + opus
+Teknesyum ▸ plan konseyi bitti · <n> ortak karar · <m> ayrışma · docs/PLAN.md
+```
+
+**Sentez T0'ın işidir** ve şu sırayla yapılır:
+
+1. **Ortak noktalar.** İki üye de aynı şeyi söylüyorsa o karar doğrulanmış sayılır,
+   tartışılmaz, doğrudan plana girer.
+2. **Ayrışmalar.** Farklı söyledikleri her nokta `PLAN.md` içinde **Konsey ayrışması**
+   başlığı altına yazılır: iki seçenek, iki gerekçe, T0'ın seçtiği ve **neden seçtiği**.
+   Ayrışmayı sessizce bir tarafa çözme — altı ay sonra öteki yolun neden elendiği
+   sorulacak.
+3. **Yalnız birinde geçen fikir.** Bir üyenin görüp ötekinin görmediği şey elenmeden
+   önce ayrıca değerlendirilir; konseyin asıl kazancı çoğu zaman buradadır.
+4. **İkisi de yanılabilir.** Konsey oy sandığı değil: iki üye aynı hatada birleşmişse
+   T0 yine de reddeder. Ortaklık kanıt değil, işaret.
+
+Sonra `PLAN.md`'yi **T0 yazar.** Konsey üyeleri dosyaya dokunmaz.
+
+**Bu kural "planlamayı asla delege etme" ile çelişmez.** Delege edilen karar değil
+seçenek üretimidir. Soğuk başlayan ajanın kötü plan yapmasının sebebi bağlamsızlıktı;
+konsey üyesi aynı brifingi, aynı araştırma raporunu ve aynı kod tabanını görür. Kararı
+hâlâ bağlamı taşıyan T0 verir.
+
+`plan_council` kapalıyken (standart profil) plan doğrudan T0 tarafından yazılır, konsey
+açılmaz. Tek üyeyle konsey kurulmaz — bir öneri, öneri değil plandır.
+
+## 1.6 Ürün standardı — üç platform ve kendini güncelleme
 
 Ayrıntı `references/standartlar.md`. Burada geçerli olan iki karar:
 
@@ -327,7 +381,8 @@ düzeltme döngüsü, düşen ajan kurtarma, LOG. Röle kuracaksan onu oku.
 Özet akış: `PLAN.md` yaz → sözleşmeleri üret → bağımlılığı bitenleri dağıt →
 her sözleşmeyi `auditor`'ye doğrulat → kaldıysa düzeltme döngüsü → `LOG.md`'ye satır.
 
-**Planlamayı asla delege etme.** Soğuk başlayan ajan daha kötü plan yapar.
+**Planlamayı asla delege etme.** Soğuk başlayan ajan daha kötü plan yapar. Tek istisna
+plan konseyidir (§1.5): üyeler öneri üretir, kararı ve kalemi T0 elinde tutar.
 
 **Ajana verdiğin metin yalın olur.** Sözleşme, paket ve dönüş raporu düz cümleyle yazılır:
 ne oldu, nerede, ne gerekiyor. Ajanın aramasını istediğin dosyanın **yolunu ver ve zorunlu
@@ -432,6 +487,7 @@ Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `mod
 | `auditor` | kabul kriterlerini doğrular, **kod yazamaz** | sonnet |
 | `scribe` | mekanik toplu iş — AGENTS.md, isim, biçim | haiku |
 | `scout` | ön araştırma — benzer depoları tarar, kod yazmaz | sonnet |
+| `planner` | plan konseyi üyesi — öneri verir, **hiçbir şey yazmaz** | fable · opus |
 | `Explore` | geniş arama (yerleşik, devam ettirilemez) | — |
 
 **opus**: mimari kararı taşıyan, algoritmik, belirsiz, zor hata ayıklama.
@@ -446,6 +502,10 @@ eforda olur — mekanik işte düşük, kod ve denetimde `xhigh`. Model tırman�
 zaten tepedesin, çözülmeyen sözleşmede modeli değil sözleşmeyi düzelt. Paralel tavanı
 altıdır ve üçü geçtiğinde worktree izolasyonu açılır. `/premium durum` hangi profilin
 yürürlükte olduğunu söyler.
+
+`planner` bu tablonun dışındadır: modeli işin ağırlığına göre seçilmez, **konseyin iki
+üyesi tanım gereği iki farklı modeldir** — biri `fable`, biri `opus`. İkisini de aynı
+modele almak konseyi ortadan kaldırır.
 
 ## 5. Delege etme eşiği
 

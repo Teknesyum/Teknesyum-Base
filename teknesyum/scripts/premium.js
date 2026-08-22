@@ -7,6 +7,7 @@ const PROFIL = {
   standart: {
     auditor: { model: 'sonnet', effort: 'high', maxTurns: 30 },
     builder: { model: 'sonnet', effort: 'medium', maxTurns: 60 },
+    planner: { model: 'sonnet', effort: 'high', maxTurns: 40 },
     scout: { model: 'sonnet', effort: 'high', maxTurns: 45 },
     scribe: { model: 'haiku', effort: 'low', maxTurns: 40 },
     'ui-builder': { model: 'sonnet', effort: 'medium', maxTurns: 60 },
@@ -14,11 +15,14 @@ const PROFIL = {
   premium: {
     auditor: { model: 'opus', effort: 'xhigh', maxTurns: 40 },
     builder: { model: 'opus', effort: 'xhigh', maxTurns: 80 },
+    planner: { model: 'opus', effort: 'xhigh', maxTurns: 40 },
     scout: { model: 'opus', effort: 'high', maxTurns: 60 },
     scribe: { model: 'opus', effort: 'low', maxTurns: 40 },
     'ui-builder': { model: 'opus', effort: 'xhigh', maxTurns: 80 },
   },
 };
+
+const KONSEY = ['fable', 'opus'];
 
 const DUGME = {
   standart: {
@@ -32,6 +36,8 @@ const DUGME = {
     worktree_isolation: 'off',
     report_length: 'short',
     briefing: 'milestone',
+    plan_council: 'off',
+    research_repos: '10',
   },
   premium: {
     ask_threshold: 'critical',
@@ -44,6 +50,8 @@ const DUGME = {
     worktree_isolation: 'on',
     report_length: 'detailed',
     briefing: 'every-step',
+    plan_council: 'on',
+    research_repos: '50',
   },
 };
 
@@ -131,6 +139,16 @@ function dugmeleriYaz(kok, profil) {
   fs.writeFileSync(yol, metin, 'utf8');
 }
 
+function dugmeOku(kok, anahtar) {
+  try {
+    const metin = fs.readFileSync(ayarYolu(kok), 'utf8');
+    const m = metin.match(new RegExp('^[ \\t]*' + anahtar + '[ \\t]*:[ \\t]*(\\S+)', 'm'));
+    return m ? m[1] : '';
+  } catch {
+    return '';
+  }
+}
+
 function ajanProfili(kok) {
   const sonuc = {};
   for (const ad of Object.keys(PROFIL.standart)) {
@@ -178,6 +196,11 @@ function uygula(profil) {
           .join(' · '),
       'paralel: ' + d.parallel_width + ' · varsayılan model: ' + d.default_model,
       'denetim: ' + d.audit + ' · worktree: ' + d.worktree_isolation,
+      'plan konseyi: ' +
+        (d.plan_council === 'on' ? KONSEY.join(' + ') : 'kapalı') +
+        ' · ön araştırma: ' +
+        d.research_repos +
+        '+ depo',
       'değişen ajan dosyası: ' + (degisen.length ? degisen.join(', ') : 'yok, zaten uygundu'),
       'konfig: ' + path.join(konfigKok(), 'teknesyum.json'),
     ].join('\n') + '\n'
@@ -189,9 +212,15 @@ function durum() {
   const c = konfigOku();
   const p = profilAdi(kok);
   const simdi = ajanProfili(kok);
+  const konsey = dugmeOku(kok, 'plan_council');
+  const depo = dugmeOku(kok, 'research_repos');
   const satir = [
     'konfig premium: ' + (c.premium === true ? 'açık' : 'kapalı'),
     'dosyalardaki profil: ' + p,
+    'plan konseyi: ' +
+      (konsey === 'on' ? KONSEY.join(' + ') : konsey || 'okunamadı') +
+      ' · ön araştırma: ' +
+      (depo ? depo + '+ depo' : 'okunamadı'),
     ...Object.keys(simdi).map(
       (a) =>
         '  ' + a.padEnd(11) + simdi[a].model + '/' + simdi[a].effort + ' · tur ' + simdi[a].maxTurns
@@ -217,11 +246,14 @@ function yardim() {
     [
       'premium.js — Max 20x profilini açar ve kapatır',
       '',
-      '  node premium.js ac      opus + xhigh + 6 paralel ajan',
+      '  node premium.js ac      opus + xhigh + 6 paralel ajan + plan konseyi',
       '  node premium.js kapat   standart profile döner',
       '  node premium.js durum   hangi profilin yürürlükte olduğunu söyler',
       '',
       "Ajan frontmatter'ı, relay düğmeleri ve ~/.claude/teknesyum.json birlikte yazılır.",
+      'Premiumda plan konseyi açılır (' +
+        KONSEY.join(' + ') +
+        ') ve ön araştırma tavanı 10 depodan 50 depoya çıkar.',
       'Eklenti güncellemesi ajan dosyalarını geri alabilir; `durum` uyuşmazlığı söyler.',
     ].join('\n') + '\n'
   );

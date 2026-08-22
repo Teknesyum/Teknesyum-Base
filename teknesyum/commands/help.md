@@ -29,7 +29,7 @@ sadece ne istediğini söyle.
 | `/rule` | "Bunu bir daha yapma." Kalıcı kural kaydeder, doğru katmana yazar |
 | `/setup` | Makineyi bağlar: statusline, dil tercihi, dil sunucusu. Kurulumda bir kez |
 | `/uisetup` | Arayüz standardını değiştirir veya tamamen kapatır |
-| `/premium` | Max 20x profili: opus, xhigh efor, altı paralel ajan. `durum` ile bak |
+| `/premium` | Max 20x profili: opus, xhigh efor, altı paralel ajan, plan konseyi. `durum` ile bak |
 | `/save` | Bu oturumu diske yazar: konuşma, bağlam, git durumu, gönderilmemiş metin |
 | `/load` | Kayıtlı oturumu geri okur, kaldığın yerden devam eder |
 | `/saveall` | Bütün projelerin son oturumunu kendi klasörlerine kaydeder |

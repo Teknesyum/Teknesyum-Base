@@ -2313,7 +2313,7 @@ ol('premium profili sonnet ve haiku bırakır, eforu yükseltir', () => {
   esit(premiumCalistir('ac', p, cfg).kod, 0, 'premium ac cikis kodu');
   const a = ajanMetni(p);
   if (/^model: (sonnet|haiku)$/m.test(a)) throw new Error('premium profilinde sonnet/haiku kaldı');
-  esit((a.match(/^model: opus$/gm) || []).length, 5, 'bes ajan da opus olmali');
+  esit((a.match(/^model: opus$/gm) || []).length, 6, 'alti ajan da opus olmali');
   if (!/^effort: xhigh$/m.test(a)) throw new Error('xhigh efor yok');
   if (!/^effort: low$/m.test(a)) throw new Error('scribe düşük eforda kalmalı');
   const s = fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
@@ -2334,6 +2334,59 @@ ol('premium kapatildiginda dosyalar bire bir geri doner', () => {
   esit(sonra === once, true, 'kapat sonrasi dosyalar ayni olmali');
   esit(JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8')).premium, false);
   icerir(premiumCalistir('durum', p, cfg).out, 'standart');
+});
+
+ol('premium plan konseyini acar ve arastirma tavanini 50 depoya cikarir', () => {
+  const { p, cfg } = premiumKopya();
+  const acikCikti = premiumCalistir('ac', p, cfg);
+  esit(acikCikti.kod, 0, 'premium ac cikis kodu');
+  icerir(acikCikti.out, 'plan konseyi: fable + opus');
+  icerir(acikCikti.out, '50+ depo');
+  const s = fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  icerir(s, 'plan_council       : on');
+  icerir(s, 'research_repos     : 50');
+  premiumCalistir('kapat', p, cfg);
+  const k = fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  icerir(k, 'plan_council       : off');
+  icerir(k, 'research_repos     : 10');
+  icerir(premiumCalistir('durum', p, cfg).out, 'plan konseyi: off');
+});
+
+ol('plan konseyi uyesi hicbir sey yazamaz', () => {
+  const m = fs.readFileSync(path.join(KOK, 'agents', 'planner.md'), 'utf8');
+  const arac = (m.match(/^tools:[ \t]*(.+)$/m) || [])[1] || '';
+  for (const yasak of ['Write', 'Edit', 'Bash', 'NotebookEdit']) {
+    if (new RegExp('\\b' + yasak + '\\b').test(arac))
+      throw new Error('planner ' + yasak + ' kullanabiliyor: ' + arac);
+  }
+  icerir(m, 'İş yapmazsın');
+});
+
+ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
+  const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
+  const oku = (premium) => {
+    const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-'));
+    fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr', premium }));
+    const r = spawnSync(
+      process.execPath,
+      [
+        '-e',
+        'const d=require(' +
+          dilYolu +
+          ');process.stdout.write(String(d.depoSayisi())+"|"+d.s("onArastirma").join(" ")+"|"+d.s("onArastirmaHatirlatma"))',
+      ],
+      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: cfg } }
+    );
+    return (r.stdout || '') + (r.stderr || '');
+  };
+  const kapali = oku(false);
+  const acik = oku(true);
+  icerir(kapali, '10|');
+  icerir(kapali, 'en az 10 depoyu');
+  if (/plan konseyini aç/.test(kapali)) throw new Error('standart profilde konsey notu cikmamali');
+  icerir(acik, '50|');
+  icerir(acik, 'en az 50 depoyu');
+  icerir(acik, 'plan konseyini aç');
 });
 
 ol('premium durumu konfig ile dosyalar ayrisinca uyusmazlik bildirir', () => {

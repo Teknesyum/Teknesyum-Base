@@ -114,10 +114,14 @@ job closes.
 ### Prior art comes before the first contract
 
 A from-scratch project does not get designed from scratch. Before a single contract is
-written, at least ten comparable repositories are split across parallel `scout` agents;
-each writes one `docs/taramalar/<name>.md` under six fixed headings, and the manager merges
-them into `docs/taramalar/RAPOR.md` as **adopted**, **deliberately rejected**, and
-**suspicious**.
+written, comparable repositories are split across parallel `scout` agents; each writes one
+`docs/taramalar/<name>.md` under six fixed headings, and the manager merges them into
+`docs/taramalar/RAPOR.md` as **adopted**, **deliberately rejected**, and **suspicious**.
+
+How many repositories is a profile setting, not a mood: **ten** on the standard profile,
+**fifty** on premium. Depth does not scale with the count — every file carries the same six
+headings either way; what grows is coverage. Fifty repositories are read in waves, and the
+reports from one wave prune the candidates for the next, with the reason written down.
 
 Nothing is copied. What gets taken is a pattern, a boundary, a mistake worth not repeating
 — never source lines. Adopting a project whole is only ever a library decision, and that
@@ -298,9 +302,11 @@ finish silently.
 | `auditor` | Verifies acceptance criteria — **cannot write or run anything** | sonnet |
 | `scribe` | Mechanical bulk work — naming, formatting, documentation | haiku |
 | `scout` | Prior-art research — scans comparable repos, writes no code | sonnet |
+| `planner` | Plan council member — proposes, **writes nothing at all** | fable · opus |
 
 Role determines the kind of work, model the weight; they are separate axes, and the model
-is chosen at call time.
+is chosen at call time. `planner` is the exception: its two council members are two
+different models by definition, so the choice is not the manager's to make.
 
 The auditor's restriction is enforced by the harness rather than by its prompt: it holds
 `Read`, `Grep`, `Glob` and `LSP` — no `Write`, no `Edit`, and **no `Bash`**, because a
@@ -349,6 +355,8 @@ because a profile that only half applies is worse than either half.
 | worktree isolation | off | on |
 | model escalation | on | off — already at the top |
 | report · briefing | short · milestone | detailed · every-step |
+| plan council | off | on — fable + opus |
+| prior-art repositories | 10 | 50 |
 
 Sonnet and haiku are dropped entirely; the difference between roles moves from the model to
 the effort. `scribe` still runs at low effort on opus, because labouring over a rename is a
@@ -357,6 +365,27 @@ loss at any price. Effort tops out at `xhigh`, the highest value the frontmatter
 Two things do not change. A deterministic tool still comes before a model call — `biome`,
 `rg` and `sed` are chosen for being right, not for being cheap. And the auditor still cannot
 write. Premium buys depth, not permission.
+
+### The plan council
+
+On premium the plan stops being one model's work. Once the prior-art research is in, the
+manager opens **two `planner` agents on the same briefing** — one `fable`, one `opus`.
+Neither of them builds anything: `planner` holds no write tool, so the side that designs
+the work cannot start it. Each returns a proposal under five headings — understanding,
+plan, risks, points of divergence, and what it rejected.
+
+The manager synthesises. Where both members agree, the decision is taken as confirmed.
+Where they diverge, both options and both reasons go into `PLAN.md` under a **Konsey
+ayrışması** heading together with the choice made and why — a disagreement resolved
+silently is a question asked again six months later. An idea only one member saw is
+weighed before it is dropped; that is usually where the council earns its cost. Agreement
+is a signal, not proof: two members can be wrong together, and the manager still refuses.
+
+Then the manager writes `PLAN.md`. This does not soften the rule that planning is never
+delegated — what is delegated is the generation of options, never the decision. A cold
+agent plans badly because it lacks context; a council member sees the same briefing, the
+same research report and the same codebase, and the pen stays with the side that carries
+the context.
 
 With the profile on, the session start prints `Teknesyum ▸ premium mod` and the first two
 prompts carry a behaviour note into the model: open the parallelism, do not fall back to

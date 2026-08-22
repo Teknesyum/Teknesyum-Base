@@ -3812,8 +3812,20 @@ ol('debug kapaliyken Debug satiri cikmaz, acikken cikar', () => {
   const m = JSON.parse(acik.out).systemMessage;
   icerir(m, '`Teknesyum ▸ Debug ▸ ');
   icerir(m, 'Edit aracı hata verdi');
-  icerir(m, 'builder ajanı, a1');
+  icerir(m, 'builder ajanı · a1');
   if (m.includes('→')) throw new Error('cumle icinde ok var: ' + m);
+
+  // ÖLÇÜLDÜ (22.08.2026): ana oturumda `agent_type` gelmiyor, rol varsayılana düşüyordu
+  // ve satır "ajan ajanı, ana oturum" diye çıkıyordu. Ana oturumun rolü yok, adı var.
+  const { p: p3 } = proje(1, 0);
+  const yuk = DEBUG_YUK(p3);
+  delete yuk.agent_id;
+  delete yuk.agent_type;
+  delete yuk.agent_transcript_path;
+  const anaOturum = JSON.parse(calistir(IZLE, yuk, { TEKNESYUM_DEBUG: '1' }).out).systemMessage;
+  icerir(anaOturum, 'ana oturum');
+  if (/ajan[ıi] ajan|ajan ajan/.test(anaOturum))
+    throw new Error('ana oturum rol adıyla yazıldı: ' + anaOturum);
   icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'string_not_found');
 });
 
@@ -3838,7 +3850,7 @@ ol('ajan kapanisi debug acikken bildirilir ve gunluge dusser', () => {
   );
   const m = JSON.parse(r.out).systemMessage;
   icerir(m, 'Debug ▸ bir ajan durdu');
-  icerir(m, 'builder ajanı, a1');
+  icerir(m, 'builder ajanı · a1');
   icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'bir ajan durdu');
 });
 

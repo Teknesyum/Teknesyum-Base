@@ -6,6 +6,15 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.42.1] - 2026-08-22
+
+### Fixed
+
+- The debug line said `ajan ajanı, ana oturum` when the main session hit a tool error.
+  `agent_type` is absent outside a subagent, so the role fell back to its default and got
+  printed next to the word it was already standing in for. The main session has a name,
+  not a role.
+
 ## [2.42.0] - 2026-08-22
 
 ### Added

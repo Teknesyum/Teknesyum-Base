@@ -143,8 +143,9 @@ const S = {
     en: (ne, nerede) => '`Teknesyum ▸ Debug ▸ ' + ne + ' — ' + nerede + '`',
   },
   debugNerede: {
-    tr: (rol, kim) => rol + ' ajanı, ' + kim,
-    en: (rol, kim) => 'the ' + rol + ' agent, ' + kim,
+    tr: (rol, kim) => (kim === 'ana oturum' ? 'ana oturum' : rol + ' ajanı · ' + kim),
+    en: (rol, kim) =>
+      kim === 'ana oturum' ? 'the main session' : 'the ' + rol + ' agent · ' + kim,
   },
   debugAracHatasi: {
     tr: (arac) => arac + ' aracı hata verdi',

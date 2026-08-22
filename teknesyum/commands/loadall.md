@@ -28,6 +28,10 @@ kopyalayıp o projenin oturumuna yapıştıracak, cümleyi kendin yeniden yazma.
 Röle kaydı satırı uzunsa kısalt; devam promptuna dokunma. En alta tek satır: hangi
 projede devam etmek istediğini sor.
 
+**eco profilinde** proje bloğu tek satır durum taşır: klasör, git, röle sayacı, son
+oturum, son kayıt. Sözleşme adları, commit başlığı ve röle günlüğü basılmaz — hepsi
+o projede `/load` ile elde. Devam promptu kısalmaz; kelimesi kelimesine yine bas.
+
 Tek projenin sohbet ayrıntısı burada yok. Kullanıcı birini seçerse o projede `/load`
 (kayıt varsa) ya da `/load son` (kayıt yoksa) çalıştırılır — ama oturum başka bir
 projede açıldıysa klasör değiştirmesini isteme, `--proje` ile o kökü ver.

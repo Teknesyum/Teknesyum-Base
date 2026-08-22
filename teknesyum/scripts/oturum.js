@@ -2,8 +2,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const { spawnSync } = require('child_process');
 const { transkriptKok, transkriptDizini } = require('../hooks/ortak.js');
+const { profil } = require('../hooks/dil.js');
 
 const KLASOR = 'oturumlar';
 const YAKIN_TUR = 10;
@@ -163,7 +165,11 @@ function aracOzeti(blok) {
 }
 
 function ayikla(yol) {
-  const satirlar = fs.readFileSync(yol, 'utf8').split('\n');
+  return ayiklaIcerik(fs.readFileSync(yol, 'utf8'));
+}
+
+function ayiklaIcerik(metin) {
+  const satirlar = metin.split('\n');
   const turlar = [];
   const kuyruk = [];
   const dokunulan = new Set();
@@ -272,6 +278,52 @@ function ayikla(yol) {
     aracSayisi,
     dokunulan: [...dokunulan],
   };
+}
+
+const HAM = 'ham.jsonl';
+const HAM_GZ = 'ham.jsonl.gz';
+
+function mb(n) {
+  return (n / 1048576).toFixed(2) + ' MB';
+}
+
+// ÖLÇÜLDÜ: makinedeki 76 transkriptin medyanı gzip ile aslının %29'una iniyor; bu
+// deponun 4,07 MB'lık gerçek oturum dosyası 1,18 MB oluyor (%29) ve kaydın toplam
+// süresi 73 ms'den 119 ms'e çıkıyor. Eco'da kopya bu yüzden sıkıştırılarak yazılır.
+// Kopyalamayı tümden atlayıp `durum.json` içindeki kaynak yola dayanmak diskte biraz
+// daha kazandırırdı ama transkript kaydın denetiminde değil: silinirse `--tam`
+// kaybolur. Ölçülen fark o riski karşılamıyor.
+function hamYaz(hedef, kaynak, eco) {
+  const sil = path.join(hedef, eco ? HAM : HAM_GZ);
+  try {
+    fs.unlinkSync(sil);
+  } catch {}
+  if (!eco) {
+    fs.copyFileSync(kaynak, path.join(hedef, HAM));
+    return HAM;
+  }
+  const ham = fs.readFileSync(kaynak);
+  const gz = zlib.gzipSync(ham, { level: 6 });
+  fs.writeFileSync(path.join(hedef, HAM_GZ), gz);
+  return HAM_GZ;
+}
+
+// Ham döküm üç yerden gelebilir: normal kaydın birebir kopyası, eco kaydının gziplisi,
+// ikisi de yoksa hâlâ diskteyse kaynak transkriptin kendisi.
+function hamKaynak(kayit) {
+  const duz = path.join(kayit.yol, HAM);
+  if (fs.existsSync(duz)) return { yol: duz, gz: false };
+  const gz = path.join(kayit.yol, HAM_GZ);
+  if (fs.existsSync(gz)) return { yol: gz, gz: true };
+  const dis = kayit.durum && kayit.durum.transkript;
+  if (dis && fs.existsSync(dis)) return { yol: dis, gz: false };
+  return null;
+}
+
+function hamOku(h) {
+  return h.gz
+    ? zlib.gunzipSync(fs.readFileSync(h.yol)).toString('utf8')
+    : fs.readFileSync(h.yol, 'utf8');
 }
 
 function kirp(metin, sinir) {
@@ -521,7 +573,8 @@ function kaydet() {
     if (!fs.existsSync(kapi)) fs.writeFileSync(kapi, '*\n', 'utf8');
   } catch {}
 
-  fs.copyFileSync(yol, path.join(hedef, 'ham.jsonl'));
+  const hamAd = hamYaz(hedef, yol, profil() === 'eco');
+  const hamBoyut = fs.statSync(path.join(hedef, hamAd)).size;
 
   const g = gitDurum(kok);
   let diffYazildi = false;
@@ -552,6 +605,7 @@ function kaydet() {
         kok,
         oturumId: veri.oturumId,
         transkript: yol,
+        ham: hamAd,
         model: veri.model,
         claudeCode: veri.surum,
         baslik: veri.baslik,
@@ -588,6 +642,11 @@ function kaydet() {
       'bağlam: ' + baglamSatiri(veri.kullanim),
       'gönderilmemiş metin: ' + (veri.taslak ? 'var (200 karakter önizleme)' : 'yok'),
       'kuyruk: ' + veri.kuyruk.length,
+      'ham transkript: ' +
+        hamAd +
+        (hamAd === HAM_GZ
+          ? ' · ' + mb(fs.statSync(yol).size) + ' → ' + mb(hamBoyut)
+          : ' · ' + mb(hamBoyut)),
       'çalışma yaması: ' + (diffYazildi ? 'calisma.diff' : 'yok'),
       'oturum kimliği: ' + (veri.oturumId || '?'),
     ].join('\n') + '\n'
@@ -683,12 +742,21 @@ function kayitSec(kok) {
 function ozetOku(kok, kayit) {
   const d = kayit.durum;
   if (!Object.keys(d).length) dur('bozuk kayıt: durum.json yok — ' + kayit.yol);
+  const ham = hamKaynak(kayit);
   let ozet;
   if (bayrak('tam')) {
-    const ham = path.join(kayit.yol, 'ham.jsonl');
-    if (!fs.existsSync(ham)) dur('ham.jsonl yok, --tam kullanılamaz');
+    if (!ham) {
+      dur(
+        'ham transkript yok, --tam kullanılamaz — kayıtta ' +
+          HAM +
+          ' de ' +
+          HAM_GZ +
+          ' de yok, kaynak transkript de silinmiş: ' +
+          (d.transkript || '?')
+      );
+    }
     ozet = ozetUret(
-      ayikla(ham),
+      ayiklaIcerik(hamOku(ham)),
       {
         ad: d.ad,
         kok: d.kok,
@@ -711,6 +779,9 @@ function ozetOku(kok, kayit) {
     );
   }
   if (d.kok && path.resolve(d.kok) !== kok) uyari.push('kayıt başka kökten alınmış: ' + d.kok);
+  if (!ham) {
+    uyari.push('ham transkript yok: `--tam` çalışmaz, elde yalnız `ozet.md` var');
+  }
   if (d.diff) {
     uyari.push(
       'kayıtta çalışma yaması var: ' +
@@ -859,10 +930,15 @@ function sozlesmeler(kok) {
 
 // Başlık transkriptin başlarında `ai-title` olayıyla geçiyor; koca dosyayı okumak yerine
 // baştan yarım megabayt yeter, bulunamazsa başlıksız gösteririz.
+// ÖLÇÜLDÜ: makinedeki 76 transkriptin 28'inde `aiTitle` var, en uzak ofset 45,3 kB —
+// 64 kB tampon 28'ini de yakalıyor, 32 kB 27'sini. Eco sekizde bire iner, normal ve
+// premium yarım megabaytta kalır.
+const BASLIK_TAMPON = { eco: 64 * 1024, normal: 512 * 1024, premium: 512 * 1024 };
+
 function hafifBaslik(yol) {
   try {
     const fd = fs.openSync(yol, 'r');
-    const buf = Buffer.alloc(512 * 1024);
+    const buf = Buffer.alloc(BASLIK_TAMPON[profil()] || BASLIK_TAMPON.normal);
     const n = fs.readSync(fd, buf, 0, buf.length, 0);
     fs.closeSync(fd);
     const m = buf.toString('utf8', 0, n).match(/"aiTitle"\s*:\s*"((?:[^"\\]|\\.)*)"/);
@@ -905,9 +981,32 @@ function devamPromptu(p, g, c, k, t) {
   return s;
 }
 
-function filoSatirlari(p) {
-  const s = ['## ' + p.ad, '', '- Klasör: `' + p.yol + '`'];
-  const g = gitDurum(p.yol);
+// Eco'da durum dökümü tek satıra iner: sözleşme adları, commit başlığı ve röle günlüğü
+// düşer — üçü de devam promptunda ya da o projede `/load` ile zaten elde. Devam promptu
+// kısalmaz, kullanıcının kopyalayacağı metin odur.
+function filoSatiriEco(p, g, c, t, k) {
+  const parca = ['`' + p.yol + '`'];
+  if (g) {
+    parca.push(
+      '`' +
+        g.sha.slice(0, 8) +
+        '` (' +
+        g.dal +
+        ') · ' +
+        (g.kirli.length ? g.kirli.length + ' dosya kirli' : 'temiz')
+    );
+  }
+  if (c) parca.push('röle ' + c.acik + ' açık / ' + c.biten + ' bitti');
+  if (t) {
+    const b = hafifBaslik(t.yol);
+    parca.push('son oturum ' + gecenSure(t.zaman) + (b ? ' · ' + b : ''));
+  }
+  parca.push('son kayıt ' + (k ? '`' + k.ad + '`' : t ? 'yok · `/load son`' : 'yok'));
+  return ['- ' + parca.join(' · ')];
+}
+
+function filoSatiriTam(p, g, c, t, k) {
+  const s = ['- Klasör: `' + p.yol + '`'];
   if (g) {
     s.push(
       '- Git: `' +
@@ -920,15 +1019,13 @@ function filoSatirlari(p) {
         g.baslik
     );
   }
-  const c = sozlesmeler(p.yol);
   if (c) {
     const durum = Object.keys(c.grup)
       .sort()
-      .map((k) => k + ': ' + c.grup[k].join(', '))
+      .map((x) => x + ': ' + c.grup[x].join(', '))
       .join(' · ');
     s.push('- Röle: ' + c.acik + ' açık / ' + c.biten + ' bitti' + (durum ? ' · ' + durum : ''));
   }
-  const t = sonTranskript(p.yol);
   if (t) {
     const b = hafifBaslik(t.yol);
     s.push(
@@ -940,7 +1037,6 @@ function filoSatirlari(p) {
         (b ? ' · ' + b : '')
     );
   }
-  const k = kayitlar(p.yol)[0];
   s.push(
     '- Son kayıt: ' +
       (k ? '`' + k.ad + '` · ' + saat(k.zaman) : t ? 'yok · devralmak için `/load son`' : 'yok')
@@ -950,8 +1046,26 @@ function filoSatirlari(p) {
     const son = fs.readFileSync(log, 'utf8').split('\n').filter(Boolean).pop();
     if (son) s.push('- Röle kaydı: ' + kirp(son, 300));
   } catch {}
-  s.push('', 'Devam promptu:', '```', ...devamPromptu(p, g, c, k, t), '```', '');
   return s;
+}
+
+function filoSatirlari(p) {
+  const g = gitDurum(p.yol);
+  const c = sozlesmeler(p.yol);
+  const t = sonTranskript(p.yol);
+  const k = kayitlar(p.yol)[0];
+  const govde = profil() === 'eco' ? filoSatiriEco(p, g, c, t, k) : filoSatiriTam(p, g, c, t, k);
+  return [
+    '## ' + p.ad,
+    '',
+    ...govde,
+    '',
+    'Devam promptu:',
+    '```',
+    ...devamPromptu(p, g, c, k, t),
+    '```',
+    '',
+  ];
 }
 
 function topluYukle() {
@@ -1016,6 +1130,7 @@ function yardim() {
       '',
       'Kayıt yeri: <proje>/.claude/oturumlar/<ad>/',
       '  ham.jsonl     transkriptin bire bir kopyası',
+      '  ham.jsonl.gz  eco profilinde: aynı kopya gzipli — `--tam` ikisinden de okur',
       '  ozet.md       yeniden yüklenebilir özet',
       '  durum.json    git, relay, bağlam, taslak, kuyruk',
       '  calisma.diff  kaydetme anındaki kirli çalışma alanı',

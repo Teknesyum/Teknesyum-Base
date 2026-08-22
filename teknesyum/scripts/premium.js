@@ -252,6 +252,9 @@ function uygula(profil) {
         d.research_repos +
         '+ depo',
       'değişen ajan dosyası: ' + (degisen.length ? degisen.join(', ') : 'yok, zaten uygundu'),
+      ...(profil === 'eco'
+        ? ['/save ham transkripti gzipli yazar (ham.jsonl.gz), /loadall tek satıra iner']
+        : []),
       'konfig: ' + path.join(konfigKok(), 'teknesyum.json'),
     ].join('\n') + '\n'
   );
@@ -265,16 +268,22 @@ function durum() {
   const konsey = dugmeOku(kok, 'plan_council');
   const gorus = dugmeOku(kok, 'second_opinion');
   const depo = dugmeOku(kok, 'research_repos');
+  const paralel = dugmeOku(kok, 'parallel_width');
+  const denetim = dugmeOku(kok, 'audit');
   const beklenen = konfigProfili(c);
   const satir = [
     'yürürlükteki profil: ' + p,
     'konfig profili: ' + beklenen + (c.profil === undefined ? ' (eski premium alanından)' : ''),
+    'paralel: ' +
+      (paralel ? paralel + ' ajan' : 'okunamadı') +
+      ' · ön araştırma: ' +
+      (depo ? depo + '+ depo' : 'okunamadı') +
+      ' · denetim: ' +
+      (denetim || 'okunamadı'),
     'plan konseyi: ' +
       (konsey === 'on' ? KONSEY.join(' + ') : konsey || 'okunamadı') +
       ' · ikinci görüş: ' +
-      (gorus === 'on' ? (simdi.advisor || {}).model || GORUS : gorus || 'okunamadı') +
-      ' · ön araştırma: ' +
-      (depo ? depo + '+ depo' : 'okunamadı'),
+      (gorus === 'on' ? (simdi.advisor || {}).model || GORUS : gorus || 'okunamadı'),
     ...Object.keys(simdi).map(
       (a) =>
         '  ' + a.padEnd(11) + simdi[a].model + '/' + simdi[a].effort + ' · tur ' + simdi[a].maxTurns
@@ -299,19 +308,32 @@ function yardim() {
     [
       'premium.js — üç profil arasında geçiş yapar',
       '',
-      '  node premium.js premium  opus + xhigh + 20 paralel ajan + plan konseyi + ikinci görüş',
-      '  node premium.js normal   sonnet + 2 paralel ajan, konsey ve görüş kapalı',
-      '  node premium.js eco      haiku + tek ajan + 1 depo ön araştırma, token kısıtlıyken',
+      '  node premium.js eco      haiku · 1 paralel ajan · 1 depo · denetim critical',
+      '  node premium.js normal   sonnet · 2 paralel ajan · 10 depo · her sözleşme denetlenir',
+      '  node premium.js premium  opus/xhigh · 20 paralel ajan · 50 depo · her sözleşme denetlenir',
       '  node premium.js durum    hangi profilin yürürlükte olduğunu söyler',
       '',
-      'Eski çağrılar durur: `ac` premium, `kapat` normal demektir.',
-      "Ajan frontmatter'ı, relay düğmeleri ve ~/.claude/teknesyum.json birlikte yazılır.",
-      'Premiumda plan konseyi açılır (' +
+      'Üçü de aynı üç yeri yazar: ajan frontmatter’ı, relay düğmeleri ve',
+      '~/.claude/teknesyum.json içindeki `profil` alanı. Eski çağrılar durur: `ac` premium,',
+      '`kapat` normal demektir.',
+      '',
+      'eco — token kısıtken. Her rol ' +
+        PROFIL.eco.builder.model +
+        ', kod yazan ve denetleyen roller `medium` eforda kalır; denetim yalnız kritik',
+      '  sözleşmede açılır. `/save` ham transkripti gzipli yazar (ham.jsonl.gz), `/loadall`',
+      '  proje başına tek satır basar — devam promptu ikisinde de kısalmaz.',
+      'normal — varsayılan. ' +
+        PROFIL.normal.builder.model +
+        ', iki paralel ajan, her sözleşme denetlenir; konsey ve görüş kapalı.',
+      'premium — hız ve kalite öncelikli. ' +
+        PROFIL.premium.builder.model +
+        ', 20 paralel ajan, worktree izolasyonu açık. Plan konseyi açılır (' +
         KONSEY.join(' + ') +
-        ') ve ön araştırma tavanı 5 · 10 · 50 depo olarak profille değişir.',
-      'İkinci görüş de premiumda açılır: karar düğümünde ' +
+        ')',
+      '  ve karar düğümünde ' +
         GORUS +
-        ' modelindeki `advisor` ajanı üç başlıklı kısa bir görüş verir, karar T0’da kalır.',
+        ' modelindeki `advisor` ajanı üç başlıklı kısa bir görüş verir; karar T0’da kalır.',
+      '',
       'Eklenti güncellemesi ajan dosyalarını geri alabilir; `durum` uyuşmazlığı söyler.',
     ].join('\n') + '\n'
   );

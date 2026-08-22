@@ -42,5 +42,9 @@ Sonra tek satır sor: kaldığı yerden devam mı, yoksa yeni işe mi geçiyoruz
 `calisma.diff` varsa **kendiliğinden uygulama.** Kullanıcı isterse `git apply` et; önce
 `git apply --check` ile dene, tutmuyorsa neyin çakıştığını söyle.
 
-Kayıt eksik geliyorsa `--tam` bayrağı `ham.jsonl` üzerinden kırpılmamış dökümü üretir —
-bağlamı doldurur, sadece kullanıcı isterse kullan.
+Kayıt eksik geliyorsa `--tam` bayrağı ham transkript üzerinden kırpılmamış dökümü üretir —
+bağlamı doldurur, sadece kullanıcı isterse kullan. Ham döküm üç yerden gelebilir ve betik
+sırayla bakar: `ham.jsonl` (normal, premium), `ham.jsonl.gz` (eco), ikisi de yoksa
+`durum.json` içindeki kaynak transkript hâlâ diskteyse o. Hiçbiri yoksa `--tam` hata
+verir ve `UYARI:` satırında `ham transkript yok` yazar — o kayıtta elde yalnızca
+`ozet.md` vardır, kullanıcıya bunu söyle.

@@ -6,8 +6,11 @@ allowed-tools: Bash
 
 İstenen: $ARGUMENTS
 
+Bu komut **üç profil arasında geçiş yapar**: `eco`, `normal`, `premium`. Adı `/premium`
+kalmıştır çünkü ezberde odur; işlevi profil anahtarıdır, premium düğmesi değil.
+
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/premium.js" <premium|normal|eco|durum>
+node "${CLAUDE_PLUGIN_ROOT}/scripts/premium.js" <eco|normal|premium|durum>
 ```
 
 `${CLAUDE_PLUGIN_ROOT}` çözülmezse betik `~/.claude/plugins/**/teknesyum/scripts/premium.js`
@@ -18,6 +21,10 @@ Eski çağrılar durur: `aç` premium, `kapat` normal demektir. `standart` da `n
 Betik üç yeri birden yazar: ajan frontmatter'ı (`model`, `effort`, `maxTurns`), relay
 düğmeleri (`skills/relay/SETTINGS.md`) ve `~/.claude/teknesyum.json` içindeki `profil`
 alanı. Çıktıyı olduğu gibi bas, kendin dosya düzenleme.
+
+`durum` yürürlükteki profili ve o profilin ayırt edici üç değerini basar: **paralel ajan
+sayısı, ön araştırma tavanı, denetim eşiği.** Üçü profilden profile değişen asıl
+değerlerdir; gerisi bu üçünün sonucudur.
 
 | | eco | normal | premium |
 |---|---|---|---|
@@ -35,16 +42,51 @@ alanı. Çıktıyı olduğu gibi bas, kendin dosya düzenleme.
 | plan konseyi | kapalı | kapalı | açık — fable + opus |
 | ikinci görüş | kapalı | kapalı | açık — fable |
 | ön araştırma | 1+ depo | 10+ depo | 50+ depo |
+| /save ham transkript | `ham.jsonl.gz` gzipli | `ham.jsonl` bire bir | `ham.jsonl` bire bir |
+| /loadall proje bloğu | tek satır durum | dört satır durum | dört satır durum |
 
 `scribe` premium'da da düşük eforla çalışır: model yükseldi diye isim değiştirme işine
 uzun uzun düşünmek kazanç değil kayıptır. Efor tavanı `xhigh`.
 
-**eco**, token'ın gerçekten kısıt olduğu profildir. Her rol `haiku` çalışır. Efor kod
-üreten ve denetleyen üç rolde `medium` kalır: haiku maliyeti zaten bir mertebe düşürdü,
-kod yazan rolü bunun üstüne `low`'a indirmek kabul kriterini geçmeyen iş üretir ve
-harcanan tur kazanılan tokenden pahalıya gelir. Denetim `critical`'e düşer — eco'nun en
-büyük tasarruf kolu ajan sayısıdır. Model tırmanışı açık kalır; haiku'nun yetmediği
-sözleşmede tur harcamak yerine modeli yükseltmek burada daha da önemlidir.
+## eco
+
+Token'ın gerçekten kısıt olduğu profil. Felsefesi tek cümle: **token tasarrufu en yüksek
+öncelik, hız ve verimlilik feda edilebilir — doğruluk edilemez.**
+
+Her rol `haiku` çalışır. Efor kod üreten ve denetleyen üç rolde `medium` kalır: haiku
+maliyeti zaten bir mertebe düşürdü, kod yazan rolü bunun üstüne `low`'a indirmek kabul
+kriterini geçmeyen iş üretir ve harcanan tur kazanılan tokenden pahalıya gelir. Denetim
+`critical`'e düşer — eco'nun en büyük tasarruf kolu ajan sayısıdır. Model tırmanışı açık
+kalır; haiku'nun yetmediği sözleşmede tur harcamak yerine modeli yükseltmek burada daha
+da önemlidir.
+
+Kayıt tarafında iki değişiklik daha var, ikisi de veri kaybetmeden:
+
+- `/save` ham transkripti gziplenmiş yazar (`ham.jsonl.gz`). Ölçüm: bu makinedeki 76
+  transkriptin medyanı aslının **%29'una** iniyor; 4,07 MB'lık gerçek bir oturum
+  dosyası 1,18 MB oluyor ve kaydın süresi 73 ms'den 119 ms'e çıkıyor. `/load --tam`
+  gzipliyi de düz kopyayı da okur, fark kullanıcıya görünmez. Kopyalamayı tümden
+  atlayıp `durum.json` içindeki kaynak yola işaretçi bırakmak diskte biraz daha
+  kazandırırdı ama transkript kaydın denetiminde değil: silinirse `--tam` kaybolurdu.
+- `/loadall` proje başına dört satır yerine tek satır durum basar; sözleşme adları,
+  commit başlığı ve röle günlüğü düşer. **Devam promptu kısalmaz** — kullanıcının
+  kopyalayacağı metin odur.
+
+## normal
+
+Varsayılan. `sonnet`, iki paralel ajan, her sözleşme denetlenir; plan konseyi ve ikinci
+görüş kapalı. Kayıt davranışı değişmez: `ham.jsonl` bire bir kopyalanır.
+
+## premium
+
+Hız ve kod kalitesi önceliklidir; token tasarrufu gerekçe sayılmaz. `opus` + `xhigh`,
+20 paralel ajan, worktree izolasyonu açık, plan konseyi ve ikinci görüş açık.
+
+Premium açıkken oturum açılışında `Teknesyum ▸ premium mod` satırı çıkar ve ilk iki
+istekte modele davranış notu enjekte edilir — paraleli aç, sonnet'e düşme, token
+tasarrufunu gerekçe sayma, plan konseyini aç.
+
+## Profilden bağımsız mekanizmalar
 
 **Plan konseyi** premiumla birlikte açılır: sıfırdan projede `PLAN.md` yazılmadan önce
 aynı brifingle iki `planner` ajanı açılır — biri `fable`, biri `opus`. İkisi de iş yapmaz;
@@ -71,11 +113,7 @@ sonrakinin aday listesini eler.
 **Paralel tavanı** premiumda 20'dir. Tavan token için değil: `worktree_isolation` açıkken
 her ajan bir repo kopyası ve bir süreç demektir, ve T0 hatalı bir döngüye girerse tavan
 güvenlik ağı olur. Kararı T0 verir ve ölçüsü hızdır — bölünebilen işi bölmemek gerekçe
-ister.
-
-Premium açıkken oturum açılışında `Teknesyum ▸ premium mod` satırı çıkar ve ilk iki
-istekte modele davranış notu enjekte edilir — paraleli aç, sonnet'e düşme, token
-tasarrufunu gerekçe sayma, plan konseyini aç.
+ister. Eco'da tavan 1'dir: paralel ajan hızdır, token değil.
 
 `~/.claude/teknesyum.json` profili `profil` alanında tutar. Alan yoksa eski `premium`
 bayrağı okunur: `true` premium, gerisi normal sayılır. Betik ikisini birlikte yazar.

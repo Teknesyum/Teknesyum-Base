@@ -24,4 +24,7 @@ işler — dışarıda kalır.
 Çıktıdan sonra kendi cümlelerinle özet geçme; kaç projenin kaydedildiği betiğin ilk
 satırında yazıyor. Kaydedilemeyen proje varsa sebebini tek satırda aktar.
 
+Profil eco ise her projenin ham transkripti gziplenerek yazılır (`ham.jsonl.gz`);
+içerik aynıdır, `/load --tam` yine çalışır.
+
 Genel bakış `/loadall`, tek projenin ayrıntısı o projede `/load`.

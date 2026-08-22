@@ -120,10 +120,13 @@ written, comparable repositories are split across parallel `scout` agents; each 
 `docs/taramalar/<name>.md` under six fixed headings, and the manager merges them into
 `docs/taramalar/RAPOR.md` as **adopted**, **deliberately rejected**, and **suspicious**.
 
-How many repositories is a profile setting, not a mood: **five** on eco, **ten** on normal,
+How many repositories is a profile setting, not a mood: **one** on eco, **ten** on normal,
 **fifty** on premium. Depth does not scale with the count — every file carries the same six
 headings either way; what grows is coverage. Fifty repositories are read in waves, and the
-reports from one wave prune the candidates for the next, with the reason written down.
+reports from one wave prune the candidates for the next, with the reason written down. Eco
+stops at one because every repository is a `scout` agent's worth of budget and agent count
+is the one thing eco actually constrains; a single repository still answers *how has
+somebody else solved this*.
 
 Nothing is copied. What gets taken is a pattern, a boundary, a mistake worth not repeating
 — never source lines. Adopting a project whole is only ever a library decision, and that
@@ -135,6 +138,12 @@ The gate is mechanical, not advisory: writing the first contract of a project th
 never completed any work and holds fewer than ten source files is blocked until the
 research exists. Skipping is allowed — one line of reasoning in `docs/taramalar/ATLANDI.md`
 opens the gate. Skipping silently is not.
+
+On eco the gate warns instead of blocking: the contract is written, a one-line warning goes
+to the session, and the skip is appended to `.claude/relay/live/_sorun.log`. The rule did
+not bend, its carrier moved. A warning scrolls out of view and is not a record; the log line
+is, and the manager reads that file every round. The hook can record *what* was skipped —
+only the manager can record *why*, so the `ATLANDI.md` line is still owed.
 
 ### Product standards — three platforms, and staying up to date
 
@@ -392,7 +401,7 @@ still lands there.
 | report · briefing | short · quiet | short · milestone | detailed · every-step |
 | plan council | off | off | on — fable + opus |
 | second opinion | off | off | on — fable |
-| prior-art repositories | 5 | 10 | 50 |
+| prior-art repositories | 1 | 10 | 50 |
 
 **Premium** is for a budget that does not run out. Sonnet and haiku are dropped entirely;
 the difference between roles moves from the model to the effort. `scribe` still runs at low
@@ -407,6 +416,16 @@ roles below `medium` on top of that buys work that fails its acceptance criteria
 rounds cost more than the tokens saved. `audit` falls back to `critical`, because the
 largest lever in eco is the number of agents and the auditor is a second agent per contract.
 Model escalation stays on: when haiku is not enough, raising the model beats spending rounds.
+
+Eco's philosophy is one sentence: **saving tokens outranks everything, and speed or elegance
+can be spent to buy it.** Correctness cannot. Eco may be slow and inelegant; it may not be
+wrong. That is why the ordering of principles inverts here — on premium and normal the
+manager weighs user comfort first and treats tokens as a budget, on eco tokens come first —
+while the correctness layer does not move at all. The audit still runs, `critical` is a
+floor rather than a target, the four-field seal still guards `done/`, contracts still own
+their files, and acceptance criteria are still run before they are ticked. What eco cuts is
+the *amount* of work, never the *verification* of it: unverified work gets written twice,
+which costs more than it saved.
 
 The parallel ceiling is meant to be used, not admired. On premium, splitting the work across
 five or ten agents at once is the expected move; **failing to split work that could be split

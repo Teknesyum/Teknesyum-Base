@@ -2100,6 +2100,108 @@ ol('yerlesik projede on arastirma istenmez', () => {
   esit(ilkSozlesme(p).kod, 0, '10+ kaynak dosyali proje yeni sayilmaz');
 });
 
+function profilCfg(profil) {
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-profil-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr', profil }));
+  return { CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_PREMIUM: '' };
+}
+
+function ilkSozlesmeProfilde(p, profil) {
+  return calistir(
+    KORU,
+    {
+      tool_name: 'Write',
+      tool_input: {
+        file_path: path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
+        content: '---\nname: T1\nstatus: open\n---\n',
+      },
+    },
+    profilCfg(profil)
+  );
+}
+
+const sorunSatirlari = (p) => {
+  try {
+    return fs.readFileSync(path.join(p, '.claude', 'relay', 'live', '_sorun.log'), 'utf8');
+  } catch {
+    return '';
+  }
+};
+
+ol('eco profilinde on arastirma kapisi engellemez, uyarir', () => {
+  const p = taptazeProje(null);
+  const r = ilkSozlesmeProfilde(p, 'eco');
+  esit(r.kod, 0, 'eco kapiyi engellememeli');
+  esit(r.err, '', 'eco engel mesaji yazmamali');
+  icerir(r.out, 'UYARI');
+  icerir(r.out, 'docs/taramalar/ATLANDI.md');
+  icerir(r.out, 'sessizce atlamak değil');
+});
+
+ol('eco atlamasi _sorun.log dosyasina kalici iz birakir', () => {
+  const p = taptazeProje(null);
+  ilkSozlesmeProfilde(p, 'eco');
+  const log = sorunSatirlari(p);
+  icerir(log, 'eco ön araştırma atlandı');
+  icerir(log, '.claude/relay/contracts/T1.md');
+});
+
+ol('normal ve premium profilde on arastirma kapisi hala engeller', () => {
+  for (const profil of ['normal', 'premium']) {
+    const r = ilkSozlesmeProfilde(taptazeProje(null), profil);
+    esit(r.kod, 2, profil + ' engellemeli');
+    icerir(r.err, 'ön araştırma');
+    esit(r.out, '', profil + ' uyari basmamali');
+  }
+});
+
+ol('eco uyarisi yalnizca kapinin durdugu yerde cikar', () => {
+  const r = ilkSozlesmeProfilde(taptazeProje('ATLANDI.md'), 'eco');
+  esit(r.kod, 0);
+  esit(r.out, '', 'gerekce dosyasi varken uyari da cikmaz');
+});
+
+ol('research_repos eco profilinde 1 depoya iner', () => {
+  const s = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
+  const satir = (s.match(/^\| `research_repos` \|.*$/m) || [])[0] || '';
+  esit(satir.split('|')[2].trim(), '1', 'profil tablosunda eco sutunu');
+  icerir(s.replace(/\s+/g, ' '), 'eco profilinde 1, normal profilde 10, premium profilde 50');
+});
+
+ol('SKILL eco bolumunu ve tersine donen ilke sirasini anlatir', () => {
+  const s = fs
+    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+    .replace(/\r/g, '');
+  const duz = s.replace(/\s+/g, ' ');
+  icerir(s, '## 0.1 Üç profil');
+  icerir(duz, 'token tasarrufu > kullanıcı rahatlığı > kod verimliliği');
+  for (const madde of ['Grep önce, oku sonra', '`Explore` açma', 'Tek ajan varsayılan'])
+    icerir(duz, madde, 'eco T0 davranisi');
+  icerir(duz, "`critical`'e düşer ama daha aşağı inmez; `critical` alt sınırdır");
+  icerir(duz, "**eco'da kapı engellemez, uyarır.**");
+  const i = duz.indexOf("**eco'da değişmeyenler.**");
+  if (i < 0) throw new Error('eco degismeyenler basligi yok');
+  const blok = duz.slice(i, i + 700);
+  for (const kalan of ['Mühür kapısı', '`owns` disiplini', 'Kabul kriteri'])
+    icerir(blok, kalan, 'eco degismeyenler listesi');
+});
+
+ol('eco sablon kisaltmasi kabul kriterini ve owns alanini dusurmez', () => {
+  const t = fs
+    .readFileSync(path.join(KOK, 'skills', 'relay', 'assets', 'contract.template.md'), 'utf8')
+    .replace(/\r/g, '');
+  const i = t.indexOf('eco profilinde bu şablon kısalır');
+  if (i < 0) throw new Error('sablonda eco kurali yok');
+  const asla = t.slice(t.indexOf('Asla düşmeyenler:', i), t.indexOf("eco'da düşenler:", i));
+  for (const kalan of ['`owns`', '## Kabul kriteri', '## Kayıt noktası', 'mühür alanları'])
+    icerir(asla, kalan, 'asla dusmeyenler');
+  const dusen = t.slice(t.indexOf("eco'da düşenler:", i));
+  for (const yasak of ['owns', 'Kabul kriteri'])
+    if (dusen.includes(yasak)) throw new Error('eco dusenler listesine ' + yasak + ' karismis');
+  for (const bas of ['## Kabul kriteri', '## Kayıt noktası', '## Çıktı', 'owns: []'])
+    icerir(t, bas, 'sablon govdesi');
+});
+
 ol('scout ajani paketlenir', () => {
   const a = fs.readFileSync(path.join(KOK, 'agents', 'scout.md'), 'utf8');
   icerir(a, 'name: scout');

@@ -11,7 +11,7 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - **A third profile, `eco`.** There were two; there are now three — `premium`, `normal`,
   `eco` — and `/premium` moves between them. Eco is for the case where tokens genuinely are
   the constraint: every role on haiku, one agent at a time, the audit back to `critical`,
-  prior art down to five repositories, council and second opinion off. Effort stays at
+  prior art down to one repository, council and second opinion off. Effort stays at
   `medium` for the three roles that produce or verify code and drops to `low` everywhere
   else, because haiku already cuts the cost by an order of magnitude and taking the coding
   roles below that buys work which fails its acceptance criteria — the extra rounds cost
@@ -25,6 +25,31 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- **Prior art drops to one repository on eco**, from five. Prior art is one of the most
+  expensive items in a session — every repository is a `scout` agent's worth of budget, and
+  agent count is the one thing eco actually constrains. A single repository still answers
+  *how has somebody else solved this*; five contradicts the profile it sits in.
+- **The prior-art gate warns instead of blocking on eco.** `contract-guard.js` now reads
+  `profil()` and, on eco only, lets the first contract through with a one-line warning and
+  appends the skip to `.claude/relay/live/_sorun.log`. Normal and premium still block. The
+  rule did not bend, its carrier moved: a warning scrolls out of view and is not a record,
+  the log line is, and the manager reads that file every round. The hook records *what* was
+  skipped; the `docs/taramalar/ATLANDI.md` line is still owed because only the manager can
+  record *why*.
+- **The relay skill describes eco.** It described premium and left eco as a table of values.
+  Added: which profile to pick and when, how the manager behaves on eco (grep before read,
+  no `Explore`, one agent by default, short answers, deterministic tools before the model),
+  and what does **not** change — the audit (`critical` is a floor, not a target), the seal
+  gate, `owns` discipline and acceptance criteria. §0's ordering of principles is now
+  stated as inverting on eco: tokens come first there, where elsewhere they are a budget.
+  Eco users were reading two instructions that contradicted each other.
+- **Contract and plan templates shorten on eco.** Not by splitting the template in two — one
+  template stays and the manager drops sections while filling it. `## Amaç` goes when the
+  title and acceptance criteria already say it, `## Arayüzler` only when `depends` is empty,
+  along with an empty `side_effects` and the trailing explanatory comment; the plan loses its
+  ASCII task graph, whose information the `Bağımlı` column already carries. `id`, `status`,
+  `owns`, the seal fields, `## Kabul kriteri`, `## Kayıt noktası` and `## Çıktı` never drop —
+  correctness and interrupted-session recovery come from those.
 - **`standart` is now `normal`.** Same values, new name. Old calls keep working: `/premium
   kapat` and `off` land on `normal`, `ac`/`aç`/`on` on `premium`, and `standart` is still
   accepted.

@@ -25,3 +25,9 @@ T3 ─────────┘
 - [ ] <proje seviyesi kabul kriteri>
 - [ ] İmza/sponsor bloğu ayarlar bölümünde
 - [ ] Kök + alt klasör AGENTS.md dosyaları güncel
+
+<!--
+eco profilinde `## Görev grafiği` altındaki ASCII şema düşer; `Bağımlı` sütunu aynı
+bilgiyi zaten taşır. Tablo, `## Hedef`, `## Kısıtlar` ve `## Bitti tanımı` düşmez.
+-->
+

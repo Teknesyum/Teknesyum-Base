@@ -16,7 +16,7 @@ report_length      : short          # short | normal | detailed
 briefing           : milestone      # quiet | milestone | every-step
 plan_council       : off            # off | on — planı iki model bağımsız önerir
 second_opinion     : off            # off | on — karar düğümünde fable kısa görüş verir
-research_repos     : 10             # ön araştırmada taranacak en az depo sayısı
+research_repos     : 10             # ön araştırmada taranacak en az depo sayısı — eco 1 · normal 10 · premium 50
 agent_stall        : 10             # kaç dakika sessiz kalan ajan bildirilir
 agent_loop         : 5              # aynı eylem kaç kez üst üste tekrarlarsa döngü sayılır
 ```
@@ -96,10 +96,16 @@ de tutmaz: `ask_threshold` sormaya izin veriyorsa önce sorulur. eco ve normal p
 kapalıdır, premiumda açılır. Hangi dokuz durumda tetiklendiği relay SKILL §1.5.1.
 
 **research_repos** — ön araştırmada (SKILL §1.4) taranacak en az depo sayısı. eco
-profilinde 5, normal profilde 10, premium profilde 50. Elli depo, on depoyla aynı
+profilinde 1, normal profilde 10, premium profilde 50. Elli depo, on depoyla aynı
 derinlikte okunmaz: ilk tarama tabakası sığdır, konsey ve planlama derinleşeceği yeri
-kendi seçer. Beş depo kapıyı kapatmaz, yalnız daraltır — atlamanın gerekçesi hâlâ
-`docs/taramalar/ATLANDI.md` dosyasına yazılır.
+kendi seçer.
+
+eco'da tavan **1**'dir çünkü ön araştırma bir oturumun en pahalı kalemidir: her depo bir
+`scout` ajanı payı demektir ve eco'nun tek gerçek kısıtı ajan sayısıdır. Tek depo bile
+"birileri bu problemi nasıl çözmüş" sorusuna cevap verir; beş depo eco felsefesiyle
+çelişir. Kapı da eco'da engellemez, uyarır — ayrıntısı SKILL §1.4'te. Atlamanın gerekçesi
+hâlâ `docs/taramalar/ATLANDI.md` dosyasına yazılır; eco'da kanca atlamayı ayrıca
+`live/_sorun.log` dosyasına kaydeder, çünkü ekrandan kayan uyarı kalıcı iz değildir.
 
 **agent_stall** — bir ajan kaç dakika olay üretmezse sağlıksız sayılır. Kanca her ajanın
 `live/<agent_id>.json` kaydındaki `last_seen` alanına bakar; süre dolmuş ve `SubagentStop`
@@ -150,7 +156,7 @@ düşerse ölçü tutmaz.
 | `briefing` | quiet | milestone | every-step |
 | `plan_council` | off | off | on — fable + opus |
 | `second_opinion` | off | off | on — fable |
-| `research_repos` | 5 | 10 | 50 |
+| `research_repos` | 1 | 10 | 50 |
 | `agent_stall` | 10 | 10 | 10 |
 | `agent_loop` | 5 | 5 | 5 |
 
@@ -161,14 +167,20 @@ düşerse ölçü tutmaz.
 tamamen bırakılır, efor tavanı `xhigh` olur. Tek istisna `advisor`: modeli `fable`,
 eforu `low`. Danışma sık olacaksa ucuz olmak zorundadır.
 
-**eco**, token'ın gerçekten kısıt olduğu profildir. Her ajan `haiku` çalışır; efor kod
+**eco**, token'ın gerçekten kısıt olduğu profildir. Felsefesi tek cümle: **token tasarrufu
+önceliği en yüksek, hız ve verimlilik ondan feda edilebilir.** Feda edilmeyen şey
+doğruluktur — eco yavaş ve daha az zarif olabilir, yanlış olamaz. Bu yüzden denetim,
+mühür kapısı, `owns` disiplini ve kabul kriteri eco'da da aynen durur.
+
+Her ajan `haiku` çalışır; efor kod
 üreten ve denetleyen üç rolde (`builder`, `ui-builder`, `auditor`) `medium`, kalanında
 `low`. Sebebi: haiku maliyeti zaten bir mertebe düşürüyor, kod yazan rolü bunun üstüne
 `low`'a indirmek kabul kriterini geçmeyen iş üretir ve harcanan tur kazanılan tokenden
 pahalıya gelir. `audit` `critical`'e düşer — eco'nun en büyük tasarruf kolu ajan
 sayısıdır, denetim ajanı sözleşme başına ikinci ajandır. `model_escalation` açık kalır:
 haiku'nun yetmediği sözleşmede tur harcamak yerine modeli yükseltmek eco'da daha da
-önemlidir. `fix_ceiling` 3'tür, `briefing` `quiet`'tir.
+önemlidir. `fix_ceiling` 3'tür, `briefing` `quiet`'tir. `research_repos` 1'e iner: ön
+araştırma ajan sayısıyla çarpılan tek kalemdir ve eco'nun kestiği ilk şey odur.
 
 Üç profilde de değişmeyen şey deterministik araç tercihidir — `biome`, `rg`, `sed`
 modelden ucuz olduğu için değil daha doğru olduğu için seçilir. `/premium durum`

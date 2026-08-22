@@ -41,5 +41,15 @@ status: open → active → submitted → done
 `submitted`'a kadar ajan yürütür. Sonrası T0'ındır: denetçi GEÇTİ derse T0 mührü
 (`audit: passed`, `auditor_id`, `diff`, `verification`) işler ve dosyayı done/'a taşır.
 Mühürsüz dosyanın done/ altına girmesini hook engeller. Ajan done/'a taşımaz.
+
+eco profilinde bu şablon kısalır. Şablon ikiye ayrılmaz; T0 doldururken düşürür.
+Asla düşmeyenler: `id` · `status` · `owns` · mühür alanları · `## Kabul kriteri` ·
+`## Kayıt noktası` · `## Çıktı`. Doğruluk ve kurtarma bunlardan gelir.
+eco'da düşenler:
+- `## Amaç` — başlık ve kabul kriteri işi zaten anlatıyorsa.
+- `## Arayüzler` — yalnızca `depends: []` iken. Bağımlılık varsa kalır; imzayı ajana
+  aratmak yazmaktan pahalıdır.
+- boş `side_effects` satırı ve bu yorum bloğunun kendisi.
+- `## Bağlam` düşmez, 3 satırla sınırlanır: bir `Oku`, bir `Tespit`, gerekiyorsa `Kural`.
 -->
 

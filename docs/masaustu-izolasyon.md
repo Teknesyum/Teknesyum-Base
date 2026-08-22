@@ -61,8 +61,12 @@ gerektirmez.
 Ayrı işletim sistemi, ayrı masaüstü, ayrı girdi kuyruğu. Ajan orada istediği kadar
 tıklar, senin ekranın hiç sarsılmaz.
 
-Bu makinede durum: **Hyper-V açıldı** (22.08.2026), makine yeniden başlatılmayı bekliyor.
-Windows Sandbox kapalı. Kaynak sıkıntısı yok (63,6 GB RAM, 333 GB boş, 16 iş parçacığı).
+Bu makinede durum: **Hyper-V kapalı** — 22.08.2026'da açıldı, aynı gün kullanıcı kararıyla
+geri kapatıldı. Arada yeniden başlatma olmadığı için özellik hiç etkinleşmedi, net değişim
+sıfır. Windows Sandbox kapalı. Kaynak sıkıntısı yok (63,6 GB RAM, 333 GB boş, 16 iş parçacığı).
+
+**Karar:** bu yol şimdilik rafta. Ekran kapısı (§4.1) odak çalma sorununu zaten kapatıyor;
+VM ancak "arayüzü gerçekten tıklatarak görmem gerek" diyen iş kaldığında gerekecek.
 
 Bilmen gerekenler:
 
@@ -76,9 +80,15 @@ Bilmen gerekenler:
   (bölümleme) resmî desteklenmiyor, sürücü dosyalarını konuğa elle kopyalamak gerekiyor.
   VidShrink'in donanım kodlayıcı yolu **host'ta** test edilmeye devam etmeli; sanal
   makineye giden yalnızca arayüz ve CPU yolu olur.
-- Ajanı sanal makinede nasıl çalıştırırsın: içine Claude Code kurulur, oturum orada açılır.
-  Uzak denetimle (`/rc`) telefondan ya da bu ekrandan tek pencereden izlenir — masaüstünü
-  ele geçiren taraf artık senin masaüstün değil.
+- Ajanı sanal makinede nasıl çalıştırırsın: **içine Claude Code kurmaya gerek yok.**
+  `Invoke-Command -VMName` (PowerShell Direct) host'taki ajanın konuk içinde komut
+  çalıştırmasını sağlar — VMBus üzerinden, ağsız, konsolsuz, penceresiz. VM'in arayüzü
+  vardır ama kullanıcının monitörüne hiç çizilmez. `VMConnect` çizerdi; kullanılmaz.
+  Ekran görüntüsü konuğun içinde alınıp paylaşılan klasöre yazılır, ajan dosyayı okur.
+  Bu, belgenin ilk hâlindeki "VM'e Claude Code kur, `/rc` ile izle" adımını ve onunla
+  gelen tarayıcı girişini tümden kaldırır.
+- PowerShell Direct konuk hesabı kimlik doğrular; atılabilir bir test VM'i için bile bir
+  parola gerekir ve o parolayı kullanıcı belirler.
 
 ### 3.3 Windows Sandbox (hafif, tek kullanımlık)
 

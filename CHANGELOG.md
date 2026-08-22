@@ -6,6 +6,37 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- **Agent names carry the model.** An agent is now called `<Model>-<Job Name>` —
+  `Fable-Kanca Sızıntıları`, `Opus-Ajan Sağlığı ve Tur Özeti`. The model is capitalised,
+  every word of the job name is capitalised, and short conjunctions stay lowercase. A list
+  of running agents now says which weight is on which job before any record is opened. The
+  rule is written down as a *label* rule so the next session does not try to reconcile it
+  with the sentence-case rule that governs document titles and filenames; they govern
+  different things. The dispatch line keeps printing the `model` parameter beside the name,
+  because the name is free text and the parameter is what actually ran — printing both
+  turns a repeat into a check.
+- **A plan gets a second opinion.** Producing a plan is the fifth trigger for
+  `second_opinion`: when the user asks for a plan on premium, `fable` returns a short check
+  before the plan is handed over. It is not the plan council — the council opens once on a
+  from-scratch project with two members and a full proposal each, while this is one member
+  and at most twenty lines, every time a plan is asked for. Where a from-scratch `PLAN.md`
+  goes through the council, no separate check is taken.
+
+### Changed
+
+- **Opening an agent is a judgement call, not a permission request.** Nothing ever held
+  agents back until the user asked for one, but the wording left room to read it that way.
+  The threshold section now says it outright: the manager decides on the size of the job,
+  and an explicit request from the user is simply honoured. The sizing table is unchanged —
+  a small job stays a small job; what changed is not hesitating above the line.
+- **On premium, parallel is the default and running alone needs a reason.** The behaviour
+  note used to say "lower the delegation threshold", which is true but too soft for a
+  profile whose binding constraint is wall-clock time rather than tokens. It now says to
+  split the work and run five or ten agents at once, and reserves the single agent for jobs
+  that really are small.
+
 ## [2.38.0] - 2026-08-22
 
 ### Added

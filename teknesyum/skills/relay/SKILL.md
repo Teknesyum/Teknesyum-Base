@@ -272,7 +272,7 @@ Konseyden iki yerde ayrılır: konsey **planın tamamı** içindir ve **iki** ü
 **tek bir karar** içindir ve **tek** üyelidir — `fable`. Konsey ön araştırmadan sonra bir
 kez açılır; görüş iş sürerken, takıldığın yerde açılır.
 
-Dört durumda açılır:
+Beş durumda açılır:
 
 1. İki yol arasında kalındı ve seçim geri alınması pahalı — mimari sınır, veri modeli,
    bağımlılık kararı.
@@ -280,9 +280,24 @@ Dört durumda açılır:
 3. Bir kural bozulacak. §0 bunu serbest bırakıyor ama gerekçe istiyor; görüş o gerekçeyi
    sınar.
 4. İstek iki farklı okunabiliyor ve sormak yerine varsayım yapılacak.
+5. Kullanıcı "plan oluştur" ya da "plan yap" dedi. Plan kullanıcıya verilmeden önce
+   `fable`'dan kısa bir teyit alınır.
 
 **Dördüncü maddede sormak önce gelir.** Görüş, kullanıcıya sormanın yerini tutmaz;
 yalnızca `ask_threshold` sormaya izin vermediğinde devreye girer. Eşik soruyorsa sor.
+
+**Beşinci maddeyi plan konseyiyle karıştırma.** İkisi ayrı tetikleyicidir ve ayrı yerde
+çalışır:
+
+| | Plan konseyi (§1.5) | Plan teyidi (bu bölüm) |
+|---|---|---|
+| Ne zaman | sıfırdan projede, ön araştırma bittiğinde | kullanıcı her "plan oluştur" dediğinde |
+| Üye | iki — `fable` + `opus` | tek — `fable` |
+| Çıktı | beş başlıklı iki bağımsız öneri | üç başlıklı kısa teyit, ≤20 satır |
+| Sonuç | T0 sentezler, `PLAN.md` yazar | T0 planı düzeltir ya da gerekçesini yazar |
+
+Sıfırdan projede `PLAN.md` yazılıyorsa konsey çalışır, teyit ayrıca alınmaz — iki üye
+zaten baktı. Konsey kapalıyken veya iş sıfırdan proje değilken teyit tek üyeyle alınır.
 
 **Açılmayacağı yerler:** mekanik iş, kalıbı belli iş, tek doğru cevabı olan şey. Cevabını
 bildiğin soruyu sorma — ikinci görüşün maliyeti tur değil dikkattir.
@@ -556,11 +571,46 @@ zaten tepedesin, çözülmeyen sözleşmede modeli değil sözleşmeyi düzelt. 
 altıdır ve üçü geçtiğinde worktree izolasyonu açılır. `/premium durum` hangi profilin
 yürürlükte olduğunu söyler.
 
+Tavanı da hevesle kullan. Premiumda paralel açmak varsayılandır: işi bölebiliyorsan böl,
+altı ajana kadar aynı anda yürüt, bitince sonraki basamağa geç. Tek ajanla gitmek burada
+gerekçe ister — ayrıntısı §5'te.
+
 `planner` bu tablonun dışındadır: modeli işin ağırlığına göre seçilmez, **konseyin iki
 üyesi tanım gereği iki farklı modeldir** — biri `fable`, biri `opus`. İkisini de aynı
 modele almak konseyi ortadan kaldırır.
 
+**Ajan adı `<Model>-<İş Adı>` biçiminde yazılır.** Model adının ilk harfi büyüktür —
+`Opus`, `Fable`, `Sonnet`, `Haiku`. İş adında her kelime büyük harfle başlar; `ile`, `ve`,
+`veya`, `ya` gibi kısa bağlaçlar küçük kalır.
+
+```
+Fable-Kanca Sızıntıları
+Opus-Ortak Katman
+Opus-Ajan Sağlığı ve Tur Özeti
+```
+
+Model adı adın içinde durur çünkü ajan listesinde ilk görülen şey addır: hangi işin hangi
+ağırlıkta yürüdüğü kaydı açmadan okunur. Ad serbest metindir, `model` parametresi ise
+gerçekten dağıtılan modeldir — ikisi ayrılırsa `görev veriliyor` satırı bunu gösterir.
+Bu yüzden bildirimdeki model alanı adla birlikte kalır; tekrar değil, karşılaştırmadır.
+
+Bu kural depodaki **"başlık ve dosya adı ilki büyük gerisi küçük"** kuralıyla çelişmez.
+O kural belge başlıkları ve dosya adları içindir; bu kural ajan adı içindir. Ajan adı
+başlık değil etikettir — `/report` ve `live/` kayıtları onu tek parça olarak taşır.
+İkisini birbirine uydurma; ne ajan adını küçült, ne belge başlığını büyült.
+
 ## 5. Delege etme eşiği
+
+**Ajan açmak kullanıcıdan izin isteyen bir şey değildir.** Kullanıcı istemedikçe ajan
+açılmaz diye bir kural yok; kararı sen verirsin, ölçüne göre — §1'deki tablo. Kullanıcı
+açıkça isterse aç, tartışma. Ölçü tablosu değişmedi: küçük iş küçük kalır. Değişen,
+eşiğin üstündeki işte tereddüt etmemektir.
+
+**Premium mod açıkken varsayılan tutum paralele açmaktır.** Orada asıl kısıt token değil
+süredir. Bağımsız parçaları sıraya dizme, aynı anda beş on ajanla yürüt ve sonraki
+basamağa geç. Bu modda gerekçe isteyen taraf tersine döner: **paralel açmak varsayılan,
+tek ajanla gitmek gerekçe ister.** Tek ajan yalnız iş gerçekten küçükken — tek dosya,
+tek fonksiyon, bölünecek bağımsız parçası olmayan iş — doğru cevaptır.
 
 Alt ajan soğuk başlar; üretken iş başlamadan ~4-15k token yanar. Karar kuralı,
 **ara çıktı / geri dönen rapor oranı**:

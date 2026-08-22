@@ -127,8 +127,11 @@ const S = {
     tr:
       'Premium mod açık (Max 20x). Sonnet ve haiku kullanma; her ajan opus çalışır. ' +
       'Bağımsız sözleşmeleri sıraya dizme, aynı anda yürüt — altı paralel ajana kadar ' +
-      'çıkabilirsin, üçü geçtiğinde worktree izolasyonuyla. Delege eşiğini aşağı çek: ' +
-      'kararsız kaldığın işi kendin sürüklemek yerine ajana ver. Token tasarrufu bu ' +
+      'çıkabilirsin, üçü geçtiğinde worktree izolasyonuyla. Paralel açmak bu modda ' +
+      'varsayılandır, tek ajanla gitmek gerekçe ister: işi bölebiliyorsan böl, beş on ' +
+      'elden hallet, bitince sonraki basamağa geç. Ajan açmak için kullanıcıdan izin ' +
+      'bekleme — kararı kendi ölçüne göre sen verirsin, kullanıcı istediğinde zaten ' +
+      'açarsın. Tek ajan yalnız iş gerçekten küçükken doğrudur. Token tasarrufu bu ' +
       'modda gerekçe değil — dosyayı okumak grepten daha iyi cevap veriyorsa oku, ' +
       'aramayı dar tutma, denetimi her sözleşmede çalıştır. Düşünmeyi işe göre ayarla: ' +
       'mekanik ve kalıbı belli işte uzun uzun düşünme, karar taşıyan veya hata ayıklama ' +
@@ -140,15 +143,22 @@ const S = {
       'doğru kararı bilmediğin düğümde planner ajanını GÖRÜŞ: ile başlayan brifingle aç, ' +
       GORUS +
       ' üç başlıkta kısa cevap verir. Geri alınması pahalı seçim, üç turdur çözülmeyen ' +
-      'hata, bozulacak kural ve iki türlü okunan istek için aç; mekanik işte açma ve ' +
-      'sorabiliyorsan önce kullanıcıya sor. Görüş bağlayıcı değil — katılmazsan ' +
+      'hata, bozulacak kural, iki türlü okunan istek ve kullanıcının plan istediği her ' +
+      'sefer için aç; mekanik işte açma ve sorabiliyorsan önce kullanıcıya sor. Plan ' +
+      'teyidini konseyle karıştırma: konsey sıfırdan projede PLAN.md için iki üyeyle ' +
+      'açılır, teyit kullanıcı plan oluştur dediğinde tek üyeyle alınır. Görüş ' +
+      'bağlayıcı değil — katılmazsan ' +
       'gerekçeni yaz, aldığını `Teknesyum ▸ Görüş ▸ …` satırıyla bildir. Ön araştırma ' +
       'tavanı bu modda 50 depodur.',
     en:
       'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
       'Do not queue independent contracts, run them at once — up to six agents in ' +
-      'parallel, with worktree isolation past three. Lower the delegation threshold: ' +
-      'hand out the work you would otherwise drag along yourself. Saving tokens is not a ' +
+      'parallel, with worktree isolation past three. Going parallel is the default here ' +
+      'and going with a single agent needs a reason: split the work when it can be ' +
+      'split, get it done five or ten hands at a time, then move to the next step. Do ' +
+      'not wait for the user to authorise opening an agent — the call is yours to make ' +
+      'on your own measure, and when the user does ask you open one anyway. A single ' +
+      'agent is right only when the job really is small. Saving tokens is not a ' +
       'reason here — read the file when reading answers better than grepping, keep the ' +
       'search wide, run the audit on every contract. Match thinking to the work: do not ' +
       'labour over mechanical, pattern-fixed tasks; go all the way down on decisions and ' +
@@ -162,9 +172,12 @@ const S = {
       'GÖRÜŞ: and ' +
       GORUS +
       ' answers short, under three headings. Open it for a choice that is expensive to ' +
-      'undo, a bug unsolved for three rounds, a rule you are about to break and a request ' +
-      'that reads two ways; not for mechanical work, and ask the user first whenever you ' +
-      'are allowed to ask. The opinion is not binding — write your reasoning when you ' +
+      'undo, a bug unsolved for three rounds, a rule you are about to break, a request ' +
+      'that reads two ways, and every time the user asks for a plan; not for mechanical ' +
+      'work, and ask the user first whenever you are allowed to ask. Do not confuse the ' +
+      'plan check with the council: the council opens with two members for PLAN.md on a ' +
+      'from-scratch project, the check is one member whenever the user says make a plan. ' +
+      'The opinion is not binding — write your reasoning when you ' +
       'disagree, and report that you took one with a `Teknesyum ▸ Opinion ▸ …` line. ' +
       'Prior art in this mode means 50 repositories.',
   },

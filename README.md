@@ -313,6 +313,16 @@ Role determines the kind of work, model the weight; they are separate axes, and 
 is chosen at call time. `planner` is the exception: its two council members are two
 different models by definition, so the choice is not the manager's to make.
 
+Agents are named `<Model>-<Job Name>`. The model comes first, capitalised — `Opus`,
+`Fable`, `Sonnet`, `Haiku` — and every word of the job name is capitalised except short
+conjunctions, which stay lowercase: `Fable-Kanca Sızıntıları`, `Opus-Ortak Katman`,
+`Opus-Ajan Sağlığı ve Tur Özeti`. The name is the first thing visible in a list of running
+agents, so carrying the model there says which weight is on which job without opening the
+record. The name is free text and the `model` parameter is what actually gets dispatched;
+the `görev veriliyor` line prints both, so a mismatch shows up rather than hiding. This is
+a label, not a heading — it does not follow the sentence-case rule that governs document
+titles and filenames, and neither rule should be bent to match the other.
+
 The auditor must not be able to fix what it is auditing, and that guarantee is built in
 three layers because no single one of them holds.
 
@@ -383,6 +393,10 @@ Sonnet and haiku are dropped entirely; the difference between roles moves from t
 the effort. `scribe` still runs at low effort on opus, because labouring over a rename is a
 loss at any price. Effort tops out at `xhigh`, the highest value the frontmatter accepts.
 
+The parallel ceiling is meant to be used, not admired. With the profile on, splitting the
+work across five or ten agents at once is the expected move; a contract that runs alone is
+the one that has to justify itself.
+
 Two things do not change. A deterministic tool still comes before a model call — `biome`,
 `rg` and `sed` are chosen for being right, not for being cheap. And the auditor still cannot
 write. Premium buys depth, not permission.
@@ -427,10 +441,18 @@ twenty lines: the call it would make, at most three reasons, and what the asker 
 third heading is why the feature exists; the first two often only confirm what the manager
 already thought.
 
-It opens on four occasions: a choice between two roads where being wrong is expensive to
+It opens on five occasions: a choice between two roads where being wrong is expensive to
 undo, a bug that has survived three rounds with the root cause still unclear, a rule about
-to be broken, and a request that reads two ways. It does not open for mechanical work,
-pattern-fixed work, or anything with one right answer.
+to be broken, a request that reads two ways, and every time the user asks for a plan. It
+does not open for mechanical work, pattern-fixed work, or anything with one right answer.
+
+The fifth occasion is not the council. The council runs once on a from-scratch project,
+after the prior-art research and before `PLAN.md`, with two members returning full
+proposals. The plan check runs whenever the user says "make a plan", with one member
+returning at most twenty lines before the plan is handed over. Where a from-scratch
+`PLAN.md` is being written the council covers it and no separate check is taken; with the
+council off, or on work that is not a from-scratch project, the check is the single-member
+version.
 
 Asking the user still comes first. The opinion replaces a guess, never a question — it only
 applies where `ask_threshold` does not allow asking. And it binds nothing: where the manager
@@ -811,6 +833,13 @@ relay protocol is read only when a relay is actually set up.
 One rule shaped the whole design: **delegate when the ratio of intermediate output to
 returned summary is high.** Exploration and scanning die inside the subagent's context;
 only the conclusion comes back.
+
+Opening an agent is not something the manager asks permission for. There is no rule that
+holds agents back until the user requests one — the call is made on the size of the job,
+and when the user does ask for agents they get opened without debate. On premium the
+posture inverts: going parallel is the default and going with a single agent is what needs
+a reason, because the binding constraint there is wall-clock time rather than tokens. The
+sizing table itself does not move; a small job stays a small job.
 
 ---
 

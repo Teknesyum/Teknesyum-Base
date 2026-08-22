@@ -2569,6 +2569,66 @@ ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
   icerir(acik, 'plan konseyini aç');
 });
 
+ol('ajan adi kurali modeli one alir, ornek bicime uyar', () => {
+  const s = fs
+    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+    .replace(/\r/g, '');
+  const i = s.indexOf('**Ajan adı `<Model>-<İş Adı>` biçiminde yazılır.**');
+  if (i < 0) throw new Error('ajan adlandırma kuralı SKILL.md içinde yok');
+  const blok = (s.slice(i).match(/```\n([\s\S]*?)```/) || [])[1] || '';
+  const ornek = blok.split('\n').filter((r) => r.trim());
+  if (ornek.length < 2) throw new Error('adlandırma örneği yok: ' + JSON.stringify(blok));
+  const baglac = ['ile', 've', 'veya', 'ya'];
+  let baglacliOrnek = false;
+  for (const ad of ornek) {
+    const m = ad.match(/^(Opus|Fable|Sonnet|Haiku)-(.+)$/);
+    if (!m) throw new Error('örnek `<Model>-<İş Adı>` biçiminde değil: ' + ad);
+    for (const kelime of m[2].split(' ')) {
+      if (baglac.includes(kelime)) {
+        baglacliOrnek = true;
+        continue;
+      }
+      if (!/^[A-ZÇĞİÖŞÜ]/.test(kelime))
+        throw new Error('iş adında büyük harfle başlamayan kelime: ' + ad + ' → ' + kelime);
+    }
+  }
+  esit(baglacliOrnek, true, 'kısa bağlaç istisnasını gösteren örnek yok');
+  icerir(s, 'başlık ve dosya adı ilki büyük gerisi küçük');
+});
+
+ol('plan uretimi ikinci gorus tetikleyicisidir ve konseyden ayrilir', () => {
+  const s = fs
+    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+    .replace(/\r/g, '');
+  const i = s.indexOf('## 1.5.1');
+  const j = s.indexOf('## 1.6');
+  if (i < 0 || j < i) throw new Error('§1.5.1 bulunamadı');
+  const bolum = s.slice(i, j);
+  icerir(bolum, 'Beş durumda açılır');
+  icerir(bolum, 'plan oluştur');
+  icerir(bolum, 'Plan konseyi (§1.5)');
+});
+
+ol('premium notu paralel acmayi varsayilan sayar', () => {
+  const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
+  const oku = (d) => {
+    const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-not-'));
+    fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: d, premium: true }));
+    const r = spawnSync(
+      process.execPath,
+      ['-e', 'process.stdout.write(require(' + dilYolu + ').s("premiumNotu"))'],
+      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_DIL: d } }
+    );
+    return (r.stdout || '') + (r.stderr || '');
+  };
+  const tr = oku('tr');
+  icerir(tr, 'tek ajanla gitmek gerekçe ister');
+  icerir(tr, 'plan istediği her');
+  const en = oku('en');
+  icerir(en, 'single agent needs a reason');
+  icerir(en, 'the user asks for a plan');
+});
+
 ol('premium durumu konfig ile dosyalar ayrisinca uyusmazlik bildirir', () => {
   const { p, cfg } = premiumKopya();
   premiumCalistir('ac', p, cfg);

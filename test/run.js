@@ -2635,8 +2635,6 @@ ol('premium profili sonnet ve haiku birakir, opus ve fable secer', () => {
   esit(c.premium, true);
 });
 
-// Kabul kriteri 1. Profil değiştirmek eskiden yedi ajan dosyasını ve `SETTINGS.md`'yi
-// yeniden yazıyordu: depo içinden koşan her `/premium` çalışma ağacını kirletiyordu.
 ol('hicbir profil ajan dosyasina ve SETTINGS.md ye yazmaz', () => {
   const { p, cfg } = premiumKopya();
   const once = ajanMetni(p) + ayarMetni(p);
@@ -2646,8 +2644,6 @@ ol('hicbir profil ajan dosyasina ve SETTINGS.md ye yazmaz', () => {
   }
 });
 
-// Kabul kriteri 6. `model` alanı hiç yoksa çağrı parametresini ezme ihtimali de yok;
-// `effort` ve `maxTurns` taban profilde donar, çağrı anında geçilemedikleri için.
 ol('ajan dosyalarinda model alani yok, efor ve tur normal tabaninda', () => {
   const taban = premiumTablo.PROFIL[premiumTablo.TABAN];
   esit(premiumTablo.TABAN, 'normal', 'taban normal olmali');
@@ -2664,8 +2660,6 @@ ol('ajan dosyalarinda model alani yok, efor ve tur normal tabaninda', () => {
     icerir(s, anahtar, 'SETTINGS.md ' + anahtar + ' ' + deger);
 });
 
-// Kabul kriteri 4'ün kaynağı. Taban `normal` olduğu için normal hiç sapmaz; enjeksiyona
-// yazılacak satır da o yüzden yalnız eco ve premiumda oluşur.
 ol('sapma tablosu yalniz tabandan ayrilan dugmeleri verir', () => {
   esit(Object.keys(premiumTablo.sapmalar('normal')).length, 0, 'taban profil sapmamali');
   const eco = premiumTablo.sapmalar('eco');
@@ -2877,8 +2871,6 @@ ol('okunamayan oturum kaydi bayat sayilmaz, silinmez', () => {
   esit(oturumProfilOku(cfg, 'yarim'), 'normal', 'okunamayan kayit makine varsayilanina dusmeli');
 });
 
-// Kabul kriteri 3. Uyuşmazlık artık mümkün değil: dosya yazılmıyor, dolayısıyla dosya
-// ile profil ayrışamıyor. İki oturum aynı tabanın üstünde kendi sapmasını taşır.
 ol('durum iki oturumda ayri profil basar, uyusmazlik satiri hic cikmaz', () => {
   const { p, cfg } = premiumKopya();
   const A = { CLAUDE_CODE_SESSION_ID: 'oturum-A' };
@@ -3160,9 +3152,6 @@ ol('eco enjeksiyonu tek istekte biter, normal ikinci istekte de yazar', () => {
     throw new Error('normal ucuncu istekte enjeksiyon durmali');
 });
 
-// Kabul kriteri 5 — `Ö4`'ün bulduğu hata. Bench'te `/premium eco` görev isteminden sonra
-// çalıştı, sayaç dolmuştu ve bağlam 72 tur boyunca premium metnini taşıdı; o koşu eco'yu
-// hiç ölçmedi. Sayaç profili de tuttuğu için profil değişimi onu sıfırlar.
 ol('profil degisince enjeksiyon sayaci sifirlanir', () => {
   const { p } = proje(1, 0);
   const cfg = profilKonfig({ profil: 'premium' });
@@ -3198,21 +3187,21 @@ ol('eco fark satirlarini enjekte etmez, steering 2 ayarliyken bile', () => {
   icerir(profilIstek(p, profilKonfig({ profil: 'normal', steering: 2 })), 'Fark ▸');
 });
 
+function enjeksiyonOlcu(p, ayar) {
+  const cfg = profilKonfig(ayar);
+  const tek = enjeksiyonBoyu(profilIstek(p, cfg));
+  let toplam = tek;
+  for (let i = 0; i < 2; i++) toplam += enjeksiyonBoyu(profilIstek(p, cfg));
+  return { tek, toplam };
+}
+
 ol('eco oturum basina normalden az karakter enjekte eder', () => {
   const { p } = proje(1, 0);
-  const toplam = (ayar) => {
-    const cfg = profilKonfig(ayar);
-    let n = 0;
-    for (let i = 0; i < 3; i++) n += enjeksiyonBoyu(profilIstek(p, cfg));
-    return n;
-  };
-  const e = toplam({ profil: 'eco' });
-  const s = toplam({ profil: 'normal' });
+  const e = enjeksiyonOlcu(p, { profil: 'eco' }).toplam;
+  const s = enjeksiyonOlcu(p, { profil: 'normal' }).toplam;
   if (!(e < s * 0.75)) throw new Error('eco enjeksiyonu kisalmadi: ' + e + ' / ' + s);
 });
 
-// Kabul kriteri 2. `ayarSayi` yan etkisiz çağrılabilsin diye kanca `require.main`
-// arkasında; burada üç katmanın sırası ölçülüyor.
 function ayarOku(cfg, sid, anahtar, root) {
   const r = spawnSync(
     process.execPath,
@@ -3283,20 +3272,15 @@ ol('taban profil enjeksiyona dugme satiri yazmaz', () => {
     throw new Error('normal profil kendi tabanindan sapti');
 });
 
-// Kabul kriteri 4. Sapma satırı eco'ya bayt ekliyor; eklediğinden fazlasını kısa
-// metinlerle ve tek istekli tavanla geri veriyor mu, ölçü bu.
-ol('eco enjeksiyonu normalinkinden az bayt tutar', () => {
+ol('eco istek basina da normalden az bayt tutar', () => {
   const { p } = proje(1, 0);
-  const toplam = (ad) => {
-    const cfg = profilKonfig({ profil: ad });
-    let n = 0;
-    for (let i = 0; i < 3; i++) n += enjeksiyonBoyu(profilIstek(p, cfg));
-    return n;
-  };
-  const e = toplam('eco');
-  const s = toplam('normal');
-  if (!(e > 0 && s > 0)) throw new Error('enjeksiyon olculemedi: ' + e + ' / ' + s);
-  if (!(e < s)) throw new Error('eco enjeksiyonu normalden buyuk: ' + e + ' / ' + s);
+  const e = enjeksiyonOlcu(p, { profil: 'eco' });
+  const s = enjeksiyonOlcu(p, { profil: 'normal' });
+  if (!(e.tek > 0 && s.tek > 0)) throw new Error('enjeksiyon olculemedi: ' + e.tek + ' / ' + s.tek);
+  if (!(e.tek < s.tek))
+    throw new Error('eco istek basina normalden buyuk: ' + e.tek + ' / ' + s.tek);
+  if (!(e.toplam < s.toplam))
+    throw new Error('eco oturum basina normalden buyuk: ' + e.toplam + ' / ' + s.toplam);
   const satir = (profilIstek(p, profilKonfig({ profil: 'eco' })).match(
     /Tabandan sapan düğmeler: [^"]*?(?=\\n|")/
   ) || [''])[0];
@@ -3825,68 +3809,114 @@ ol('debug gunlugu tavani asinca son satirlara kirpilir', () => {
   icerir(l[l.length - 1], 'PostToolUse', 'yeni satir korunmali');
 });
 
-// Ajan dosyasında `model` alanı kalmadı: modelin beyanı artık çağrının kendisidir.
-// Efor beyanı hâlâ dosyadadır, çağrıda geçilemediği için.
-ol('beyan edilen model ve efor tutmazsa sorun gunlugune yazilir', () => {
-  const { p, live } = proje(1, 0);
+function ajanBitir(p, ek, tanim) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
-  const at = path.join(d, 'agent-b1.jsonl');
+  const at = path.join(d, 'agent-' + tanim.id + '.jsonl');
   fs.writeFileSync(
     at,
-    JSON.stringify({ type: 'assistant', message: { model: 'claude-opus-4-5' } }) + '\n'
+    JSON.stringify({ type: 'assistant', message: { model: tanim.gercek } }) + '\n'
   );
-  calistir(
-    IZLE,
-    {
-      ...ort(p),
-      hook_event_name: 'PreToolUse',
-      tool_name: 'Agent',
-      tool_input: { subagent_type: 'teknesyum:scribe', model: 'haiku' },
-    },
-    konfig(true)
-  );
+  if (tanim.cagri)
+    calistir(
+      IZLE,
+      {
+        ...ort(p),
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Agent',
+        tool_input: { subagent_type: 'teknesyum:' + tanim.rol, model: tanim.cagri },
+      },
+      ek
+    );
   calistir(
     IZLE,
     {
       ...ort(p),
       hook_event_name: 'SubagentStop',
-      agent_id: 'b1',
-      agent_type: 'teknesyum:scribe',
+      agent_id: tanim.id,
+      agent_type: 'teknesyum:' + tanim.rol,
       agent_transcript_path: at,
-      effort: { level: 'xhigh' },
+      effort: { level: tanim.efor },
     },
-    konfig(true)
+    ek
   );
-  const g = fs.readFileSync(path.join(live, '_sorun.log'), 'utf8');
+}
+
+function sorunGunlugu(live) {
+  try {
+    return fs.readFileSync(path.join(live, '_sorun.log'), 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+ol('beyan edilen model ve efor tutmazsa sorun gunlugune yazilir', () => {
+  const { p, live } = proje(1, 0);
+  ajanBitir(p, konfig(true), {
+    id: 'b1',
+    rol: 'scribe',
+    cagri: 'haiku',
+    gercek: 'claude-opus-4-5',
+    efor: 'xhigh',
+  });
+  const g = sorunGunlugu(live);
   icerir(g, 'scribe | model | beyan: haiku | gerçek: claude-opus-4-5', 'model uyusmazligi');
   icerir(g, 'scribe | efor | beyan: low | gerçek: xhigh', 'efor uyusmazligi');
 });
 
-ol('cagrida model gecilmediyse model beyani da yoktur, uyari acilmaz', () => {
+ol('cagri model gecmediyse beklenen model profilden turetilir', () => {
   const { p, live } = proje(1, 0);
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
-  const at = path.join(d, 'agent-b3.jsonl');
+  ajanBitir(p, konfig(true), { id: 'b4', rol: 'scribe', gercek: 'claude-opus-4-5', efor: 'low' });
+  icerir(
+    sorunGunlugu(live),
+    'scribe | model | beyan: haiku | gerçek: claude-opus-4-5',
+    'normal profilde scribe haiku bekler'
+  );
+});
+
+ol('premium oturumunda sessiz model dususu yakalanir', () => {
+  const { p, live } = proje(1, 0);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dusus-'));
   fs.writeFileSync(
-    at,
-    JSON.stringify({ type: 'assistant', message: { model: 'claude-opus-4-5' } }) + '\n'
+    path.join(cfg, 'teknesyum.json'),
+    JSON.stringify({ dil: 'tr', profil: 'premium' })
   );
-  calistir(
-    IZLE,
+  ajanBitir(
+    p,
+    { CLAUDE_CONFIG_DIR: cfg },
     {
-      ...ort(p),
-      hook_event_name: 'SubagentStop',
-      agent_id: 'b3',
-      agent_type: 'teknesyum:scribe',
-      agent_transcript_path: at,
-      effort: { level: 'low' },
-    },
-    konfig(true)
+      id: 'b5',
+      rol: 'builder',
+      gercek: 'claude-sonnet-4-5',
+      efor: 'medium',
+    }
   );
-  let g = '';
-  try {
-    g = fs.readFileSync(path.join(live, '_sorun.log'), 'utf8');
-  } catch {}
-  if (g.includes('scribe | model')) throw new Error('beyansiz model uyari acti: ' + g);
+  icerir(
+    sorunGunlugu(live),
+    'builder | model | beyan: opus | gerçek: claude-sonnet-4-5',
+    'premiumda sonnet ile acilan ajan bildirilmeli'
+  );
+});
+
+ol('cagri modeli profil beklentisini ezer', () => {
+  const { p, live } = proje(1, 0);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ezme-'));
+  fs.writeFileSync(
+    path.join(cfg, 'teknesyum.json'),
+    JSON.stringify({ dil: 'tr', profil: 'premium' })
+  );
+  ajanBitir(
+    p,
+    { CLAUDE_CONFIG_DIR: cfg },
+    {
+      id: 'b6',
+      rol: 'builder',
+      cagri: 'sonnet',
+      gercek: 'claude-sonnet-4-5',
+      efor: 'medium',
+    }
+  );
+  if (sorunGunlugu(live).includes('builder | model'))
+    throw new Error('cagrida gecilen model profil yuzunden uyari acti');
 });
 
 ol('beyanla uyusan ajan sorun gunlugu acmaz', () => {
@@ -4245,9 +4275,6 @@ ol('tur ozeti sure ve token tahminini tek satirda verir', () => {
   if (tok < 900 || tok > 1200) throw new Error('token tahmini bekleneni tutmadi: ' + tok);
 });
 
-// `Ö4`: bir koşunun `Stop` satırı ~313.500 token derken harness bütçe sayacı 171.114
-// diyordu. İkisi de "Tahmini Token" adıyla görününce aynı koşu iki rakamla raporlandı.
-// Ad artık neyi saydığını söylüyor; sayaçla karışacak çıplak ad geri gelmemeli.
 ol('tur makbuzunun adi neyi saydigini soyler', () => {
   const { p, ek } = turProje();
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
@@ -4386,8 +4413,6 @@ console.log('\nBildirim biçimi');
 
 // Kullanicinin canlida cevirecegi sabit budur; testi de o dosyayi kopyalayip sabiti
 // degistirerek kosar, boylece iki bicimin de uretilebildigi gercekten olculur.
-// Kanca `../scripts/premium.js` ve `../agents/` yollarını `__dirname` üzerinden çözüyor;
-// kopya da eklentinin yerleşimini birebir taşımak zorunda, yoksa require patlar.
 function bicimKopya(bicim) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bicim-'));
   fs.mkdirSync(path.join(d, 'hooks'), { recursive: true });
@@ -4673,8 +4698,6 @@ ol('premium belgesi ve yardimi hicbir yere yazmadigini soyler', () => {
     if (k.includes(eski)) throw new Error('belge hâlâ yazan betigi anlatiyor: ' + eski);
 });
 
-// CLI gövdesi `require.main` arkasında: kanca `premium.js`'i sapma tablosu için require
-// ediyor, o sırada `yardim()` çalışıp stdout'a yazsaydı kancanın JSON çıktısı bozulurdu.
 ol('premium.js require edildiginde CLI calismaz', () => {
   const r = spawnSync(
     process.execPath,

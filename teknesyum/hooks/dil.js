@@ -99,9 +99,6 @@ const S = {
     tr: (dk, sn) => (dk ? dk + 'dk ' + sn + 'sn' : sn + 'sn'),
     en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
   },
-  // Harness bütçe sayacı yalnız ana oturumu sayar, base'in tahmini alt ajanları da
-  // sayar. İkisi "Tahmini Token" adıyla yan yana görününce aynı koşu iki farklı rakamla
-  // raporlanıyordu; ad artık neyi saydığını söylüyor.
   turOzeti: {
     tr: (sure, token) =>
       '`Total Süre: ~' +
@@ -325,24 +322,14 @@ const S = {
   ecoNotu: {
     tr:
       'Eco mod açık. Token tasarrufu en yüksek öncelik; hız ve zarafet feda edilebilir, ' +
-      'doğruluk edilemez. Önce `Grep`/`Glob` ile ara; tam dosyayı yalnız grep cevap ' +
-      'vermediğinde oku, hangi satır aralığının gerektiğini bilmeden açma. `Explore` ajanı ' +
-      'açma — bulamazsan aramayı genişlet. Tek ajan varsayılandır, ajan açmak gerekçe ' +
-      'ister. Mekanik ve kalıbı belli işte kısa düşün, karar taşıyan işte yine de düşün. ' +
-      'Cevabı tek cümle yaz; tablo, madde ve ayrıntı ancak sorulunca gelir. `rg`, `sed`, ' +
-      '`biome`, `--check` işi görüyorsa model çağırma.',
+      'doğruluk edilemez. Önce `Grep`/`Glob` ile ara, tam dosyayı ancak grep yetmeyince ' +
+      'oku. `Explore` ajanı açma; ajan açmak gerekçe ister. Cevabı kısa yaz.',
     en:
       'Eco mode is on. Saving tokens is the top priority; speed and polish can go, ' +
-      'correctness cannot. Search with `Grep`/`Glob` first; read a whole file only when ' +
-      'grep does not answer, and never open one without knowing which lines you need. Do ' +
-      'not open an `Explore` agent — widen the search instead. A single agent is the ' +
-      'default and opening one needs a reason. Think briefly on mechanical, pattern-fixed ' +
-      'work, still think on decisions. Answer in one sentence; tables, bullets and detail ' +
-      'come only when asked. When `rg`, `sed`, `biome` or `--check` does the job, do not ' +
-      'call a model.',
+      'correctness cannot. Search with `Grep`/`Glob` first, read a whole file only when ' +
+      'grep falls short. Do not open an `Explore` agent; opening any agent needs a ' +
+      'reason. Keep the answer short.',
   },
-  // Yalnız tabandan sapanlar yazılır. Tam listeyi her isteme yazmak, `docs/OLCUM-TABAN.md`
-  // farkın %89'unu yüklediği kalemi — konuşma hacmini — büyütür.
   dugmeSapma: {
     tr: (satir) => 'Tabandan sapan düğmeler: ' + satir,
     en: (satir) => 'Buttons deviating from the baseline: ' + satir,

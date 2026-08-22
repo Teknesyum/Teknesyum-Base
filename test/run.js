@@ -141,7 +141,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
+    'ekran.md,help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
   );
   const yuru = (d) =>
     fs
@@ -4913,6 +4913,228 @@ ol('/scan komutu uc profili esit anlatir ve betigi cagirir', () => {
   icerir(k, 'kapsam.json');
   const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
   icerir(h, '| `/scan` |');
+});
+
+const EKRAN = path.join(KOK, 'hooks', 'ekran-kapisi.js');
+const SID = 'oturum-1';
+
+function ekranKok(c) {
+  return path.join(c, 'teknesyum', 'live');
+}
+
+function ekranCfg(kapaliMi) {
+  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ekran-'));
+  fs.mkdirSync(ekranKok(c), { recursive: true });
+  if (kapaliMi) fs.writeFileSync(path.join(c, 'teknesyum.json'), '{"ekran_kapisi":false}');
+  return c;
+}
+
+function ekranTur(c, ms) {
+  const f = path.join(ekranKok(c), SID + '.tur');
+  fs.writeFileSync(f, 'x');
+  if (ms) fs.utimesSync(f, ms / 1000, ms / 1000);
+}
+
+function ekranDurumu(c) {
+  return JSON.parse(fs.readFileSync(path.join(ekranKok(c), SID + '.ekran.json'), 'utf8'));
+}
+
+function ekranYaz(c, d) {
+  fs.writeFileSync(path.join(ekranKok(c), SID + '.ekran.json'), JSON.stringify(d));
+}
+
+function ekranCagri(c, yuk) {
+  return calistir(
+    EKRAN,
+    { session_id: SID, hook_event_name: 'PreToolUse', ...yuk },
+    { CLAUDE_CONFIG_DIR: c, CLAUDE_CODE_SESSION_ID: SID }
+  );
+}
+
+function ekranArac(c, arac, ek) {
+  return ekranCagri(c, { tool_name: arac, tool_input: ek || {} });
+}
+
+function ekranBash(c, komut, cwd) {
+  return ekranCagri(c, { tool_name: 'Bash', tool_input: { command: komut }, cwd: cwd || '.' });
+}
+
+function ekranAc(c, dakika) {
+  const arg = dakika === undefined ? [] : [String(dakika)];
+  const r = spawnSync(process.execPath, [EKRAN, '--ac', ...arg], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      TEKNESYUM_DIL: 'tr',
+      CLAUDE_CONFIG_DIR: c,
+      CLAUDE_CODE_SESSION_ID: SID,
+    },
+  });
+  return (r.stdout || '').trim();
+}
+
+ol('ekran kapisi computer-use cagrisini kapaliyken engeller aciksa gecirir', () => {
+  const c = ekranCfg();
+  const kapali = ekranArac(c, 'mcp__computer-use__computer');
+  esit(kapali.kod, 2, 'kapali kapi exit 2 vermeli');
+  icerir(kapali.err, 'ENGELLENDİ');
+  ekranAc(c);
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 0, 'acik kapi gecirmeli');
+});
+
+ol('ekran kapisi Windows-MCP okuma araclarini hicbir zaman engellemez', () => {
+  const c = ekranCfg();
+  for (const arac of [
+    'Screenshot',
+    'Snapshot',
+    'Scrape',
+    'PowerShell',
+    'FileSystem',
+    'Registry',
+    'Process',
+    'Wait',
+    'Clipboard',
+  ]) {
+    esit(ekranArac(c, 'mcp__Windows-MCP__' + arac).kod, 0, arac + ' muaf olmali');
+  }
+});
+
+ol('ekran kapisi Windows-MCP Click cagrisini kapaliyken engeller', () => {
+  const c = ekranCfg();
+  esit(ekranArac(c, 'mcp__Windows-MCP__Click').kod, 2, 'Click engellenmeli');
+  esit(ekranArac(c, 'mcp__Windows-MCP__Type').kod, 2, 'Type engellenmeli');
+});
+
+ol('ekran kapisi ayni turda bes denemede tek bildirim basar', () => {
+  const c = ekranCfg();
+  ekranTur(c);
+  let bildirim = 0;
+  for (let i = 0; i < 5; i++) {
+    const r = ekranArac(c, 'mcp__computer-use__computer');
+    esit(r.kod, 2, 'her deneme engellenmeli');
+    if (r.out) bildirim++;
+  }
+  esit(bildirim, 1, 'tur basina tek bildirim');
+  esit(ekranDurumu(c).kuyruk['mcp__computer-use__computer'].kez, 5, 'kuyruk bes saymali');
+});
+
+ol('ekran kapisi yeni turda bildirimi bir kez daha basar', () => {
+  const c = ekranCfg();
+  ekranTur(c, Date.now() - 90000);
+  esit(ekranArac(c, 'mcp__computer-use__computer').out === '', false, 'ilk turda bildirim');
+  esit(ekranArac(c, 'mcp__computer-use__computer').out, '', 'ayni turda ikinci bildirim yok');
+  ekranTur(c, Date.now());
+  esit(ekranArac(c, 'mcp__computer-use__computer').out === '', false, 'yeni turda bildirim');
+});
+
+ol('ekran_kapisi false iken hicbir cagri engellenmez', () => {
+  const c = ekranCfg(true);
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 0, 'surucu gecmeli');
+  esit(ekranArac(c, 'mcp__Windows-MCP__Click').kod, 0, 'Click gecmeli');
+  esit(ekranBash(c, 'dotnet run').kod, 0, 'dotnet run gecmeli');
+});
+
+ol('/ekran bir tur acar sonraki turda kapi yine kapalidir', () => {
+  const c = ekranCfg();
+  ekranTur(c, Date.now() - 60000);
+  icerir(ekranAc(c), 'bir tur');
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 0, 'acildigi turda gecmeli');
+  ekranTur(c, Date.now());
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 2, 'sonraki turda kapali');
+});
+
+ol('/ekran 10 on dakika acik tutar damga eskiyince kapanir', () => {
+  const c = ekranCfg();
+  icerir(ekranAc(c, 10), '10 dakika');
+  esit(ekranDurumu(c).acik.dakika, 10, 'sure kaydedilmeli');
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 0, 'sure icinde gecmeli');
+  const d = ekranDurumu(c);
+  d.acik.ts = Date.now() - 11 * 60000;
+  ekranYaz(c, d);
+  esit(ekranArac(c, 'mcp__computer-use__computer').kod, 2, 'sure dolunca kapanmali');
+});
+
+ol('ekran kapisi dotnet test ve build cagrilarini hicbir zaman engellemez', () => {
+  const c = ekranCfg();
+  for (const k of [
+    'dotnet test',
+    'dotnet build',
+    'dotnet restore',
+    'dotnet build -c Release --no-restore',
+    'dotnet test tests/X.Tests --logger trx',
+    'npm test',
+    'dotnet build && dotnet test',
+  ]) {
+    esit(ekranBash(c, k).kod, 0, k + ' engellenmemeli');
+  }
+});
+
+ol('ekran kapisi dotnet run ve pencere acan komutlari kapaliyken engeller', () => {
+  const c = ekranCfg();
+  for (const k of [
+    'dotnet run',
+    'dotnet run --project src/App',
+    'dotnet build && dotnet run',
+    'npm run electron:dev',
+    'yarn electron',
+    'Start-Process bin/Release/App.exe',
+    './bin/Debug/net8.0-windows/App.exe',
+  ]) {
+    esit(ekranBash(c, k).kod, 2, k + ' engellenmeli');
+  }
+  ekranAc(c);
+  esit(ekranBash(c, 'dotnet run').kod, 0, '/ekran sonrasi gecmeli');
+});
+
+ol('ekran kapisi bassiz bayrak tasiyan komutu kapaliyken de gecirir', () => {
+  const c = ekranCfg();
+  for (const k of [
+    'dotnet run -- --headless',
+    'dotnet run --project src/App -- --test',
+    'npm run electron -- --headless',
+    'dotnet run -- --offscreen',
+  ]) {
+    esit(ekranBash(c, k).kod, 0, k + ' gecmeli');
+  }
+});
+
+ol('ekran kapisi npm start yalniz electron projesinde engellenir', () => {
+  const c = ekranCfg();
+  const bos = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-npm-'));
+  fs.writeFileSync(path.join(bos, 'package.json'), '{"name":"x"}');
+  esit(ekranBash(c, 'npm start', bos).kod, 0, 'electron olmayan projede gecmeli');
+  const el = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-el-'));
+  fs.writeFileSync(path.join(el, 'package.json'), '{"devDependencies":{"electron":"30"}}');
+  esit(ekranBash(c, 'npm start', el).kod, 2, 'electron projesinde engellenmeli');
+});
+
+ol('ekran kapisi engelleme mesaji bassiz alternatifi ve pencere recetesini verir', () => {
+  const c = ekranCfg();
+  const m = ekranBash(c, 'dotnet run').err;
+  icerir(m, 'dotnet test');
+  icerir(m, 'UIA');
+  icerir(m, 'ShowActivated=false');
+  icerir(m, 'Left=-32000');
+  icerir(m, '/ekran');
+  icerir(m, 'masaustu-izolasyon.md');
+  icerir(ekranArac(c, 'mcp__computer-use__computer').err, '/ekran');
+});
+
+ol('ekran kapisi hooks.json ile baglidir ve tek blokla sokulur', () => {
+  const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8')).hooks;
+  const blok = h.PreToolUse.filter((x) => /ekran-kapisi/.test(JSON.stringify(x)));
+  esit(blok.length, 1, 'kapi tek blokta durmali');
+  icerir(blok[0].matcher, 'Bash');
+  icerir(blok[0].matcher, 'computer-use');
+  icerir(blok[0].matcher, 'Windows-MCP');
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'ekran.md'), 'utf8');
+  icerir(k, 'hooks/ekran-kapisi.js');
+  icerir(k, 'argument-hint: [dakika]');
+  icerir(k, 'ekran_kapisi');
+  icermez(fs.readFileSync(IZLE, 'utf8'), 'ekran-kapisi');
+  const d = fs.readFileSync(path.join(__dirname, '..', 'docs', 'masaustu-izolasyon.md'), 'utf8');
+  icerir(d, 'ekran_kapisi');
+  icerir(d, 'hooks/ekran-kapisi.js');
 });
 
 console.log(

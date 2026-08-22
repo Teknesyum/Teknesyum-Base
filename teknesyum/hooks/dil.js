@@ -818,6 +818,73 @@ const S = {
     tr: 'Punto ölçeği 10 · 13 · 14 · 18 · 24; daha küçüğü okunmuyor demektir.',
     en: 'The type scale is 10 · 13 · 14 · 18 · 24; smaller than that is unreadable.',
   },
+  ekranSurucu: {
+    tr: [
+      'Ekran kapısı kapalı: bu çağrı gerçek fareyi ve klavyeyi sürüyor.',
+      "Windows'ta tek girdi masaüstü var; tıkladığın anda kullanıcının yazdığı",
+      'cümlenin ortasında odak gider.',
+      'Ne yapmak istediğini tek satırla yaz, işi bırak, sıradaki maddeye geç.',
+      'İstek kuyruğa alındı; kullanıcı `/ekran` dediğinde kapı bir tur açılır.',
+    ].join('\n'),
+    en: [
+      'The screen gate is closed: this call drives the real mouse and keyboard.',
+      'Windows has a single input desktop; the moment you click, the user loses focus',
+      'in the middle of the sentence they are typing.',
+      'Write one line saying what you wanted to do, drop it, move to the next item.',
+      'The request is queued; the gate opens for one turn when the user says `/ekran`.',
+    ].join('\n'),
+  },
+  ekranArayuz: {
+    tr: [
+      'Ekran kapısı kapalı: bu komut masaüstü penceresi açıyor ve odağı çalıyor.',
+      'Arayüzü görmek için program açma — sırayla şunları dene:',
+      '1. Başsız koşu: projede zaten test altyapısı var, doğrulamayı oradan yap',
+      '   (`dotnet test`, `npm test`, headless tarayıcı). Bu komutlar hiç engellenmez.',
+      '2. Kontrolün gerçekten çalıştığını UIA/FlaUI ile sına — `Invoke`, `SetValue`,',
+      '   `Toggle` imleci kıpırdatmadan sürer.',
+      '3. Pencere şart ise test kipinde ekran dışında aç: `WindowStartupLocation=Manual`,',
+      '   `Left=-32000`, `ShowActivated=false`. Pencere var, görünmüyor, odağı almıyor.',
+      '4. Hiçbiri olmuyorsa kullanıcıdan `/ekran` iste ve bekle.',
+      'Ayrıntı: `docs/masaustu-izolasyon.md` §3.1.',
+    ].join('\n'),
+    en: [
+      'The screen gate is closed: this command opens a desktop window and steals focus.',
+      'Do not launch the app to look at the UI — try these in order:',
+      '1. Headless run: the project already has a test harness, verify there',
+      '   (`dotnet test`, `npm test`, headless browser). Those are never blocked.',
+      '2. Prove the control actually works with UIA/FlaUI — `Invoke`, `SetValue`,',
+      '   `Toggle` drive it without moving the cursor.',
+      '3. If a window is required, open it off-screen in test mode:',
+      '   `WindowStartupLocation=Manual`, `Left=-32000`, `ShowActivated=false`.',
+      '   The window exists, is invisible, and never takes focus.',
+      '4. If none of that works, ask the user for `/ekran` and wait.',
+      'Details: `docs/masaustu-izolasyon.md` §3.1.',
+    ].join('\n'),
+  },
+  ekranIstek: {
+    tr: (ne) => 'ekranı isteyen bir iş var (' + ne + ') — hazır olunca `/ekran`',
+    en: (ne) => 'a task is asking for the screen (' + ne + ') — say `/ekran` when ready',
+  },
+  ekranAcikTur: {
+    tr: 'Ekran kapısı bir tur açıldı; tur bitince kendiliğinden kapanır.',
+    en: 'The screen gate is open for one turn; it closes by itself when the turn ends.',
+  },
+  ekranAcikSure: {
+    tr: (n) => 'Ekran kapısı ' + n + ' dakika açık; süre dolunca kendiliğinden kapanır.',
+    en: (n) => 'The screen gate is open for ' + n + ' minutes; it closes when time runs out.',
+  },
+  ekranAcik: {
+    tr: 'Ekran kapısı şu an açık.',
+    en: 'The screen gate is open right now.',
+  },
+  ekranKapali: {
+    tr: 'Ekran kapısı kapalı. `/ekran` bir tur açar, `/ekran 10` on dakika açık tutar.',
+    en: 'The screen gate is closed. `/ekran` opens one turn, `/ekran 10` keeps it ten minutes.',
+  },
+  ekranBekleyen: {
+    tr: (ne) => 'Kuyrukta bekleyen: ' + ne,
+    en: (ne) => 'Waiting in the queue: ' + ne,
+  },
 };
 
 function s(anahtar, ...arg) {

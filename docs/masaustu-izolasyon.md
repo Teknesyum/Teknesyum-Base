@@ -61,14 +61,17 @@ gerektirmez.
 Ayrı işletim sistemi, ayrı masaüstü, ayrı girdi kuyruğu. Ajan orada istediği kadar
 tıklar, senin ekranın hiç sarsılmaz.
 
-Bu makinede durum: **Hyper-V kapalı, Windows Sandbox kapalı** — ikisi de Pro sürümde var,
-açılabilir. Kaynak sıkıntısı yok (64 GB RAM, 343 GB boş, 16 iş parçacığı).
+Bu makinede durum: **Hyper-V açıldı** (22.08.2026), makine yeniden başlatılmayı bekliyor.
+Windows Sandbox kapalı. Kaynak sıkıntısı yok (63,6 GB RAM, 333 GB boş, 16 iş parçacığı).
 
 Bilmen gerekenler:
 
-- Hyper-V'yi açmak **hipervizörü** devreye sokar. Bazı oyun hile korumaları ve
-  VMware/VirtualBox kurulumları bundan etkilenir. Geri alınabilir ama makinenin tamamını
-  ilgilendiren bir karar.
+- **Hipervizör bedeli zaten ödeniyordu — bu belgenin ilk hâli yanılıyordu.** Ölçüm:
+  `HypervisorPresent` daha Hyper-V açılmadan `True`, çünkü **VBS/HVCI (Bellek Bütünlüğü)**
+  çalışıyor (`SecurityServicesRunning = 2`). Windows 11'in uygun donanımdaki varsayılanı bu.
+  Yani hile korumalarını ve VMware/VirtualBox'ı etkileyen hipervizör zaten devredeydi;
+  Hyper-V onun üstüne VM yığınını ekliyor, yeni bir hipervizör bedeli getirmiyor.
+  Karar yine de geri alınabilir ve makinenin tamamını ilgilendiriyor — ama sanılandan ucuz.
 - **GPU:** NVENC testleri sanal makinede güvenilir değil. Tüketici kartlarında GPU-P
   (bölümleme) resmî desteklenmiyor, sürücü dosyalarını konuğa elle kopyalamak gerekiyor.
   VidShrink'in donanım kodlayıcı yolu **host'ta** test edilmeye devam etmeli; sanal
@@ -99,6 +102,21 @@ Ajanın ekranı **istemesi** engellenemez ama **habersiz alması** engellenebili
    Ajan ne yapmak istediğini yazar, iş kuyruğa alınır, tek satır bildirim düşer:
    *"ekranı isteyen bir iş var"*. Sen hazır olduğunda `/ekran` dersin, kapı bir tur açılır.
    Odak bozulması ortadan kalkar; karar sende kalır.
+
+   **Uygulandı** — `teknesyum/hooks/ekran-kapisi.js`. İki kolu var: ekranı süren araç
+   çağrıları (`mcp__computer-use__*`, `mcp__Windows-MCP__*` — `Screenshot`, `Snapshot`,
+   `Scrape`, `PowerShell`, `FileSystem`, `Registry`, `Process`, `Wait`, `Clipboard` muaf)
+   ve masaüstü penceresi açan kabuk komutları (`dotnet run`, electron başlatma,
+   `bin/Debug|Release/**.exe`, `Start-Process ... .exe`). `dotnet test`, `dotnet build`
+   ve `--headless`/`--test` gibi açık başsızlık bayrağı taşıyan komutlar hiç engellenmez.
+   Engelleme mesajı §3.1'deki başsız alternatifi ve ekran dışı pencere reçetesini verir.
+
+   **Kapatmak:** `~/.claude/teknesyum.json` içine `"ekran_kapisi": false`. Kanca hiçbir
+   şey yapmadan çıkar; anahtar yoksa kapı açıktır.
+
+   **Tümden sökmek:** `teknesyum/hooks/ekran-kapisi.js` dosyasını sil ve `hooks.json`
+   içindeki `PreToolUse` bloğundan `matcher: "Bash|mcp__computer-use__.*|mcp__Windows-MCP__.*"`
+   girdisini kaldır. Başka hiçbir dosyaya dokunmaz — `relay-watch.js` kapıdan habersizdir.
 2. **Kural.** `standartlar.md`'ye tek madde: uygulama doğrulaması başsız koşuyla yapılır;
    arayüz gerekiyorsa UIA, ekran sürme son çaredir ve izin ister.
 3. **Test kipi maddesi.** Her masaüstü programına `--test` bayrağı: pencere ekran dışında,

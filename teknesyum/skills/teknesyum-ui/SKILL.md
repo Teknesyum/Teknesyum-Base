@@ -73,6 +73,10 @@ Hiyerarşi **boyut, ağırlık, tracking ve neon renkle** kurulur, parlaklık d�
 Metin/zemin kontrastı **7:1 altına inemez**. Tek istisna devre dışı kontrol; o da griliğe
 ek bir işaretle belli edilir (ikon, imleç, tooltip) — renk körü kullanıcı griyi göremez.
 
+**Dolgulu butonun yazısı siyahtır.** Neon dolgu üzerine beyaz yazı `neon-blue`'da
+1.38:1 verir — okunmaz. `tk-btn-primary` ve `tk-btn-danger` `color: #000` kullanır.
+Kural asset'te uygulanıyordu ama burada yazılı değildi.
+
 **Beyaz zemin kullanma.** Beyaz burada yazının rengidir, zeminin değil. Sızdığı yerler
 bellidir: `WebView`/`iframe` gövdesi, PDF ve rapor önizlemesi, boş `DataGridView`, yazdırma
 görünümü, yüklenmemiş `<img>`, üçüncü parti denetim varsayılanı, `MessageBox`. Hepsine

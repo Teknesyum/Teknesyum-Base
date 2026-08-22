@@ -1,11 +1,10 @@
 # ui-grafik — grafik ve veri görselleştirme merceği
 
-Tarama tarihi 2026-08-22. Depolar: recharts/recharts, airbnb/visx, plouc/nivo,
-tremorlabs/tremor, observablehq/plot. Beşine de erişildi.
+Tarama 2026-08-22. recharts, visx, nivo, tremor, Plot — beşine de erişildi.
 
 **Ön bulgu:** `teknesyum-ui` içinde `grafik`, `chart`, `graph`, `sparkline`, `kategorik`
-kelimelerinin hiçbiri geçmiyor (SKILL.md + references/ üçü, tam metin arama). Bu alan
-eksik — bilerek dışarıda bırakıldığına dair bir cümle de yok.
+kelimelerinin hiçbiri geçmiyor (SKILL.md + references/ üçü). Alan eksik; bilerek dışarıda
+bırakıldığına dair bir cümle de yok.
 
 ## 1 · Alanın bugün yaptığı
 
@@ -32,47 +31,42 @@ parlaklıkta renkler.
 
 ### Animasyon: alan ikiye bölünmüş.
 
-| Depo | Veri değişiminde animasyon | Varsayılan süre |
-|---|---|---|
-| recharts Line | var | **1500 ms**, `ease`, `animationBegin: 0` (`src/cartesian/Line.tsx:443-451`) |
-| recharts Bar | var | 400 ms, `ease` (`src/cartesian/Bar.tsx:1030`) |
-| recharts Pie | var | 1500 ms, `animationBegin: 400` (`src/polar/Pie.tsx:1155`) |
-| recharts Tooltip | var | 400 ms (`src/component/Tooltip.tsx:261`) |
-| **tremor** | **kapalı** — `<Line … isAnimationActive={false}>` (`LineChart.tsx:870`, `AreaChart.tsx:948`) | yalnız Tooltip 100 ms (`LineChart.tsx:699`) |
-| nivo | var, `animate: true` varsayılan | süre yok, react-spring yayı: `config: 'default'` = tension 170 / friction 26 (`packages/core/src/motion/context.js`) |
-| visx xychart | var, react-spring | süre yerine **yön**: `AnimationTrajectory = 'outside' \| 'center' \| 'min' \| 'max'` (`visx-react-spring/src/types`) |
-| **Plot** | **yok** — kaynak ağacında animasyon/transition modülü yok; grafik yeniden üretilir | — |
+| Depo | Varsayılan |
+|---|---|
+| recharts | Line **1500 ms** `ease` (`cartesian/Line.tsx:443-451`), Pie 1500 ms + `animationBegin: 400` (`polar/Pie.tsx:1155`), Bar 400 ms (`cartesian/Bar.tsx:1030`), Tooltip 400 ms (`component/Tooltip.tsx:261`) |
+| **tremor** | seri animasyonu **kapalı** — `<Line … isAnimationActive={false}>` (`LineChart.tsx:870`, `AreaChart.tsx:948`); yalnız Tooltip 100 ms (`LineChart.tsx:699`) |
+| nivo | `animate: true`, süre yok — react-spring yayı `config: 'default'` = tension 170 / friction 26 (`core/src/motion/context.js`) |
+| visx | react-spring; süre yerine **yön**: `AnimationTrajectory = 'outside' \| 'center' \| 'min' \| 'max'` (`visx-react-spring/src/types`) |
+| **Plot** | animasyon **yok** — kaynak ağacında transition modülü yok, grafik yeniden üretilir |
 
 `prefers-reduced-motion`: yalnız **recharts** okuyor. `isAnimationActive: 'auto'` (v3
-varsayılanı) → `src/animation/JavascriptAnimate.tsx:55` ve `CSSTransitionAnimate.tsx:66`,
-`isActiveProp === 'auto' ? !Global.isSsr && !prefersReducedMotion : isActiveProp`.
+varsayılanı) → `animation/JavascriptAnimate.tsx:55`, `CSSTransitionAnimate.tsx:66`.
 Animasyonu **tümden** kapatıyor, opaklığı bırakmıyor. nivo/visx/tremor/Plot'ta okuma yok
-(kaynak: ilgili motion/theme dosyalarında `matchMedia`/`reduc` geçmiyor).
+(ilgili motion/theme dosyalarında `matchMedia`/`reduc` geçmiyor).
 
 ### Koyu tema: üç farklı çözüm.
 
-- **visx** — ayrı `dark.ts` token seti. `background #020617`, `surface #0f172a`,
-  `axisStroke #334155`, **`gridStroke #1e293b`**, `textPrimary #f8fafc`,
-  `textMuted #94a3b8`. Izgara eksenden **daha sönük**.
-- **recharts** `darkTheme.ts` — `grid.stroke #3f3f46` + `strokeDasharray '3 3'`,
-  `axis.stroke #d6d3d1`, `typography.color #f5f5f4`, tooltip `bg #18181b` /
-  `border 1px #52525b`. Seri renkleri **light ile aynı** (`#8884d8 #82ca9d #ffc658 …`);
-  değişen tek şey aktif noktanın göbeği: `active.fill` light'ta `#fff`, dark'ta `#18181b`.
+- **visx** — ayrı `dark.ts` token seti: `background #020617`, `surface #0f172a`,
+  `axisStroke #334155`, **`gridStroke #1e293b`**, `textPrimary #f8fafc`, `textMuted #94a3b8`.
+  Izgara eksenden **bir kademe sönük**.
+- **recharts** `darkTheme.ts` — grid `#3f3f46` + `strokeDasharray '3 3'`, axis `#d6d3d1`,
+  metin `#f5f5f4`, tooltip `bg #18181b` / `1px #52525b`. Seri renkleri **light ile aynı**
+  (`#8884d8 #82ca9d #ffc658 …`); değişen tek şey aktif noktanın göbeği: `active.fill`
+  light'ta `#fff`, dark'ta `#18181b`. Ayrıca `chart.aspectRatio: 1.618`.
 - **tremor** — Tailwind `dark:` varyantı. Izgara `stroke-gray-200 dark:stroke-gray-800`;
-  eksen çizgisi ve tick çizgisi **kapalı** (`stroke=""`, `tickLine={false}`); tick etiketi
-  `fill-gray-500 dark:fill-gray-500` — **iki modda aynı gri**. Seri renkleri de iki modda
-  aynı (Tailwind `-500` tonu). Tooltip cursor `stroke #d1d5db`, 1px.
-- **Plot** — SVG'ye tek CSS değişkeni basıyor: `--plot-background: white` (`src/plot.js:266`),
-  işaretler `fill: currentColor` (`src/style.js:60`). Koyu tema = iki değişken üzerine yazmak.
-- **nivo** — `packages/theming/src/index.ts` yalnız `defaultTheme` dışa veriyor,
-  **koyu tema yok**. Varsayılanı `background: 'transparent'` (sayfayı miras alır, iyi) ama
-  `tooltip.container.background: 'white'` sabit (`defaults.ts`) — koyu temada beyaz sızıntı.
+  eksen ve tick çizgisi **kapalı** (`stroke=""`, `tickLine={false}`); tick etiketi
+  `fill-gray-500 dark:fill-gray-500` — **iki modda aynı gri**, seri renkleri de aynı
+  (Tailwind `-500`). Tooltip cursor `stroke #d1d5db` 1px.
+- **Plot** — tek CSS değişkeni: `--plot-background: white` (`src/plot.js:266`), işaretler
+  `fill: currentColor` (`src/style.js:60`). Koyu tema = iki değeri üzerine yazmak.
+- **nivo** — `theming/src/index.ts` yalnız `defaultTheme` veriyor, **koyu tema yok**.
+  `background: 'transparent'` (sayfayı miras alır, iyi) ama `tooltip.container.background:
+  'white'` sabit — koyu temada beyaz sızıntı.
 
 visx v4 token adları: `--chart-1 … --chart-12`, `--chart-scale-from/to`,
 `--chart-diverge-low/mid/high`, `--visx-axis-stroke`, `--visx-grid-stroke`
 (`tokens/names.ts`). `<ThemeScope theme="auto">` hiçbir değişken **basmıyor** — sayfada
-zaten tanımlı olanları miras alıyor (`provider/ThemeScope.tsx`), shadcn adlarına
-(`--background`, `--card`, `--muted-foreground`) doğrudan bağlanıyor.
+tanımlı olanı miras alıyor (`provider/ThemeScope.tsx`), shadcn adlarına doğrudan bağlanıyor.
 
 ## 2 · Standardın kaçırdığı
 
@@ -81,47 +75,43 @@ olacağı yazmıyor. Alanın tamamı 6–12 slotluk **sabit liste + modulo sarma
 **Alınmalı: evet.** §8.1 "renk tek kaynaktan" diyor; palet standartta değilse her
 dashboard'da yeniden uydurulur. Girer: **§2**.
 
-**b) Izgara/eksen metin değildir — 7:1 kuralı buraya uygulanamaz.** §2 "kontrast 7:1 altına
-inemez, ara gri yok" diyor. Bunu ızgaraya harfi harfine uygulayan kişi, veriyle aynı
-parlaklıkta bir ızgara çizer ve grafik okunmaz olur. visx ızgarayı eksenden bir kademe
-sönük tutuyor (`#1e293b` vs `#334155`), recharts ızgarayı kesikli (`3 3`) veriyor.
-**Alınmalı: evet**, muafiyet cümlesi olarak. Girer: **§2** (tek satır) + grafik referansı.
+**b) Izgara metin değildir — 7:1 kuralı ona uygulanamaz.** §2 "kontrast 7:1 altına inemez,
+ara gri yok" diyor; bunu ızgaraya harfi harfine uygulayan kişi veriyle aynı parlaklıkta bir
+ızgara çizer, grafik okunmaz olur. visx ızgarayı eksenden bir kademe sönük tutuyor
+(`#1e293b` vs `#334155`), recharts kesikli (`3 3`) veriyor. **Alınmalı: evet**, muafiyet
+cümlesi olarak. Girer: **§2** (tek satır).
 
-**c) Sessiz metin mekanizması yok.** Tremor tick etiketini `gray-500` (#6b7280) yapıyor;
-bu bizim §2'mizde açıkça yasak. Standart hiyerarşiyi boyut/ağırlık/tracking ile kurmayı
-söylüyor, ama grafikte tick etiketi zaten en küçük punto — daha küçültecek yer yok.
-**Alınmalı: kararı konseye.** Seçenek: tick etiketi beyaz kalır ve punto/ağırlık düşer
-(standarda sadık), ya da grafiğe özel tek bir sönük ton tanımlanır (standart delinir).
+**c) Sessiz metin mekanizması yok.** Tremor tick etiketini `gray-500` (#6b7280) yapıyor —
+bizde açıkça yasak. Standart hiyerarşiyi boyut/ağırlık/tracking ile kurmayı söylüyor ama
+tick etiketi zaten en küçük punto, küçültecek yer yok. **Kararı konseye:** ya beyaz kalır
+ve ağırlık düşer (standarda sadık), ya grafiğe özel tek sönük ton tanımlanır (standart
+delinir).
 
-**d) Veri değişimi geçişi için kova yok.** §5.4 "yalnız `opacity` ve `transform`" diyor.
-Grafikte veri değişince SVG `d` yolu enterpole edilir — bu ne opacity ne transform.
-**Alınmalı: evet**, açık istisna olarak. Girer: **§5.4**.
+**d) Veri değişimi geçişi için kova yok.** §5.4 "yalnız `opacity` ve `transform`" diyor;
+veri değişince SVG `d` yolu enterpole edilir — ne opacity ne transform. **Alınmalı: evet**,
+açık istisna olarak. Girer: **§5.4**.
 
 **e) Sıralı kategori ≠ sırasız kategori.** Plot bunu ölçekte ayırıyor (ayrık liste vs
 `turbo` rampası). Standartta kavram yok. **Alınmalı: evet**, grafik referansına.
 
-**f) `--tk-*` dışı ada bağlanma sorusu.** visx `--chart-1..12` diye jenerik ad kullanıyor,
-shadcn ile uyumlu. Bizde her şey `--tk-` önekli. **Alınmalı: hayır** — önek tutarlılığı
-dış uyumdan değerli; `--tk-chart-1` denir.
+**f) `--tk-*` dışı ada bağlanma.** visx `--chart-1..12` diye shadcn uyumlu jenerik ad
+kullanıyor. **Alınmalı: hayır** — önek tutarlılığı dış uyumdan değerli; `--tk-chart-1` denir.
 
 ## 3 · Standardın haklı olduğu yerler
 
-**"Animasyon süs değil geri bildirim" — alanın en olgun üyesi bizimle aynı fikirde.**
-Tremor, recharts'ın üstüne kuruluyor ve recharts'ın 1500 ms çizgi çizme animasyonunu
-`isAnimationActive={false}` ile **kapatıyor**; sadece 100 ms'lik tooltip animasyonunu
-bırakıyor. Plot ise hiç animasyon yapmıyor. 1500 ms'lik "çizgi soldan sağa çizilir"
-animasyonu ilk bakışta etkileyici, ikinci bakışta bekleme süresidir — §5.4'ün 360 ms tavanı
-bu animasyonu doğru biçimde reddediyor. **Korunsun.**
+**"Animasyon süs değil geri bildirim."** Tremor recharts'ın üstüne kuruluyor ve recharts'ın
+1500 ms'lik çizgi çizme animasyonunu `isAnimationActive={false}` ile **kapatıyor**; yalnız
+100 ms'lik tooltip'i bırakıyor. Plot hiç animasyon yapmıyor. "Çizgi soldan sağa çizilir"
+ilk bakışta etkileyici, ikinci bakışta bekleme süresidir — §5.4'ün 360 ms tavanı bunu doğru
+biçimde reddediyor. **Korunsun.**
 
 **`prefers-reduced-motion` açıkken opaklığın kalması.** recharts `'auto'` modunda animasyonu
-tümden kapatıyor; grafik bir kareden diğerine sıçrıyor ve kullanıcı verinin değiştiğini
-fark etmiyor. Bizim "konum/ölçek kapanır, opaklık kalır" kuralı daha ince ve daha doğru.
-**Korunsun.**
+tümden kapatıyor; grafik kareden kareye sıçrıyor, kullanıcı verinin değiştiğini fark etmiyor.
+"Konum/ölçek kapanır, opaklık kalır" kuralımız daha ince. **Korunsun.**
 
-**Geçiş > keyframe.** nivo ve visx yay (spring) tabanlı; yay iptal edilebilir olduğu için
-gerekçemizle çelişmiyor. Ama nivo'nun yayında **süre yok** — tension/friction'dan çıkan
-oturma süresi ölçülmeden bilinemez. Token'lı sabit süre, denetlenebilirlik açısından üstün.
-**Korunsun.**
+**Token'lı sabit süre.** nivo ve visx yay tabanlı; yay iptal edilebildiği için "geçiş >
+keyframe" gerekçemizle çelişmiyor. Ama nivo'nun yayında **süre yok** — oturma süresi
+ölçülmeden bilinemez. Sabit süre denetlenebilir. **Korunsun.**
 
 ## 4 · Ölçü ve token — yan yana
 
@@ -134,7 +124,7 @@ oturma süresi ölçülmeden bilinemez. Token'lı sabit süre, denetlenebilirlik
 | Kategorik slot | **yok** | visx 12 (min 5), tremor 9, recharts 7, nivo 6, Plot 10 |
 | Taşma | **yok** | beşinde de `index % length` |
 | Izgara / eksen (koyu) | **yok** | visx `#1e293b` / `#334155`; recharts `#3f3f46` kesikli / `#d6d3d1` |
-| Grafik en-boy | **yok** | recharts `aspectRatio: 1.618` |
+| Grafik en-boy | **yok** | recharts `aspectRatio: 1.618`, `maxWidth 700px` |
 | Kenar boşluğu | **yok** | visx `{top 20, right 20, bottom 40, left 50}` |
 
 Bulamadım: nivo yayının ms cinsinden oturma süresi; hiçbir deponun paletinde belgelenmiş
@@ -142,35 +132,35 @@ kontrast/renk körlüğü ölçümü.
 
 ## Sorulara doğrudan cevap
 
-**Beş çizgide hangi renkler?** Sabit liste, ton döndürme değil — alan bu konuda oybirliğinde.
-Öneri: **8 slotluk `--tk-chart-1 … --tk-chart-8`**, taşmada `index % 8`, altıncı slota
-gelindiğinde uyarı (visx deseni). İlk üç slot mevcut tokenlar: `neon-blue`, `neon-pink`,
-`neon-purple` — en sık görülen 1–3 serili grafik marka rengiyle çizilir ve üçü ton olarak
-maksimum uzak. Slot 4–8 için hex **uydurmuyorum**: bunlar `#000000` zeminine karşı ve
-birbirine karşı ölçülerek seçilmeli. İki karar konseye kalıyor: (1) `success #34d399`
-kategorik sete girecek mi — girerse §2'deki "yalnızca tamamlandı" tekeli kırılır;
-(2) renk tek başına yeterli değil — beş çizgide `stroke-dasharray` veya doğrudan uç
-etiketi ikinci kodlama olarak zorunlu tutulmalı (WCAG 1.4.1). Alınacak ayrıntı: recharts'ın
-aktif nokta deseni — göbek zemin rengi, çeper seri rengi, 2px; üst üste binen çizgilerde
-hangi serinin okunduğu bu sayede belli oluyor.
+**Beş çizgide hangi renkler?** Sabit liste — ton döndürmede alan oybirliğinde, hiçbiri
+algoritmik üretmiyor. Öneri: **8 slotluk `--tk-chart-1 … --tk-chart-8`**, taşmada
+`index % 8`, altıncı slota gelindiğinde uyarı (visx deseni; altı seriden fazlası "diğer"e
+toplanmalı). İlk üç slot mevcut tokenlar — `neon-blue`, `neon-pink`, `neon-purple`; 1–3
+serili grafik marka rengiyle çizilir, üçü ton olarak maksimum uzak. Slot 4–8 hexlerini
+**uydurmuyorum**: `#000000` zeminine ve birbirine karşı ölçülerek seçilmeli.
 
-**Süre ölçeği grafiğe uyuyor mu?** Geri bildirim animasyonu için **uyuyor** — tooltip,
-hover, aktif durum 90–240 ms bandında ve tremor da orada. Uymayan tek şey **ilk çizim**
-(recharts 1500 ms): onu almıyoruz, tremor da almamış. Grafiğin ayrı ölçek istediği tek
-yer **veri değişimi geçişi**; §5.4'ün "yalnız opacity/transform" kuralı SVG yol
-enterpolasyonunu kapsamıyor ve bir istisna cümlesi gerekiyor. Ayrı ölçek değil, tek
-istisna yeter.
+Konseye iki karar: (1) `success #34d399` kategorik sete girecek mi — girerse §2'deki
+"yalnızca tamamlandı" tekeli kırılır; (2) beş çizgide renk tek başına yetmez —
+`stroke-dasharray` veya doğrudan uç etiketi ikinci kodlama olarak zorunlu mu (WCAG 1.4.1).
+Alınacak ayrıntı: recharts'ın aktif nokta deseni — göbek zemin rengi, çeper seri rengi,
+2px; üst üste binen çizgilerde hangi serinin okunduğu bununla belli oluyor.
+
+**Süre ölçeği grafiğe uyuyor mu?** Geri bildirim için **uyuyor** — tooltip, hover, aktif
+durum 90–240 ms bandında, tremor da orada. Uymayan tek şey **ilk çizim** (recharts 1500 ms):
+onu almıyoruz, tremor da almamış. Ayrı ölçek gerekmiyor; gereken tek şey **veri değişimi
+geçişi** için §5.4'e istisna — "yalnız opacity/transform" kuralı SVG yol enterpolasyonunu
+kapsamıyor.
 
 **Standarda mı, ayrı skill'e mi?** **İkisi de: §2 ve §5.4'e asgari madde, gerisi
-`references/charts.md`'ye.** Gerekçe — palet ayrı skill'e konulamaz, çünkü §8.1 "renk tek
-kaynaktan gelir, aynı rengi iki yerde tanımlamak ikisinin ayrışması demektir" diyor;
-`--tk-chart-*` başka dosyada yaşarsa ilk tema değişikliğinde ayrışır. Aynı şekilde
-animasyon istisnası §5.4'e atıf yapmak zorunda. Ama grafik türleri, eksen biçimlendirme,
-tooltip yerleşimi, boş/yükleniyor/hata hâli, sayı ve tarih biçimi 150+ satır tutar —
-485 satırlık standardın üçte biri, dört platformun yalnız ikisini ilgilendiren bir konu
-için. Standart zaten `references/components.md`, `desktop.md`, `layout.md` desenini
-kullanıyor; dördüncüsü doğal yer. Ayrı **skill** olmamalı: skill ayrı yüklenir, dashboard
-yazan kişi `teknesyum-ui` açıkken grafik kurallarını görmez.
+`references/charts.md`'ye.** Palet ayrı skill'e konulamaz; §8.1 "renk tek kaynaktan gelir,
+aynı rengi iki yerde tanımlamak ikisinin ayrışması demektir" diyor — `--tk-chart-*` başka
+dosyada yaşarsa ilk tema değişikliğinde ayrışır, animasyon istisnası da §5.4'e atıf yapmak
+zorunda. Ama grafik türleri, eksen biçimlendirme, tooltip yerleşimi, boş/yükleniyor/hata
+hâli, sayı ve tarih biçimi 150+ satır tutar; 485 satırlık standardın üçte biri, dört
+platformun yalnız ikisini ilgilendiren konu için fazla. Standart zaten
+`references/{components,desktop,layout}.md` desenini kullanıyor — dördüncüsü doğal yer.
+Ayrı **skill** olmamalı: skill ayrı yüklenir, dashboard yazan kişi `teknesyum-ui` açıkken
+grafik kurallarını görmez.
 
 ## 5 · Lisans
 
@@ -182,8 +172,8 @@ yazan kişi `teknesyum-ui` açıkken grafik kurallarını görmez.
 | tremorlabs/tremor | Apache-2.0 | **2025-10-10** | **sürüm/etiket yok** | 29 |
 | observablehq/plot | **ISC** | 2026-05-16 | v0.6.17 (**2025-02-14**) | 346 |
 
-Hepsi OSI onaylı, izin verici. ISC işaretlendi: MIT/Apache/BSD dışı ama işlevsel olarak
-MIT eşdeğeri, engel değil. Not: tremor 10 aydır commit almamış ve hiç etiketli sürümü yok —
-ama kopyala-yapıştır bileşen seti olduğu için bağımlılık riski taşımıyor, desen olarak
-okunabilir. recharts'ın tema sistemi kaynakta **`@experimental`** işaretli, API'si değişecek.
-Kod alınmıyor; alınan şey palet yapısı ve koyu tema kademesi.
+Hepsi OSI onaylı ve izin verici. ISC işaretlendi: MIT/Apache/BSD dışı ama işlevsel olarak
+MIT eşdeğeri, engel değil. tremor 10 aydır commit almamış ve hiç etiketli sürümü yok — ama
+kopyala-yapıştır bileşen seti olduğundan bağımlılık riski taşımıyor, desen olarak okunur.
+recharts'ın tema sistemi kaynakta **`@experimental`** işaretli, API'si değişecek. Kod
+alınmıyor; alınan şey palet yapısı ve koyu tema kademesi.

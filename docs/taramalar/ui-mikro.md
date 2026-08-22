@@ -17,8 +17,8 @@ Mercek: "şık" hissinin nereden geldiği. Künyeler `gh api` ile 2026-08-22'de 
 `data-swiping`, `data-swipe-out`. JS hiç `style.transform` yazmaz, yalnız CSS değişkeni
 besler (`--swipe-amount-x/y`, `--offset`, `--lift`). Sabitler: `TOAST_LIFETIME` 4000,
 `TIME_BEFORE_UNMOUNT` 200, `GAP` 14, `SWIPE_THRESHOLD` 45 px, `VISIBLE_TOASTS_AMOUNT` 3.
-Ana geçiş `transform 400ms, opacity 400ms, height 400ms, box-shadow 200ms` — standardın
-yasakladığı `height`'ı da animasyonluyor.
+Ana geçiş `transform/opacity/height 400ms, box-shadow 200ms` — standardın yasakladığı
+`height`'ı da animasyonluyor.
 
 **vaul** (`src/constants.ts`) — `TRANSITIONS = { DURATION: 0.5, EASE: [0.32, 0.72, 0, 1] }`,
 `VELOCITY_THRESHOLD` 0.4, `CLOSE_THRESHOLD` 0.25, `SCROLL_LOCK_TIMEOUT` 100. Eğri,
@@ -36,14 +36,14 @@ varsayılanı `duration = 5000`; sürükleme `data-swipe="start|move|cancel|end"
 
 **react-spring** (`packages/core/src/constants.ts`) — süre yok, fizik var. Hazır ayarlar
 (tension, friction; `mass` 1, `clamp` false): `default {170,26}`, `gentle {120,14}`,
-`wobbly {180,12}`, `stiff {210,20}`, `slow {280,60}`, `molasses {280,120}`.
-`useReducedMotion` eşleşince global `skipAnimation` atıyor — genelde tek anahtar.
+`wobbly {180,12}`, `stiff {210,20}`, `slow {280,60}`, `molasses {280,120}`. `useReducedMotion`
+eşleşince global `skipAnimation` atıyor — kütüphane genelinde tek anahtar.
 
 **Emil Kowalski yazıları** (halka açık): "ease-out varsayılan, arayüzde asla ease-in";
 "yalnız transform ve opacity"; "arayüz animasyonu genelde 300 ms altında"; günde yüzlerce
 kez tekrarlanan klavye eylemi **hiç** animasyonlanmaz; ikinci tooltip hem gecikmeyi hem
-animasyonu atlar. Basma ölçeği 0.97, giriş ölçeği 0 yerine 0.93. Kurs içeriği ödeme
-duvarında, **doğrulanamadı**.
+animasyonu atlar. Basma ölçeği 0.97, giriş ölçeği 0 yerine 0.93. Kurs ödeme duvarında,
+içeriği **doğrulanamadı**.
 
 ## 2 · Standardın kaçırdığı
 
@@ -52,9 +52,9 @@ duvarında, **doğrulanamadı**.
 yazılmamış. **Alınmalı** — çıkış tanımsızsa uygulayıcı `display:none` yapar. Girer: §5.4.
 
 **b) Çıkış girişten kısadır — asimetri.** sonner çıkışta opaklığı 200 ms'ye indiriyor
-(`transition: transform 500ms, opacity 200ms`) ve düğümü 200 ms sonra söküyor: görülen
-çıkış, girişin yarısı. Standart tek süre ölçeği veriyor, yön ayrımı yok. **Alınmalı** —
-kullanıcı gidene bakmaz, gelene bakar. §5.4 süre tablosu.
+(`transform 500ms, opacity 200ms`) ve düğümü 200 ms sonra söküyor: görülen çıkış girişin
+yarısı. Standart tek süre ölçeği veriyor, yön ayrımı yok. **Alınmalı** — kullanıcı gidene
+bakmaz, gelene bakar. §5.4 süre tablosu.
 
 **c) Sürükleme fiziği: eşik **veya** hız, ve sönümleme.** vaul %25 veya hız 0.4; sonner
 45 px veya hız 0.11; ikisi de sınırı sert kesmiyor. Standart sürükleme hakkında yalnız
@@ -64,9 +64,8 @@ erişilebilirlik diyor. **Alınmalı, bir paragraf yeter.** §5.4.
 `data-*`. **Alınmalı** — §8.1'in devamı: renk tek kaynaktansa durum da tek kaynaktan
 gelmeli. Girer: §8.1.
 
-**e) Gerçek spring fiziği.** react-spring altı hazır ayarla tension/friction uzayını
-ayırıyor; standartta tek cubic-bezier var. **Alınmamalı** — dört platformda çözücü taşımak
-ağır; §5.4'e "bu bir spring taklidi eğridir, fizik değildir" cümlesi yeter.
+**e) Gerçek spring fiziği.** react-spring altı hazır tension/friction ayarı veriyor,
+standartta tek cubic-bezier var. **Alınmamalı** — dört platformda çözücü taşımak ağır.
 
 ## 3 · Standardın haklı olduğu yerler
 
@@ -77,16 +76,15 @@ gerekçeyle birebir aynı. **Karşı örnek radix**: `Presence` yalnız `animati
 `animationend` okuyor, `transitionend` dosyada hiç geçmiyor; yani Radix ile çıkış yapmak
 için keyframe zorunlu. Standardın tercihi korunmalı, yanına "Radix istisnası" notu.
 
-**"Söyleyecek şeyi yoksa animasyon yok" doğru.** Aynı yazar bağımsız bir yazıda günde
-yüzlerce kez tekrarlanan eylemin hiç animasyonlanmaması gerektiğini yazıyor; alanın
-çoğunluğu bunu söylemiyor.
+**"Söyleyecek şeyi yoksa animasyon yok" doğru.** Aynı yazar günde yüzlerce kez tekrarlanan
+eylemin hiç animasyonlanmaması gerektiğini yazıyor; alanın çoğunluğu bunu söylemiyor.
 
 **`prefers-reduced-motion`'da opaklığı korumak sonner'den iyi.** sonner'in bloğu
 `transition: none !important; animation: none !important` — her şey sert kesiliyor.
 Standardın "konum/ölçek kapanır, opaklık kalır" kuralı daha ölçülü. Değiştirme.
 
 **360 ms tavanı savunulabilir.** Emil "genelde 300 ms altı" diyor, vaul 500 ms kullanıyor
-ama o tam ekran yüksekliği kat eden bir yüzey; 360 ms ikisinin arasında.
+ama o tam ekran kat eden bir yüzey; 360 ms ikisinin arasında ve gerekçeli.
 
 ## 4 · Ölçü ve token — yan yana
 
@@ -101,8 +99,6 @@ ama o tam ekran yüksekliği kat eden bir yüzey; 360 ms ikisinin arasında.
 | Sürükleme eşiği | yok | 45 px veya hız 0.11 | %25 veya hız 0.4 | tüketicide | — |
 | Otomatik kapanma | yok | 4000 ms | — | 5000 ms | — |
 | Görünür yığın | liste kademesi 6 | 3 toast | — | — | — |
-
-Bulamadım: `--tk-t-instant/fast` karşılığı hiçbir depoda token değil, bileşene gömülü.
 
 ## 5 · Süre mesafeye göre ölçekleniyor mu
 
@@ -130,12 +126,12 @@ bu boşluktan sızmış. Dört yaklaşım:
    olduğundan çıkış **kasten yarıda kesiliyor**. Basit, öngörülebilir.
 2. **radix — animasyonu ölçüp bekleme.** Süre kütüphanede yok, CSS'ten geliyor; bedeli
    yalnızca keyframe desteklenmesi.
-3. **vaul — giriş ve çıkış aynı eğri, aynı süre.** Simetri kasıtlı: sürükleyerek kapatma
-   ile düğmeyle kapatma aynı hissetmeli.
-4. **react-spring — ayrı bir çıkış yok.** Hedef değişir, fizik oraya götürür.
+3. **vaul — giriş ve çıkış aynı eğri, aynı süre.** Simetri kasıtlı: sürükleyerek ve
+   düğmeyle kapatma aynı hissetmeli.
+4. **react-spring — ayrı çıkış yok.** Hedef değişir, fizik oraya götürür.
 
-Bize uyan biçim 1 + 2 melezi: durum niteliği DOM'da, süre tokende, söküm tokendan okunan
-süreye bağlı. Radix'in computed-style okuması gerekmez, çünkü süreyi biz veriyoruz.
+Bize uyanı 1 + 2 melezi: durum niteliği DOM'da, süre tokende, söküm tokendan okunan süreye
+bağlı. Radix'in computed-style okuması gerekmez, süreyi zaten biz veriyoruz.
 
 ## 7 · `data-state` kalıbı uyumlu mu
 
@@ -152,3 +148,4 @@ sonner, vaul, radix-ui/primitives, react-spring: dördü de **MIT**, §5.6 sıra
 animations.dev ücretli kurs, açık lisansı yok — ders içeriğinden kod veya metin alınamaz;
 yalnız yazarın halka açık blog yazılarındaki fikirler kaynak gösterilerek kullanılabilir.
 "N bin geliştirici kullanıyor" tipi iddia birincil kaynakta görülmedi, yazılmadı.
+Bulamadığım değer: `--tk-t-instant/fast` karşılığı hiçbir depoda token değil, bileşene gömülü.

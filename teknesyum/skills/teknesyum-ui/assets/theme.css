@@ -92,8 +92,7 @@ body {
   display: inline-flex; align-items: center; justify-content: center; gap: 12px;
   transition: transform var(--tk-t-instant) var(--tk-e-out),
               background-color var(--tk-t-instant) var(--tk-e-out),
-              border-color var(--tk-t-instant) var(--tk-e-out),
-              box-shadow var(--tk-t-instant) var(--tk-e-out);
+              border-color var(--tk-t-instant) var(--tk-e-out);
 }
 .tk-btn:hover { transform: scale(1.02); }
 .tk-btn:active { transform: scale(0.98); transition-duration: var(--tk-t-instant); }

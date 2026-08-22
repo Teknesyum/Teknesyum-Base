@@ -10,7 +10,15 @@ docs/BENCH-PROMPT.md oku ve uygula. Durum: <yalin|eco|normal|premium>
 Dördünü aynı oturumda peş peşe koşma — sonrakiler bağlam taşır ve avantajlı başlar,
 ölçüm bozulur.
 
-**Üç profil aynı anda koşulabilir**, ayrı pencerelerde. `yalin` koşamaz: eklentiyi
+**Profiller sıralı koşulmalı, paralel değil.** İlk turda üçü paralel koşuldu ve
+`/premium` makine geneline yazdığı için birbirlerini bozdular: eco penceresi profili
+değiştirince premium koşusu onu gördü. Ölçülen koşu artık "baştan sona premium" değildi.
+
+Paralel koşmak isteniyorsa profil ortam değişkeniyle ayrılmalı — `TEKNESYUM_PREMIUM=1|0`
+tek oturumluk ezer ve makine geneline dokunmaz. Ama `eco` için ortam değişkeni yok, o
+yüzden en güvenlisi sıra.
+
+**Yalın koşu her hâlükârda tek başınadır**, ayrı pencerelerde. `yalin` koşamaz: eklentiyi
 kapatmak makine geneli bir işlem, o sırada başka Teknesyum oturumu açılamaz. Sıra:
 önce üç profil paralel, sonra yalın tek başına.
 
@@ -34,6 +42,13 @@ değer mi" sorusunun cevabı olmaz.
 ## Kurulum
 
 1. `Desktop/Projeler/Bench-Chess960-<durum>` klasörünü aç, git deposu yap.
+
+   **Aynı durum ikinci kez koşuluyorsa** klasör adına tur numarası ekle:
+   `Bench-Chess960-premium-2`. Eski koşunun klasörüne dokunma — iki tur karşılaştırılacak
+   ve varyansı görmenin tek yolu ikisinin de durması.
+
+   Komutta durum adı yine sade yazılır (`Durum: premium`); tur numarasını klasöre sen
+   eklersin ve `BENCH.md`'nin ilk satırına kaçıncı tur olduğunu yaz.
 
 2. **`yalin` durumu için:** eklentiyi kapat ve doğrula.
 

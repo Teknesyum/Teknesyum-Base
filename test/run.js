@@ -9,6 +9,7 @@ const IZLE = path.join(KOK, 'hooks', 'relay-watch.js');
 const KORU = path.join(KOK, 'hooks', 'contract-guard.js');
 const DURUM = path.join(KOK, 'scripts', 'statusline.js');
 const OTURUM = path.join(KOK, 'scripts', 'oturum.js');
+const DIL = path.join(KOK, 'hooks', 'dil.js');
 
 let gecti = 0;
 const kaldi = [];
@@ -27,6 +28,10 @@ function ol(ad, f) {
 function esit(a, b, not) {
   if (a !== b)
     throw new Error((not ? not + ': ' : '') + JSON.stringify(a) + ' ≠ ' + JSON.stringify(b));
+}
+function icermez(s, p, not) {
+  if (String(s).includes(p))
+    throw new Error((not ? not + ': ' : '') + '"' + p + '" beklenmiyordu — gelen: ' + s);
 }
 function icerir(s, p, not) {
   if (!String(s).includes(p))
@@ -47,6 +52,8 @@ function calistir(script, yuk, ek) {
       TEKNESYUM_DEBUG: '',
       TEKNESYUM_DIL: 'tr',
       CLAUDE_CONFIG_DIR: BOS_CFG,
+      CLAUDE_CODE_SESSION_ID: '',
+      CLAUDE_CODE_HOST_SESSION_ID: '',
       ...(ek || {}),
     },
   });
@@ -1360,8 +1367,8 @@ ol('mühürlü dosyaya bile Edit yasak (bitmiş sözleşme değişmez)', () => {
 ol('kabuktan done/ altına yazma engellenir', () => {
   for (const c of [
     'echo x > .claude/relay/contracts/done/T1.md',
-    'mv .claude/relay/contracts/T1.md .claude/relay/contracts/done/T1.md',
-    'Move-Item .claude\\relay\\contracts\\T1.md .claude\\relay\\contracts\\done\\',
+    'mv .claude/relay/contracts/T999.md .claude/relay/contracts/done/T999.md',
+    'Move-Item .claude\\relay\\contracts\\T999.md .claude\\relay\\contracts\\done\\',
     'rm .claude/relay/contracts/done/T1.md',
   ]) {
     esit(calistir(KORU, { tool_name: 'Bash', tool_input: { command: c } }).kod, 2, c);
@@ -2580,10 +2587,18 @@ function premiumKopya() {
   return { p, cfg: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-premium-cfg-')) };
 }
 
-function premiumCalistir(komut, p, cfg) {
+function premiumCalistir(komut, p, cfg, ek) {
   const r = spawnSync(process.execPath, [PREMIUM, komut, '--kok', p], {
     encoding: 'utf8',
-    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg },
+    env: {
+      ...process.env,
+      CLAUDE_CONFIG_DIR: cfg,
+      CLAUDE_CODE_SESSION_ID: '',
+      CLAUDE_CODE_HOST_SESSION_ID: '',
+      TEKNESYUM_DIL: 'tr',
+      TEKNESYUM_PREMIUM: '',
+      ...(ek || {}),
+    },
   });
   return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
 }
@@ -2716,6 +2731,144 @@ ol('premium plan konseyini acar ve arastirma tavanini 50 depoya cikarir', () => 
   icerir(k, 'plan_council       : off');
   icerir(k, 'research_repos     : 10');
   icerir(premiumCalistir('durum', p, cfg).out, 'plan konseyi: off');
+});
+
+function oturumProfilOku(cfg, sid) {
+  const r = spawnSync(
+    process.execPath,
+    ['-e', 'process.stdout.write(require(process.argv[1]).profil())', DIL],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        CLAUDE_CONFIG_DIR: cfg,
+        CLAUDE_CODE_SESSION_ID: sid || '',
+        CLAUDE_CODE_HOST_SESSION_ID: '',
+        TEKNESYUM_PREMIUM: '',
+        TEKNESYUM_DIL: 'tr',
+      },
+    }
+  );
+  return (r.stdout || '').trim();
+}
+
+function oturumlarDizini(cfg) {
+  return path.join(cfg, 'teknesyum', 'oturumlar');
+}
+
+ol('iki oturum ayri profil kaydi tutar, profil her birine kendi cevabini verir', () => {
+  const { p, cfg } = premiumKopya();
+  esit(premiumCalistir('eco', p, cfg, { CLAUDE_CODE_SESSION_ID: 'oturum-a' }).kod, 0, 'eco kodu');
+  esit(
+    premiumCalistir('premium', p, cfg, { CLAUDE_CODE_SESSION_ID: 'oturum-b' }).kod,
+    0,
+    'premium kodu'
+  );
+  esit(
+    fs.readdirSync(oturumlarDizini(cfg)).sort().join(','),
+    'oturum-a.json,oturum-b.json',
+    'oturum basina ayri dosya'
+  );
+  esit(oturumProfilOku(cfg, 'oturum-a'), 'eco');
+  esit(oturumProfilOku(cfg, 'oturum-b'), 'premium');
+  esit(oturumProfilOku(cfg, null), 'normal', 'kimliksiz surec makine varsayilanina dusmeli');
+  esit(
+    fs.existsSync(path.join(cfg, 'teknesyum.json')),
+    false,
+    'oturum kaydi varken makine varsayilani yazilmamali'
+  );
+  const k = JSON.parse(fs.readFileSync(path.join(oturumlarDizini(cfg), 'oturum-a.json'), 'utf8'));
+  esit(k.profil, 'eco');
+  if (!k.pid || !k.ts || !k.cwd) throw new Error('kayitta pid/ts/cwd eksik: ' + JSON.stringify(k));
+});
+
+ol('oturum kimligi yokken profil kaydi makineye yazilir', () => {
+  const { p, cfg } = premiumKopya();
+  const cikti = premiumCalistir('premium', p, cfg);
+  esit(cikti.kod, 0, 'cikis kodu');
+  icerir(cikti.out, 'kayıt: makine');
+  const c = JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8'));
+  esit(c.profil, 'premium');
+  esit(c.premium, true);
+  esit(fs.existsSync(oturumlarDizini(cfg)), false, 'kimlik yokken oturum kaydi acilmamali');
+  icerir(premiumCalistir('durum', p, cfg).out, 'yürürlükteki profil: premium (kaynak: makine)');
+});
+
+ol('bayat oturum kaydi yok sayilir ve yeni kayit yazilirken silinir', () => {
+  const { p, cfg } = premiumKopya();
+  premiumCalistir('eco', p, cfg);
+  const dizin = oturumlarDizini(cfg);
+  fs.mkdirSync(dizin, { recursive: true });
+  const kayit = (ts) => JSON.stringify({ profil: 'premium', pid: 1, ts, cwd: p });
+  fs.writeFileSync(path.join(dizin, 'bayat.json'), kayit(Date.now() - 8 * 24 * 3600 * 1000));
+  fs.writeFileSync(path.join(dizin, 'taze.json'), kayit(Date.now()));
+  esit(oturumProfilOku(cfg, 'bayat'), 'eco', 'bayat kayit makine varsayilanina dusmeli');
+  esit(oturumProfilOku(cfg, 'taze'), 'premium', 'taze kayit okunmali');
+  premiumCalistir('normal', p, cfg, { CLAUDE_CODE_SESSION_ID: 'yeni' });
+  esit(fs.existsSync(path.join(dizin, 'bayat.json')), false, 'bayat kayit silinmeli');
+  esit(fs.existsSync(path.join(dizin, 'taze.json')), true, 'taze kayit durmali');
+});
+
+ol('durum profil kaynagini ve eforun izole olmadigini soyler', () => {
+  const { p, cfg } = premiumKopya();
+  premiumCalistir('normal', p, cfg);
+  const makine = premiumCalistir('durum', p, cfg).out;
+  icerir(makine, 'yürürlükteki profil: normal (kaynak: makine)');
+  icerir(makine, 'efor: taban — oturuma izole değil, ajan dosyasından gelir');
+  const sid = { CLAUDE_CODE_SESSION_ID: 'oturum-c' };
+  icerir(premiumCalistir('premium', p, cfg, sid).out, 'kayıt: oturum');
+  const d = premiumCalistir('durum', p, cfg, sid).out;
+  icerir(d, 'yürürlükteki profil: premium (kaynak: oturum)');
+  icerir(d, 'konfig profili: normal');
+  if (d.includes('UYUŞMAZLIK')) throw new Error('oturum kaydi konfigle uyusmazlik sayildi');
+  icerir(
+    premiumCalistir('durum', p, cfg, { ...sid, TEKNESYUM_DIL: 'en' }).out,
+    'effort: baseline — not isolated per session, it comes from the agent file'
+  );
+});
+
+ol('okunamayan oturum kaydi bayat sayilmaz, silinmez', () => {
+  const { p, cfg } = premiumKopya();
+  premiumCalistir('normal', p, cfg);
+  const dizin = oturumlarDizini(cfg);
+  fs.mkdirSync(dizin, { recursive: true });
+  const yarim = path.join(dizin, 'yarim.json');
+  fs.writeFileSync(yarim, '{"profil": "premi');
+  const bos = path.join(dizin, 'bos.json');
+  fs.writeFileSync(bos, '');
+  premiumCalistir('eco', p, cfg, { CLAUDE_CODE_SESSION_ID: 'yazan' });
+  esit(fs.existsSync(yarim), true, 'yarim yazilmis kayit silinmemeli');
+  esit(fs.existsSync(bos), true, 'bos kayit silinmemeli');
+  esit(oturumProfilOku(cfg, 'yarim'), 'normal', 'okunamayan kayit makine varsayilanina dusmeli');
+});
+
+ol('durum iki oturumda ayri profil basar, ajan dosyalarini ayri satira ayirir', () => {
+  const { p, cfg } = premiumKopya();
+  const A = { CLAUDE_CODE_SESSION_ID: 'oturum-A' };
+  const B = { CLAUDE_CODE_SESSION_ID: 'oturum-B' };
+  esit(premiumCalistir('eco', p, cfg, A).kod, 0, 'A eco kodu');
+  esit(premiumCalistir('premium', p, cfg, B).kod, 0, 'B premium kodu');
+  const a = premiumCalistir('durum', p, cfg, A).out;
+  const b = premiumCalistir('durum', p, cfg, B).out;
+  icerir(a, 'yürürlükteki profil: eco (kaynak: oturum)');
+  icerir(a, 'paralel: 1 ajan · ön araştırma: 1+ depo · denetim: critical');
+  icerir(a, 'plan konseyi: off');
+  icerir(b, 'yürürlükteki profil: premium (kaynak: oturum)');
+  icerir(b, 'paralel: 20 ajan · ön araştırma: 50+ depo · denetim: every-contract');
+  icerir(b, 'plan konseyi: fable + opus');
+  icerir(a, 'ajan dosyaları: premium — makine geneli, oturuma izole değil');
+  icerir(a, 'relay düğmeleri: premium — makine geneli, oturuma izole değil');
+  icerir(a, 'UYUŞMAZLIK: profil eco diyor, ajan dosyaları premium ve relay düğmeleri premium');
+  icerir(a, 'Yukarıdaki düğme satırları eco profilinin değerleridir, dosyada yazan değil');
+  esit(
+    /parallel_width\s*:\s*20/.test(
+      fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8')
+    ),
+    true,
+    'dosyada hala B oturumunun 20 degeri durmali'
+  );
+  if (b.includes('UYUŞMAZLIK'))
+    throw new Error('B oturumu makine dosyalariyla uyusuyor, uyusmazlik bildirilmemeli');
 });
 
 ol('plan konseyi uyesi hicbir sey yazamaz', () => {
@@ -4500,6 +4653,61 @@ ol('tarama profil verilmeden kullanimi basip cikar', () => {
     2,
     'bayrak profil yerine gecmez'
   );
+});
+
+function taramaKapsayici() {
+  const kap = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapsayici-'));
+  for (const ad of ['alfa', 'beta']) {
+    fs.mkdirSync(path.join(kap, ad), { recursive: true });
+    fs.writeFileSync(path.join(kap, ad, 'package.json'), '{"name":"' + ad + '"}');
+  }
+  return kap;
+}
+
+ol('tarama kapsayici klasorde olcmeden durur', () => {
+  const kap = taramaKapsayici();
+  const r = taramaCalistir(kap, 'premium', '--tamamla');
+  esit(r.kod, 2, 'kapsayici kullanim hatasidir, kaldi degil');
+  icerir(r.out, 'DURDU');
+  icerir(r.out, 'kapsayıcı klasör');
+  icerir(r.out, 'alt projeler: alfa, beta');
+  icerir(r.out, '--proje');
+  icerir(r.out, '<yeni-ad>');
+  icermez(r.out, 'SONUÇ:');
+});
+
+ol('tarama kapsayici kapisini --kapsayici asar', () => {
+  const kap = taramaKapsayici();
+  const r = taramaCalistir(kap, 'eco', '--kapsayici');
+  icermez(r.out, 'DURDU');
+  icerir(r.out, 'SONUÇ:');
+});
+
+ol('tarama kapsayici raporu --json ile ayristirilabilir', () => {
+  const kap = taramaKapsayici();
+  const j = JSON.parse(taramaCalistir(kap, 'normal', '--json').out);
+  esit(j.durum, 'kapsayici', 'durum alani');
+  esit(j.altlar.join(','), 'alfa,beta', 'alt proje listesi');
+});
+
+ol('tarama ustundeki role klasoru projeyi kapsayici saydirmaz', () => {
+  const p = taramaProje(1);
+  const alt = path.join(p, 'ic');
+  fs.mkdirSync(path.join(alt, 'x'), { recursive: true });
+  fs.writeFileSync(path.join(alt, 'x', 'package.json'), '{}');
+  const r = taramaCalistir(p, 'eco');
+  icermez(r.out, 'DURDU');
+});
+
+ol('kapsayici.kesin role klasorune aldanmaz', () => {
+  const k = require(path.join(KOK, 'hooks', 'kapsayici.js'));
+  const kap = taramaKapsayici();
+  fs.mkdirSync(path.join(kap, '.claude', 'relay'), { recursive: true });
+  const s = k.kesin(kap);
+  esit(!!s, true, 'role klasoru kapsayiciyi projeye cevirmemeli');
+  esit(k.kok(kap), null, 'gevsek olcu role klasorune takiliyor — kesin olcu bunun icin var');
+  fs.writeFileSync(path.join(kap, 'package.json'), '{}');
+  esit(k.kesin(kap), null, 'guclu iz varsa proje sayilir');
 });
 
 ol('tarama esikleri premium.js DUGME tablosundan okur, kopyalamaz', () => {

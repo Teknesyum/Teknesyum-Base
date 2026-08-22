@@ -18,13 +18,24 @@ altındadır. Argüman boşsa `durum` çalıştır — kendiliğinden profil de�
 
 Eski çağrılar durur: `aç` premium, `kapat` normal demektir. `standart` da `normal`'e gider.
 
-Betik üç yeri birden yazar: ajan frontmatter'ı (`model`, `effort`, `maxTurns`), relay
-düğmeleri (`skills/relay/SETTINGS.md`) ve `~/.claude/teknesyum.json` içindeki `profil`
-alanı. Çıktıyı olduğu gibi bas, kendin dosya düzenleme.
+Betik ajan frontmatter'ını (`model`, `effort`, `maxTurns`) ve relay düğmelerini
+(`skills/relay/SETTINGS.md`) yazar. **Profil kaydı oturuma iner:** oturum kimliği varsa
+`~/.claude/teknesyum/oturumlar/<oturum>.json` yazılır ve `~/.claude/teknesyum.json`'a
+dokunulmaz. Kimlik yoksa eski davranış sürer, makine varsayılanı yazılır. Aynı makinede
+iki oturum artık birbirinin profilini ezmez. Çıktıyı olduğu gibi bas, kendin dosya
+düzenleme.
 
-`durum` yürürlükteki profili ve o profilin ayırt edici üç değerini basar: **paralel ajan
-sayısı, ön araştırma tavanı, denetim eşiği.** Üçü profilden profile değişen asıl
-değerlerdir; gerisi bu üçünün sonucudur.
+Oturuma bağlanan şey **profil kaydı ve model**tir, **efor değildir.** Efor yalnız ajan
+tanım dosyasından gelir — `Agent` aracının şemasında `effort` alanı yoktur, oturum başına
+ayrılamaz. `durum` bunu her seferinde tek satırla söyler; yarım çözümü tam gibi
+göstermemek için oradadır.
+
+Oturum kayıtları 7 günden eskiyse yok sayılır ve makine varsayılanına düşülür; bayat
+dosyalar yeni kayıt yazılırken silinir.
+
+`durum` yürürlükteki profili, kaynağını (`oturum` mu `makine` mi) ve o profilin ayırt
+edici üç değerini basar: **paralel ajan sayısı, ön araştırma tavanı, denetim eşiği.** Üçü
+profilden profile değişen asıl değerlerdir; gerisi bu üçünün sonucudur.
 
 | | eco | normal | premium |
 |---|---|---|---|
@@ -115,8 +126,10 @@ her ajan bir repo kopyası ve bir süreç demektir, ve T0 hatalı bir döngüye 
 güvenlik ağı olur. Kararı T0 verir ve ölçüsü hızdır — bölünebilen işi bölmemek gerekçe
 ister. Eco'da tavan 1'dir: paralel ajan hızdır, token değil.
 
-`~/.claude/teknesyum.json` profili `profil` alanında tutar. Alan yoksa eski `premium`
-bayrağı okunur: `true` premium, gerisi normal sayılır. Betik ikisini birlikte yazar.
+`~/.claude/teknesyum.json` **makine varsayılanını** `profil` alanında tutar. Alan yoksa
+eski `premium` bayrağı okunur: `true` premium, gerisi normal sayılır. Betik bu dosyayı
+yalnız oturum kimliği yokken yazar ve ikisini birlikte yazar. Profil okuma sırası:
+`TEKNESYUM_PREMIUM` → oturum kaydı → `teknesyum.json` → `normal`.
 
 Eklenti güncellemesi ajan dosyalarını normal profile geri alabilir. `durum` konfig ile
 dosyaları karşılaştırır ve uyuşmazlığı söyler; tek satırlık düzeltmesi `/premium premium`.

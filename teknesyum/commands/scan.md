@@ -1,6 +1,6 @@
 ---
 description: Projenin bir profil standardına uygunluğunu denetler — eco, normal veya premium sertifikası
-argument-hint: eco | normal | premium [--tamamla] [--json]
+argument-hint: eco | normal | premium [--tamamla] [--json] [--proje <yol>]
 allowed-tools: Bash, Read, Glob, Grep, Edit, Write, Agent
 ---
 
@@ -18,6 +18,22 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/tarama.js" $ARGUMENTS
 altındadır. Çıktıyı **olduğu gibi bas**, özetleme, kendin dosya tarama.
 
 Çıkış kodu 1 "kaldı" demektir, çökme değil — rapor doludur. 2 kullanım hatasıdır.
+
+## Kapsayıcı klasörde çalışmaz
+
+Standart tek projeye göre yazılmıştır: eşikler bir deponun ön araştırması, bir kaynak
+ağacının kapsamı, bir README'nin sürümüdür. Projeleri barındıran üst klasörde
+(`Desktop/Projeler` gibi) çalıştırıldığında bu sayılar on beş projenin toplamı olur
+ve kapatılamaz bir eksik listesi çıkar. Betik bunu ölçmeden önce görür, `DURDU` basar
+ve çıkış kodu 2 verir.
+
+O çıktıyı aldığında **eksik kapatmaya girişme.** Raporu bas, alt proje listesini
+kullanıcıya göster ve tek satırla sor: hangi projeyi denetleyelim. Cevabı aldıktan
+sonra `--proje <yol>` ile o kökte yeniden çalıştır. Kullanıcı henüz olmayan bir proje
+söylerse önce klasörü açıp açmayacağını sor, sonra kur.
+
+`--kapsayici` bayrağı kapıyı aşar; yalnız kullanıcı üst klasörün kendisini denetlemek
+istediğini söylediğinde kullan.
 
 ## Ayar verilmeden çalışmaz
 

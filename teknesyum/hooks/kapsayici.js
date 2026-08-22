@@ -175,4 +175,40 @@ function tasi(kap, hedef) {
   return n;
 }
 
-module.exports = { kok, projeMi, altProje, izle, etkin, tasi, dizinBirlestir };
+// `kok` gevşek ölçer: üst klasörde bir kez röle açılmışsa `.claude/relay` orada da
+// oluşur ve klasör proje sayılır — kapsayıcı tespiti sessizce kapanır. Denetim gibi
+// "yanlış kökte çalışırsam on beş projeyi tek proje sanarım" diyen çağıranlar için
+// ikinci, sıkı bir ölçü: kök yalnız *güçlü* bir proje işareti taşıyorsa projedir.
+// Röle klasörü güçlü işaret değildir, çünkü üst klasörde de birikir.
+const GUCLU_IZ = [
+  '.git',
+  'package.json',
+  'pyproject.toml',
+  'Cargo.toml',
+  'go.mod',
+  '.claude-plugin',
+];
+const GUCLU_UZANTI = /\.(sln|csproj|fsproj|vbproj|xcodeproj)$/i;
+
+function gucluProje(d) {
+  const kok = path.resolve(d);
+  if (GUCLU_IZ.some((f) => fs.existsSync(path.join(kok, f)))) return true;
+  try {
+    return fs.readdirSync(kok).some((f) => GUCLU_UZANTI.test(f));
+  } catch {
+    return false;
+  }
+}
+
+// Kesin kapsayıcı: kendisi güçlü bir proje değil, altında en az iki proje var. İki
+// eşiği bilerek: tek bir vendor klonu barındıran proje kapsayıcı sayılmasın.
+function kesin(d) {
+  const kok = path.resolve(d);
+  if (gucluProje(kok)) return null;
+  const alt = altlar(kok).filter(
+    (a) => projeMi(path.join(kok, a)) || gucluProje(path.join(kok, a))
+  );
+  return alt.length >= 2 ? { kok, altlar: alt.sort() } : null;
+}
+
+module.exports = { kok, kesin, gucluProje, projeMi, altProje, izle, etkin, tasi, dizinBirlestir };

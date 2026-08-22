@@ -6,6 +6,22 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- `/scan` measured the umbrella folder as if it were one project. Run from
+  `Desktop/Projeler`, it reported 755 unreviewed files and 50 missing repo surveys —
+  the sum of fifteen unrelated projects, an unclosable gap. The scan now stops before
+  measuring, prints the sub-project list and exits 2, so the caller asks which project
+  to certify instead of fanning out agents at the wrong root. `--kapsayici` overrides
+  the gate for the rare case where the umbrella itself is the target.
+- Umbrella detection was defeated by its own side effect: a session opened in the
+  parent folder leaves a `.claude/relay` directory there, and that counted as a project
+  marker, so `kapsayici.kok` returned null for exactly the folder it exists to catch.
+  Added `kapsayici.kesin`, which asks for a *strong* marker (`.git`, `package.json`,
+  `pyproject.toml`, `Cargo.toml`, `go.mod`, `.claude-plugin`, or a solution/project
+  file) and requires at least two sub-projects. `kok` is unchanged; only the scan uses
+  the strict measure for now.
+
 ## [2.42.1] - 2026-08-22
 
 ### Fixed

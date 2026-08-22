@@ -16,6 +16,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { tara, kur } = require('./harita.js');
 const { roleKoku, norm } = require('../hooks/ortak.js');
+const kapsayici = require('../hooks/kapsayici.js');
 
 const PROFILLER = ['eco', 'normal', 'premium'];
 
@@ -375,6 +376,36 @@ const YAPILACAK = {
   'Belge tutarlılığı': () => 'Eksik veya sürümle uyuşmayan belgeyi güncelle.',
 };
 
+// Standart tek projeye göre yazılmıştır: eşikler bir deponun ön araştırması, bir
+// kaynak ağacının kapsamı, bir README'nin sürümüdür. Projeleri barındıran üst
+// klasörde çalıştırıldığında bunların hiçbiri anlam taşımaz — ölçülen sayı on beş
+// projenin toplamı olur, "755 dosya incelenmemiş" gibi kapatılamaz bir eksik çıkar.
+// O yüzden ölçmeden önce durur ve hangi projede çalışacağını sorar.
+function kapsayiciRapor(profil, kap) {
+  const q = (y) => (/\s/.test(y) ? '"' + y + '"' : y);
+  return (
+    [
+      'tarama: ' + profil + ' · kök: ' + path.basename(kap.kok),
+      'DURDU — burası kapsayıcı klasör, tek proje değil',
+      '',
+      norm(kap.kok) + ' kendisi bir proje değil; altında ' + kap.altlar.length + ' proje var.',
+      'Standart tek projeye göre ölçülür; burada ölçülen her sayı ' +
+        kap.altlar.length +
+        ' projenin toplamı olur.',
+      '',
+      'alt projeler: ' + kap.altlar.join(', '),
+      '',
+      'yapılacak: kullanıcıya hangi projenin denetleneceğini sor, sonra o kökte çalıştır:',
+      '  node tarama.js ' + profil + ' --proje ' + q(norm(path.join(kap.kok, '<ad>'))),
+      '',
+      'Denetlenecek proje henüz yoksa önce klasörü kur — kullanıcıya sor:',
+      '  ' + norm(path.join(kap.kok, '<yeni-ad>')) + ' açılsın mı?',
+      '',
+      'Kapsayıcının kendisi gerçekten denetlenecekse --kapsayici ekle.',
+    ].join('\n') + '\n'
+  );
+}
+
 function rapor(sonuc) {
   const L = [];
   const bayrak = (m) => (m.gecti ? 'GEÇTİ' : 'KALDI');
@@ -437,6 +468,7 @@ function kullanim() {
       'kullanım: node tarama.js <eco|normal|premium> [--tamamla] [--json] [--proje <yol>]',
       '',
       'Profil verilmeden çalışmaz — hangi standarda göre denetleyeceğini kendi seçmez.',
+      'Kapsayıcı klasörde çalışmaz — üst klasörde ölçülen sayı projelerin toplamı olur.',
       '',
       '  eco      1 depo · haiku+ · değişen dosyalar · denetim kritik sözleşmelerde · belge şartı yok',
       '  normal   10 depo · sonnet+ · değişen dosyalar + komşuları · her sözleşme denetlenir · README',
@@ -446,6 +478,7 @@ function kullanim() {
       '             Betik yine hiçbir dosyaya yazmaz; işi model yapar.',
       '  --json     ayrıştırılabilir çıktı.',
       '  --proje    denetlenecek kök (varsayılan: bulunulan dizin).',
+      '  --kapsayici  kapsayıcı kapısını aş — üst klasörü tek projeymiş gibi denetle.',
       '',
       'Çıkış kodu: 0 geçti · 1 kaldı · 2 kullanım hatası. 1 çökme değildir, rapor doludur.',
     ].join('\n') + '\n'
@@ -466,8 +499,23 @@ function main() {
     process.stdout.write(kullanim());
     process.exit(2);
   }
-  const bilinmeyen = bayrak.filter((b) => !['--tamamla', '--json', '--proje'].includes(b));
+  const bilinmeyen = bayrak.filter(
+    (b) => !['--tamamla', '--json', '--proje', '--kapsayici'].includes(b)
+  );
   const kok = path.resolve(arg('proje') || process.cwd());
+  const kap = bayrak.includes('--kapsayici') ? null : kapsayici.kesin(kok);
+  if (kap) {
+    process.stdout.write(
+      bayrak.includes('--json')
+        ? JSON.stringify(
+            { profil, durum: 'kapsayici', kok: norm(kap.kok), altlar: kap.altlar },
+            null,
+            2
+          ) + '\n'
+        : kapsayiciRapor(profil, kap)
+    );
+    process.exit(2);
+  }
   const tablo = dugmeTablosu();
   if (!tablo) {
     process.stderr.write(

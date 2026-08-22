@@ -164,22 +164,90 @@ varsayılandır."* Ajan açmaması modelin kendi kararıydı, profilin değil.
 
 **Kabul:** aynı görevde tur sayısı ≥%40 düşer · 271 test geçer · doğruluk düşmez.
 
-### Dalga 2 — eco'yu gerçekten eco yapmak
+### Dalga 2 — eco'yu gerçekten eco yapmak · konsey sentezi
 
 `Ö4`'ün bulduğu iki hatanın kapatılması. Bunlar optimizasyon değil **düzeltme**.
 
-- **`S4` profil oturuma bağlanır** ve `UserPromptSubmit` profil değişince bloğu yeniler.
-  Bugün profil sonradan değişse bağlamdaki metin eski profilde kalıyor.
-- **eco sistem promptunu gerçekten küçültür.** Bugün 8 token fark ediyor. eco'da skill
-  listesi, ajan listesi ve enjeksiyon bloğu kısalır.
-- **`S5` ajan bütçe defteri.** `SubagentStop`'ta altı kalem; denetim ayrı kalem.
+Plan konseyi (fable + opus) bu dalga için açıldı. Sorulan tek soru: profil makine geneli
+yazdığı için iki oturum birbirini eziyor, hangi yol.
 
-Ayrıca ölçüm bir raporlama karışıklığı buldu: `normal` koşusunun `Stop` satırı ~313.500
-token diyor, harness bütçe sayacı 171.114. Base'in tahmini alt ajanları sayıyor, sayaç
-saymıyor. **İki rakam aynı isimle raporlanıyor** — tur makbuzunun adı ayrışmalı.
+#### Konseyin ortaklaştığı
 
-**Kabul:** eco'nun tur 1 tabanı normal'inkinden ölçülebilir biçimde küçük · bir sonraki
-bench kalem dökümü verir.
+**Profil kaydı oturuma iner.** Üç yazma noktasının hiçbiri oturum kimliği taşımıyor;
+ikinci pencere birincinin ayarını eziyor. Kayıt oturum başına **ayrı dosyada** tutulur —
+tek haritalı dosya oku-değiştir-yaz yarışı taşır, ayrı dosya yarışı tümden kaldırır.
+
+**Ajan dosyaları taban olur.** `ajanlariYaz()` kalkar, `model` çağrı anında geçilir.
+Yan kazanç: "eklenti güncellemesi profili geri aldı" uyuşmazlık sınıfı kendiliğinden
+kapanır.
+
+**Düğmeler enjeksiyona geçer.** `SETTINGS.md` makine varsayılanı olarak donar; profile
+göre değişen düğmeler `UserPromptSubmit` metnine katılır. Yalnız **tabandan sapan**
+düğmeler yazılır — tam liste enjeksiyonu büyütür ve `Ö4`'ün baskın kalemi zaten konuşma
+hacmiydi.
+
+**Efor tabanı `normal` profilin eforudur.** Tek taban kalınca eco `xhigh` öderse eco
+anlamını yitirir, premium `medium`'da kalırsa premium anlamını yitirir. Premium farkını
+`model` ve düğmeler taşır — efor ikinci dereceden kaldıraç, model birinci dereceden.
+İki üye de aynı yeri seçti.
+
+#### Konsey ayrışması
+
+**Kısmi izolasyon dürüst mü.** fable "iki cümleye ayrılırsa dürüst" dedi: sohbetler
+birbirini etkilemiyor **doğru**, her profil tam uygulanıyor **yanlış** — ikincisi
+söylenmeden satılırsa yarım tam gösterilmiş olur. opus daha sert çıktı: `parallel_width`,
+`audit`, `worktree_isolation` da makine geneli kalıyorsa izolasyon yok, ve bench
+çakışmasını yaratan zaten bunlardı, model değil.
+
+**Sentez opus'un itirazını alır**: düğmeler de taşınır, geriye yalnız `effort` kalır.
+fable'ın dürüstlük satırı da alınır — `durum()` çıktısında kalıcı olarak durur.
+
+**Kalıntıya ret mi uyarı mı.** opus uyarıyı seçti: efor için bütün profil geçişini
+reddetmek, kazanılan izolasyonu kullanılamaz kılar. Ret izolasyon **yokken** doğru cevap,
+varken fazla ceza. Alındı.
+
+#### Konseyin doğrulayamadığı, T0'ın ölçtüğü
+
+İki üye de oturum kimliğinin betiğe ulaşıp ulaşmadığını doğrulayamadı ve ikisi de kancaya
+dayanan bir dolambaç önerdi. **Gerek yok:** `CLAUDE_CODE_SESSION_ID` bash ortamında dolu
+ve ana oturumun transkript dosya adıyla birebir aynı. İkisi de `CLAUDE_SESSION_ID`
+aramıştı — ad yanlıştı.
+
+opus "çağrı anındaki `model` frontmatter'ı ezerse Dalga 2 sessizce çöker" diye risk yazdı.
+**Ezmiyor, eziliyor:** tek bir `teknesyum:planner` tanımıyla aynı anda `claude-fable-5` ve
+`claude-opus-5` açıldı; kayıtlar `.claude/relay/live/` altında duruyor. Risk kapandı.
+
+`effort` kısıtı ise gerçek ve iki bağımsız yoldan doğrulandı: opus ikilide `subagent_type`
+ile efor enum'u arasındaki mesafeyi ölçtü (2000 karakter içinde sıfır komşuluk), T0
+`Agent` şemasında `effort` alanının olmadığını gördü. Ajan kayıtlarında frontmatter
+değerleri birebir görünüyor — advisor `low`, builder `xhigh`, scribe `low`.
+
+#### Sözleşmeler
+
+| | İş | `owns` |
+|---|---|---|
+| `T1` | Profil kaydı oturuma iner | `ortak.js`, `dil.js`, `premium.js`, `commands/premium.md` |
+| `T2` | Düğmeler enjeksiyona, ajan dosyaları tabana | `relay-watch.js`, `SETTINGS.md`, `agents/*.md` |
+| `T3` | `S5` ajan bütçe defteri | `relay-watch.js` |
+
+`T2` ve `T3` `T1`'in açtığı `profil(sid)` API'sini bekler. İkisi aynı dosyaya dokunduğu
+için sıralı yürür.
+
+#### Ayrıca — tur makbuzu adı ayrışır
+
+`Ö4` bir raporlama karışıklığı buldu: `normal` koşusunun `Stop` satırı ~313.500 token
+diyor, harness bütçe sayacı 171.114. Base'in tahmini alt ajanları sayıyor, sayaç saymıyor.
+**İki rakam aynı isimle raporlanıyor.**
+
+#### Ölçülmemiş yan kazanç
+
+Efor artık hiç değişmediği için prompt önbelleği de bozulmuyor. Bu, taramalardan gelen bir
+bulgunun (`docs/taramalar/OZET-baglam.md`) doğal sonucu ama ölçülmedi.
+
+**Kabul:** iki pencere, biri eco biri premium; her `/teknesyum:premium durum` kendi
+profilini der · `/teknesyum:premium premium` sonrası `git status` temiz · eco'nun tur 1
+tabanı normal'inkinden ölçülebilir biçimde küçük.
+
 
 ### Dalga 3 — alt ajan başına relay yüklemesi
 

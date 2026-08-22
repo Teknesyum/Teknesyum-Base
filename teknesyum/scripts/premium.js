@@ -2,7 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { konfigKok } = require('../hooks/ortak.js');
+const { konfigKok, oturumKimligi, oturumProfilYolu, read, yaz } = require('../hooks/ortak.js');
+const { s, oturumProfili, PROFILLER, BAYAT_MS } = require('../hooks/dil.js');
 
 const PROFIL = {
   eco: {
@@ -33,8 +34,6 @@ const PROFIL = {
     'ui-builder': { model: 'opus', effort: 'xhigh', maxTurns: 80 },
   },
 };
-
-const PROFILLER = ['eco', 'normal', 'premium'];
 
 const TAKMA = {
   ac: 'premium',
@@ -139,6 +138,34 @@ function konfigYaz(profil) {
   fs.writeFileSync(path.join(kok, 'teknesyum.json'), JSON.stringify(c, null, 2) + '\n', 'utf8');
 }
 
+function bayatSil(dizin) {
+  let liste = [];
+  try {
+    liste = fs.readdirSync(dizin);
+  } catch {
+    return;
+  }
+  for (const f of liste) {
+    if (!f.endsWith('.json')) continue;
+    const yol = path.join(dizin, f);
+    const k = read(yol);
+    if (!k) continue;
+    const ts = Number(k.ts);
+    if (!Number.isFinite(ts) || Date.now() - ts <= BAYAT_MS) continue;
+    try {
+      fs.unlinkSync(yol);
+    } catch {}
+  }
+}
+
+function oturumYaz(sid, profil) {
+  const yol = oturumProfilYolu(sid);
+  fs.mkdirSync(path.dirname(yol), { recursive: true });
+  bayatSil(path.dirname(yol));
+  yaz(yol, { profil, pid: process.pid, ts: Date.now(), cwd: process.cwd() });
+  return yol;
+}
+
 function ajanYolu(kok, ad) {
   return path.join(kok, 'agents', ad + '.md');
 }
@@ -187,14 +214,21 @@ function dugmeleriYaz(kok, profil) {
   fs.writeFileSync(yol, metin, 'utf8');
 }
 
-function dugmeOku(kok, anahtar) {
+function dugmeProfili(kok) {
+  let metin;
   try {
-    const metin = fs.readFileSync(ayarYolu(kok), 'utf8');
-    const m = metin.match(new RegExp('^[ \\t]*' + anahtar + '[ \\t]*:[ \\t]*(\\S+)', 'm'));
-    return m ? m[1] : '';
+    metin = fs.readFileSync(ayarYolu(kok), 'utf8');
   } catch {
-    return '';
+    return 'okunamadı';
   }
+  const oku = (a) => {
+    const m = metin.match(new RegExp('^[ \\t]*' + a + '[ \\t]*:[ \\t]*(\\S+)', 'm'));
+    return m ? m[1] : '';
+  };
+  for (const ad of PROFILLER) {
+    if (Object.keys(DUGME[ad]).every((k) => oku(k) === DUGME[ad][k])) return ad;
+  }
+  return 'karışık';
 }
 
 function ajanProfili(kok) {
@@ -232,7 +266,9 @@ function uygula(profil) {
   const kok = eklentiKok();
   const degisen = ajanlariYaz(kok, profil);
   dugmeleriYaz(kok, profil);
-  konfigYaz(profil);
+  const sid = oturumKimligi();
+  const kayit = sid ? oturumYaz(sid, profil) : path.join(konfigKok(), 'teknesyum.json');
+  if (!sid) konfigYaz(profil);
   const p = PROFIL[profil];
   const d = DUGME[profil];
   process.stdout.write(
@@ -255,7 +291,7 @@ function uygula(profil) {
       ...(profil === 'eco'
         ? ['/save ham transkripti gzipli yazar (ham.jsonl.gz), /loadall tek satıra iner']
         : []),
-      'konfig: ' + path.join(konfigKok(), 'teknesyum.json'),
+      'kayıt: ' + (sid ? 'oturum' : 'makine') + ' · ' + kayit,
     ].join('\n') + '\n'
   );
 }
@@ -265,37 +301,46 @@ function durum() {
   const c = konfigOku();
   const p = profilAdi(kok);
   const simdi = ajanProfili(kok);
-  const konsey = dugmeOku(kok, 'plan_council');
-  const gorus = dugmeOku(kok, 'second_opinion');
-  const depo = dugmeOku(kok, 'research_repos');
-  const paralel = dugmeOku(kok, 'parallel_width');
-  const denetim = dugmeOku(kok, 'audit');
-  const beklenen = konfigProfili(c);
+  const sid = oturumKimligi();
+  const oturum = sid ? oturumProfili(sid) : null;
+  const beklenen = oturum || konfigProfili(c);
+  const dp = dugmeProfili(kok);
+  const d = DUGME[beklenen];
   const satir = [
-    'yürürlükteki profil: ' + p,
-    'konfig profili: ' + beklenen + (c.profil === undefined ? ' (eski premium alanından)' : ''),
+    'yürürlükteki profil: ' + beklenen + ' (kaynak: ' + (oturum ? 'oturum' : 'makine') + ')',
+    'ajan dosyaları: ' + p + ' — makine geneli, oturuma izole değil',
+    'relay düğmeleri: ' + dp + ' — makine geneli, oturuma izole değil',
+    'konfig profili: ' +
+      konfigProfili(c) +
+      (c.profil === undefined ? ' (eski premium alanından)' : ''),
     'paralel: ' +
-      (paralel ? paralel + ' ajan' : 'okunamadı') +
-      ' · ön araştırma: ' +
-      (depo ? depo + '+ depo' : 'okunamadı') +
-      ' · denetim: ' +
-      (denetim || 'okunamadı'),
+      d.parallel_width +
+      ' ajan · ön araştırma: ' +
+      d.research_repos +
+      '+ depo · denetim: ' +
+      d.audit,
     'plan konseyi: ' +
-      (konsey === 'on' ? KONSEY.join(' + ') : konsey || 'okunamadı') +
+      (d.plan_council === 'on' ? KONSEY.join(' + ') : 'off') +
       ' · ikinci görüş: ' +
-      (gorus === 'on' ? (simdi.advisor || {}).model || GORUS : gorus || 'okunamadı'),
+      (d.second_opinion === 'on' ? (simdi.advisor || {}).model || GORUS : 'off'),
     ...Object.keys(simdi).map(
       (a) =>
         '  ' + a.padEnd(11) + simdi[a].model + '/' + simdi[a].effort + ' · tur ' + simdi[a].maxTurns
     ),
+    s('eforIzole'),
   ];
-  if (p !== beklenen) {
+  const sapan = [];
+  if (p !== beklenen) sapan.push('ajan dosyaları ' + p);
+  if (dp !== beklenen) sapan.push('relay düğmeleri ' + dp);
+  if (sapan.length) {
     satir.push(
-      'UYUŞMAZLIK: konfig ' +
+      'UYUŞMAZLIK: profil ' +
         beklenen +
-        ' diyor, dosyalar ' +
-        p +
-        '. /premium ' +
+        ' diyor, ' +
+        sapan.join(' ve ') +
+        '. Yukarıdaki düğme satırları ' +
+        beklenen +
+        ' profilinin değerleridir, dosyada yazan değil. /premium ' +
         beklenen +
         ' ile eşitle.'
     );
@@ -313,9 +358,10 @@ function yardim() {
       '  node premium.js premium  opus/xhigh · 20 paralel ajan · 50 depo · her sözleşme denetlenir',
       '  node premium.js durum    hangi profilin yürürlükte olduğunu söyler',
       '',
-      'Üçü de aynı üç yeri yazar: ajan frontmatter’ı, relay düğmeleri ve',
-      '~/.claude/teknesyum.json içindeki `profil` alanı. Eski çağrılar durur: `ac` premium,',
-      '`kapat` normal demektir.',
+      'Üçü de ajan frontmatter’ını ve relay düğmelerini yazar. Profil kaydı oturuma iner:',
+      'oturum kimliği varsa ~/.claude/teknesyum/oturumlar/<oturum>.json yazılır ve',
+      '~/.claude/teknesyum.json değişmez; kimlik yoksa makine varsayılanı yazılır. Eski',
+      'çağrılar durur: `ac` premium, `kapat` normal demektir.',
       '',
       'eco — token kısıtken. Her rol ' +
         PROFIL.eco.builder.model +

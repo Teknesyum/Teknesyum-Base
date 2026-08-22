@@ -29,6 +29,15 @@ function transkriptDizini(proje) {
   return path.join(transkriptKok(), path.resolve(proje).replace(/[^a-zA-Z0-9]/g, '-'));
 }
 
+function oturumKimligi() {
+  const s = process.env.CLAUDE_CODE_SESSION_ID || process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  return s ? String(s) : null;
+}
+
+function oturumProfilYolu(sid) {
+  return path.join(konfigKok(), 'teknesyum', 'oturumlar', safe(sid) + '.json');
+}
+
 function read(f) {
   try {
     return JSON.parse(fs.readFileSync(f, 'utf8'));
@@ -170,6 +179,8 @@ module.exports = {
   konfigKok,
   transkriptKok,
   transkriptDizini,
+  oturumKimligi,
+  oturumProfilYolu,
   read,
   yaz,
   norm,

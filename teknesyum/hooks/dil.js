@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { konfigKok } = require('./ortak.js');
+const { konfigKok, oturumKimligi, oturumProfilYolu, read } = require('./ortak.js');
 
 // Tek dil ayarı: `~/.claude/teknesyum.json` → `dil`. Geçerli değerler `en` ve `tr`,
 // varsayılan `en`. Ayar hem kullanıcıya basılan bildirimleri hem ajanlara enjekte edilen
@@ -20,29 +20,50 @@ function dil() {
   return (_dil = 'en');
 }
 
-let _profil = null;
+const PROFILLER = ['eco', 'normal', 'premium'];
+const BAYAT_MS = 7 * 24 * 60 * 60 * 1000;
 
-function profil() {
-  if (_profil !== null) return _profil;
-  const e = process.env.TEKNESYUM_PREMIUM;
-  if (e === '0' || e === 'off') return (_profil = 'normal');
-  if (e === '1' || e === 'on') return (_profil = 'premium');
-  const kok = konfigKok();
+function oturumProfili(sid) {
+  if (!sid) return null;
+  const c = read(oturumProfilYolu(sid));
+  if (!c || !PROFILLER.includes(c.profil)) return null;
+  const ts = Number(c.ts);
+  if (!Number.isFinite(ts) || Date.now() - ts > BAYAT_MS) return null;
+  return c.profil;
+}
+
+function makineProfili() {
   try {
-    const c = JSON.parse(fs.readFileSync(path.join(kok, 'teknesyum.json'), 'utf8'));
-    if (c.profil === 'eco' || c.profil === 'normal' || c.profil === 'premium')
-      return (_profil = c.profil);
-    return (_profil = c.premium === true ? 'premium' : 'normal');
+    const c = JSON.parse(fs.readFileSync(path.join(konfigKok(), 'teknesyum.json'), 'utf8'));
+    if (PROFILLER.includes(c.profil)) return c.profil;
+    return c.premium === true ? 'premium' : 'normal';
   } catch {}
-  return (_profil = 'normal');
+  return 'normal';
 }
 
-function premium() {
-  return profil() === 'premium';
+function profilHesapla(sid) {
+  const e = process.env.TEKNESYUM_PREMIUM;
+  if (e === '0' || e === 'off') return 'normal';
+  if (e === '1' || e === 'on') return 'premium';
+  return oturumProfili(sid) || makineProfili();
 }
 
-function depoSayisi() {
-  return { eco: 1, normal: 10, premium: 50 }[profil()];
+const _profil = new Map();
+
+function profil(sid) {
+  const kimlik = sid === undefined ? oturumKimligi() : sid || null;
+  if (_profil.has(kimlik)) return _profil.get(kimlik);
+  const p = profilHesapla(kimlik);
+  _profil.set(kimlik, p);
+  return p;
+}
+
+function premium(sid) {
+  return profil(sid) === 'premium';
+}
+
+function depoSayisi(sid) {
+  return { eco: 1, normal: 10, premium: 50 }[profil(sid)];
 }
 
 const KONSEY = 'fable + opus';
@@ -789,6 +810,10 @@ const S = {
     tr: 'Yerleşim özelliği animasyonlanmaz; opacity veya transform kullan.',
     en: 'Layout properties are not animated; use opacity or transform.',
   },
+  eforIzole: {
+    tr: 'efor: taban — oturuma izole değil, ajan dosyasından gelir',
+    en: 'effort: baseline — not isolated per session, it comes from the agent file',
+  },
   uiPunto: {
     tr: 'Punto ölçeği 10 · 13 · 14 · 18 · 24; daha küçüğü okunmuyor demektir.',
     en: 'The type scale is 10 · 13 · 14 · 18 · 24; smaller than that is unreadable.',
@@ -802,4 +827,14 @@ function s(anahtar, ...arg) {
   return typeof m === 'function' ? m(...arg) : m;
 }
 
-module.exports = { dil, s, profil, premium, depoSayisi, KONSEY };
+module.exports = {
+  dil,
+  s,
+  profil,
+  premium,
+  depoSayisi,
+  oturumProfili,
+  PROFILLER,
+  BAYAT_MS,
+  KONSEY,
+};

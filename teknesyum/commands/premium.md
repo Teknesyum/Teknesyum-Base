@@ -29,6 +29,7 @@ alanı. Çıktıyı olduğu gibi bas, kendin dosya düzenleme.
 | model tırmanışı | açık | kapalı — zaten tepede |
 | rapor · brifing | short · milestone | detailed · every-step |
 | plan konseyi | kapalı | açık — fable + opus |
+| ikinci görüş | kapalı | açık — fable |
 | ön araştırma | 10+ depo | 50+ depo |
 
 `scribe` premium'da da düşük eforla çalışır: model yükseldi diye isim değiştirme işine
@@ -40,6 +41,13 @@ aynı brifingle iki `planner` ajanı açılır — biri `fable`, biri `opus`. İ
 ayrıştıkları yer `PLAN.md` içinde **Konsey ayrışması** başlığına gerekçesiyle yazılır.
 Sentezi ve kalemi T0 tutar — delege edilen karar değil seçenek üretimidir. Ayrıntı relay
 SKILL §1.5.
+
+**İkinci görüş** konseyin küçük kardeşidir ve o da premiumla açılır. T0 doğru kararın ne
+olduğunu bilmediği bir düğümde `planner` ajanını **görüş kipinde** açar — brifing `GÖRÜŞ:`
+ile başlar, `fable` üç başlıkta en fazla 20 satır cevap verir: görüş, gerekçe, kaçırdığın
+şey. Konsey planın tamamı içindir ve iki üyelidir; görüş tek bir karar içindir ve tek
+üyelidir. Bağlayıcı değil, kullanıcıya sormanın da yerine geçmez. Ayrıntı relay SKILL
+§1.5.1.
 
 **Ön araştırma tavanı** premiumda 10 depodan 50 depoya çıkar (SKILL §1.4). Derinlik
 değişmez, kapsam değişir: elli depo dalgalar hâlinde okunur ve her dalga bir sonrakinin

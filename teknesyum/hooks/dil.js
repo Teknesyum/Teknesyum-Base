@@ -43,6 +43,7 @@ function depoSayisi() {
 }
 
 const KONSEY = 'fable + opus';
+const GORUS = 'fable';
 
 const S = {
   gorev: {
@@ -114,8 +115,16 @@ const S = {
       'no agent is opened. Skip the line entirely for plain questions.',
   },
   premiumAcik: {
-    tr: () => 'premium mod · her ajan opus · 6 paralele kadar · plan konseyi ' + KONSEY,
-    en: () => 'premium mode · every agent on opus · up to 6 in parallel · plan council ' + KONSEY,
+    tr: () =>
+      'premium mod · her ajan opus · 6 paralele kadar · plan konseyi ' +
+      KONSEY +
+      ' · ikinci görüş ' +
+      GORUS,
+    en: () =>
+      'premium mode · every agent on opus · up to 6 in parallel · plan council ' +
+      KONSEY +
+      ' · second opinion ' +
+      GORUS,
   },
   premiumNotu: {
     tr:
@@ -130,8 +139,14 @@ const S = {
       'tokenden değil doğruluktan. Plan konseyi açık: sıfırdan projede PLAN.md yazmadan ' +
       'önce aynı brifingle iki planner ajanı aç — biri fable, biri opus. İkisi de iş ' +
       'yapmaz, yalnız öneri döner; ortak çıkan kararı doğrulanmış say, ayrıştıkları yeri ' +
-      'PLAN.md içinde Konsey ayrışması başlığına gerekçesiyle yaz. Ön araştırma tavanı ' +
-      'bu modda 50 depodur.',
+      'PLAN.md içinde Konsey ayrışması başlığına gerekçesiyle yaz. İkinci görüş de açık: ' +
+      'doğru kararı bilmediğin düğümde planner ajanını GÖRÜŞ: ile başlayan brifingle aç, ' +
+      GORUS +
+      ' üç başlıkta kısa cevap verir. Geri alınması pahalı seçim, üç turdur çözülmeyen ' +
+      'hata, bozulacak kural ve iki türlü okunan istek için aç; mekanik işte açma ve ' +
+      'sorabiliyorsan önce kullanıcıya sor. Görüş bağlayıcı değil — katılmazsan ' +
+      'gerekçeni yaz, aldığını `Teknesyum ▸ Görüş ▸ …` satırıyla bildir. Ön araştırma ' +
+      'tavanı bu modda 50 depodur.',
     en:
       'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
       'Do not queue independent contracts, run them at once — up to six agents in ' +
@@ -145,7 +160,16 @@ const S = {
       'from-scratch project, open two planner agents with the same briefing — one fable, ' +
       'one opus. Neither does the work, they only return proposals; treat what both agree ' +
       'on as confirmed and record every disagreement under a Konsey ayrışması heading in ' +
-      'PLAN.md with your reasoning. Prior art in this mode means 50 repositories.',
+      'PLAN.md with your reasoning. The second opinion is on as well: at a node where you ' +
+      'do not know the right call, open the planner agent with a briefing that starts with ' +
+      'GÖRÜŞ: and ' +
+      GORUS +
+      ' answers short, under three headings. Open it for a choice that is expensive to ' +
+      'undo, a bug unsolved for three rounds, a rule you are about to break and a request ' +
+      'that reads two ways; not for mechanical work, and ask the user first whenever you ' +
+      'are allowed to ask. The opinion is not binding — write your reasoning when you ' +
+      'disagree, and report that you took one with a `Teknesyum ▸ Opinion ▸ …` line. ' +
+      'Prior art in this mode means 50 repositories.',
   },
   dilTalimati: {
     tr: 'Kullanıcıya ve diğer ajanlara Türkçe yaz — sözleşmeler, paketler, raporlar dahil.',

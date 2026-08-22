@@ -1,7 +1,6 @@
 ---
 name: scribe
 description: Relay mekanik işçisi. Karar gerektirmeyen toplu işler için kullan - AGENTS.md yönlendirici dosyalarını doldurma, isim değiştirme, biçimlendirme, metin/çeviri düzenleme, envanter çıkarma, tekrarlı düzeltme. Kod mantığına dokunmaz.
-model: haiku
 effort: low
 maxTurns: 40
 memory: project

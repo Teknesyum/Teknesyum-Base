@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { s: ceviri, premium, profil } = require('./dil.js');
+const { sapmalar } = require('../scripts/premium.js');
 const kapsayici = require('./kapsayici.js');
 const {
   konfigKok,
@@ -14,15 +15,19 @@ const {
   izKoku,
 } = require('./ortak.js');
 
-let raw = '';
-process.stdin.on('data', (d) => (raw += d));
-process.stdin.on('end', () => {
-  try {
-    run(JSON.parse(raw));
-  } catch {}
-  ciktiBas();
-  process.exit(0);
-});
+// Kanca olarak koşarken stdin'i dinler. `require` edildiğinde dinlemez: üç katmanlı düğme
+// okuması yan etkisiz çağrılabilsin diye — testin ölçtüğü şey stdin akışı değil.
+if (require.main === module) {
+  let raw = '';
+  process.stdin.on('data', (d) => (raw += d));
+  process.stdin.on('end', () => {
+    try {
+      run(JSON.parse(raw));
+    } catch {}
+    ciktiBas();
+    process.exit(0);
+  });
+}
 
 let _cikti = null;
 
@@ -311,8 +316,8 @@ function kimlikOku(j) {
 
 // Ajan tanımları kancanın iki dizin yukarısında: kanca `<eklenti>/hooks/` altından
 // çalışır, tanımlar `<eklenti>/agents/` altındadır. `CLAUDE_PLUGIN_ROOT` ortam
-// değişkenine ihtiyaç yok, yol `__dirname`den kesin çıkar. `/premium` profili de bu
-// dosyalardaki `model:`/`effort:` alanlarını yeniden yazar — beyan burada, tek yerde.
+// değişkenine ihtiyaç yok, yol `__dirname`den kesin çıkar. Dosyalar tabandır ve `model`
+// alanı taşımaz: model beyanı çağrının kendisidir, efor beyanı burada durur.
 const TANIM_DIZINI = path.join(__dirname, '..', 'agents');
 
 function tanimOku(type) {
@@ -329,10 +334,10 @@ function tanimOku(type) {
   return { model: al('model'), effort: al('effort') };
 }
 
-// Beyan ile gerçekleşen ayrı şeyler. `model` çağrıda ezilebilir — Agent aracının
-// `model` alanı — o yüzden beklenen değer varsa çağrıdaki ezme, yoksa tanımdır.
-// Ezilen değer takma ad ('sonnet'), kayda geçen tam kimlik ('claude-sonnet-4-5');
-// karşılaştırma içerme ile yapılır. `effort` çağrıda ezilemez, doğrudan karşılaştırılır.
+// Beyan ile gerçekleşen ayrı şeyler. `model` beyanı çağrıdan gelir — Agent aracının
+// `model` alanı; tanımda böyle bir alan yok, çağrı geçmediyse denetlenecek beyan da yok.
+// Çağrıdaki değer takma ad ('sonnet'), kayda geçen tam kimlik ('claude-sonnet-4-5');
+// karşılaştırma içerme ile yapılır. `effort` çağrıda geçilemez, tanımla karşılaştırılır.
 function kimlikDenetle(live, type, s, c) {
   const t = tanimOku(type);
   if (!t) return;
@@ -414,7 +419,13 @@ const DONGU_TEKRAR = 5;
 const SAGLIK_ARA = 60 * 1000;
 const SAGLIK_DAMGA = '_saglik';
 
+// Üç katman: oturum profili → proje `SETTINGS.md` → global `SETTINGS.md`. Profil katmanı
+// yalnız tabandan **sapan** düğmeyi taşır; taban değerini de taşısaydı proje dosyası
+// hiçbir düğmede sözünü geçiremezdi. `agent_stall` ve `agent_loop` gibi kanca düğmeleri
+// üç profilde de aynı, dolayısıyla sapmaz ve dosyadan okunmaya devam eder.
 function ayarSayi(root, anahtar, varsayilan) {
+  const sapma = sapmalar(profil())[anahtar];
+  if (/^\d+$/.test(String(sapma))) return parseInt(sapma, 10);
   for (const f of [root ? path.join(root, 'SETTINGS.md') : null, AYAR_DOSYASI]) {
     if (!f) continue;
     const govde = metin(f);
@@ -744,6 +755,8 @@ function hatirlat(j, root, etkinProje) {
     ceviri(eko ? 'dilTalimatiKisa' : 'dilTalimati');
   if (premium()) metin += ' ' + ceviri('premiumNotu');
   else if (eko) metin += ' ' + ceviri('ecoNotu');
+  const sapma = sapmaMetni();
+  if (sapma) metin += ' ' + ceviri('dugmeSapma', sapma);
   const rota = yeniIsRotasi(root, j.prompt);
   if (rota) metin += ' ' + rota;
   if (platformNotuYok(j.cwd)) metin += ' ' + ceviri('platformNotu');
@@ -756,6 +769,18 @@ function hatirlat(j, root, etkinProje) {
   });
 }
 
+// Kanca düğmeleri metne girmez: `agent_stall` ve `agent_loop` kararını model değil kanca
+// verir, satırı kimse okumaz.
+const KANCA_DUGME = ['agent_stall', 'agent_loop'];
+
+function sapmaMetni() {
+  const s = sapmalar(profil());
+  return Object.keys(s)
+    .filter((k) => !KANCA_DUGME.includes(k))
+    .map((k) => k + ' ' + s[k])
+    .join(' · ');
+}
+
 function kapEkle(metin) {
   if (!metin) return;
   ciktiEkle({
@@ -765,17 +790,24 @@ function kapEkle(metin) {
 
 // Oturum başına kaç kez yazdığımızı sayar. Sayaç dosyası oturuma özel; `supur()`
 // bir günü geçenleri zaten atıyor.
+//
+// ÖLÇÜLDÜ (Ö4): sayaç yalnız sayıyı tutarken `/premium eco` görev isteminden sonra
+// çalıştı ve bağlam 72 tur boyunca premium metnini taşıdı — o koşu eco'yu hiç ölçmedi.
+// Sayaç artık profili de yazar: profil değişince sıfırdan başlar, yeni blok bir sonraki
+// istekte gelir. Yalnız sayı tutan eski dosya profil eşleşmediği için sıfırlanır.
 function sayacGecti(j, tavan) {
   const id = safe((j && j.session_id) || 'oturum');
   const dosya = path.join(genelKok(), id + '.hatirlatma');
+  const p = profil();
   let n = 0;
   try {
-    n = parseInt(fs.readFileSync(dosya, 'utf8'), 10) || 0;
+    const [eski, sayi] = String(fs.readFileSync(dosya, 'utf8')).trim().split(' ');
+    if (eski === p) n = parseInt(sayi, 10) || 0;
   } catch {}
   if (n >= (tavan || 2)) return true;
   try {
     fs.mkdirSync(path.dirname(dosya), { recursive: true });
-    fs.writeFileSync(dosya, String(n + 1));
+    fs.writeFileSync(dosya, p + ' ' + (n + 1));
   } catch {}
   return false;
 }
@@ -1391,3 +1423,5 @@ function short(p, proj) {
   const pn = norm(proj) + '/';
   return n.startsWith(pn) ? n.slice(pn.length) : path.basename(n);
 }
+
+module.exports = { ayarSayi, sapmaMetni };

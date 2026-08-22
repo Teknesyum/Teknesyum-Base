@@ -1,7 +1,6 @@
 ---
 name: builder
 description: Relay yapıcı işçisi. Bir sözleşme dosyasını alıp kodu yazan taraf. Modül, algoritma, endpoint, refactor, test - kod üreten sözleşmeler buraya gider. Arayüz/CSS/XAML işi için ui-builder kullan. Çağırırken model'i işin ağırlığına göre seç. Sözleşme dosyasının yolunu ver.
-model: sonnet
 effort: medium
 maxTurns: 60
 memory: project

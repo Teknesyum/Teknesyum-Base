@@ -2099,6 +2099,32 @@ ol('govdeli CLAUDE.md engellenir, isaretci serbest', () => {
   );
 });
 
+ol('Edit ile CLAUDE.md govdesi engellenir, isaretci duzenlemesi serbest', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-agents-edit-'));
+  fs.mkdirSync(path.join(p, 'src'), { recursive: true });
+  fs.mkdirSync(path.join(p, '.claude'), { recursive: true });
+  const duzenle = (dosya, eski, yeni) =>
+    calistir(KORU, {
+      hook_event_name: 'PreToolUse',
+      tool_name: 'Edit',
+      tool_input: { file_path: dosya, old_string: eski, new_string: yeni },
+    });
+  const isaretci = path.join(p, 'src', 'CLAUDE.md');
+  fs.writeFileSync(isaretci, '@AGENTS.md\n');
+  const govdeli = duzenle(isaretci, '@AGENTS.md', '@AGENTS.md\n\n# src\n\nBurada arayuz durur.');
+  esit(govdeli.kod, 2, 'Edit ile eklenen govde engellenmeli');
+  icerir(govdeli.err, 'AGENTS.md');
+  esit(duzenle(isaretci, '@AGENTS.md', '@KURALLAR.md').kod, 0, 'isaretci duzenlemesi serbest');
+  const ev = path.join(p, '.claude', 'CLAUDE.md');
+  fs.writeFileSync(ev, '# kisisel\n');
+  esit(duzenle(ev, '# kisisel', '# kisisel\n\nUzun govde.').kod, 0, '.claude/CLAUDE.md disarida');
+  esit(
+    duzenle(path.join(p, 'src', 'AGENTS.md'), 'x', '# src\n\nBurada arayuz durur.').kod,
+    0,
+    'Edit ile AGENTS.md serbest'
+  );
+});
+
 function oturumProjesi() {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-oturum-'));
   const sat = [
@@ -2694,6 +2720,23 @@ ol('ust klasorde biriken ajan hafizasi projeye tasinir, dizin birlestirilir', ()
   icerir(dizin, 'eski.md');
   icerir(dizin, 'yeni.md');
   esit(fs.existsSync(path.join(dip, '.claude')), false, 'bosalan ust klasor silinmeli');
+});
+
+ol('ayni adli ucuncu hafiza dosyasi da korunur', () => {
+  const { tasi } = require(KAPSAYICI);
+  const dip = kapsayiciKur();
+  const kaynak = path.join(dip, '.claude', 'agent-memory', 'teknesyum-builder');
+  const varis = path.join(dip, 'Alfa', '.claude', 'agent-memory', 'teknesyum-builder');
+  fs.mkdirSync(varis, { recursive: true });
+  fs.writeFileSync(path.join(varis, 'not.md'), 'bir\n');
+  for (const govde of ['iki', 'uc']) {
+    fs.mkdirSync(kaynak, { recursive: true });
+    fs.writeFileSync(path.join(kaynak, 'not.md'), govde + '\n');
+    esit(tasi(dip, path.join(dip, 'Alfa')), 1, govde + ' tasinmali');
+  }
+  esit(fs.readFileSync(path.join(varis, 'not.md'), 'utf8'), 'bir\n', 'ilk dosya durmali');
+  esit(fs.readFileSync(path.join(varis, 'not-2.md'), 'utf8'), 'iki\n', 'ikinci -2 olmali');
+  esit(fs.readFileSync(path.join(varis, 'not-3.md'), 'utf8'), 'uc\n', 'ucuncu -3 olmali');
 });
 
 ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () => {

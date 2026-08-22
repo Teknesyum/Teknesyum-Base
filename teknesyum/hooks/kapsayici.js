@@ -124,6 +124,16 @@ function bosSil(d) {
   } catch {}
 }
 
+const CAKISMA_TAVANI = 50;
+
+function bosAd(b) {
+  for (let i = 2; i <= CAKISMA_TAVANI; i++) {
+    const aday = b.replace(/(\.md)?$/, '-' + i + '$1');
+    if (!fs.existsSync(aday)) return aday;
+  }
+  return null;
+}
+
 // Üst klasörde biriken ajan hafızasını etkin projeye taşır. Taşınan dosya sayısını
 // döndürür; taşıyacak bir şey yoksa 0 ve hiçbir yere dokunulmaz.
 function tasi(kap, hedef) {
@@ -149,7 +159,11 @@ function tasi(kap, hedef) {
           fs.unlinkSync(a);
         } else if (fs.existsSync(b)) {
           if (fs.readFileSync(a, 'utf8') === fs.readFileSync(b, 'utf8')) fs.unlinkSync(a);
-          else fs.renameSync(a, b.replace(/(\.md)?$/, '-2$1'));
+          else {
+            const aday = bosAd(b);
+            if (!aday) continue;
+            fs.renameSync(a, aday);
+          }
         } else {
           fs.renameSync(a, b);
         }

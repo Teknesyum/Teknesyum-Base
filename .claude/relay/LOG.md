@@ -4,3 +4,4 @@
 2026-08-22 | T1 scan | teknesyum-builder | submitted | /scan uc profil sertifikasi + kalici kapsam kaydi + 15 test | 271/271
 2026-08-22 | T1 oturum-profil-kaydi | teknesyum-builder | submitted | profil kaydi makine genelinden oturum basina indi (oturumlar/<sid>.json), 7 gun bayatlik, durum artik oturum profilini basiyor (ajan dosyalari ayri satirda) + efor izole degil satiri | 277/277
 2026-08-22 | T2 dugmeler-enjeksiyona | teknesyum-builder | submitted | premium.js hicbir dosya yazmiyor; ajan model alani silindi, efor/tur normal tabaninda; dugme sapmalari enjeksiyona gecti; ayarSayi uc katman; profil degisince sayac sifirlaniyor; tur makbuzu adi ayristi | 310/310
+2026-08-23 | S1 scan-ui | teknesyum-builder | submitted | /scan ui dorduncu kip: ihlal + durgunluk iki kol, motion-kurulu-kullanilmamis basligi, olculer theme.css tan, --tamamla mekanik olani yazar kirli agacta durur, CodeXray 53 dosya 0.04 sn | 325/325

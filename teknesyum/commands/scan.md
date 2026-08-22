@@ -1,6 +1,6 @@
 ---
-description: Projenin bir profil standardına uygunluğunu denetler — eco, normal veya premium sertifikası
-argument-hint: eco | normal | premium [--tamamla] [--json] [--proje <yol>]
+description: Projenin bir profil standardına uygunluğunu denetler — eco, normal veya premium sertifikası; `ui` arayüz taraması
+argument-hint: eco | normal | premium | ui [--tamamla] [--json] [--proje <yol>]
 allowed-tools: Bash, Read, Glob, Grep, Edit, Write, Agent
 ---
 
@@ -77,6 +77,46 @@ Kullanıcı eksikleri kapatmak istiyorsa `--tamamla` ile çağırır.
 
 **Kaç ajan açılacağı profile bağlı:** eco'da 1, normal'de 2, premium'da `parallel_width`
 kadar — bugün 20. Tavanı aşma, tavanın altında kalmak için de iş bölme.
+
+## `ui` — dördüncü kip, profilden bağımsız
+
+`/teknesyum:scan ui` profil sertifikası vermez; **arayüzün kendisine** bakar ve hızlıdır:
+yalnız `*.css`, `*.tsx`, `*.jsx`, `*.vue`, `*.svelte`, `*.xaml`, `*.axaml` dosyalarını
+okur, orta boy bir projede saniyenin altında biter. Süre raporun sonunda yazılıdır.
+Ajan açmaz, model çağırmaz — tamamı desen eşleşmesidir. Çıktıyı olduğu gibi bas.
+
+İki kolu var ve ikincisi bu kipin asıl işidir:
+
+| Kol | Ne arar |
+|---|---|
+| **İhlal** | `transition-all`, yasaklı özellik geçişi, 360 ms tavanı, palet dışı renk, 7:1 altı kontrast, metne glow, WPF'te `LayoutTransform`/`Effect` animasyonu |
+| **Durgunluk** | olması gereken hareketin **hiç olmaması** — geçişsiz hover, geçişsiz panel/diyalog, animasyonsuz liste, `prefers-reduced-motion` yok, `MotionConfig` yok, `:focus-visible` yok, hareket kütüphanesi kurulu ama hiç `import` edilmemiş |
+
+Durgunluk kolu olmasaydı hiç hareket etmeyen bir arayüz **temiz** raporlanırdı. Raporun
+`başlık:` satırı en ağır durgunluk bulgusunu söyler; kütüphane kurulup kullanılmamışsa
+başlık odur.
+
+Ölçüler (palet, süre ölçeği, 360 ms tavanı) `skills/teknesyum-ui/assets/theme.css`
+dosyasından okunur, komuta kopyalanmaz.
+
+### `ui --tamamla` gerçekten yazar
+
+Öteki üç kipte `--tamamla` dosyaya dokunmaz. `ui` kipinde **mekanik ve geri alınabilir**
+olanı düzeltir:
+
+| Düzeltilir | Düzeltilmez — rapor edilir |
+|---|---|
+| `transition-all` → `opacity, transform` | Palet dışı renk — hangi token olacağı karar |
+| `duration-500`, sabit ms → `--tk-t-*` token'ı | Eksik animasyon — hangi hareket olacağı tasarım |
+| Eksik `prefers-reduced-motion` bloğu | 7:1 altı kontrast — yeni ton türetmek gerekir |
+|  | Eksik `MotionConfig` — kök nerede, bilinmiyor |
+
+**Kirli çalışma ağacında çalışmaz.** `DURDU` basar ve çıkış kodu 2 verir; kullanıcı
+yazılanı geri alabilsin diye. O çıktıyı aldığında kendin düzeltmeye girişme — kullanıcıya
+commit ya da stash gerektiğini tek satırla söyle.
+
+Düzeltilmeyen bulgular karar ister. Onları kendin kapatacaksan **`teknesyum-ui` standardını
+oku**, token uydurma.
 
 ## Rapor
 

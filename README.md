@@ -25,15 +25,17 @@ approves its own work; and it produces a differently-styled UI in every project.
 | | Before | After |
 |---|---|---|
 | **Division of work** | One assistant does everything, context bloats | Split into contracts, handed to agents; intermediate output never reaches the main context |
-| **Verification** | The author of the code declares it done | A separate auditor verifies it — it **cannot write or run anything** |
+| **Verification** | The author of the code declares it done | A separate auditor verifies it — **if it writes a file, its audit is void** |
 | **Interruption** | Hit the limit, start over | Every agent's trace is on disk; the next session picks the work back up on its own |
 | **UI** | A different look every time | Same palette, same type scale, same signature |
 
 ### What this is not
 
 An opinionated working protocol, not a security boundary. Two things here are mechanical —
-hooks run as processes and cannot be talked out of it: the `done/` seal check and the
-auditor's tool list. Everything else — sizing the work, splitting it into contracts,
+hooks run as processes and cannot be talked out of it: the `done/` seal check — which
+verifies the seal against the auditor's own `live/` record rather than its shape — and
+the syntax check on written files. An agent's declared tool list is **not** one of them:
+the harness can and does hand an agent more than it asked for. Everything else — sizing the work, splitting it into contracts,
 assigning file ownership, choosing models — is the model following `SKILL.md`. That makes
 it automatic, not deterministic. Treat it as a discipline that holds most of the time and
 is auditable when it doesn't, not as a system that cannot be circumvented.
@@ -208,13 +210,16 @@ requires a seal in the contract's frontmatter:
 
 ```yaml
 audit: passed
-auditor_id: <the auditing agent>
-diff: <the range the auditor was shown>
+auditor_id: <the auditing agent — must have a live/ record>
+diff: <the files the auditor was shown, git diff --name-only>
 verification: npm test → exit 0
 ```
 
 A hook enforces the gate instead of trusting it, and it checks all four fields — a bare
-`audit: passed` with the rest left at `—` is refused. An unsealed file cannot land in `done/`
+`audit: passed` with the rest left at `—` is refused. It also checks that the fields mean
+something: `auditor_id` has to name a `live/` record belonging to an auditor that wrote no
+files, and `diff` has to intersect the contract's `owns` (see the auditor section above).
+An unsealed file cannot land in `done/`
 through `Write`, and cannot get there through the shell either — redirects, `mv`,
 `Move-Item`, `cp` and deletions targeting `done/` are refused unless the source already
 carries the seal. Reading is untouched. Without this, an agent that finished badly could
@@ -299,21 +304,36 @@ finish silently.
 |---|---|---|
 | `builder` | Code — modules, algorithms, endpoints, refactors, tests | sonnet |
 | `ui-builder` | UI; the theme standard is preloaded into its context | sonnet |
-| `auditor` | Verifies acceptance criteria — **cannot write or run anything** | sonnet |
+| `auditor` | Verifies acceptance criteria — **if it writes, its audit is void** | sonnet |
 | `scribe` | Mechanical bulk work — naming, formatting, documentation | haiku |
 | `scout` | Prior-art research — scans comparable repos, writes no code | sonnet |
-| `planner` | Plan council member — proposes, **writes nothing at all** | fable · opus |
+| `planner` | Plan council member — proposes, **is not allowed to write** | fable · opus |
 
 Role determines the kind of work, model the weight; they are separate axes, and the model
 is chosen at call time. `planner` is the exception: its two council members are two
 different models by definition, so the choice is not the manager's to make.
 
-The auditor's restriction is enforced by the harness rather than by its prompt: it holds
-`Read`, `Grep`, `Glob` and `LSP` — no `Write`, no `Edit`, and **no `Bash`**, because a
-shell is a write tool. Evidence that needs a command (tests, build, `git diff --name-only`)
-is run by the manager and pasted into the audit request; anything not supplied comes back
-marked unproven rather than silently passing. A test asserts the tool list, so the
-guarantee cannot quietly erode.
+The auditor must not be able to fix what it is auditing, and that guarantee is built in
+three layers because no single one of them holds.
+
+1. **The definition asks for nothing that writes.** `agents/auditor.md` declares `Read`,
+   `Grep`, `Glob` and `LSP` — no `Write`, no `Edit`, and no `Bash`, because a shell is a
+   write tool. A test asserts that line.
+2. **The agent declares no `memory`.** Agents that ask for project memory were measured
+   being opened with `Write` and `Edit` added on top of what they declared, so the auditor
+   and the planner give the memory up. `tools:` is a floor for the harness, not a ceiling —
+   layers 1 and 2 are a request, not an enforcement.
+3. **The seal gate checks what actually happened.** `contract-guard.js` refuses to let a
+   contract into `done/` unless `auditor_id` resolves to a real `live/` record whose
+   `agent_type` is `auditor` and whose `files` list is **empty**, and unless `diff` carries
+   a file list that intersects the contract's `owns`. If the auditor touched one file, the
+   audit is void no matter what tools it was handed. When `live/` cannot be read the gate
+   falls open to the format check — otherwise contracts moved by hand outside the relay
+   would be locked out — and records what it could not verify in `live/_sorun.log`.
+
+Evidence that needs a command (tests, build, `git diff --name-only`) is run by the manager
+and pasted into the audit request; anything not supplied comes back marked unproven rather
+than silently passing.
 
 ### Commands
 
@@ -370,8 +390,8 @@ write. Premium buys depth, not permission.
 
 On premium the plan stops being one model's work. Once the prior-art research is in, the
 manager opens **two `planner` agents on the same briefing** — one `fable`, one `opus`.
-Neither of them builds anything: `planner` holds no write tool, so the side that designs
-the work cannot start it. Each returns a proposal under five headings — understanding,
+Neither of them builds anything: `planner` asks for no write tool and no memory, so
+the side that designs the work does not start it. Each returns a proposal under five headings — understanding,
 plan, risks, points of divergence, and what it rejected.
 
 The manager synthesises. Where both members agree, the decision is taken as confirmed.

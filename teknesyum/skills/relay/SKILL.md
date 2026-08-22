@@ -381,6 +381,13 @@ düzeltme döngüsü, düşen ajan kurtarma, LOG. Röle kuracaksan onu oku.
 Özet akış: `PLAN.md` yaz → sözleşmeleri üret → bağımlılığı bitenleri dağıt →
 her sözleşmeyi `auditor`'ye doğrulat → kaldıysa düzeltme döngüsü → `LOG.md`'ye satır.
 
+**Denetçinin "yazamaz" güvencesi üç katlıdır, hiçbiri tek başına yetmez.** `agents/auditor.md`
+`Write`, `Edit` ve `Bash` istemez; `memory` alanı yoktur, çünkü hafıza istemek harness'ın
+araç listesini tamamlamasına yol açıyordu. Ama `tools:` satırı harness için bir tavan
+değil taban: ölçümde denetçi ajanı `Write, Edit` de verilmiş halde açıldı. Taşıyan kat
+üçüncüsüdür — mühür kapısı `live/<auditor_id>.json` kaydına bakar ve `files` listesi
+doluysa mührü işlemez. Denetçi bir dosyaya yazarsa denetimi düşer.
+
 **Planlamayı asla delege etme.** Soğuk başlayan ajan daha kötü plan yapar. Tek istisna
 plan konseyidir (§1.5): üyeler öneri üretir, kararı ve kalemi T0 elinde tutar.
 
@@ -484,7 +491,7 @@ Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `mod
 |---|---|---|
 | `builder` | kod yazar — modül, algoritma, endpoint, refactor, test | sonnet |
 | `ui-builder` | arayüz yazar; `teknesyum-ui` context'ine önyüklü | sonnet |
-| `auditor` | kabul kriterlerini doğrular, **kod yazamaz** | sonnet |
+| `auditor` | kabul kriterlerini doğrular; **yazarsa denetimi düşer** (§3) | sonnet |
 | `scribe` | mekanik toplu iş — AGENTS.md, isim, biçim | haiku |
 | `scout` | ön araştırma — benzer depoları tarar, kod yazmaz | sonnet |
 | `planner` | plan konseyi üyesi — öneri verir, **hiçbir şey yazmaz** | fable · opus |

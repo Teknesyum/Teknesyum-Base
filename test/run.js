@@ -186,7 +186,7 @@ ol('relay oturum açılışında sormadan sürdürür', () => {
   icerir(s, 'sürdür');
 });
 
-ol('denetçinin yazma veya çalıştırma aracı yok', () => {
+ol('denetçi tanımında yazma veya çalıştırma aracı yok (tek başına garanti değil)', () => {
   const md = fs.readFileSync(path.join(KOK, 'agents', 'auditor.md'), 'utf8');
   const tools = (md.match(/^tools:\s*(.+)$/m) || [])[1] || '';
   for (const yasak of ['Write', 'Edit', 'Bash', 'NotebookEdit']) {
@@ -2732,6 +2732,74 @@ ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () =
     'hafiza projeye tasinmali'
   );
 });
+
+console.log('\nKoruma — mühür kanıtı');
+
+function kanitProje(kayitlar) {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kanit-'));
+  const relay = path.join(p, '.claude', 'relay');
+  const live = path.join(relay, 'live');
+  fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
+  fs.mkdirSync(live, { recursive: true });
+  for (const id of Object.keys(kayitlar || {}))
+    fs.writeFileSync(path.join(live, id + '.json'), JSON.stringify(kayitlar[id]));
+  return { relay, live, hedef: path.join(relay, 'contracts', 'done', 'T1.md') };
+}
+
+const KANITLI = (fark) =>
+  '---\nstatus: done\nowns: [src/a.js, src/b.js]\naudit: passed\nauditor_id: d1\n' +
+  'diff: ' +
+  (fark || 'src/a.js, src/b.js') +
+  '\nverification: node test/run.js → exit 0\n---\n';
+
+const muhurYaz = (hedef, govde) =>
+  calistir(KORU, { tool_name: 'Write', tool_input: { file_path: hedef, content: govde } });
+
+ol('mühür kanıtı: dosyaya yazmış denetçi kaydı mührü düşürür', () => {
+  const { hedef } = kanitProje({ d1: { agent_type: 'teknesyum:auditor', files: ['src/a.js'] } });
+  const r = muhurYaz(hedef, KANITLI());
+  esit(r.kod, 2, 'yazmış denetçi geçmemeli');
+  icerir(r.err, 'denetim geçersiz');
+  icerir(r.err, 'src/a.js');
+});
+
+ol('mühür kanıtı: temiz denetçi kaydıyla geçer', () => {
+  const { hedef } = kanitProje({ d1: { agent_type: 'teknesyum:auditor', files: [] } });
+  esit(muhurYaz(hedef, KANITLI()).kod, 0);
+});
+
+ol('mühür kanıtı: auditor_id denetçi olmayan bir ajana aitse reddedilir', () => {
+  const { hedef } = kanitProje({ d1: { agent_type: 'teknesyum:builder', files: [] } });
+  const r = muhurYaz(hedef, KANITLI());
+  esit(r.kod, 2);
+  icerir(r.err, 'denetçi olmayan');
+});
+
+ol('mühür kanıtı: diff owns ile kesişmiyorsa reddedilir', () => {
+  const { hedef } = kanitProje({ d1: { agent_type: 'auditor', files: [] } });
+  const r = muhurYaz(hedef, KANITLI('docs/RAPOR.md'));
+  esit(r.kod, 2);
+  icerir(r.err, 'owns kümesiyle kesişmiyor');
+});
+
+ol('mühür kanıtı: auditor_id live/ altında yoksa biçim denetimine düşülür', () => {
+  const { hedef, live } = kanitProje({});
+  esit(muhurYaz(hedef, KANITLI()).kod, 0, 'kayıt yokken kilitlenmemeli');
+  icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'live/d1.json yok');
+});
+
+ol('mühür kanıtı: kabuktan taşımada da aranır', () => {
+  const { relay } = kanitProje({ d1: { agent_type: 'auditor', files: ['src/a.js'] } });
+  const kaynak = path.join(relay, 'contracts', 'T1.md');
+  fs.writeFileSync(kaynak, KANITLI());
+  const komut =
+    'mv ' + kaynak.replace(/\\/g, '/') + ' ' + norm2(path.join(relay, 'contracts', 'done'));
+  esit(calistir(KORU, { tool_name: 'Bash', tool_input: { command: komut } }).kod, 2);
+});
+
+function norm2(p) {
+  return p.replace(/\\/g, '/');
+}
 
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)

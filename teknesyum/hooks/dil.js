@@ -79,8 +79,8 @@ const S = {
     en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
   },
   turOzeti: {
-    tr: (sure, token) => 'Total Süre: ~' + sure + '        Tahmini Token: ~' + token,
-    en: (sure, token) => 'Total Time: ~' + sure + '        Estimated Tokens: ~' + token,
+    tr: (sure, token) => 'Total Süre: ~' + sure + '   Tahmini Token: ~' + token,
+    en: (sure, token) => 'Total Time: ~' + sure + '   Estimated Tokens: ~' + token,
   },
   turOzetiYonerge: {
     tr: (satir) =>

@@ -125,6 +125,7 @@ body {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    transition-property: opacity !important;
     transition-duration: var(--tk-t-instant) !important;
   }
   .tk-btn:hover, .tk-btn:active { transform: none; }

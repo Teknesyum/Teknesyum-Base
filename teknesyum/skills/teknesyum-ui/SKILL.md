@@ -53,7 +53,7 @@ neon-pink    #ff00ea   ikincil. uyarı, ters/negatif eylem, kritik değer
 neon-purple  #b026ff   üçüncül. mod anahtarları, scrollbar, ikincil buton
 success      #34d399   yalnızca "tamamlandı"
 bg           #000000   uygulama zemini — nötr, tam siyah
-surface      #0a0a0c   panel zemini (95% opak), zeminden ancak çerçevesiyle ayrılır
+surface      #08090a   panel zemini (95% opak), zeminden ancak çerçevesiyle ayrılır
 text         #ffffff   okunması gereken HER şey — gövde, başlık, tablo, değer, etiket metni
 label        #00f3ff   etiket ve bölüm başlığı (kalın, tracking'li — uppercase değil)
 disabled     #71717a   YALNIZCA devre dışı kontrol. Tek gri budur.

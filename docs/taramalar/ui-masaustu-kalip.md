@@ -8,19 +8,16 @@ Tarih: 2026-08-22, tüm rakamlar `gh api` ile o gün alındı.
 **Uygulama düzeyi kalıpların durumu.** Standart bunların bir kısmını zaten tanımlıyor,
 ama `references/layout.md` §5.7'de — SKILL.md gövdesinde değil:
 
-| Kalıp | Standart tanımlıyor mu | Nerede |
-|---|---|---|
-| Boş durum | **evet** | layout.md §5.7 — "ne olduğu, neden boş, ilk adım düğmesi" |
-| Yükleme iskeleti | **evet** | layout.md §5.7 + SKILL §5.4 (döngü ≥1.4 s, düşük kontrast) |
-| Bildirim yığını | **evet** | layout.md §5.7 tablosu — 4-6 sn, geri al varsa 10 sn |
-| Kip pencere / açılır pano / şerit | **evet** | layout.md §5.7 tablosu |
-| **Komut paleti** | **hayır** | hiç geçmiyor |
-| **Klavye kısayolu katmanı** | **hayır** | yalnız "Base UI klavye gezinmesi hazır gelir" (SKILL:43) |
+**Var:** boş durum ("ne olduğu, neden boş, ilk adım düğmesi"), yükleme iskeleti (§5.7 +
+SKILL §5.4'te döngü ≥1.4 s), bildirim yığını (4-6 sn, geri al varsa 10 sn), kip pencere /
+açılır pano / şerit — dördü de layout.md §5.7'de.
+**Yok:** **komut paleti** (hiç geçmiyor) ve **klavye kısayolu katmanı** (yalnız "Base UI
+klavye gezinmesi hazır gelir", SKILL:43 — o bileşen içi gezinme).
 
-Eksik olan iki tane: komut paleti ve kısayol katmanı. Üçüncü eksik pencere kromunda
-(aşağıda). Var olanların yeri de yanlış: boş durum ve iskelet her masaüstü uygulamasının
-olmazsa olmazı ama bir referans dosyasına gömülü — SKILL §5.4 "sonsuz döngü yasak" derken
-iskeleti istisna olarak anıyor, kendisini tanımlamıyor.
+Yani eksik iki tane; üçüncü eksik pencere kromunda (aşağıda). Var olanların yeri de yanlış:
+boş durum ve iskelet her masaüstü uygulamasının olmazsa olmazı ama referans dosyasına
+gömülü — SKILL §5.4 iskeleti "sonsuz döngü yasağı"nın istisnası olarak anıyor, kendisini
+tanımlamıyor.
 
 **Pencere kromu: özel mi yerel mi.** Alan artık ikili sormuyor, **üç kademeli** cevaplıyor.
 Standart en pahalı kademeyi ilk tercih ilan ediyor (`desktop.md` §8: "Kendi başlık çubuğunu
@@ -76,12 +73,10 @@ yazarı tuş seçmiyor, **niyet** seçiyor.
 **electron/electron** (v43.4.1). `titleBarStyle`: `default` (varsayılan), `hidden`,
 `hiddenInset` (macOS), `customButtonsOnHover` (macOS, deneysel). `titleBarOverlay`
 varsayılan `false`, alanları `color` / `symbolColor` (Win+Linux) ve `height`; height
-verilmezse sistem yüksekliği (sayı belgede yok). `vibrancy` (macOS) 15 değer:
-`appearance-based`, `titlebar`, `selection`, `menu`, `popover`, `sidebar`, `header`,
-`sheet`, `window`, `hud`, `fullscreen-ui`, `tooltip`, `content`, `under-window`,
-`under-page`. `backgroundMaterial` (Windows): `auto`, `none`, `mica`, `acrylic`, `tabbed`.
-`roundedCorners` varsayılan `true` (Build 22000 öncesi etkisiz); `transparent` varsayılan
-`false` ve Windows'ta `frame: false` ister.
+verilmezse sistem yüksekliği (sayı belgede yok). `vibrancy` (macOS) 15 değer alıyor
+(`sidebar`, `under-window`, `hud`, `titlebar`…); `backgroundMaterial` (Windows): `auto`,
+`none`, `mica`, `acrylic`, `tabbed`. `roundedCorners` varsayılan `true` (Build 22000
+öncesi etkisiz); `transparent` varsayılan `false` ve Windows'ta `frame: false` ister.
 
 **tauri-apps/tauri** (tauri-v2.11.5). `decorations` varsayılan `true`; `titleBarStyle`:
 `"Visible"` / `"Transparent"` / `"Overlay"`; `shadow` `true`; `transparent` `false`.
@@ -92,8 +87,7 @@ uyarıyor: yalnız doğrudan uygulandığı öğede çalışır. Çift tıkla b�
 
 **alex8088/electron-vite** (v6.0.0-beta.1). Kurulum kalıbı tek fikir: üç derleme hedefi
 (`main`, `preload`, `renderer`) tek yapılandırmada birleşiyor; `src/` içinde `config.ts`,
-`build.ts`, `electron.ts`, `server.ts`, `preview.ts` bu ayrımı taşıyor. Kararlı sürüm
-etiketi **dört aydır beta**.
+`build.ts`, `electron.ts`, `server.ts`, `preview.ts` bu ayrımı taşıyor.
 
 ## 2 · Standardın kaçırdığı
 

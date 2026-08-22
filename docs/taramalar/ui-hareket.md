@@ -10,8 +10,6 @@ Her sayı depo kaynağından okundu; dosya yolu satır içinde yazılı.
 | juliangarnier/anime | MIT | 72.338 | 115 | 2026-08-21 | v4.5.0 (2026-06-22) |
 | formkit/auto-animate | MIT | 13.904 | 42 | 2026-07-10 | v0.10.0 (2026-07-10) |
 
----
-
 ## 0 · Konseyin sorusu: spring iptal edilebilir mi?
 
 **Evet, edilebilir — ve standardın gerekçesini geçişten daha iyi karşılıyor. Ama iptal
@@ -25,10 +23,10 @@ edilebilirlik spring'den gelmiyor, Motion'ın değer mimarisinden geliyor.** Kan
 3. `packages/motion-dom/src/animation/NativeAnimationExtended.ts` — kaynak yorumu açıkça
    "WAAPI doesn't natively have any interruption capabilities" diyor. Motion bunu aşmak için
    ekrana çizmeyen bir JS animasyonu kurup iki kez örnekliyor, konum ve hızı böyle geri
-   kazanıp sonraki animasyona devrediyor.
+   kazanıyor.
 4. `.../generators/utils/pregenerate.ts` — WAAPI'ye giden spring 10 ms adımlarla, en çok
-   10.000 ms'e kadar önceden keyframe'e pişiriliyor (`linear()` easing). Pişmiş eğri
-   iptal edilemez; iptal 3. maddedeki JS yeniden simülasyonuyla oluyor.
+   10.000 ms'e kadar keyframe'e pişiriliyor (`linear()` easing). Pişmiş eğri iptal edilemez;
+   iptal 3. maddedeki JS yeniden simülasyonuyla oluyor.
 
 **İki tuzak — kural yazılırken bunlar yazılmazsa iddia çöker:**
 
@@ -46,8 +44,6 @@ ve korunmalı; ama kuralın **kelimesi yanlış**. Ayrım geçiş/keyframe deği
 (MotionValue, per-değer durum ve hız) ile **zaman çizelgesi güdümlü** (CSS `@keyframes`,
 GSAP timeline, ham WAAPI) arasında. Standardı harfiyen okuyan biri Motion'ın kendi
 varsayılanını yasaklar — bugün metin bu hataya açık.
-
----
 
 ## 1 · Alanın bugün yaptığı
 
@@ -80,53 +76,41 @@ eğri — ilk yarı görünmez bekleme (`offset: 0.5`), görünür hareket ~187 
 
 **GSAP 3.15.0** — sürüm etiketleri var, GitHub Releases yok. Lisans §5'te.
 
----
-
 ## 2 · Standardın kaçırdığı
 
-**a. `motion`'ın reduced-motion'ı kendiliğinden gelmiyor.**
-Nerede: `MotionConfigContext.tsx:72`, varsayılan `"never"`. Standart §5.4 son paragrafı
-"`useReducedMotion` ve iptal edilebilir geçişler hazır gelir" diyor — hook hazır gelir ama
-**politika gelmez**; `<MotionConfig reducedMotion="user">` sarmalayıcısı yazılmazsa Motion
-sistem ayarını yok sayar. **Alınmalı: evet** — bu, standardın "sürüm çıkmaz" saydığı bir
-erişilebilirlik hatasının React tarafındaki tam olma yeri. Girer: §5.4, WPF karşılıkları
-paragrafının hemen üstü + §8 varsayılanlar.
+**a. `motion`'ın reduced-motion'ı kendiliğinden gelmiyor.** Nerede: `MotionConfigContext.tsx:72`,
+varsayılan `"never"`. Standart §5.4 "`useReducedMotion` ve iptal edilebilir geçişler hazır
+gelir" diyor — hook hazır gelir ama **politika gelmez**; `<MotionConfig reducedMotion="user">`
+yazılmazsa Motion sistem ayarını yok sayar. **Alınmalı: evet** — standardın "sürüm çıkmaz"
+saydığı erişilebilirlik hatasının React tarafındaki tam yeri. Girer: §5.4 + §8.
 
 **b. Spring'in iki türü ayrılmamış.** Nerede: `spring.ts:185-189`. Standart `--tk-e-spring`'i
-yalnızca basma geri bildirimine izin veriyor, spring'i bir eğri sanıyor. Fizik parametreli
-spring hız devralır, süre parametreli devralmaz. **Alınmalı: evet** — §0'daki iptal
-gerekçesi doğrudan buna bağlı. Girer: §5.4, "Geçiş tercih edilir" paragrafının içine.
+bir eğri sanıyor. Fizik parametreli spring hız devralır, süre parametreli devralmaz.
+**Alınmalı: evet** — §0'daki iptal gerekçesi buna bağlı. Girer: §5.4, "Geçiş tercih edilir".
 
-**c. Katkısal (additive) çakışma modu.** Nerede: anime `compositionTypes.blend`. Standartta
-karşılığı yok. **Alınmalı: hayır** — standardın hareket bütçesi zaten çakışan animasyona
-izin vermiyor; `blend` sahne işidir, durum arayüzünde yeni bir belirsizlik kaynağı olur.
+**c. Katkısal çakışma modu.** Nerede: anime `compositionTypes.blend`. **Alınmalı: hayır** —
+standardın hareket bütçesi zaten çakışan animasyona izin vermiyor; `blend` sahne işidir.
 
 **d. "Silinen elemanı akıştan çıkar, ölçüsünü animasyonlama" deseni.** Nerede: auto-animate
-silme dalı. Standardın "yalnız opacity ve transform" kuralının pratikte nasıl uygulandığını
-gösteriyor. **Alınmalı: evet, tek satır olarak** — §5.4 mikro etkileşim tablosunun altına.
-
----
+silme dalı. **Alınmalı: evet, tek satır olarak** — §5.4 mikro etkileşim tablosunun altına.
 
 ## 3 · Standardın haklı olduğu yerler
 
 **Yalnız `opacity` ve `transform`.** Motion'ın `positionalKeys` listesi `width, height, top,
-left, right, bottom`'ı **animasyonlanabilir** kabul ediyor; kütüphane buna izin veriyor.
-Standardın yasağı daha sıkı ve gerekçesi (yerleşim yeniden hesabı) değişmedi. auto-animate
-bile bu ölçüleri animasyonlamıyor — alanın titiz ucu standartla aynı yerde. Koru.
+left, right, bottom`'ı animasyonlanabilir kabul ediyor. Standardın yasağı daha sıkı ve
+gerekçesi (yerleşim yeniden hesabı) değişmedi; auto-animate bile bu ölçüleri
+animasyonlamıyor — alanın titiz ucu standartla aynı yerde. Koru.
 
-**360 ms üst sınırı.** Motion'ın ikiden fazla keyframe'li varsayılanı 800 ms, anime'nin genel
-varsayılanı 1000 ms. Bunlar sahne için ayarlanmış genel amaçlı varsayılanlar. Standardın
-tavanı bilinçli ve kütüphane varsayılanını **ezmesi** doğru. Koru — "kütüphane varsayılanı
-token değildir" cümlesi §5.4'e eklenmeye değer.
+**360 ms üst sınırı.** Motion'ın çok keyframe'li varsayılanı 800 ms, anime'nin geneli 1000 ms;
+ikisi de sahne için ayarlanmış. Standardın tavanı bilinçli ve kütüphane varsayılanını
+**ezmesi** doğru. Koru — "kütüphane varsayılanı token değildir" cümlesi §5.4'e eklenmeli.
 
-**İptal edilebilirlik ilkesi.** §0'da gösterildiği gibi ilke doğru, yalnız kelimesi
-düzeltilmeli. Moda diye gevşetmek burada kayıp olurdu: alanın bir kısmı (GSAP timeline,
-ham WAAPI, CSS `@keyframes`) hâlâ iptal edilemez hareket üretiyor.
+**İptal edilebilirlik ilkesi.** İlke doğru, yalnız kelimesi düzeltilmeli (§0). Moda diye
+gevşetmek kayıp olurdu: GSAP timeline, ham WAAPI ve CSS `@keyframes` hâlâ iptal edilemez
+hareket üretiyor.
 
 **Uygulama içi `motion` / tanıtım sayfası `gsap` ayrımı.** GSAP'ın lisansı (§5) bu ayrımı
 teknik gerekçenin ötesinde de haklı çıkarıyor.
-
----
 
 ## 4 · Ölçü ve token
 
@@ -141,15 +125,12 @@ teknik gerekçenin ötesinde de haklı çıkarıyor.
 | Spring — scale | yok | `stiffness 550, damping 30` (hedef 0 → `2√550`) | aynı genel | yok |
 | Spring — süre tabanlı | yok | `duration 800ms, bounce 0.3, visualDuration 0.3s` | perceptual duration + bounce | yok |
 | Spring üst süre sınırı | yok | 10.000ms | 60.000ms | yok |
-| Basma ölçeği | `scale(0.98)` | — | — | `scale(.98)` giriş/çıkış |
+| Basma / çıkış ölçeği | `scale(0.98)` | — | — | `scale(.98)` |
 | Liste kademesi | 40ms, en çok 6 eleman | varsayılanı bulamadım | bulamadım | kademe yok |
 
-`--tk-t-instant` 90ms ve `--tk-t-fast` 160ms için kütüphane karşılığı yok — bunlar tek bir
-varsayılan süre tutuyor, ölçek tutmuyor. Motion'da "giren/çıkan eğri" karşılığı yok çünkü
-transform'da tween değil spring kullanıyor; boş hücreler bilgi değil kavram eksikliği.
+`--tk-t-instant` 90ms ve `--tk-t-fast` 160ms'in kütüphane karşılığı yok — bunlar tek bir
+varsayılan süre tutuyor, ölçek tutmuyor. Boş hücreler bilgi değil kavram eksikliği.
 Bundle boyutu iddiaları (`motion/mini` "~2.6kb" tipi) **doğrulanamadı** — README'de sayı yok.
-
----
 
 ## 5 · Lisans
 
@@ -161,6 +142,6 @@ Bundle boyutu iddiaları (`motion/mini` "~2.6kb" tipi) **doğrulanamadı** — R
 göre ticari kullanım ve tüm eklentiler ücretsiz, **ama** (a) rakip ürün için tersine
 mühendislik yasak, (b) "Webflow'un görsel animasyon kurma yeteneğiyle rekabet eden, kodsuz
 animasyon kurdurtan araçlarda" kullanım yasak, (c) telif/marka bildirimleri kaldırılamaz.
-Standart §5.6 "MIT, Apache-2.0, BSD, CC0" diyor — GSAP bu listede yok. §5.5'teki
-**"Lisans engeli yok"** cümlesi fazla kesin; "ücret engeli yok, lisans OSI değil" olmalı.
-Teknesyum kodsuz animasyon aracı üretmediği sürece pratik engel yok, ama cümle yanlış.
+Standart §5.6 "MIT, Apache-2.0, BSD, CC0" diyor — GSAP listede yok. §5.5'teki **"Lisans
+engeli yok"** cümlesi fazla kesin; "ücret engeli yok, lisans OSI değil" olmalı. Teknesyum
+kodsuz animasyon aracı üretmediği sürece pratik engel yok, ama cümle yanlış.

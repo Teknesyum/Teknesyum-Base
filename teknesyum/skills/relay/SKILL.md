@@ -31,6 +31,12 @@ Kullanıcıdan aksiyon veya karar bekleniyorsa yanıtın sonunda `Senden istedik
 Bu sıra "token'ı boşver" demek değil; **token, hedef değil bütçedir.** Bir harcamayı
 savunabiliyorsan yap, savunamıyorsan yapma.
 
+**eco profilinde bu sıra tersine döner: token tasarrufu > kullanıcı rahatlığı > kod
+verimliliği.** eco'yu seçen kullanıcı bütçenin gerçekten kısıt olduğunu söylemiştir; orada
+token hedeftir. Hız ve zarafet feda edilir, doğruluk edilmez — eco yavaş ve kaba olabilir,
+yanlış olamaz. Üç profilin hangisi yürürlükte olursa olsun aşağıdaki üç soru aynı kalır;
+değişen yalnızca eşitlik bozulduğunda hangi tarafın kazandığıdır.
+
 Takası şu üç soruyla ölç:
 
 1. **Ne kadar token yiyor?** Tek seferlik mi, her oturumda tekrar mı?
@@ -47,6 +53,38 @@ yapılan bir işi tekrar eder — alınmaz.
 **Karşılığı yeterince değerliyse kural bozulur.** Bu skill'deki hiçbir kural, kendisinden
 daha değerli bir kazancın önünde durmaz. Ama bozarken üç şey zorunlu: ne bozduğunu söyle,
 neden bozduğunu tek cümleyle yaz, kullanıcıya bildir.
+
+## 0.1 Üç profil — eco, normal, premium
+
+Profili kullanıcı `/premium` ile seçer, sen değiştirmezsin; `/premium durum` hangisinin
+yürürlükte olduğunu söyler. Seçim tek soruya bakar: **bu işte kısıt token mu, süre mi?**
+Bütçe gerçekten dardaysa **eco** — her ajan haiku, tek ajan, kısa cevap. Kısıt ne token ne
+süreyse **normal**, varsayılan budur ve çoğu iş oradadır. Max 20x planında olduğu gibi
+token kısıt olmaktan çıkmışsa **premium** — opus, yirmi paralel ajan, plan konseyi ve
+ikinci görüş. Düğme değerleri `SETTINGS.md`'deki profil tablosunda.
+
+**eco'da T0 davranışı** — sırayla:
+
+- **Grep önce, oku sonra.** Dosyayı tümden okumak son çaredir; kabul kriterine karşılık
+  gelen satırı `rg` ile bul.
+- **`Explore` açma.** Geniş arama bir ajan payıdır; eco'da dar arama kendin yapılır.
+- **Tek ajan varsayılan.** `parallel_width` 1'dir ve §5'teki "bölünebilen işi bölmemek
+  gerekçe ister" kuralı eco'da tersine çalışır: bölmek gerekçe ister.
+- **Cevap kısa.** `briefing` `quiet`, `report_length` `short`.
+- **Deterministik araç modelden önce.** `biome`, `rg`, `sed` — model gerekmiyorsa model
+  kullanma. Bu üç profilde de böyledir, eco'da yalnızca daha sıkı uygulanır.
+- **Ön araştırma 1 depo.** Kapı da eco'da engellemez, uyarır — §1.4.
+
+**eco'da değişmeyenler.** Bunlar doğruluk katmanıdır ve tasarruf profilinde de durur:
+
+- **Denetim.** `audit` eco'da `critical`'e düşer ama daha aşağı inmez; `critical` alt
+  sınırdır. Ajanın kendi raporu denetim yerine geçmez.
+- **Mühür kapısı.** `contracts/done/` altına dört alanlı mühür olmadan girilmez.
+- **`owns` disiplini.** Ajan sahiplenmediği dosyaya yazmaz, engele düşer.
+- **Kabul kriteri.** Ölçülebilir madde yazılır ve gerçekten koşulup doğrulanır.
+
+Tasarruf, yapılan işin **miktarından** kesilir; **doğrulandığından** değil. Denetimi
+kısmak kazanılan tokenden pahalıya gelir: yanlış iş ikinci kez yazılır.
 
 ## 1. Sınıflandır — sessizce
 
@@ -166,8 +204,10 @@ Netleştirme turu bitince, **tek sözleşme yazılmadan önce** aynı problemi �
 taranır. Amaç kopyalamak değil: inşa edilmişin nerede doğru, nerede yanlış yaptığını
 görüp onun üstüne çıkmak. Sıfırdan tasarlanan mimari, üçüncü dalgada sökülür.
 
-**Kaç depo:** `SETTINGS.md` içindeki `research_repos` söyler — eco profilinde **5**,
+**Kaç depo:** `SETTINGS.md` içindeki `research_repos` söyler — eco profilinde **1**,
 normal profilde **10**, premium profilde **50**. Sayı profille değişir, kural değişmez.
+eco'da tavan 1'dir çünkü her depo bir `scout` ajanı payıdır ve eco'nun kestiği ilk şey
+ajan sayısıdır; tek depo bile "birileri bu problemi nasıl çözmüş" sorusuna cevap verir.
 
 Bildirim — dağıtmadan önce tek satır:
 
@@ -216,6 +256,12 @@ Teknesyum ▸ araştırma bitti · <n> depo · 6 fikir alındı · 3 şüpheli �
 Araştırma yapılmadan ilk sözleşme yazılmaya kalkılırsa hook geri çevirir. Kullanıcı
 istemiyorsa gerekçesi `docs/taramalar/ATLANDI.md` dosyasına tek satır yazılır — kapı
 o zaman açılır. Atlamak serbest, sessizce atlamak değil.
+
+**eco'da kapı engellemez, uyarır.** Sözleşme yazılır, oturuma tek satırlık bir uyarı
+çıkar ve atlama `.claude/relay/live/_sorun.log` dosyasına kaydedilir. Kural delinmedi,
+taşıyıcısı değişti: ekrandan kayan uyarı kalıcı iz değildir, günlük satırı öyledir ve
+onu T0 okur. Uyarıyı gördüğünde gerekçeyi yine de `ATLANDI.md` dosyasına yaz — kanca
+neyi atladığını kaydeder, **neden** atladığını yalnızca sen yazabilirsin.
 
 ## 1.5 Plan konseyi — planı iki model önerir
 
@@ -476,6 +522,14 @@ plan konseyidir (§1.5): üyeler öneri üretir, kararı ve kalemi T0 elinde tut
 ne oldu, nerede, ne gerekiyor. Ajanın aramasını istediğin dosyanın **yolunu ver ve zorunlu
 mu opsiyonel mi olduğunu söyle** — "SETTINGS.md'ye bak" gibi yarım cümle, ajanı olmayan
 dosyayı aramaya gönderir.
+
+**eco'da sözleşme ve plan şablonu kısalır.** Şablon ikiye ayrılmaz — tek şablon durur, sen
+doldururken düşürürsün. Sözleşmede düşenler: `## Amaç` (başlık ve kabul kriteri işi zaten
+anlatıyorsa), `## Arayüzler` (yalnızca `depends: []` iken), boş `side_effects` satırı ve
+kapanıştaki açıklama yorumu. `## Bağlam` düşmez, üç satırla sınırlanır. Planda ASCII görev
+grafiği düşer; `Bağımlı` sütunu aynı bilgiyi taşır. **Asla düşmeyenler:** `id`, `status`,
+`owns`, mühür alanları, `## Kabul kriteri`, `## Kayıt noktası`, `## Çıktı` — doğruluk ve
+kesilen oturumdan kurtarma bunlardan gelir. Tam liste şablonların kendi yorum bloğunda.
 
 **Her turda `.claude/relay/live/_sorun.log` dosyasını oku.** Ajanlar bulamadıkları dosyayı,
 boş dönen aracı ve belirsiz talimatı oraya yazar; kanca da başarısız araç çağrılarını

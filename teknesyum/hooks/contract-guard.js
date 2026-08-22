@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { s: ceviri, dil } = require('./dil.js');
+const { s: ceviri, dil, profil } = require('./dil.js');
 const { read, norm, safe, roleKoku } = require('./ortak.js');
 
 let raw = '';
@@ -14,9 +14,8 @@ process.stdin.on('end', () => {
   }
   try {
     karar(j);
-  } catch {
-    process.exit(0);
-  }
+  } catch {}
+  uyariBas();
   process.exit(0);
 });
 
@@ -96,13 +95,15 @@ function sebep(anahtar, ek) {
   return (dil() === 'tr' ? g.tr : g.en) + ek;
 }
 
-function sorunYaz(live, satir) {
+function sorunYaz(live, satir, etiket) {
   try {
     fs.mkdirSync(live, { recursive: true });
     fs.appendFileSync(
       path.join(live, '_sorun.log'),
       new Date().toISOString().replace('T', ' ').slice(0, 19) +
-        ' | contract-guard | mühür kanıtı | ' +
+        ' | contract-guard | ' +
+        (etiket || 'mühür kanıtı') +
+        ' | ' +
         satir +
         '\n'
     );
@@ -216,6 +217,21 @@ function planYolu(hedef) {
   return norm(mutlak) === norm(path.join(relay, 'PLAN.md')) ? mutlak : null;
 }
 
+const ECO_ATLAMA = {
+  tr: () => [
+    'eco profilinde ön araştırma kapısı geçildi, araştırma yapılmadı.',
+    'Gerekçeyi `docs/taramalar/ATLANDI.md` dosyasına tek satır yaz; atlama',
+    '`.claude/relay/live/_sorun.log` dosyasına kaydedildi.',
+    'Atlamak serbest, sessizce atlamak değil.',
+  ],
+  en: () => [
+    'The eco profile let the prior-art gate through; no research was done.',
+    'Write one line of reasoning into `docs/taramalar/ATLANDI.md`; the skip was',
+    'recorded in `.claude/relay/live/_sorun.log`.',
+    'Skipping is fine, skipping silently is not.',
+  ],
+};
+
 function onArastirma(hedef) {
   const canonicalPath = canonical(hedef) || planYolu(hedef);
   if (!canonicalPath) return;
@@ -223,7 +239,13 @@ function onArastirma(hedef) {
   const relay = relayKoku(path.dirname(canonicalPath));
   const kok = relay && path.dirname(path.dirname(relay));
   if (!kok || !yeniProje(kok)) return;
-  return engelle(...ceviri('onArastirma'));
+  if (profil() !== 'eco') return engelle(...ceviri('onArastirma'));
+  sorunYaz(
+    path.join(relay, 'live'),
+    norm(path.relative(kok, canonicalPath)) + ' — gerekçe dosyası yok',
+    'eco ön araştırma atlandı'
+  );
+  return uyar(...(dil() === 'tr' ? ECO_ATLAMA.tr() : ECO_ATLAMA.en()));
 }
 
 const YONLENDIRICI_AD = /(^|\/)CLAUDE\.md$/i;
@@ -317,4 +339,17 @@ function yollar(komut) {
 function engelle(...satir) {
   process.stderr.write('ENGELLENDİ: ' + satir.join('\n'));
   process.exit(2);
+}
+
+const _uyari = [];
+
+function uyar(...satir) {
+  _uyari.push(satir.join('\n'));
+}
+
+function uyariBas() {
+  if (!_uyari.length) return;
+  try {
+    process.stdout.write(JSON.stringify({ systemMessage: '\nUYARI: ' + _uyari.join('\n') }));
+  } catch {}
 }

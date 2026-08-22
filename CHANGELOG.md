@@ -6,6 +6,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.42.0] - 2026-08-22
+
 ### Added
 
 - **`/scan` — a certificate against a profile.** `/scan <eco|normal|premium>` audits the

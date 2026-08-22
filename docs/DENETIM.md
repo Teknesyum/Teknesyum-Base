@@ -62,6 +62,20 @@ sessizce olmuş.
 Ne seçilirse seçilsin `README.md:311-316` ve `SKILL.md`'nin denetçi bölümü, gerçekte
 duran garantiyi yazacak şekilde güncellenmeli.
 
+**Onarımda ne yapıldı:** ikisi birden, mekanik doğrulama önce. Mühür kapısı artık
+`auditor_id`'yi `live/` kaydına çözüyor, kaydın `agent_type`'ı denetçi olmalı ve `files`
+listesi boş olmalı — dosyaya dokunmuş denetçi kendi denetimini mühürleyemiyor, eline
+hangi araç verilirse verilsin. `memory: project` `auditor` ve `planner`dan kaldırıldı.
+README garantiyi üç katman olarak yazıyor ve ilk ikisinin bir istek, üçüncüsünün dayatma
+olduğunu açıkça söylüyor.
+
+**Doğrulanmayı bekleyen:** `memory: project` kaldırmanın harness'ın araç listesini
+gerçekten daralttığı hipotezi. Ajan tanımları oturum başında yükleniyor, bu yüzden ancak
+Claude Code yeniden başlatıldıktan sonra ölçülebilir. Ölçüm yöntemi: yeni oturumda ajan
+listesinde `teknesyum:auditor` satırının araçlarına bak — `Write` ve `Edit` düştüyse
+hipotez doğru. Düşmediyse üçüncü katman zaten tek başına ayakta, ama belgedeki 2. madde
+gerçeği yazmıyor demektir ve düzeltilmeli.
+
 ---
 
 ## B2 · `[object Object]` klasörü hâlâ üretiliyor ve depoda duruyor — **kapandı**

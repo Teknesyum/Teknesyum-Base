@@ -6,7 +6,21 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.43.0] - 2026-08-22
+
+### Added
+
+- The active profile is now recorded per session instead of machine-wide. Two chats on
+  the same machine can run different profiles: one `eco`, one `premium`, neither
+  overwriting the other. The record lives in `<config>/teknesyum/oturumlar/<id>.json`,
+  keyed by the session id the harness exports to the shell. With no session id the old
+  behaviour is preserved exactly — the machine-wide config is written as the default.
+- `/premium durum` now reports where the profile came from (`oturum` or `makine`) and
+  flags any mismatch between the session profile, the agent files and the relay buttons,
+  naming which numbers are the profile's and which are on disk.
+
 ### Fixed
+
 
 - `/scan` measured the umbrella folder as if it were one project. Run from
   `Desktop/Projeler`, it reported 755 unreviewed files and 50 missing repo surveys —
@@ -21,6 +35,15 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   `pyproject.toml`, `Cargo.toml`, `go.mod`, `.claude-plugin`, or a solution/project
   file) and requires at least two sub-projects. `kok` is unchanged; only the scan uses
   the strict measure for now.
+
+### Known limits
+
+- Reasoning effort cannot be isolated per session. The agent-spawn schema carries `model`
+  but not `effort`, so effort is read only from the agent definition file, which is
+  machine-wide. `/premium durum` states this on every run rather than implying full
+  isolation. Model selection *is* isolated — a call-time model overrides the file.
+- The agent files and `SETTINGS.md` are still written machine-wide. Until that changes,
+  `durum` reports the mismatch instead of hiding it.
 
 ## [2.42.1] - 2026-08-22
 

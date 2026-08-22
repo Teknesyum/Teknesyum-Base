@@ -2703,7 +2703,7 @@ ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () =
   const a = calistir(
     IZLE,
     { ...oturum, hook_event_name: 'SessionStart' },
-    { CLAUDE_CONFIG_DIR: cfg }
+    cfg
   );
   icerir(JSON.parse(a.out).systemMessage, 'üst klasör');
   calistir(
@@ -2714,18 +2714,18 @@ ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () =
       tool_name: 'Edit',
       tool_input: { file_path: path.join(dip, 'Alfa', 'src', 'a.js') },
     },
-    { CLAUDE_CONFIG_DIR: cfg }
+    cfg
   );
   const b = calistir(
     IZLE,
     { ...oturum, hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
-    { CLAUDE_CONFIG_DIR: cfg }
+    cfg
   );
   icerir(JSON.parse(b.out).hookSpecificOutput.additionalContext, 'Alfa');
   const kaynak = path.join(dip, '.claude', 'agent-memory', 'teknesyum-builder');
   fs.mkdirSync(kaynak, { recursive: true });
   fs.writeFileSync(path.join(kaynak, 'not.md'), 'x\n');
-  calistir(IZLE, { ...oturum, hook_event_name: 'Stop' }, { CLAUDE_CONFIG_DIR: cfg });
+  calistir(IZLE, { ...oturum, hook_event_name: 'Stop' }, cfg);
   esit(
     fs.existsSync(path.join(dip, 'Alfa', '.claude', 'agent-memory', 'teknesyum-builder', 'not.md')),
     true,

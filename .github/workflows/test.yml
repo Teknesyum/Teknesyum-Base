@@ -18,6 +18,14 @@ jobs:
         with:
           node-version: 20
       - run: node test/run.js
+      - name: tests leave the tree clean
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "the test run left files behind:"
+            git status --porcelain
+            exit 1
+          fi
       - run: node teknesyum/scripts/platform-denetim.js . --kati
 
   lint:

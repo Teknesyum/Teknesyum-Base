@@ -31,6 +31,32 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - The premium behaviour note and the session-start line mention the second opinion; the
   `/premium` output and `durum` report the new knob next to the council.
 
+### Fixed
+
+- **The auditor's "cannot write" guarantee was documentation, not enforcement.**
+  `agents/auditor.md` asks for `Read, Grep, Glob, LSP`, but the harness was measured
+  opening that agent with `Write` and `Edit` added; the same drift hit `planner` (+Write,
+  +Edit) and `scout` (+Edit). The one thing the three shared was a `memory: project` field —
+  a declared tool list is a floor for the harness, not a ceiling. The old test only read the
+  `tools:` line out of the file, so it stayed green while the guarantee was gone.
+  `memory: project` is now removed from `auditor` and `planner` (agents that legitimately
+  write keep theirs), and the `README` and `SKILL.md` sentences that sold the tool list as a
+  harness guarantee now say what actually holds.
+- **The `done/` seal was checked for shape, not for truth.** `contract-guard.js` only asked
+  whether `audit`, `auditor_id`, `diff` and `verification` were non-empty, so an agent could
+  invent four lines and move its own contract into `done/`. The gate now verifies them
+  against the `live/` records the hooks already write: `auditor_id` must resolve to an
+  existing record whose `agent_type` is `auditor` and whose `files` list is **empty** — an
+  auditor that wrote a single file voids its own audit regardless of the tools it was given —
+  and `diff` must carry a file list that intersects the contract's `owns`. When `live/`
+  cannot be read or the record is missing, the gate falls open to the old format check so
+  contracts moved by hand outside the relay are not locked out, and writes what it could not
+  verify to `live/_sorun.log`.
+
+### Removed
+
+- Dead `canonicalDone()` helper in `contract-guard.js`.
+
 ## [2.37.0] - 2026-08-22
 
 ### Added

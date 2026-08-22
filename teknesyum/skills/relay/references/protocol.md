@@ -47,8 +47,8 @@ Tek istisna `blocked`: her durumdan girilir, her duruma çıkılır.
 
 ```yaml
 audit: passed
-auditor_id: <denetçi ajanın ID'si>
-diff: <denetime verilen git diff'in başlangıç..bitiş hash'i>
+auditor_id: <denetçi ajanın ID'si — live/ altında kaydı olmalı>
+diff: <denetime verilen dosya listesi: git diff --name-only çıktısı>
 verification: <çalıştırılan komut> → exit <kod>
 ```
 
@@ -58,6 +58,21 @@ mühürden sonra `owns` dosyalarında değişiklik olduysa sözleşme yeniden de
 
 `owns` kontrolü de bu kapıda yapılır: `live/<agent_id>.json` içindeki `files` listesi
 `owns` ∪ `side_effects` kümesini aşıyorsa mühür işlenmez.
+
+**Kapı alanların dolu olmasına değil karşılığına bakar.** `contract-guard.js` mührü
+`live/` kayıtlarıyla karşılaştırır ve üç şeyi arar:
+
+- `auditor_id` `live/` altında gerçekten var olan bir kayda işaret eder ve o kaydın
+  `agent_type`'ı `auditor`'dür.
+- O kaydın `files` listesi **boştur**. Denetçi tek bir dosyaya yazmışsa denetim geçersizdir.
+  Bu, denetçinin `tools:` satırına bağlı olmayan tek güvencedir: `agents/auditor.md`
+  `Write` ve `Edit` istemiyor ama harness listeyi tamamlayabiliyor — ölçümde tamamladı.
+- `diff` boş olmayan bir dosya listesi taşır ve sözleşmenin `owns` kümesiyle kesişir.
+
+`live/` okunamıyor, kayıt bulunamıyor veya sözleşmenin `owns` alanı boşsa kapı **açık
+tarafa düşer**: yalnızca dört alanın dolu olduğu denetlenir, çünkü röle dışında elle
+taşınan meşru sözleşmeler aksi halde kilitlenir. Neyin doğrulanamadığı engel mesajına
+değil `live/_sorun.log`'a yazılır.
 
 **`live/` neden var:** kayıt noktası ajanın yazmasına bağlıydı, ajan ölünce yazılmıyordu.
 `relay-watch.js` hook'u `SubagentStart` / `PostToolUse` / `SubagentStop` olaylarında
@@ -143,7 +158,7 @@ round: 0
 agent_id: —
 audit: —          # passed | failed — mührü YALNIZ T0 işler
 auditor_id: —
-diff: —             # denetime verilen aralık: <baslangic>..<bitis>
+diff: —             # denetime verilen dosyalar: git diff --name-only, owns ile kesişir
 verification: —        # <komut> → exit <kod>
 ---
 ## Amaç            tek paragraf: ne, neden

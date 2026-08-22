@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { s: ceviri } = require('./dil.js');
+const { s: ceviri, dil } = require('./dil.js');
 
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
@@ -28,10 +28,100 @@ const DONE = /(^|\/)\.claude\/relay\/contracts\/done\//i;
 const MUHUR = /^audit:[ \t]*(passed|gecti)[ \t]*$/im;
 const alan = (ad) => new RegExp('^' + ad + ':[ \\t]*(?![—\\-]?[ \\t]*$)\\S', 'im');
 const KANIT = ['auditor_id', 'diff', 'verification'].map(alan);
+const deger = (ad, s) => {
+  const m = String(s).match(new RegExp('^' + ad + ':[ \\t]*(.+)$', 'im'));
+  return m ? m[1].trim() : '';
+};
 
-function muhurlu(metin) {
+// ÖLÇÜLDÜ: `tools:` satırı harness için tavan değil taban — denetçi ajanı ölçümde
+// `Write, Edit` ile açıldı. Dört alanın dolu olması mührü doğrulamaz; alanların
+// karşılığı `live/` kayıtlarında aranır. Denetçi turunda tek dosyaya yazmışsa denetim
+// geçersizdir, araç listesi ne verirse versin.
+const KANIT_SEBEP = {
+  rol: {
+    tr: 'auditor_id denetçi olmayan bir ajan kaydına işaret ediyor: ',
+    en: 'auditor_id points at an agent record that is not an auditor: ',
+  },
+  yazma: {
+    tr: 'Denetçi denetim turunda dosyaya yazmış, denetim geçersiz: ',
+    en: 'The auditor wrote files during the audit; the audit is void: ',
+  },
+  kesisim: {
+    tr: 'diff alanı sözleşmenin owns kümesiyle kesişmiyor: ',
+    en: 'The diff field does not intersect the contract owns set: ',
+  },
+};
+
+// `null` → mühür geçerli · `''` → biçim eksik · metin → kanıt çürük, sebebi bu satır.
+function muhurSebebi(metin, kokIcin) {
   const s = String(metin);
-  return MUHUR.test(s) && KANIT.every((r) => r.test(s));
+  if (!MUHUR.test(s) || !KANIT.every((r) => r.test(s))) return '';
+  return kanitSebebi(s, kokIcin);
+}
+
+// Kapalı tarafa düşme: `live/` okunamıyorsa veya kayıt yoksa mühür geçersiz sayılmaz —
+// röle dışında elle taşınan meşru sözleşmeler kilitlenirdi. Biçim denetimiyle yetinilir,
+// neyin doğrulanamadığı engel mesajına değil `_sorun.log`'a yazılır.
+function kanitSebebi(s, kokIcin) {
+  const relay = relayKoku(path.dirname(path.resolve(kokIcin || '.')));
+  if (!relay) return null;
+  const live = path.join(relay, 'live');
+  const kimlik = safe(deger('auditor_id', s));
+  const kayit = read(path.join(live, kimlik + '.json'));
+  if (!kayit) return sorunYaz(live, 'live/' + kimlik + '.json yok — mühür biçimle geçti');
+
+  const rol = String(kayit.agent_type || '?').replace(/^teknesyum:/, '');
+  if (rol !== 'auditor') return sebep('rol', rol);
+  const yazilan = Array.isArray(kayit.files) ? kayit.files : [];
+  if (yazilan.length) return sebep('yazma', yazilan.join(', '));
+
+  const owns = ownsKumesi(s);
+  if (!owns.length) return sorunYaz(live, 'sözleşmede owns boş — diff kesişimi ölçülemedi');
+  const fark = norm(deger('diff', s)).toLowerCase();
+  if (!owns.some((o) => fark.includes(norm(o).toLowerCase())))
+    return sebep('kesisim', deger('diff', s));
+  return null;
+}
+
+function ownsKumesi(s) {
+  const ham = (String(s).match(/^owns:[ \t]*\[([^\]]*)\]/im) || [])[1] || '';
+  return ham
+    .split(',')
+    .map((v) => v.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean);
+}
+
+function sebep(anahtar, ek) {
+  const g = KANIT_SEBEP[anahtar];
+  return (dil() === 'tr' ? g.tr : g.en) + ek;
+}
+
+function read(f) {
+  try {
+    return JSON.parse(fs.readFileSync(f, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function safe(x) {
+  return String(x)
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .slice(0, 80);
+}
+
+function sorunYaz(live, satir) {
+  try {
+    fs.mkdirSync(live, { recursive: true });
+    fs.appendFileSync(
+      path.join(live, '_sorun.log'),
+      new Date().toISOString().replace('T', ' ').slice(0, 19) +
+        ' | contract-guard | mühür kanıtı | ' +
+        satir +
+        '\n'
+    );
+  } catch {}
+  return null;
 }
 // ÖLÇÜLDÜ: `>>?` serbest duruyordu ve düzyazıdaki `<sebep>` gibi bir metni yönlendirme
 // sandı — `contracts/done/` sözünü içeren masum bir belge yazımı engellendi. Yönlendirme
@@ -99,15 +189,6 @@ function canonical(hedef) {
   if (!relative || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) return null;
   if (!/^T[^/\\]+\.md$/i.test(relative)) return null;
   return absolute;
-}
-
-function canonicalDone(hedef) {
-  const absolute = path.resolve(hedef);
-  const relay = relayKoku(path.dirname(absolute));
-  if (!relay) return false;
-  const done = path.join(relay, 'contracts', 'done');
-  const relative = path.relative(done, absolute);
-  return relative && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative);
 }
 
 function durum(metin) {
@@ -249,8 +330,10 @@ function karar(j) {
     if (!DONE.test(norm(hedef))) return;
     // Write mührü taşıyorsa denetimden geçmiş sözleşmenin yerleşmesidir; Edit hiçbir
     // koşulda meşru değil — bitmiş sözleşme değiştirilmez.
-    if (arac === 'Write' && muhurlu(t.content || '')) return;
-    return engelle(...ceviri('doneSaltOkunur'));
+    if (arac === 'Edit') return engelle(...ceviri('doneSaltOkunur'));
+    const sebep = muhurSebebi(t.content || '', hedef);
+    if (sebep === null) return;
+    return engelle(...ceviri('doneSaltOkunur'), ...(sebep ? [sebep] : []));
   }
 
   if (arac !== 'Bash') return;
@@ -265,13 +348,19 @@ function karar(j) {
 
   // Tek meşru yazma: denetimi geçmiş bir sözleşmeyi done/ altına taşımak. Kaynak
   // dosyada mühür varsa geçir. Komuttan kaynak çıkaramıyorsak kapalı tarafa düş.
+  let curuk = '';
   for (const aday of yollar(parca.join(' '))) {
     if (DONE.test(norm(aday))) continue;
+    let govde = null;
     try {
-      if (muhurlu(fs.readFileSync(aday, 'utf8'))) return;
+      govde = fs.readFileSync(aday, 'utf8');
     } catch {}
+    if (govde === null) continue;
+    const sebep = muhurSebebi(govde, aday);
+    if (sebep === null) return;
+    if (sebep) curuk = sebep;
   }
-  return engelle(...ceviri('doneKabuk'));
+  return engelle(...ceviri('doneKabuk'), ...(curuk ? [curuk] : []));
 }
 
 function yollar(komut) {

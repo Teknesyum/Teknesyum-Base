@@ -42,7 +42,7 @@ function premium() {
 }
 
 function depoSayisi() {
-  return { eco: 5, normal: 10, premium: 50 }[profil()];
+  return { eco: 1, normal: 10, premium: 50 }[profil()];
 }
 
 const KONSEY = 'fable + opus';

@@ -2601,7 +2601,7 @@ ol('uc profil de uygulanir, durum yururlukteki profili soyler', () => {
     eco: [
       'haiku',
       'parallel_width     : 1',
-      'research_repos     : 5',
+      'research_repos     : 1',
       'audit              : critical',
     ],
     normal: [
@@ -2665,7 +2665,7 @@ ol('eco profili en ucuz modeli ve en dar paralelligi secer', () => {
   icerir(s, 'model_escalation   : on');
   const cikti = premiumCalistir('eco', p, cfg).out;
   icerir(cikti, 'profil: eco');
-  icerir(cikti, '5+ depo');
+  icerir(cikti, '1+ depo');
 });
 
 ol('premium plan konseyini acar ve arastirma tavanini 50 depoya cikarir', () => {

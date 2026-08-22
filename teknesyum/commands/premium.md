@@ -34,7 +34,7 @@ alanı. Çıktıyı olduğu gibi bas, kendin dosya düzenleme.
 | rapor · brifing | short · quiet | short · milestone | detailed · every-step |
 | plan konseyi | kapalı | kapalı | açık — fable + opus |
 | ikinci görüş | kapalı | kapalı | açık — fable |
-| ön araştırma | 5+ depo | 10+ depo | 50+ depo |
+| ön araştırma | 1+ depo | 10+ depo | 50+ depo |
 
 `scribe` premium'da da düşük eforla çalışır: model yükseldi diye isim değiştirme işine
 uzun uzun düşünmek kazanç değil kayıptır. Efor tavanı `xhigh`.

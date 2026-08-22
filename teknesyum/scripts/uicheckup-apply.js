@@ -4,12 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-function fail(message) {
-  process.stderr.write(`${message}\n`);
+function hata(mesaj) {
+  process.stderr.write(`${mesaj}\n`);
   process.exitCode = 1;
 }
 
-function help() {
+function yardim() {
   process.stdout.write(
     'Kullanım: node uicheckup-apply.js --approve --plan <plan.json> --plan-digest <sha256> --target <kök>\n'
   );
@@ -18,116 +18,117 @@ function help() {
   );
 }
 
-function parseArgs() {
-  const args = process.argv.slice(2);
-  if (args.includes('--help') || args.includes('-h')) return { help: true };
-  const input = {};
-  for (let index = 0; index < args.length; index += 1) {
-    const arg = args[index];
-    if (arg === '--approve') input.approve = true;
-    else if (arg === '--plan' || arg === '--plan-file') input.plan = args[++index];
-    else if (arg === '--plan-digest' || arg === '--digest') input.planDigest = args[++index];
-    else if (arg === '--target' || arg === '--root') input.target = args[++index];
-    else if (!arg.startsWith('-') && !input.plan) input.plan = arg;
-    else throw new Error(`Bilinmeyen argüman: ${arg}`);
+function argumanlariCoz() {
+  const argumanlar = process.argv.slice(2);
+  if (argumanlar.includes('--help') || argumanlar.includes('-h')) return { help: true };
+  const girdi = {};
+  for (let sira = 0; sira < argumanlar.length; sira += 1) {
+    const arguman = argumanlar[sira];
+    if (arguman === '--approve') girdi.approve = true;
+    else if (arguman === '--plan' || arguman === '--plan-file') girdi.plan = argumanlar[++sira];
+    else if (arguman === '--plan-digest' || arguman === '--digest')
+      girdi.planDigest = argumanlar[++sira];
+    else if (arguman === '--target' || arguman === '--root') girdi.target = argumanlar[++sira];
+    else if (!arguman.startsWith('-') && !girdi.plan) girdi.plan = arguman;
+    else throw new Error(`Bilinmeyen argüman: ${arguman}`);
   }
   if (!process.stdin.isTTY) {
-    const text = fs.readFileSync(0, 'utf8').trim();
-    if (text) Object.assign(input, JSON.parse(text));
+    const metin = fs.readFileSync(0, 'utf8').trim();
+    if (metin) Object.assign(girdi, JSON.parse(metin));
   }
-  return input;
+  return girdi;
 }
 
-function readPlan(value) {
-  if (typeof value !== 'string' || value.trim() === '') throw new Error('plan gerekli');
-  const text =
-    fs.existsSync(value) && fs.statSync(value).isFile() ? fs.readFileSync(value, 'utf8') : value;
+function planOku(deger) {
+  if (typeof deger !== 'string' || deger.trim() === '') throw new Error('plan gerekli');
+  const metin =
+    fs.existsSync(deger) && fs.statSync(deger).isFile() ? fs.readFileSync(deger, 'utf8') : deger;
   try {
-    return JSON.parse(text);
+    return JSON.parse(metin);
   } catch {
     throw new Error('plan JSON okunamadı');
   }
 }
 
-function realRoot(value) {
-  if (typeof value !== 'string' || value.trim() === '') throw new Error('target gerekli');
-  const absolute = path.resolve(value);
-  const stat = fs.lstatSync(absolute);
-  if (!stat.isDirectory() || stat.isSymbolicLink())
+function gercekKok(deger) {
+  if (typeof deger !== 'string' || deger.trim() === '') throw new Error('target gerekli');
+  const mutlak = path.resolve(deger);
+  const durum = fs.lstatSync(mutlak);
+  if (!durum.isDirectory() || durum.isSymbolicLink())
     throw new Error('target gerçek bir klasör olmalı');
-  return fs.realpathSync.native(absolute);
+  return fs.realpathSync.native(mutlak);
 }
 
-function safeRelative(value) {
+function guvenliGorece(deger) {
   if (
-    typeof value !== 'string' ||
-    value === '' ||
-    path.isAbsolute(value) ||
-    path.win32.isAbsolute(value)
+    typeof deger !== 'string' ||
+    deger === '' ||
+    path.isAbsolute(deger) ||
+    path.win32.isAbsolute(deger)
   )
     throw new Error('plan dosya yolu kök dışı');
-  const normalized = value.replace(/[\\/]+/g, '/');
-  if (normalized.split('/').some((part) => part === '..' || part === ''))
+  const duzgun = deger.replace(/[\\/]+/g, '/');
+  if (duzgun.split('/').some((parca) => parca === '..' || parca === ''))
     throw new Error('plan dosya yolu traversal içeriyor');
-  if (normalized === '.' || normalized.startsWith('/')) throw new Error('plan dosya yolu kök dışı');
-  return normalized;
+  if (duzgun === '.' || duzgun.startsWith('/')) throw new Error('plan dosya yolu kök dışı');
+  return duzgun;
 }
 
-function digest(content) {
-  return crypto.createHash('sha256').update(content).digest('hex');
+function ozet(icerik) {
+  return crypto.createHash('sha256').update(icerik).digest('hex');
 }
 
-function planDigest(plan) {
+function planOzeti(plan) {
   if (!plan || typeof plan !== 'object' || Array.isArray(plan))
     throw new Error('plan nesnesi gerekli');
   if (typeof plan.digest !== 'string' || !/^[a-f0-9]{64}$/i.test(plan.digest))
     throw new Error('plan digest eksik veya geçersiz');
-  const copy = { ...plan };
-  delete copy.digest;
-  const actual = digest(JSON.stringify(copy));
-  if (actual !== plan.digest) throw new Error('stale plan: plan digest uyuşmuyor');
+  const kopya = { ...plan };
+  delete kopya.digest;
+  const gercek = ozet(JSON.stringify(kopya));
+  if (gercek !== plan.digest) throw new Error('stale plan: plan digest uyuşmuyor');
   return plan.digest;
 }
 
-function verify(input) {
-  if (input.approve !== true) throw new Error('uygulama için --approve gerekli');
-  const plan = readPlan(input.plan);
-  const actualPlanDigest = planDigest(plan);
+function dogrula(girdi) {
+  if (girdi.approve !== true) throw new Error('uygulama için --approve gerekli');
+  const plan = planOku(girdi.plan);
+  const gercekPlanOzeti = planOzeti(plan);
   if (
-    typeof input.planDigest !== 'string' ||
-    input.planDigest.toLowerCase() !== actualPlanDigest.toLowerCase()
+    typeof girdi.planDigest !== 'string' ||
+    girdi.planDigest.toLowerCase() !== gercekPlanOzeti.toLowerCase()
   )
     throw new Error('stale plan: plan digest doğrulanamadı');
-  const root = realRoot(input.target);
-  const planRoot = realRoot(plan.target);
-  if (root !== planRoot) throw new Error('target kökü plan ile uyuşmuyor');
+  const kok = gercekKok(girdi.target);
+  const planKoku = gercekKok(plan.target);
+  if (kok !== planKoku) throw new Error('target kökü plan ile uyuşmuyor');
   if (!Array.isArray(plan.files) || !Array.isArray(plan.findings))
     throw new Error('plan manifest alanları geçersiz');
-  const seen = new Set();
-  const files = plan.files.map((record) => {
-    if (!record || typeof record !== 'object') throw new Error('plan dosya kaydı geçersiz');
-    const relative = safeRelative(record.file);
-    if (seen.has(relative)) throw new Error('plan dosya kaydı tekrarlı');
-    seen.add(relative);
-    if (typeof record.digest !== 'string' || !/^[a-f0-9]{64}$/i.test(record.digest))
-      throw new Error(`dosya digest geçersiz: ${relative}`);
-    const absolute = path.resolve(root, relative);
-    const outside = path.relative(root, absolute);
-    if (outside === '..' || outside.startsWith(`..${path.sep}`) || path.isAbsolute(outside))
+  const gorulen = new Set();
+  const dosyalar = plan.files.map((kayit) => {
+    if (!kayit || typeof kayit !== 'object') throw new Error('plan dosya kaydı geçersiz');
+    const gorece = guvenliGorece(kayit.file);
+    if (gorulen.has(gorece)) throw new Error('plan dosya kaydı tekrarlı');
+    gorulen.add(gorece);
+    if (typeof kayit.digest !== 'string' || !/^[a-f0-9]{64}$/i.test(kayit.digest))
+      throw new Error(`dosya digest geçersiz: ${gorece}`);
+    const mutlak = path.resolve(kok, gorece);
+    const disari = path.relative(kok, mutlak);
+    if (disari === '..' || disari.startsWith(`..${path.sep}`) || path.isAbsolute(disari))
       throw new Error('plan dosya yolu kök dışı');
-    const stat = fs.lstatSync(absolute);
-    if (!stat.isFile() || stat.isSymbolicLink())
-      throw new Error(`hedef dosya geçersiz: ${relative}`);
-    const actual = digest(fs.readFileSync(absolute));
-    if (actual.toLowerCase() !== record.digest.toLowerCase())
-      throw new Error(`stale plan: dosya digest uyuşmuyor: ${relative}`);
-    return { file: relative, digest: actual };
+    const durum = fs.lstatSync(mutlak);
+    if (!durum.isFile() || durum.isSymbolicLink())
+      throw new Error(`hedef dosya geçersiz: ${gorece}`);
+    const gercek = ozet(fs.readFileSync(mutlak));
+    if (gercek.toLowerCase() !== kayit.digest.toLowerCase())
+      throw new Error(`stale plan: dosya digest uyuşmuyor: ${gorece}`);
+    return { file: gorece, digest: gercek };
   });
-  const findings = plan.findings.map((finding) => {
-    if (!finding || typeof finding.file !== 'string') throw new Error('bulgu dosyası geçersiz');
-    const relative = safeRelative(finding.file);
-    if (!seen.has(relative)) throw new Error(`bulgu plan dosyalarında yok: ${relative}`);
-    return { ...finding, file: relative };
+  const bulgular = plan.findings.map((bulgu) => {
+    if (!bulgu || typeof bulgu.file !== 'string') throw new Error('bulgu dosyası geçersiz');
+    const gorece = guvenliGorece(bulgu.file);
+    if (!gorulen.has(gorece)) throw new Error(`bulgu plan dosyalarında yok: ${gorece}`);
+    return { ...bulgu, file: gorece };
   });
   return {
     type: 'teknesyum-ui-checkup-manifest',
@@ -135,18 +136,18 @@ function verify(input) {
     approved: true,
     writeTarget: false,
     handoff: 'ui-builder/relay',
-    target: root,
-    planDigest: actualPlanDigest,
+    target: kok,
+    planDigest: gercekPlanOzeti,
     catalog: plan.catalog,
-    files,
-    findings,
+    files: dosyalar,
+    findings: bulgular,
   };
 }
 
 try {
-  const input = parseArgs();
-  if (input.help) help();
-  else process.stdout.write(`${JSON.stringify(verify(input))}\n`);
+  const girdi = argumanlariCoz();
+  if (girdi.help) yardim();
+  else process.stdout.write(`${JSON.stringify(dogrula(girdi))}\n`);
 } catch (error) {
-  fail(error instanceof Error ? error.message : String(error));
+  hata(error instanceof Error ? error.message : String(error));
 }

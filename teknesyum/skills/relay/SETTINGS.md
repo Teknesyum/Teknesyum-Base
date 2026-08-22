@@ -81,7 +81,7 @@ planın tamamı içindir ve iki üyelidir, görüş tek bir karar içindir ve te
 
 Görüş bağlayıcı değildir — T0 katılmazsa gerekçesini yazar. Kullanıcıya sormanın yerini
 de tutmaz: `ask_threshold` sormaya izin veriyorsa önce sorulur. Standart profilde
-kapalıdır, premiumda açılır. Hangi dört durumda tetiklendiği relay SKILL §1.5.1.
+kapalıdır, premiumda açılır. Hangi beş durumda tetiklendiği relay SKILL §1.5.1.
 
 **research_repos** — ön araştırmada (SKILL §1.4) taranacak en az depo sayısı. Standart
 profilde 10, premium profilde 50. Elli depo, on depoyla aynı derinlikte okunmaz: ilk

@@ -53,7 +53,7 @@ function run(j) {
   } catch {
     return;
   }
-  if (!root) supur();
+  supur();
 
   if (debugAcik()) iz(live, j);
 
@@ -174,6 +174,7 @@ function run(j) {
       s.ended = s.started && now < s.started ? null : now;
       if (j.last_assistant_message) s.last_word = String(j.last_assistant_message).slice(0, 300);
       Object.assign(s, kimlikOku(j));
+      kimlikDenetle(live, j.agent_type, s, c);
       break;
     }
   }
@@ -246,6 +247,47 @@ function kimlikOku(j) {
   return out;
 }
 
+// Ajan tanımları kancanın iki dizin yukarısında: kanca `<eklenti>/hooks/` altından
+// çalışır, tanımlar `<eklenti>/agents/` altındadır. `CLAUDE_PLUGIN_ROOT` ortam
+// değişkenine ihtiyaç yok, yol `__dirname`den kesin çıkar. `/premium` profili de bu
+// dosyalardaki `model:`/`effort:` alanlarını yeniden yazar — beyan burada, tek yerde.
+const TANIM_DIZINI = path.join(__dirname, '..', 'agents');
+
+function tanimOku(type) {
+  const ad = String(type || '').replace(/^teknesyum:/, '');
+  if (!/^[a-z0-9._-]+$/i.test(ad)) return null;
+  const govde = metin(path.join(TANIM_DIZINI, ad + '.md'));
+  if (!govde) return null;
+  const bas = govde.split(/^---[ \t]*$/m)[1];
+  if (!bas) return null;
+  const al = (k) => {
+    const m = bas.match(new RegExp('^' + k + ':[ \\t]*(.+)$', 'm'));
+    return m ? m[1].trim() : '';
+  };
+  return { model: al('model'), effort: al('effort') };
+}
+
+// Beyan ile gerçekleşen ayrı şeyler. `model` çağrıda ezilebilir — Agent aracının
+// `model` alanı — o yüzden beklenen değer varsa çağrıdaki ezme, yoksa tanımdır.
+// Ezilen değer takma ad ('sonnet'), kayda geçen tam kimlik ('claude-sonnet-4-5');
+// karşılaştırma içerme ile yapılır. `effort` çağrıda ezilemez, doğrudan karşılaştırılır.
+function kimlikDenetle(live, type, s, c) {
+  const t = tanimOku(type);
+  if (!t) return;
+  const rol = String(type || '?').replace(/^teknesyum:/, '');
+  const bekle = String((c && c.model) || t.model || '');
+  const model = String(s.model || '');
+  const efor = String(s.effort || '');
+  const uyar = (alan, beyan, gercek) =>
+    sorunYaz(live, [rol, alan, 'beyan: ' + beyan, 'gerçek: ' + gercek].join(' | '));
+  if (bekle && model && !model.toLowerCase().includes(bekle.toLowerCase())) {
+    uyar('model', bekle, model);
+  }
+  if (t.effort && efor && efor.toLowerCase() !== t.effort.toLowerCase()) {
+    uyar('efor', t.effort, efor);
+  }
+}
+
 // Transcript'in sonundan geriye doğru ilk asistan satırını bulur. Dosya büyük olabilir;
 // yalnızca son 256 kB okunur.
 function sonAsistan(tp) {
@@ -286,6 +328,7 @@ function calisanEkle(live, j) {
   l.push({
     type: t.subagent_type || '?',
     desc: String(t.description || '').slice(0, 60),
+    model: t.model || null,
     start: Date.now(),
   });
   yaz(f, l);
@@ -801,30 +844,74 @@ function izSatiri(live, j, ev, now) {
     }
   }
   const satir = [now, ev, kimlik, j.tool_name || '', alan.join(' ')].join(' | ') + '\n';
+  const f = path.join(live, '_hook-debug.log');
   try {
-    fs.appendFileSync(path.join(live, '_hook-debug.log'), satir);
+    fs.appendFileSync(f, satir);
+  } catch {
+    return;
+  }
+  izKirp(f);
+}
+
+// Günlük röle kurulu projede hiç budanmıyordu ve sonsuza kadar büyüyordu. Tavan bayt
+// üzerinden bakılır — tek `statSync`, her yazmada dosyayı okumak pahalı. Aşınca son
+// IZ_SATIR satır kalır: kırpılmış dosya tavanın yarısı kadardır, bu da bir sonraki
+// kırpmaya kadar bin satırlık pay bırakır — kırpma her yazmada tekrarlamaz.
+const IZ_TAVAN = 512 * 1024;
+const IZ_SATIR = 1000;
+
+function izKirp(f) {
+  let boy = 0;
+  try {
+    boy = fs.statSync(f).size;
+  } catch {
+    return;
+  }
+  if (boy <= IZ_TAVAN) return;
+  try {
+    const l = fs.readFileSync(f, 'utf8').split('\n').filter(Boolean);
+    fs.writeFileSync(f, l.slice(-IZ_SATIR).join('\n') + '\n');
   } catch {}
 }
 
 // 2.0.0'da `canli/` → `live/` oldu. Eski klasörü olan projede oraya yazmaya devam
 // ederiz; yoksa yeni adı kullanırız. Kimsenin izi kaybolmaz.
-function izYolu(root) {
+function temelYol(root) {
   const yeni = path.join(root, 'live');
   const eski = path.join(root, 'canli');
-  const temel = !fs.existsSync(yeni) && fs.existsSync(eski) ? eski : yeni;
+  return !fs.existsSync(yeni) && fs.existsSync(eski) ? eski : yeni;
+}
+
+function izYolu(root) {
+  const temel = temelYol(root);
   return _worktree ? path.join(temel, 'worktrees', safe(_worktree)) : temel;
 }
 
+// Genel kök makine geneli: hatırlatma sayacı, kapsayıcı durumu ve `kullanim.json`
+// buraya düşer. Worktree eki proje içindeki izler içindir; genel köke uygulanırsa
+// worktree'de açılan oturum sayacı sıfırdan başlatır, kullanım istatistiğini böler.
 function genelKok() {
   const ev =
     process.env.CLAUDE_CONFIG_DIR ||
     path.join(process.env.USERPROFILE || process.env.HOME || '.', '.claude');
-  return izYolu(path.join(ev, 'teknesyum'));
+  return temelYol(path.join(ev, 'teknesyum'));
 }
 
-// Röle kurulu olmayan oturumların izleri kalıcı değil; bir günü geçeni at.
+// Genel kökteki izler kalıcı değil; bir günü geçeni at. Röle kurulu projede de
+// çalışır — orada proje `live/` dizini ayrıdır, süpürme ona hiç dokunmaz.
+// Süpürme her araç çağrısında bir readdir ve giriş başına bir stat demek; damga
+// dosyası bunu saat başına bir kereye indirir.
+const SUPUR_DAMGA = '_supur';
+const SUPUR_ARA = 60 * 60 * 1000;
+// Kullanım sayacı birikimli: süpürülürse özelliğin geçmişi silinir, ölçü kaybolur.
+const SUPUR_MUAF = { 'kullanim.json': 1, [SUPUR_DAMGA]: 1 };
+
 function supur() {
   const kok = genelKok();
+  const damga = path.join(kok, SUPUR_DAMGA);
+  try {
+    if (Date.now() - fs.statSync(damga).mtimeMs < SUPUR_ARA) return;
+  } catch {}
   let l = [];
   try {
     l = fs.readdirSync(kok);
@@ -835,11 +922,15 @@ function supur() {
   // birikmeden başlamıyordu; az oturum açan kullanıcıda hiç çalışmıyordu.
   const sinir = Date.now() - 24 * 60 * 60 * 1000;
   for (const d of l) {
+    if (SUPUR_MUAF[d]) continue;
     const p = path.join(kok, d);
     try {
       if (fs.statSync(p).mtimeMs < sinir) fs.rmSync(p, { recursive: true, force: true });
     } catch {}
   }
+  try {
+    fs.writeFileSync(damga, '');
+  } catch {}
 }
 
 // Sıkışma bağlamı yer: açık sözleşmeler ve rota konumu özetin içinde eriyor, model

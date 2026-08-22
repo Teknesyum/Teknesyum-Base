@@ -1,8 +1,11 @@
 {
-  "app.title": "Uygulama Adı",
+  "app.title": "Uygulama adı",
   "btn.ok": "Tamam",
   "btn.cancel": "Vazgeç",
   "btn.refresh": "Yenile",
   "lang.switch": "TR | EN",
-  "sig.support": "Buy me a coffee"
+  "sig.brand": "Teknesyum",
+  "sig.brandTitle": "Teknesyum GitHub sayfasını aç",
+  "sig.support": "Destek",
+  "sig.supportTitle": "Projeyi desteklemek için tıkla"
 }

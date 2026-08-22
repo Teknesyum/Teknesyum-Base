@@ -5,6 +5,8 @@
   <Color x:Key="NeonBlueColor">#FF00F3FF</Color>
   <Color x:Key="NeonPinkColor">#FFFF00EA</Color>
   <Color x:Key="NeonPurpleColor">#FFB026FF</Color>
+  <Color x:Key="PinkTextColor">#FFFF54EB</Color>
+  <Color x:Key="PurpleTextColor">#FFC67EFF</Color>
 
   <SolidColorBrush x:Key="NeonBlue"    Color="#FF00F3FF"/>
   <SolidColorBrush x:Key="NeonPink"    Color="#FFFF00EA"/>
@@ -13,13 +15,63 @@
   <SolidColorBrush x:Key="Surface"     Color="#F208090A"/>
   <SolidColorBrush x:Key="AppBg"       Color="#FF000000"/>
 
+  <SolidColorBrush x:Key="PinkText"   Color="#FFFF54EB"/>
+  <SolidColorBrush x:Key="PurpleText" Color="#FFC67EFF"/>
+
   <SolidColorBrush x:Key="TextBody"  Color="#FFFFFFFF"/>
   <SolidColorBrush x:Key="TextDim"   Color="#FFFFFFFF"/>
   <SolidColorBrush x:Key="TextLabel" Color="#FF00F3FF"/>
-  <SolidColorBrush x:Key="TextHint"  Color="#FF71717A"/>
+  <SolidColorBrush x:Key="Disabled"  Color="#FF71717A"/>
+
+  <SolidColorBrush x:Key="NeonBlue10"   Color="#1A00F3FF"/>
+  <SolidColorBrush x:Key="NeonBlue20"   Color="#3300F3FF"/>
+  <SolidColorBrush x:Key="NeonBlue30"   Color="#4D00F3FF"/>
+  <SolidColorBrush x:Key="NeonBlue50"   Color="#8000F3FF"/>
+  <SolidColorBrush x:Key="NeonBlue60"   Color="#9900F3FF"/>
+
+  <SolidColorBrush x:Key="NeonPink10"   Color="#1AFF00EA"/>
+  <SolidColorBrush x:Key="NeonPink20"   Color="#33FF00EA"/>
+  <SolidColorBrush x:Key="NeonPink30"   Color="#4DFF00EA"/>
+  <SolidColorBrush x:Key="NeonPink50"   Color="#80FF00EA"/>
+  <SolidColorBrush x:Key="NeonPink60"   Color="#99FF00EA"/>
+
+  <SolidColorBrush x:Key="NeonPurple10" Color="#1AB026FF"/>
+  <SolidColorBrush x:Key="NeonPurple20" Color="#33B026FF"/>
+  <SolidColorBrush x:Key="NeonPurple30" Color="#4DB026FF"/>
+  <SolidColorBrush x:Key="NeonPurple50" Color="#80B026FF"/>
+  <SolidColorBrush x:Key="NeonPurple60" Color="#99B026FF"/>
+
+  <SolidColorBrush x:Key="PinkText50"   Color="#80FF54EB"/>
+  <SolidColorBrush x:Key="PurpleText50" Color="#80C67EFF"/>
+
+  <SolidColorBrush x:Key="BorderDefault"    Color="#8000F3FF"/>
+  <SolidColorBrush x:Key="BorderStrong"     Color="#9900F3FF"/>
+  <SolidColorBrush x:Key="BorderDecorative" Color="#4D00F3FF"/>
 
   <FontFamily x:Key="FontSans">Segoe UI</FontFamily>
   <FontFamily x:Key="FontMono">Consolas, Cascadia Mono</FontFamily>
+
+  <Duration x:Key="TInstant">0:0:0.09</Duration>
+  <Duration x:Key="TFast">0:0:0.16</Duration>
+  <Duration x:Key="TBase">0:0:0.24</Duration>
+  <Duration x:Key="TSlow">0:0:0.36</Duration>
+  <CubicEase x:Key="EOut" EasingMode="EaseOut"/>
+  <CubicEase x:Key="EIn" EasingMode="EaseIn"/>
+
+  <Style x:Key="{x:Static SystemParameters.FocusVisualStyleKey}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid Margin="-5" SnapsToDevicePixels="True" UseLayoutRounding="True">
+            <Rectangle Margin="4" RadiusX="13" RadiusY="13"
+                       Stroke="#FF000000" StrokeThickness="2"/>
+            <Rectangle Margin="2" RadiusX="15" RadiusY="15"
+                       Stroke="#FF00F3FF" StrokeThickness="2"/>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
 
   <Style x:Key="H2" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
@@ -51,7 +103,7 @@
   <Style x:Key="Hero" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontMono}"/>
     <Setter Property="FontSize" Value="28"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontWeight" Value="Black"/>
     <Setter Property="Foreground" Value="{StaticResource NeonBlue}"/>
     <Setter Property="Effect">
       <Setter.Value>
@@ -64,12 +116,12 @@
     <Setter Property="FontFamily" Value="{StaticResource FontMono}"/>
     <Setter Property="FontSize" Value="16"/>
     <Setter Property="FontWeight" Value="Bold"/>
-    <Setter Property="Foreground" Value="{StaticResource NeonPink}"/>
+    <Setter Property="Foreground" Value="{StaticResource PinkText}"/>
   </Style>
 
   <Style x:Key="Panel" TargetType="Border">
     <Setter Property="Background" Value="{StaticResource Surface}"/>
-    <Setter Property="BorderBrush" Value="#3300F3FF"/>
+    <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius" Value="16"/>
     <Setter Property="Padding" Value="24"/>
@@ -87,7 +139,10 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="12"
-                  Padding="{TemplateBinding Padding}">
+                  Padding="{TemplateBinding Padding}" RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+              <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Border.RenderTransform>
             <Border.Effect>
               <DropShadowEffect Color="{StaticResource NeonBlueColor}" BlurRadius="20" ShadowDepth="0" Opacity="0.35"/>
             </Border.Effect>
@@ -95,23 +150,59 @@
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="bd" Property="Opacity" Value="0.85"/>
+              <Trigger.EnterActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="bd" Storyboard.TargetProperty="Opacity"
+                                     To="0.85" Duration="{StaticResource TInstant}"
+                                     EasingFunction="{StaticResource EOut}"/>
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.EnterActions>
+              <Trigger.ExitActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="bd" Storyboard.TargetProperty="Opacity"
+                                     To="1" Duration="{StaticResource TInstant}"
+                                     EasingFunction="{StaticResource EIn}"/>
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.ExitActions>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Trigger.EnterActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="bd" To="0.98" Duration="{StaticResource TInstant}"
+                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"/>
+                    <DoubleAnimation Storyboard.TargetName="bd" To="0.98" Duration="{StaticResource TInstant}"
+                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"/>
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.EnterActions>
+              <Trigger.ExitActions>
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="bd" To="1" Duration="{StaticResource TInstant}"
+                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"/>
+                    <DoubleAnimation Storyboard.TargetName="bd" To="1" Duration="{StaticResource TInstant}"
+                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"/>
+                  </Storyboard>
+                </BeginStoryboard>
+              </Trigger.ExitActions>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-              <Setter TargetName="bd" Property="Opacity" Value="0.3"/>
+              <Setter TargetName="bd" Property="Background" Value="Transparent"/>
+              <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Disabled}"/>
+              <Setter TargetName="bd" Property="BorderThickness" Value="1"/>
+              <Setter TargetName="bd" Property="Effect" Value="{x:Null}"/>
+              <Setter Property="Foreground" Value="{StaticResource Disabled}"/>
+              <Setter Property="Cursor" Value="No"/>
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
-
-  <!-- hareket -->
-  <Duration x:Key="TInstant">0:0:0.09</Duration>
-  <Duration x:Key="TFast">0:0:0.16</Duration>
-  <Duration x:Key="TBase">0:0:0.24</Duration>
-  <Duration x:Key="TSlow">0:0:0.36</Duration>
-  <CubicEase x:Key="EOut" EasingMode="EaseOut"/>
-  <CubicEase x:Key="EIn" EasingMode="EaseIn"/>
 
 </ResourceDictionary>

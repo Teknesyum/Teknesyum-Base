@@ -1,8 +1,11 @@
 {
-  "app.title": "Application Name",
+  "app.title": "Application name",
   "btn.ok": "OK",
   "btn.cancel": "Cancel",
   "btn.refresh": "Refresh",
   "lang.switch": "TR | EN",
-  "sig.support": "Buy me a coffee"
+  "sig.brand": "Teknesyum",
+  "sig.brandTitle": "Open the Teknesyum GitHub page",
+  "sig.support": "Buy me a coffee",
+  "sig.supportTitle": "Click to support the project"
 }

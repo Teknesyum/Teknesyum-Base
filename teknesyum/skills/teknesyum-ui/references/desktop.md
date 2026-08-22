@@ -103,6 +103,25 @@ diğerleri neon-blue. Yükseklik 32-40px arası, ikonlar 10-12px.
 **Uygulama kimliği başlık çubuğunda durur:** ikon + uygulama adı. Dosya yolu, config yolu gibi
 teknik bilgiler başlık şeridine değil, ilgili panele veya alt bilgi satırına konur.
 
+**İmza bloğu da başlık çubuğundadır** — küçült düğmesinin solunda, sağdan sola `Teknesyum`
+ve `Destek` (SKILL §4). Alt bilgi şeridine ya da ayarların dibine konmaz.
+
+Şerit sürüklenebilir olduğu için iki öğe de sürükleme dışına alınır: WPF'te
+`WindowChrome.IsHitTestVisibleInChrome="True"`, Electron'da `-webkit-app-region: no-drag`,
+WinForms'ta `WM_NCHITTEST` bu iki dikdörtgen için `HTCLIENT` döner. Unutulursa bağlantı
+tıklanmaz — fare basışı pencereyi taşımaya başlar.
+
+**Odak görseli teslim edilir.** WPF'in varsayılan `FocusVisualStyle`'ı noktalı siyah
+dikdörtgendir ve `#000000` zeminde görünmez. `assets/Theme.xaml` bunu
+`{x:Static SystemParameters.FocusVisualStyleKey}` anahtarıyla uygulama genelinde değiştirir;
+başka bir şey yapmaya gerek yok, dictionary merge edilmesi yeter. WPF görseli zaten yalnız
+klavye modalitesinde çizer — `:focus-visible` karşılığı hazır gelir.
+
+WinForms'ta karşılığı yoktur: `ControlPaint.DrawFocusRectangle` de noktalı çizer. Odaklanan
+denetimin çevresine çift katmanlı halka **elle** çizilir (`Palette.FocusRing` ve
+`Palette.FocusRingInner`), tetikleyici `Enter`/`Leave` değil `KeyDown` sonrası gelen odak
+olur — fareyle tıklayan kullanıcıya halka gösterilmez.
+
 ## 9. Dil yamaları — `locale/` klasörü
 
 Metin koda gömülmez. Her projede kökte `locale/` klasörü olur ve **çeviri yapan kişi kod
@@ -198,12 +217,15 @@ yabancı cisimdir. Her stack'te karşılığı var, üçü de zorunlu:
 | Electron | `frame: false` (veya `titleBarStyle: 'hidden'`) | `-webkit-app-region: drag` şerit |
 | Web / PWA | — | uygulanmaz, atla |
 
-Çizilen şerit: yükseklik **32–40px**, zemin `surface`, altında `1px` `neon-blue/20` çizgi.
-Solda ikon + uygulama adı (14px/700/`0.1em`, odaklıyken neon-blue + glow, odak dışıyken
-beyaz). Sağda üç düğme, ikon **10–12px** ve `stroke="currentColor"` SVG/Path — emoji
-veya harf (`X`, `—`) kullanma. Hover: kapat **neon-pink**, diğerleri **neon-blue**, ikisi de
-glow'lu; dolgu gelmez. Dosya yolu, sürüm, config yolu başlık şeridine yazılmaz — o bilgi
-ilgili panele veya alt bilgiye gider.
+Çizilen şerit: yükseklik **32–40px**, zemin `surface`, altında `1px` `neon-blue/50` çizgi.
+Solda ikon + uygulama adı (14px/700/`0.1em`, odaklıyken neon-blue, odak dışıyken beyaz).
+Sağda imza bloğu (§4) ve üç düğme; ikonlar **10–12px** ve `stroke="currentColor"` SVG/Path —
+emoji veya harf (`X`, `—`) kullanma. Hover: kapat **neon-pink**, diğerleri **neon-blue**,
+ikisi de glow'lu; dolgu gelmez. Dosya yolu, sürüm, config yolu başlık şeridine yazılmaz —
+o bilgi ilgili panele veya alt bilgiye gider.
+
+Soldan sağa sıra: `ikon` · `uygulama adı` · **boşluk** · `Destek` · `Teknesyum` · küçült ·
+büyüt · kapat.
 
 **Native çubuğu kaldırmak işletim sistemi davranışlarını da kaldırır; hepsi geri takılır:**
 sürükleyerek taşıma, başlığa çift tıkla büyüt/geri al, Aero Snap, kenardan boyutlandırma,
@@ -266,15 +288,16 @@ Renk yalnız hover'da neona döner: büyüt/küçült neon-blue, kapat neon-pink
 
 **Alt bilgi şeridi tek satır ve mümkün olan en kısa.** Etiket yazı tipi + alt uzantısı kadar
 yükseklik (ölçülen: 18px), üstündeki düğme sırasına yapışık. İçerik: solda durum noktası,
-durum metni, sürüm ve dil anahtarı; **sağda destek bağlantısı ile imza yan yana, önce destek
-sonra imza**. Destek bağlantısı imzadan koparılıp sola atılmaz — ikisi tek bir künye okunur.
+durum metni, sürüm ve dil anahtarı. **İmza ve destek bağlantısı burada değil, başlık
+çubuğundadır** (§4) — alt şerit boş kalıyorsa daraltılır, doldurulmaz.
 **Bağlantı ve değer metinleri neon-blue**, yalnız durum noktası anlamına göre renklenir
 (kurulu `#34D399`, değil `#FF00EA`).
 
-**Panel başlıkları neon-blue çizilir.** `GÜVENLİK` / `DAVRANIŞ` / `AYRINTILAR` gibi bölüm
-başlıkları gri değil, `#00F3FF`. Gri bırakılırsa panel çerçevesi renkli, içindeki başlık sönük
-kalıyor ve bölüm başlığı gibi okunmuyor. Bunun **altındaki** "Etiket" rolü (alan üstü küçük
-harf aralıklı yazılar) sönük kalmaya devam eder — hiyerarşiyi ayıran şey o karşıtlık.
+**Panel başlıkları neon-blue çizilir.** `Güvenlik` / `Davranış` / `Ayrıntılar` gibi bölüm
+başlıkları gri değil, `#00F3FF` — ve ilki büyük gerisi küçük yazılır (SKILL §3). Gri
+bırakılırsa panel çerçevesi renkli, içindeki başlık sönük kalıyor ve bölüm başlığı gibi
+okunmuyor. Bunun **altındaki** "Etiket" rolü ondan boyut ve harf aralığıyla ayrılır,
+parlaklıkla değil — bu temada sönük metin yok (SKILL §2).
 
 ## 11. Ekran görüntüsü ve piksel doğrulaması
 

@@ -5,6 +5,8 @@
   --color-neon-pink: #ff00ea;
   --color-neon-purple: #b026ff;
   --color-neon-success: #34d399;
+  --color-pink-text: #ff54eb;
+  --color-purple-text: #c67eff;
   --color-surface: #08090a;
   --color-dark-glass: rgba(10, 10, 15, 0.85);
 
@@ -20,10 +22,17 @@
   --tk-surface: #08090a;
   --tk-glass: rgba(10, 10, 15, 0.85);
 
+  --tk-pink-text: #ff54eb;
+  --tk-purple-text: #c67eff;
+
   --tk-text: #ffffff;
   --tk-text-dim: #ffffff;
   --tk-text-label: #00f3ff;
-  --tk-text-hint: #71717a;
+  --tk-disabled: #71717a;
+
+  --tk-border: rgba(0, 243, 255, 0.5);
+  --tk-border-strong: rgba(0, 243, 255, 0.6);
+  --tk-border-decorative: rgba(0, 243, 255, 0.3);
 
   --tk-r-box: 16px;
   --tk-r-btn: 12px;
@@ -65,7 +74,7 @@ body {
 }
 .tk-mono {
   font-family: var(--font-mono, monospace);
-  font-size: 16px; font-weight: 700; color: var(--tk-pink);
+  font-size: 16px; font-weight: 700; color: var(--tk-pink-text);
 }
 .tk-hero {
   font-family: var(--font-mono, monospace);
@@ -78,11 +87,22 @@ body {
 .tk-panel {
   background: rgba(8, 9, 10, 0.95);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 243, 255, 0.2);
+  border: 1px solid var(--tk-border);
   border-radius: var(--tk-r-box);
   padding: 24px;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
 }
+.tk-divider { border: 0; border-top: 1px solid var(--tk-border-decorative); margin: 24px 0; }
+
+/* --- odak: cift katman, gecissiz, yalniz klavye modalitesinde --- */
+:focus-visible {
+  outline: 2px solid var(--tk-blue);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #000000;
+  transition: none;
+}
+:focus:not(:focus-visible) { outline: none; }
+[data-tk-scroll-target] { scroll-margin-top: 40px; scroll-margin-bottom: 24px; }
 
 /* --- butonlar --- */
 .tk-btn {
@@ -102,11 +122,18 @@ body {
 .tk-btn-danger:hover    { background: rgba(255, 0, 234, 0.8); }
 .tk-btn-ghost {
   background: rgba(176, 38, 255, 0.1);
-  border-color: rgba(176, 38, 255, 0.5);
-  color: var(--tk-purple);
+  border-color: rgba(198, 126, 255, 0.5);
+  color: var(--tk-purple-text);
 }
 .tk-btn-ghost:hover { background: rgba(176, 38, 255, 0.2); }
-.tk-btn:disabled { opacity: 0.3; pointer-events: none; transform: none; }
+.tk-btn:disabled {
+  color: var(--tk-disabled);
+  background: transparent;
+  border-color: var(--tk-disabled);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* --- scrollbar --- */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -118,6 +145,12 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--tk-pink); box-shadow: 0 0 10px var(--tk-pink);
 }
+
+/* --- baslik cubugu ve imza (§4) --- */
+.tk-titlebar { -webkit-app-region: drag; }
+.tk-titlebar a,
+.tk-titlebar button,
+.tk-no-drag { -webkit-app-region: no-drag; }
 
 /* --- hareket: azaltilmis hareket ayari --- */
 @media (prefers-reduced-motion: reduce) {

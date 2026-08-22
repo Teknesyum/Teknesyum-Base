@@ -2527,7 +2527,7 @@ ol('premium ikinci gorusu acar, kapatinca geri alir', () => {
 });
 
 ol('planner gorus kipini brifing onekiyle secer', () => {
-  const m = fs.readFileSync(path.join(KOK, 'agents', 'planner.md'), 'utf8');
+  const m = fs.readFileSync(path.join(KOK, 'agents', 'planner.md'), 'utf8').replace(/\r/g, '');
   icerir(m, 'GÖRÜŞ:');
   const i = m.indexOf('## Görüş kipi');
   const j = m.indexOf('## İletişim');

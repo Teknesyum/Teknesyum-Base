@@ -1,0 +1,111 @@
+# Bench koşusu — dört durum, aynı görev
+
+Bu dosya bir görev paketidir. Her durum için **ayrı ve temiz** bir oturumda açılır;
+o oturuma yalnızca şu satır yapıştırılır:
+
+```
+docs/BENCH-PROMPT.md oku ve uygula. Durum: <yalin|eco|normal|premium>
+```
+
+Dördünü aynı oturumda peş peşe koşma — sonrakiler bağlam taşır ve avantajlı başlar,
+ölçüm bozulur.
+
+**Dört durum:**
+
+| Durum | Ne | Neden ölçülüyor |
+|---|---|---|
+| `yalin` | Base **hiç yok** — eklenti kapalı, düz Claude Code | Taban çizgisi. Base'in kattığı fark ancak buna karşı görülür |
+| `eco` | Base açık, eco profili | Token tasarrufu önceliği |
+| `normal` | Base açık, normal profil | Varsayılan |
+| `premium` | Base açık, premium profil | Hız ve derinlik önceliği |
+
+`yalin` en önemlisi: onsuz elde yalnız "base'in üç ayarı" karşılaştırması olur, "base'e
+değer mi" sorusunun cevabı olmaz.
+
+---
+
+## Kurulum
+
+1. `Desktop/Projeler/Bench-Chess960-<durum>` klasörünü aç, git deposu yap.
+
+2. **`yalin` durumu için:** eklentiyi kapat ve doğrula.
+
+   ```
+   claude plugin disable teknesyum@teknesyum
+   ```
+
+   Sonra Claude Code'u yeniden başlat — eklenti ancak o zaman düşer. Yeni oturumda
+   `/premium` komutu **bulunamamalı**; bulunuyorsa eklenti hâlâ yüklü demektir, dur ve
+   söyle. Koşu bitince `claude plugin enable teknesyum@teknesyum` ile geri aç.
+
+   `yalin` oturumunda bu dosyayı okuyacak bir kanca yok; görev metnini oturuma sen
+   taşıyacaksın. Aşağıdaki **Görev** bölümünü olduğu gibi ver, ölçüm kurallarından
+   yalnızca "kabul testlerini göremezsin" ve "eksikleri dürüstçe yaz" maddelerini ekle —
+   ötekiler base'e özgü.
+
+3. **Üç profil için:** profili uygula ve doğrula — `/premium <durum>` ardından
+   `/premium durum`. Yürürlükteki profil ile klasör adı tutmuyorsa **dur ve söyle**;
+   yanlış profille koşulan bench ölçüm değil gürültüdür.
+
+4. `BENCH.md` dosyasına başlangıç zamanını ve (varsa) `/premium durum` çıktısını yaz.
+
+## Görev
+
+Chess960 (Fischer Random) için bir hamle üreteci. Dil TypeScript, dış bağımlılık yok.
+
+- 960 başlangıç dizilişinin hepsi üretilebilmeli, numaralandırma standart olmalı.
+- Bütün kurallar: rok (Chess960 kuralları), en passant, terfi, şah, şahmat, pat.
+- `perft(fen, derinlik)` — verilen konumdan verilen derinlikte yasal hamle sayısını döner.
+- CLI: `node dist/perft.js "<fen>" <derinlik>` tek sayı basar.
+
+Şartname burada bitiyor. Belirsiz kalan her yerde kendi kararını ver ve kararı
+`docs/PLAN.md`'ye yaz — bench'in ölçtüğü şeylerden biri de belirsizlikle baş etmen.
+
+## Ölçüm kuralları
+
+- **Kabul testlerini sen yazmıyorsun ve göremiyorsun.** Kendi testlerini yaz; asıl
+  değerlendirme dışarıdan, yayınlanmış perft referanslarıyla yapılacak.
+- Ön araştırma profilin gerektirdiği kadar yapılır, ama tarama için **en fazla 20 dakika**
+  harca. Süre dolduysa elindekiyle devam et ve bunu `BENCH.md`'ye yaz.
+- Her turun sonundaki `Total Süre` ve `Tahmini Token` satırlarını `BENCH.md`'ye biriktir.
+  **`yalin` durumunda bu satırlar yok** — süreyi saatle, token'ı `/cost` ya da oturum
+  sonundaki kullanım bilgisinden al ve nereden aldığını yaz.
+
+## Bitirme
+
+Commit at ve tek blok halinde ver:
+
+```
+Süre: <toplam>
+Ajan: <kaç tane, hangi modeller>
+Taranan depo: <kaç>
+Kod: <dosya sayısı> dosya, <satır sayısı> satır
+Kendi testlerim: <kaç/kaç>
+Bildiğim eksikler: <dürüst liste>
+```
+
+Eksik bırakmak serbest, eksik olduğunu gizlemek değil. Son satır boş çıkıyorsa
+muhtemelen yeterince bakmamışsındır.
+
+---
+
+## Değerlendirme (koşulardan sonra, üçü de bitince)
+
+Üç klasör hazır olduğunda karşılaştırma tablosu üretilir:
+
+| Ölçüt | Nereden |
+|---|---|
+| Süre | `BENCH.md` toplamı |
+| Token | `BENCH.md` toplamı |
+| Doğruluk | perft referanslarıyla karşılaştırma |
+| Bug yoğunluğu | başarısız perft / bin satır |
+| Verimlilik | doğruluk ÷ token |
+| Ajan maliyeti | açılan ajan sayısı ve modelleri |
+
+Asıl kıyas `yalin` sütununa karşıdır: üç profil birbirinden ne kadar ayrışırsa ayrışsın,
+base'in kattığı değer ancak base'siz koşuyla karşılaştırıldığında görünür. Base bir
+profili yalın koşudan kötü çıkarsa bu da bir bulgudur ve raporda öyle yazılır.
+
+**Tek koşu kanıt değildir.** Aynı profil iki kez koşulduğunda farklı sonuç verir; üç
+profili birer kez koşup çıkan tablo eğilim gösterir, kanıt olmaz. İki tur koşulursa
+ölçüm ciddiye alınabilir.

@@ -22,6 +22,28 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   come from the agent definition's frontmatter — two modes in one file meant one effort for
   both. `advisor` runs at **low effort even on premium**, holds no write tool and declares
   no `memory`, and `planner` is left with the council alone.
+- **The base tells you when a new version is out.** Until now it never did: the only way to
+  find out was to go and look. At session start, once a day, the installed version is read
+  from `installed_plugins.json` and compared against the highest tag on the remote, and a
+  differing pair produces one line — which version is out and what to do about it. The
+  comparison is numeric per component, so `2.10.0` sits above `2.9.0`; comparing the strings
+  puts it below. The marketplace copy is already a git clone, so the question costs one
+  `git ls-remote --tags origin` against it rather than a refresh of the clone — reading only
+  the cached copy would be wrong, since it goes stale until `claude plugin marketplace
+  update` runs.
+- **`/update` asks on demand.** It skips the daily stamp, reports both versions, and when
+  they differ hands over `claude plugin update teknesyum@teknesyum` as one copyable line.
+  The marketplace name is not optional — `claude plugin update teknesyum` reports "not
+  found". It also repeats the thing that is easy to lose: an update resets agent files to
+  the profile defaults, so `premium` and `eco` users need `/premium <profile>` afterwards.
+- **Silence when the check cannot be made.** The call is capped at two seconds and every
+  failure — no network, no git, no repository, unreachable remote — returns empty and prints
+  nothing. Saying "could not check" at every session start is noise, and a user on a plane
+  should not be handed an error; the absence of the line is therefore not a claim that you
+  are up to date. A stamp file under the machine-level trace folder keeps the check to once
+  a day, and a fresh stamp means no network call at all. The stamp is written *before* the
+  call rather than after, so an offline machine pays the timeout once a day instead of once
+  per session start.
 
 ### Changed
 

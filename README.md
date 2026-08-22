@@ -373,6 +373,7 @@ than silently passing.
 | `/rc` | Opens a remote-control session so the project can be driven from a phone |
 | `/rcall` | Does the same for every project in the parent folder |
 | `/rcadvanced` | Remote control with the choices left to you: mode, permissions, capacity |
+| `/update` | Checks whether a newer version is out and hands you the update command |
 | `/help` | What the base does and when, on one screen |
 
 There is no command to set a relay up and none to resume interrupted work — both happen on
@@ -952,15 +953,35 @@ and no change to the dependency files.
 
 ## Updating
 
+A new release announces itself. Once a day, at session start, the installed version is
+compared against the highest tag on the remote and a single line goes out when they differ:
+
 ```
-/plugin marketplace update teknesyum
-```
-```
-/plugin update teknesyum@teknesyum
+Teknesyum ▸ Update ▸ 2.41.0 is out, installed version is 2.40.0 — update with /update
 ```
 
+The check is one `git ls-remote` against the marketplace clone, capped at two seconds, and
+a stamp file keeps it to once per day — a fresh stamp means no network call at all. **When
+there is no network, nothing is printed.** The absence of the line is not a claim that you
+are up to date; `/update` asks on demand and skips the daily stamp.
+
+```
+/update
+```
+
+It prints the installed and the remote version, and when they differ it hands you the
+command to copy:
+
+```
+claude plugin update teknesyum@teknesyum
+```
+
+The marketplace name is required — `claude plugin update teknesyum` reports "not found".
+
 Restart Claude Code afterwards. Your settings in `~/.claude/teknesyum-ui.json` are
-preserved across updates.
+preserved across updates. **An update resets agent files to the profile defaults**, so if
+you run `premium` or `eco`, re-apply it: `/premium durum` reports the mismatch and
+`/premium <profile>` puts it back.
 
 **Upgrading from 1.x:** agent roles, contract fields, settings keys and the trace folder
 were renamed to English in 2.0.0. Projects with open contracts need the frontmatter field

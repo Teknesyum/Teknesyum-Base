@@ -11,7 +11,7 @@ your interface looks like stays yours: the UI standard is off until you ask for 
 
 <a href="https://github.com/sponsors/Teknesyum"><img src="assets/badge-sponsor.svg" alt="Support Teknesyum" height="38"></a>
 &nbsp;
-<a href="LICENSE"><img src="assets/badge-license.svg" alt="License MIT" height="38"></a>
+<a href="LICENSE"><img src="assets/badge-license.svg" alt="License AGPL-3.0" height="38"></a>
 
 </div>
 
@@ -1042,10 +1042,10 @@ working — a project that already has one is still written to, so no trace is l
 
 <div align="center" role="region" aria-label="Support Teknesyum" style="border:2px solid #00f3ff;border-radius:24px;background:#000000;padding:24px">
 
-<a href="https://github.com/sponsors/Teknesyum"><img src="assets/support.svg" alt="Support Teknesyum — built in spare time, free, MIT" width="100%" style="max-width:1200px;height:auto"></a>
+<a href="https://github.com/sponsors/Teknesyum"><img src="assets/support.svg" alt="Support Teknesyum — built in spare time, free, AGPL-3.0" width="100%" style="max-width:1200px;height:auto"></a>
 
 <a href="https://github.com/sponsors/Teknesyum"><img src="assets/badge-sponsor.svg" alt="Support Teknesyum" height="38"></a>
 &nbsp;
-<a href="LICENSE"><img src="assets/badge-license.svg" alt="License MIT" height="38"></a>
+<a href="LICENSE"><img src="assets/badge-license.svg" alt="License AGPL-3.0" height="38"></a>
 
 </div>

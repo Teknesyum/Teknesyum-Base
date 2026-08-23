@@ -9,6 +9,6 @@
   },
   "homepage": "https://github.com/sponsors/Teknesyum",
   "repository": "https://github.com/Teknesyum/teknesyum-base",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "keywords": ["orchestration", "multi-agent", "design-system", "turkish", "neon"]
 }

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" width="1200" height="220" role="img" aria-label="Support Teknesyum — built in spare time, free, MIT">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" width="1200" height="220" role="img" aria-label="Support Teknesyum — built in spare time, free, AGPL-3.0">
   <defs>
     <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#00f3ff"/>
@@ -24,7 +24,7 @@
 
   <g font-family="Segoe UI, system-ui, sans-serif">
     <text x="220" y="86" font-size="42" font-weight="700" fill="#ffffff" letter-spacing="1">Support Teknesyum</text>
-    <text x="222" y="126" font-size="22" fill="#00f3ff" letter-spacing="2">BUILT IN SPARE TIME · FREE · MIT</text>
+    <text x="222" y="126" font-size="22" fill="#00f3ff" letter-spacing="2">BUILT IN SPARE TIME · FREE · AGPL-3.0</text>
     <g font-family="Consolas, 'Cascadia Mono', monospace" font-size="20">
       <text x="222" y="170" fill="#b026ff">github.com/sponsors/Teknesyum</text>
     </g>

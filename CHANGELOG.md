@@ -24,6 +24,33 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - Depo lisansi MIT'ten **AGPL-3.0-or-later**'a gecti. Rozet, destek gorseli ve eklenti
   manifestosu hizalandi; `DCO` 1.1 ve `CONTRIBUTING.md` eklendi.
 
+## [2.51.0] - 2026-08-23
+
+### Changed
+
+- **The turn receipt moved out of the transcript and into the statusline.** Two channels
+  were tried and both are closed. The model channel makes the model regenerate its whole
+  answer — `Stop` runs after the answer is written, so the only way it can add a line is
+  to write a new message. The user channel is rendered as
+  `[hookName, " says: ", content]` with the hook name coming from the event rather than
+  from any setting, so the `Stop says:` prefix cannot be removed by configuration; the
+  user does not want that text on screen. The statusline is our own script and adds no
+  prefix. The split is strict: the hook computes and writes a finished line, the
+  statusline only displays it. Two calculators would print two different numbers.
+- **Neither the receipt nor the finish sound fires while background agents are still
+  running.** `Stop` marks the end of the main turn, not the end of the work — the dot is
+  still blinking and the screen says "N running tasks". `_running.json` already answered
+  this question: `SubagentStart` adds a record, `SubagentStop` removes it, and the
+  statusline has always read it. While it is non-empty the measurement is deferred and
+  the stamp is kept. The stamp is deleted only on the branch that actually prints —
+  deleting it while deferring is what broke the previous deferral mechanism and lost the
+  accumulated time. A record older than two hours counts as dead, so a crashed agent
+  cannot silence the receipt forever. Background shells remain invisible to hooks; that
+  gap is documented rather than guessed at.
+- The window-button contradiction is closed at **42×30 DIP** by the user. `desktop.md`
+  said 52×36px and `SKILL.md` said 42×30, neither had ever been measured, and the agent
+  refused to pick — which was the right call.
+
 ## [2.50.0] - 2026-08-23
 
 ### Changed

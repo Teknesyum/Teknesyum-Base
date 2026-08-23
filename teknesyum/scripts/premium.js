@@ -49,6 +49,7 @@ const GORUS = 'fable';
 
 const DUGME = {
   eco: {
+    autocompact: '100000',
     ask_threshold: 'critical',
     approval_gate: 'none',
     audit: 'critical',
@@ -66,6 +67,7 @@ const DUGME = {
     agent_loop: '5',
   },
   normal: {
+    autocompact: '160000',
     ask_threshold: 'critical',
     approval_gate: 'none',
     audit: 'every-contract',
@@ -83,6 +85,7 @@ const DUGME = {
     agent_loop: '5',
   },
   premium: {
+    autocompact: '250000',
     ask_threshold: 'critical',
     approval_gate: 'none',
     audit: 'every-contract',
@@ -138,6 +141,24 @@ function konfigYaz(profil) {
   fs.writeFileSync(path.join(kok, 'teknesyum.json'), JSON.stringify(c, null, 2) + '\n', 'utf8');
 }
 
+function ayarYolu() {
+  return path.join(konfigKok(), 'settings.json');
+}
+
+function autocompactYaz(profil) {
+  const yol = ayarYolu();
+  const hedef = Number(DUGME[profil].autocompact);
+  let a = {};
+  try {
+    a = JSON.parse(fs.readFileSync(yol, 'utf8'));
+  } catch {}
+  if (a.autoCompactWindow === hedef) return { yol, deger: hedef, degisti: false };
+  a.autoCompactWindow = hedef;
+  fs.mkdirSync(path.dirname(yol), { recursive: true });
+  fs.writeFileSync(yol, JSON.stringify(a, null, 2) + '\n', 'utf8');
+  return { yol, deger: hedef, degisti: true };
+}
+
 function bayatSil(dizin) {
   let liste = [];
   try {
@@ -172,7 +193,7 @@ function ajanYolu(kok, ad) {
 
 const TABAN = 'normal';
 
-const KANCA_DUGME = ['agent_stall', 'agent_loop'];
+const KANCA_DUGME = ['agent_stall', 'agent_loop', 'autocompact'];
 
 function sapmalar(profil) {
   const t = DUGME[TABAN];
@@ -209,10 +230,11 @@ function sapmaMetni(profil) {
   return sapmaSatiri(profil) || 'yok — taban profil';
 }
 
-function uygula(profil) {
-  const sid = oturumKimligi();
+function uygula(profil, genel) {
+  const sid = genel ? '' : oturumKimligi();
   const kayit = sid ? oturumYaz(sid, profil) : path.join(konfigKok(), 'teknesyum.json');
   if (!sid) konfigYaz(profil);
+  const ac = sid ? null : autocompactYaz(profil);
   const p = PROFIL[profil];
   const d = DUGME[profil];
   process.stdout.write(
@@ -237,7 +259,28 @@ function uygula(profil) {
         ? ['/save ham transkripti gzipli yazar (ham.jsonl.gz), /loadall tek satıra iner']
         : []),
       'kayıt: ' + (sid ? 'oturum' : 'makine') + ' · ' + kayit,
+      ...(ac
+        ? ['autoCompactWindow: ' + ac.deger + (ac.degisti ? ' yazıldı' : ' zaten böyleydi')]
+        : ['autoCompactWindow: dokunulmadı — oturum profili makine ayarını taşımaz']),
     ].join('\n') + '\n'
+  );
+}
+
+function acDurum(beklenen) {
+  const hedef = Number(DUGME[beklenen].autocompact);
+  let simdi = null;
+  try {
+    simdi = JSON.parse(fs.readFileSync(ayarYolu(), 'utf8')).autoCompactWindow;
+  } catch {}
+  if (typeof simdi !== 'number') return 'settings.json yazılmamış · profil önerisi ' + hedef;
+  if (simdi === hedef) return simdi + ' · profille uyumlu';
+  return (
+    simdi +
+    ' · ' +
+    beklenen +
+    ' profili ' +
+    hedef +
+    ' ister — makine geneli, oturum profili taşımaz; /autocompact ile bağla'
   );
 }
 
@@ -267,6 +310,7 @@ function durum() {
       (d.plan_council === 'on' ? KONSEY.join(' + ') : 'off') +
       ' · ikinci görüş: ' +
       (d.second_opinion === 'on' ? p.advisor.model : 'off'),
+    'sıkıştırma penceresi: ' + acDurum(beklenen),
     ...Object.keys(simdi).map(
       (a) =>
         '  ' +
@@ -292,13 +336,17 @@ function yardim() {
       '  node premium.js normal   sonnet · 2 paralel ajan · 10 depo · her sözleşme denetlenir',
       '  node premium.js premium  opus/xhigh · 20 paralel ajan · 50 depo · her sözleşme denetlenir',
       '  node premium.js durum    hangi profilin yürürlükte olduğunu söyler',
+      '  node premium.js <profil> --genel   oturumu atlar, makine varsayılanını yazar',
+      '  node premium.js autocompact [sayı] pencereyi profilden türetir ya da elle yazar',
       '',
       'Hiçbiri depo dosyası yazmaz. Ajan frontmatter’ı ve relay `SETTINGS.md` makine',
       'tabanıdır ve `' + TABAN + '` profilin değerlerinde donar; profilin tabandan sapan düğmeleri',
       'oturumun kanca enjeksiyonuyla gider. Profil kaydı oturuma iner: oturum kimliği varsa',
       '~/.claude/teknesyum/oturumlar/<oturum>.json yazılır ve ~/.claude/teknesyum.json',
-      'değişmez; kimlik yoksa makine varsayılanı yazılır. Eski çağrılar durur: `ac` premium,',
-      '`kapat` normal demektir.',
+      'değişmez; kimlik yoksa makine varsayılanı yazılır. Yani makine varsayılanı premium',
+      'olsa da tek bir sohbette `eco` çalıştırmak serbesttir; sohbet kapanınca varsayılan',
+      'geri gelir. Varsayılanın kendisini bir oturumun içinden değiştirmek için `--genel`',
+      'gerekir. Eski çağrılar durur: `ac` premium, `kapat` normal demektir.',
       '',
       'eco — token kısıtken. Her rol ' +
         PROFIL.eco.builder.model +
@@ -317,20 +365,63 @@ function yardim() {
         GORUS +
         ' modelindeki `advisor` ajanı üç başlıklı kısa bir görüş verir; karar T0’da kalır.',
       '',
+      'Tek istisna `autoCompactWindow`: o `settings.json` dosyasına yazılır, çünkü koşum',
+      'ortamı onu oturum açılışında okur. Bu yüzden yalnız makine yazımında (`--genel`',
+      'ya da oturumsuz çağrı) güncellenir; oturum içi profil geçişi ona dokunmaz.',
+      '',
       'Dosya yazılmadığı için eklenti güncellemesiyle profil arasında uyuşmazlık da oluşmaz.',
     ].join('\n') + '\n'
   );
 }
 
+function pozisyonel(n) {
+  const g = process.argv.slice(3);
+  const c = [];
+  for (let i = 0; i < g.length; i++) {
+    if (g[i].startsWith('--')) {
+      if (g[i + 1] && !g[i + 1].startsWith('--')) i++;
+      continue;
+    }
+    c.push(g[i]);
+  }
+  return c[n];
+}
+
+function autocompact() {
+  const istek = pozisyonel(0);
+  if (istek === undefined) {
+    const c = konfigOku();
+    const profil = konfigProfili(c);
+    const r = autocompactYaz(profil);
+    process.stdout.write(
+      'profil: ' + profil + ' (makine)\nautoCompactWindow: ' + r.deger +
+        (r.degisti ? ' yazıldı' : ' zaten böyleydi') + '\n' + r.yol + '\n'
+    );
+    return;
+  }
+  if (!/^\d+$/.test(istek)) dur('autocompact bir sayı ister: node premium.js autocompact 200000');
+  const yol = ayarYolu();
+  let a = {};
+  try {
+    a = JSON.parse(fs.readFileSync(yol, 'utf8'));
+  } catch {}
+  a.autoCompactWindow = Number(istek);
+  fs.mkdirSync(path.dirname(yol), { recursive: true });
+  fs.writeFileSync(yol, JSON.stringify(a, null, 2) + '\n', 'utf8');
+  process.stdout.write('autoCompactWindow: ' + istek + ' yazıldı (elle)\n' + yol + '\n');
+}
+
 function main() {
   const komut = process.argv[2];
+  const genel = process.argv.includes('--genel') || process.argv.includes('--global');
   const secilen = TAKMA[komut] || (PROFILLER.includes(komut) ? komut : '');
   if (!komut || komut === '--help' || komut === '-h' || komut === 'yardim') yardim();
-  else if (secilen) uygula(secilen);
+  else if (komut === 'autocompact') autocompact();
+  else if (secilen) uygula(secilen, genel);
   else if (komut === 'durum' || komut === 'status') durum();
   else dur('bilinmeyen komut: ' + komut);
 }
 
-module.exports = { PROFIL, DUGME, TABAN, KANCA_DUGME, sapmalar, sapmaSatiri };
+module.exports = { PROFIL, DUGME, TABAN, KANCA_DUGME, sapmalar, sapmaSatiri, autocompactYaz };
 
 if (require.main === module) main();

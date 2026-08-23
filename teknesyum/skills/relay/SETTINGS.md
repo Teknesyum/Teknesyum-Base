@@ -24,6 +24,7 @@ second_opinion     : off            # off | on — karar düğümünde fable kı
 research_repos     : 10             # ön araştırmada taranacak en az depo sayısı — eco 1 · normal 10 · premium 50
 agent_stall        : 10             # kaç dakika sessiz kalan ajan bildirilir
 agent_loop         : 5              # aynı eylem kaç kez üst üste tekrarlarsa döngü sayılır
+autocompact        : 160000         # settings.json → autoCompactWindow — eco 100000 · premium 250000
 ```
 
 ## Anlamları
@@ -118,6 +119,16 @@ gelmemişse ana oturuma tek satır bildirim çıkar ve `live/_sorun.log` dosyas�
 Kanca ajanı durduramaz — durdurma kararı ana oturumdadır, `TaskStop` aracıyla verilir.
 Statusline'ın kayıp ajan eşiği de 10 dakikadır; ikisini birlikte değiştir.
 
+**autocompact** — `settings.json` içindeki `autoCompactWindow`, yani otomatik sıkıştırma
+eşiği. Eşik tek başına bir konfor ayarı değil maliyet ayarıdır: pencere büyüdükçe her
+istek daha çok bağlam taşır, o yüzden profile bağlıdır — `eco` seçen kullanıcı ucuz istek
+istemiştir ve 250000'lik pencere o kararı sessizce iptal ederdi. Modele hiç yazılmaz;
+`agent_stall` gibi bunu da kanca değil koşum ortamı okur. **Makine genelidir:** oturuma
+inen profil (`/premium eco`) ajan modellerini değiştirir ama bu pencereyi değiştirmez,
+çünkü koşum ortamı değeri oturum açılışında okur. Pencereyi gerçekten oynatmak makine
+kararıdır — `/premium <profil> --genel` ya da `/autocompact`. `/premium durum` yürürlükteki
+değeri ve profille uyuşup uyuşmadığını tek satırda söyler.
+
 **agent_loop** — ajan ilerliyor ama aynı yerde: `last_action` bu sayı kadar üst üste aynı
 kalır ve ajanın transkript dosyası bu sırada büyümeye devam ederse döngü sayılır. Büyüme
 şartı takılmayı döngüden ayırır: transkript büyümüyorsa ajan dönmüyor, susuyor demektir —
@@ -171,6 +182,7 @@ edilemez**; premium farkını `model` taşır, efor ikinci derece kaldıraçtır
 | `research_repos` | 1 | 10 | 50 |
 | `agent_stall` | 10 | 10 | 10 |
 | `agent_loop` | 5 | 5 | 5 |
+| `autocompact` | 100000 | 160000 | 250000 |
 
 **normal** varsayılandır ve eski `standart` profilin aynısıdır — yalnız adı değişti.
 `/premium kapat` hâlâ buraya götürür.

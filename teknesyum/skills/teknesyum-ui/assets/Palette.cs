@@ -15,6 +15,8 @@ public static class Palette
 
     public static readonly Color Surface    = ColorTranslator.FromHtml("#08090A");
     public static readonly Color AppBg      = ColorTranslator.FromHtml("#000000");
+    public static readonly Color AppBgFrom  = ColorTranslator.FromHtml("#000000");
+    public static readonly Color AppBgTo    = ColorTranslator.FromHtml("#08090A");
 
     public static readonly Color BorderDefault    = Color.FromArgb(0x80, 0x00, 0xF3, 0xFF);
     public static readonly Color BorderStrong     = Color.FromArgb(0x99, 0x00, 0xF3, 0xFF);

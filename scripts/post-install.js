@@ -77,20 +77,31 @@ is full, don't append; delete the weakest line or merge two. Added with \`/rule\
     }
   }
 
-  // Otomatik sıkıştırma penceresi. Varsayılan eşik uzun oturumlarda erken devreye girip
-  // bağlamı kesiyor. TEKNESYUM_AUTOCOMPACT ile değiştirilir, 'kapali' ile hiç dokunulmaz.
-  // Kullanıcının kendi değeri varsa üzerine YAZILMAZ — bu bir tercih, bir eksiklik değil.
-  const acIstek = (process.env.TEKNESYUM_AUTOCOMPACT || '250000').toLowerCase();
+  const AUTOCOMPACT = { eco: 100000, normal: 160000, premium: 250000 };
+  let profil = '';
+  try {
+    const tk = JSON.parse(fs.readFileSync(path.join(HOME, 'teknesyum.json'), 'utf8'));
+    if (AUTOCOMPACT[tk.profil]) profil = tk.profil;
+  } catch {}
+  const acIstek = (process.env.TEKNESYUM_AUTOCOMPACT || '').toLowerCase();
   if (acIstek === 'kapali' || acIstek === 'off') {
     atlanan.push('autoCompactWindow atlandı (TEKNESYUM_AUTOCOMPACT=kapali)');
   } else if (typeof s.autoCompactWindow === 'number') {
     atlanan.push('autoCompactWindow zaten ' + s.autoCompactWindow + ', dokunulmadı');
-  } else if (!/^\d+$/.test(acIstek)) {
+  } else if (acIstek && !/^\d+$/.test(acIstek)) {
     atlanan.push('TEKNESYUM_AUTOCOMPACT sayı değil (' + acIstek + '), autoCompactWindow atlandı');
-  } else {
+  } else if (acIstek) {
     s.autoCompactWindow = Number(acIstek);
     sDegisti = true;
-    yapilan.push('autoCompactWindow = ' + acIstek + ' yazıldı (/autocompact <sayi> ile değişir)');
+    yapilan.push('autoCompactWindow = ' + acIstek + ' yazıldı (TEKNESYUM_AUTOCOMPACT)');
+  } else if (profil) {
+    s.autoCompactWindow = AUTOCOMPACT[profil];
+    sDegisti = true;
+    yapilan.push(
+      'autoCompactWindow = ' + AUTOCOMPACT[profil] + ' yazıldı (' + profil + ' profilinden)'
+    );
+  } else {
+    atlanan.push('autoCompactWindow bekliyor — /teknesyum:setup global profili sorup türetecek');
   }
 
   if (sDegisti) fs.writeFileSync(sp, JSON.stringify(s, null, 2));
@@ -114,10 +125,10 @@ is full, don't append; delete the weakest line or merge two. Added with \`/rule\
   // 4. opsiyonel bağımlılıklar
   const { spawnSync } = require('child_process');
   const varMi = (komut) => {
-    const r = spawnSync(komut, ['--version'], {
-      stdio: 'ignore',
-      shell: process.platform === 'win32',
-    });
+    const r =
+      process.platform === 'win32'
+        ? spawnSync(komut + ' --version', { stdio: 'ignore', shell: true })
+        : spawnSync(komut, ['--version'], { stdio: 'ignore' });
     return !r.error && r.status === 0;
   };
   const eksik = [];

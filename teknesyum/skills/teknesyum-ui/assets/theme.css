@@ -20,6 +20,22 @@
   --tk-purple: #b026ff;
   --tk-success: #34d399;
   --tk-surface: #08090a;
+  --tk-bg-from: #000000;
+  --tk-bg-to: #08090a;
+  --tk-bg: linear-gradient(
+    160deg,
+    #000000 0%,
+    #010101 10%,
+    #020202 20%,
+    #020303 30%,
+    #030404 40%,
+    #040505 50%,
+    #050506 60%,
+    #060607 70%,
+    #060708 80%,
+    #070809 90%,
+    #08090a 100%
+  );
   --tk-glass: rgba(10, 10, 15, 0.85);
 
   --tk-pink-text: #ff54eb;
@@ -54,9 +70,11 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
   font-family: var(--font-sans, 'Segoe UI', system-ui, sans-serif);
   color: var(--tk-text);
-  background: #000000;
+  background: var(--tk-bg);
+  background-attachment: fixed;
 }
 
 /* --- tipografi --- */

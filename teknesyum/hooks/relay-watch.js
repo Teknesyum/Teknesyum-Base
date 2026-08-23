@@ -66,8 +66,8 @@ function run(j) {
   }
   if (j.hook_event_name === 'Stop') {
     if (kap) kapsayiciTopla(kap, kapDurum);
-    paketDenetle(j, root);
-    return turBitir(j, root);
+    const kapanis = paketDenetle(j, root);
+    return turBitir(j, root, kapanis);
   }
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
   if (j.hook_event_name === 'SessionEnd') {
@@ -575,14 +575,26 @@ function turIzi(j, root) {
 // yok. O boşluk kapatılamıyor; süre bu yüzden `~` ile yaklaşık işaretlenir.
 const DURAK_ESIGI = 120000;
 
+// ÖLÇÜLDÜ: özet her `Stop`'ta basılıyordu, ama bir kullanıcı isteği tek `Stop`'a
+// sığmıyor — model soru sorunca ya da kapı turu bloklayınca aynı istek üç dört tura
+// bölünüyor ve her parçası kendi ölçü satırını yazıyordu. Kullanıcı istediği şey tek
+// bir toplam: ölçü zincir boyunca birikir, yalnız istek gerçekten kapanınca basılır.
 function turBasla(j, root) {
   const f = turYolu(j);
   const now = Date.now();
+  const onceki = read(f);
+  const zincir = onceki && onceki.bekleyen;
   try {
     fs.mkdirSync(path.dirname(f), { recursive: true });
     fs.writeFileSync(
       f,
-      JSON.stringify({ t: now, son: now, durak: 0, boy: toplamTranskript(j, turIzi(j, root)) })
+      JSON.stringify({
+        t: now,
+        son: now,
+        durak: 0,
+        sn0: zincir ? onceki.sn0 || 0 : 0,
+        boy: zincir ? onceki.boy || 0 : toplamTranskript(j, turIzi(j, root)),
+      })
     );
   } catch {}
 }
@@ -608,16 +620,22 @@ function turDamga(j) {
   yaz(f, d);
 }
 
-function turBitir(j, root) {
+function turBitir(j, root, kapanis) {
   const f = turYolu(j);
   const d = read(f);
   if (!d || !d.t) return;
+  const now = Date.now();
+  const sn =
+    (d.sn0 || 0) + Math.max(0, Math.round((now - d.t - durakToplami(d, now, null)) / 1000));
+  const artis = Math.max(0, toplamTranskript(j, turIzi(j, root)) - (d.boy || 0));
+  const k = kapanis || { govde: '', engel: '' };
+  if (k.engel || SENDEN_ALAN.test(k.govde || '')) {
+    yaz(f, { t: now, son: now, durak: 0, sn0: sn, boy: d.boy || 0, bekleyen: 1 });
+    return;
+  }
   try {
     fs.unlinkSync(f);
   } catch {}
-  const now = Date.now();
-  const sn = Math.max(0, Math.round((now - d.t - durakToplami(d, now, null)) / 1000));
-  const artis = Math.max(0, toplamTranskript(j, turIzi(j, root)) - (d.boy || 0));
   turOzetiBas(ceviri('turOzeti', sureMetni(sn), Math.round(artis / 4)));
 }
 
@@ -801,11 +819,11 @@ const KOPYA_EMRI =
 const TAVAN = 25;
 
 function paketDenetle(j, root) {
-  if (j.stop_hook_active) return;
-  const govde = sonMesaj(j.transcript_path);
-  if (!govde) return;
+  const govde = j.stop_hook_active ? '' : sonMesaj(j.transcript_path);
+  if (!govde) return { govde: '', engel: '' };
   const engel = devirIhlali(govde) || donusEksik(root, govde) || sendenEksik(root, govde);
   if (engel) ciktiEkle({ decision: 'block', reason: engel });
+  return { govde, engel: engel || '' };
 }
 
 // ÖLÇÜLDÜ: tavan vardı, taban yoktu. Uzun bloğu engelliyorduk ama işini bitiren işçi

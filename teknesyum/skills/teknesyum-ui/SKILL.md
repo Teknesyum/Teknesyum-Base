@@ -115,6 +115,19 @@ imleç, tooltip) — renk körü kullanıcı griyi göremez.
 1.38:1 verir — okunmaz. `tk-btn-primary` ve `tk-btn-danger` `color: #000` kullanır.
 Kural asset'te uygulanıyordu ama burada yazılı değildi.
 
+**Zemin düz renk değil, yumuşak geçişli bir gradienttir.** Uygulamanın tamamını kaplayan
+tek bir gradient bulunur; panel ve kutular onun üstüne oturur. Düz `#000000` dolgu eksik
+teslimdir.
+
+- Duraklar **en az 11** ve birbirine çok yakın — iki duraklı gradient koyu temada bantlaşır.
+- Uçlar `bg` `#000000` ile `surface` `#08090a` arasındadır; aradaki fark 1.06:1. Gradient
+  bir **doku**dur, geçiş değil: hiyerarşi kurmaz, hiçbir bilgiyi taşımaz.
+- Tek kesintisiz yüzeydir. Üst şeride bir, içeriğe başka bir gradient verip dikiş bırakma.
+- **Statiktir.** Kayan, nefes alan, döngüye giren gradient §5.4'te yasaktır; buradaki
+  gradient hareket etmez.
+- Token `--tk-bg`. WPF'te enterpolasyon `ScRgbLinearInterpolation`
+  (`references/layout.md` §5.6).
+
 **Beyaz zemin kullanma.** Beyaz burada yazının rengidir, zeminin değil. Sızdığı yerler
 bellidir: `WebView`/`iframe` gövdesi, PDF ve rapor önizlemesi, boş `DataGridView`, yazdırma
 görünümü, yüklenmemiş `<img>`, üçüncü parti denetim varsayılanı, `MessageBox`. Hepsine
@@ -184,16 +197,22 @@ gövde **normal ağırlıkta ve beyaz**. Bir bilgiyi göstermeye değer bulduysa
 kadar büyük ve parlak yaz; değmiyorsa ekrandan kaldır. Küçük punto, silinmemiş içeriğin
 bahanesidir.
 
-**Büyük harf kullanımı — ilki büyük, gerisi küçük.** Görünen her metin bu kalıba uyar:
-düğme, sekme, etiket, menü, panel başlığı, bölüm başlığı, tooltip, hata mesajı.
-`Dosya seç`, `Ayarlar`, `Çıktı klasörü` — `DOSYA SEÇ` veya `Dosya Seç` değil.
+**Büyük harf kullanımı — her kelimenin ilk harfi büyük.** Görünen her etiket bu kalıba
+uyar: düğme, sekme, etiket, menü, panel başlığı, bölüm başlığı.
+`Dosya Seç`, `Ayarlar`, `Çıktı Klasörü` — `DOSYA SEÇ` da değil `Dosya seç` de değil.
 
 - **UPPERCASE yasak.** Bütünüyle büyük harf ne başlıkta ne etikette kullanılır; okuma
   hızını düşürür, Türkçe'de İ/I ayrımını bozar ve neon renkle birleşince bağırır.
   Etiketi ayıran şey harf aralığı, kalınlık ve renktir — büyütmek değil.
-- **Her Kelimenin İlk Harfi Büyük (Title Case) da yazılmaz.** İngilizce'nin alışkanlığıdır,
-  Türkçe'de yanlış görünür.
-- İstisna yalnızca **özel adlar ve kısaltmalar**: `MP4`, `GPU`, `Teknesyum`, `Windows`.
+- **Bağlaçlar küçük kalır:** `ve`, `veya`, `ile`, `ki`, `da`, `de`. Etiketin ilk kelimesi
+  olduklarında büyürler.
+- **Türkçe büyütme haritası zorunlu:** `i` → `İ`, `ı` → `I`. Kültüre duyarsız
+  `toUpperCase()` / `ToUpper()` `i`'yi `I` yapar ve `İşlem` yerine `Islem` yazar. JS'te
+  `toLocaleUpperCase('tr')`, .NET'te `CultureInfo("tr-TR")` kullanılır.
+- **Tam cümleler bu kuralın dışındadır.** Tooltip, hata mesajı, boş durum açıklaması ve
+  onay metni cümledir: yalnız ilk harfi büyük yazılır. Kural etiketler içindir, cümleler
+  başlık gibi büyütülmez.
+- İstisna **özel adlar ve kısaltmalar**: `MP4`, `GPU`, `Teknesyum`, `Windows`.
   Cümle ortasında da büyük kalırlar.
 - Aynı kural depoya, klasöre ve gösterilen dosya adına da uygulanır (bkz. relay §2).
 
@@ -402,7 +421,11 @@ metinden **6 DIP** uzakta `?`. Tooltip ayrıntılı ve **iki dilli**. Hover'da y
 **Pencere düğmeleri** — 42×30 DIP. Küçült simgesi 10×2 DIP düz çizgi. Soldan sağa sıra:
 `Destek`, `Teknesyum`, küçült, büyüt, kapat (§4).
 
-## 5.4 Hareket — ölçülü, iptal edilebilir, kapatılabilir
+## 5.4 Hareket — modern, animasyonlu, iptal edilebilir
+
+**Duruş: bu tema animasyonlu bir temadır.** Hedef modern ve hareketli bir arayüzdür;
+durgun teslim varsayılan değil, eksiktir. Aşağıdaki tavan animasyonun **nereye
+konmayacağını** söyler — ne kadar az olacağını değil.
 
 Bu temada animasyon **süs değil geri bildirimdir**: kullanıcıya bir şeyin değiştiğini,
 nereden nereye gittiğini ve sistemin çalıştığını söyler. Söyleyeceği bir şey yoksa animasyon
@@ -674,7 +697,15 @@ sonra teslim et.
 
 ## 8.2 Doğrulama — çalışan uygulamaya bakmadan "tamam" yok
 
-Derlemenin geçmesi arayüzün doğru olduğunu göstermez. Arayüz işi **gözle** doğrulanır:
+Derlemenin geçmesi arayüzün doğru olduğunu göstermez. Arayüz işi **gözle** doğrulanır.
+
+**Ama gözle doğrulama kullanıcıya yük bindirir.** Uygulamayı açmak ekranı devralır ve
+kullanıcının işini böler. Bu yüzden seyrek ve **toplu** yapılır: tek tek her değişiklikten
+sonra değil, bir dalga bittiğinde bir kez açılır ve aşağıdaki listenin tamamı o tek
+geçişte gezilir. Ara adımlar statik denetimle (`/scan ui`, `uicheckup`, testler)
+doğrulanır. Kullanıcı "aç ve göster" derse elbette hemen açılır.
+
+Toplu geçişte sırayla:
 
 1. Derle ve testleri koştur.
 2. Uygulamayı **gerçekten aç** ve ekran görüntüsü al.

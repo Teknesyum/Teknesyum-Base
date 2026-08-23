@@ -22,7 +22,8 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 | Arayüz standardı | `~/.claude/teknesyum-ui.json` var mı, `kapali` ne | sor |
 | Debug izi | `~/.claude/teknesyum.json` → `debug` | sorma, kapalı bırak |
 | Kural dosyası | `~/.claude/RULES.md` + `CLAUDE.md`'de `@RULES.md` | oluştur |
-| Sıkıştırma penceresi | `settings.json` → `autoCompactWindow` | yoksa `250000` |
+| Global profil | `~/.claude/teknesyum.json` → `profil` | sor, yaz |
+| Sıkıştırma penceresi | `settings.json` → `autoCompactWindow` | yoksa profilden türet |
 | Dil sunucusu | `typescript-language-server --version` | kurulum komutunu bildir |
 | TypeScript sürümü | `npm ls -g --depth=0` → **5.x olmalı** | 7.x ise uyar |
 
@@ -56,12 +57,33 @@ gerektireni sor — hepsini tek mesajda, numaralı.
    - Don't leave work half done and don't narrow the scope on your own.
    ```
 
-3. **`autoCompactWindow`** anahtarı yoksa `250000` ekle. **Varsa dokunma** — kullanıcının
-   tercihidir. Değiştirmek için `/autocompact <sayı>`.
+3. **`autoCompactWindow`.** Kendi başına bir sayı seçme — değer **global profilden**
+   türer. Profil sorusu (aşağıda) cevaplandıktan sonra:
+
+   ```
+   node "<eklenti>/scripts/premium.js" autocompact
+   ```
+
+   Anahtar **zaten varsa dokunma** — o kullanıcının tercihidir, eksiklik değil. Profilden
+   bağımsız tek bir sayı istenirse `/autocompact <sayı>`.
 
 ## Sorulacaklar — yalnızca bunlar
 
 Karar kullanıcınındır, varsayma. Hepsini tek mesajda, numaralı sor:
+
+- **Global profil.** `~/.claude/teknesyum.json` içinde `profil` yoksa sor: "Base hangi
+  profilde çalışsın?" Bu tek cevap hem ajan modellerini hem sıkıştırma penceresini belirler:
+
+  | Profil | Ajanlar | `autoCompactWindow` |
+  |---|---|---|
+  | `eco` | haiku · 1 paralel ajan · denetim yalnız kritik sözleşmede | `100000` |
+  | `normal` | sonnet · 2 paralel ajan · her sözleşme denetlenir | `160000` |
+  | `premium` | opus/xhigh · 20 paralel ajan · konsey + ikinci görüş | `250000` |
+
+  **Varsayılan `normal`.** Cevabı `node "<eklenti>/scripts/premium.js" <profil> --genel`
+  ile yaz — komut hem `teknesyum.json`'a profili hem `settings.json`'a pencereyi yazar.
+  Bu **makine varsayılanıdır**, hapis değil: tek bir sohbette `/premium eco` demek
+  varsayılanı bozmaz, yalnız o oturuma iner. Alan varsa bir daha sorma.
 
 - **Dil.** `~/.claude/teknesyum.json` içinde `dil` yoksa sor: "Teknesyum hangi dilde
   çalışsın?" İki seçenek var, başkasını yazma:

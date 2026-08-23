@@ -141,7 +141,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'ekran.md,help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
+    'autocompact.md,ekran.md,help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
   );
   const yuru = (d) =>
     fs
@@ -927,6 +927,7 @@ ol('open durumundan active serbest', () => {
 
 ol('duraklama bildiren mesaj senden bolumu olmadan kapanmaz', () => {
   const { p } = proje(0, 0);
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
@@ -936,7 +937,7 @@ ol('duraklama bildiren mesaj senden bolumu olmadan kapanmaz', () => {
     ...ort(p),
     hook_event_name: 'Stop',
     transcript_path: transcript(m),
-  });
+  }, ek);
   const o = JSON.parse(r.out);
   esit(o.decision, 'block');
   icerir(o.reason, 'Senden istediklerim');
@@ -944,6 +945,7 @@ ol('duraklama bildiren mesaj senden bolumu olmadan kapanmaz', () => {
 
 ol('senden bolumu varsa duraklama serbest', () => {
   const { p } = proje(0, 0);
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
@@ -954,12 +956,13 @@ ol('senden bolumu varsa duraklama serbest', () => {
     ...ort(p),
     hook_event_name: 'Stop',
     transcript_path: transcript(m),
-  });
+  }, ek);
   esit(r.out, '', 'gecerli duraklama engellendi');
 });
 
 ol('duraklama yoksa senden bolumu istenmez', () => {
   const { p } = proje(0, 0);
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
@@ -968,7 +971,7 @@ ol('duraklama yoksa senden bolumu istenmez', () => {
     ...ort(p),
     hook_event_name: 'Stop',
     transcript_path: transcript('T3 uzerinde calisiyorum, band olcumu suruyor.'),
-  });
+  }, ek);
   esit(r.out, '', 'gereksiz engel');
 });
 
@@ -2588,7 +2591,8 @@ function premiumKopya() {
 }
 
 function premiumCalistir(komut, p, cfg, ek) {
-  const r = spawnSync(process.execPath, [PREMIUM, komut, '--kok', p], {
+  const argv = Array.isArray(komut) ? komut : [komut];
+  const r = spawnSync(process.execPath, [PREMIUM, ...argv, '--kok', p], {
     encoding: 'utf8',
     env: {
       ...process.env,
@@ -2658,6 +2662,74 @@ ol('ajan dosyalarinda model alani yok, efor ve tur normal tabaninda', () => {
   icerir(s, 'makine varsayılanıdır');
   for (const [anahtar, deger] of Object.entries(premiumTablo.DUGME.normal))
     icerir(s, anahtar, 'SETTINGS.md ' + anahtar + ' ' + deger);
+});
+
+ol('autocompact tablosu premium.js ile post-install.js arasinda ayni', () => {
+  const kaynak = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'post-install.js'), 'utf8');
+  const m = kaynak.match(/const AUTOCOMPACT = (\{[^}]*\})/);
+  if (!m) throw new Error('post-install.js AUTOCOMPACT tablosunu kaybetmis');
+  const kurulum = JSON.parse(m[1].replace(/([a-z]+):/g, '"$1":'));
+  for (const profil of ['eco', 'normal', 'premium'])
+    esit(
+      String(kurulum[profil]),
+      premiumTablo.DUGME[profil].autocompact,
+      profil + ' penceresi iki tabloda ayristi'
+    );
+});
+
+ol('autocompact modele hic yazilmaz, sapma satirinda gorunmez', () => {
+  esit(premiumTablo.sapmalar('eco').autocompact, '100000', 'sapma tablosunda olmali');
+  if (/autocompact/.test(premiumTablo.sapmaSatiri('eco')))
+    throw new Error('kanca dugmesi modele enjekte ediliyor: ' + premiumTablo.sapmaSatiri('eco'));
+  if (/autocompact/.test(premiumTablo.sapmaSatiri('premium')))
+    throw new Error('premium sapma satirinda autocompact var');
+});
+
+ol('--genel makine varsayilanini ve pencereyi birlikte yazar', () => {
+  const { p, cfg } = premiumKopya();
+  const r = premiumCalistir(['eco', '--genel'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'oturum-9' });
+  esit(r.kod, 0, r.err);
+  icerir(r.out, 'kayıt: makine');
+  icerir(r.out, 'autoCompactWindow: 100000');
+  const k = JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8'));
+  esit(k.profil, 'eco');
+  esit(JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow, 100000);
+});
+
+ol('oturum profili pencereyi tasimaz, durum bunu soyler', () => {
+  const { p, cfg } = premiumKopya();
+  premiumCalistir(['premium', '--genel'], p, cfg);
+  esit(
+    JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
+    250000
+  );
+  const ek = { CLAUDE_CODE_SESSION_ID: 'oturum-7' };
+  const r = premiumCalistir('eco', p, cfg, ek);
+  icerir(r.out, 'kayıt: oturum');
+  icerir(r.out, 'oturum profili makine ayarını taşımaz');
+  esit(
+    JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
+    250000,
+    'oturum profili makine penceresini ezmis'
+  );
+  const d = premiumCalistir('durum', p, cfg, ek);
+  icerir(d.out, 'yürürlükteki profil: eco (kaynak: oturum)');
+  icerir(d.out, 'sıkıştırma penceresi: 250000 · eco profili 100000 ister');
+});
+
+ol('autocompact komutu profilden turetir, sayi verilince elle yazar', () => {
+  const { p, cfg } = premiumKopya();
+  premiumCalistir(['normal', '--genel'], p, cfg);
+  const t = premiumCalistir('autocompact', p, cfg);
+  icerir(t.out, 'autoCompactWindow: 160000');
+  const e = premiumCalistir(['autocompact', '432000'], p, cfg);
+  esit(e.kod, 0, e.err);
+  icerir(e.out, 'yazıldı (elle)');
+  esit(
+    JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
+    432000
+  );
+  esit(premiumCalistir(['autocompact', 'bes'], p, cfg).kod, 1, 'sayi olmayan deger kabul edildi');
 });
 
 ol('sapma tablosu yalniz tabandan ayrilan dugmeleri verir', () => {
@@ -4257,6 +4329,7 @@ function turProje() {
 // Tur özeti `systemMessage` ile basılmıyor: `Stop says:` öneki oluşmasın diye satır
 // `additionalContext` ile modele veriliyor.
 function turSatiri(r) {
+  if (!r.out) return '';
   const o = JSON.parse(r.out);
   return (o.hookSpecificOutput || {}).additionalContext || '';
 }
@@ -4297,7 +4370,7 @@ ol('damgasiz Stop tur ozeti basmaz', () => {
   esit(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out, '', 'damgasiz ozet cikti');
 });
 
-ol('tur ozeti Stop engelini bozmaz, tek JSON kalir', () => {
+ol('engellenen tur ozet basmaz, olcu bir sonraki kapanisa birikir', () => {
   const { p, ek } = turProje();
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T0.md'),
@@ -4316,7 +4389,40 @@ ol('tur ozeti Stop engelini bozmaz, tek JSON kalir', () => {
   const o = JSON.parse(r.out);
   esit(o.decision, 'block');
   icerir(o.reason, 'dönüş bloğu');
-  icerir(o.hookSpecificOutput.additionalContext, 'Total Süre: ');
+  esit(o.hookSpecificOutput, undefined, 'engellenen tur ozet basmis');
+  const damga = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'live', 'oturum-1.tur');
+  esit(JSON.parse(fs.readFileSync(damga, 'utf8')).bekleyen, 1, 'damga silinmis');
+  const kapanis = calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'Stop', stop_hook_active: true },
+    ek
+  );
+  icerir(turSatiri(kapanis), 'Total Süre: ');
+  esit(fs.existsSync(damga), false, 'kapanista damga silinmedi');
+});
+
+ol('kullanicidan cevap beklenen tur tek ozet basar, sure birikir', () => {
+  const { p, ek } = turProje();
+  const damga = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'live', 'oturum-1.tur');
+  const soru = transcript('Iki yol var.\n\n## Senden istediklerim\n\n1. Hangisi?');
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'basla' }, ek);
+  const d1 = JSON.parse(fs.readFileSync(damga, 'utf8'));
+  d1.t = Date.now() - 40000;
+  fs.writeFileSync(damga, JSON.stringify(d1));
+  const ilk = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop', transcript_path: soru }, ek);
+  esit(turSatiri(ilk), '', 'soru soran tur ozet basmis');
+  const ara = JSON.parse(fs.readFileSync(damga, 'utf8'));
+  esit(ara.bekleyen, 1, 'zincir surmemis');
+  if (!(ara.sn0 >= 39)) throw new Error('sure birikmemis: ' + ara.sn0);
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'birincisi' }, ek);
+  const d2 = JSON.parse(fs.readFileSync(damga, 'utf8'));
+  esit(d2.sn0, ara.sn0, 'yeni tur birikimi sifirlamis');
+  esit(d2.boy, d1.boy, 'zincir baslangici kaymis');
+  d2.t = Date.now() - 20000;
+  fs.writeFileSync(damga, JSON.stringify(d2));
+  const son = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek);
+  icerir(turSatiri(son), 'Total Süre: ~1dk');
+  esit(fs.existsSync(damga), false, 'kapanista damga silinmedi');
 });
 
 ol('bir dakikayi asan tur dakika ve saniye ile yazilir', () => {

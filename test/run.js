@@ -6957,9 +6957,16 @@ ol('ozel.md ve pusla.md akisi anlatir', () => {
   icerir(h, '/pusla');
 });
 
-// U2 · tipografi dalgasi (docs/KARARLAR-ui-2026-08-23.md). theme.css, Theme.xaml,
-// Palette.cs ve SKILL §3 ayni degerlerin dort ayri elle yazilmis kopyasidir; asagidaki
-// testler kopyalarin ayrismasini yakalar — biri guncellenip otekiler unutulursa duserler.
+// U2 · tipografi dalgasi (docs/KARARLAR-ui-2026-08-23.md). Ayni degerler BES ayri elle
+// yazilmis kopyada durur: SKILL §3 · theme.css · Theme.xaml · Palette.cs · ve
+// references/components.md (Tailwind karsiliklari). Asagidaki testler kopyalarin
+// ayrismasini yakalar — biri guncellenip otekiler unutulursa duserler.
+//
+// Bu blogun testleri DAVRANIS olcer, duzyazi degil. Bir cumlenin yeniden yazilmasi
+// testi dusurmemeli; yalnizca kuralin bozulmasi dusurmeli. Bu yuzden pozitif
+// eslemeler token adlari, sayilar, kod tanimlayicilari ve tablo yapisi uzerindendir.
+// Eski metnin geri gelmesini yasaklayan NEGATIF eslemeler duzyazi olabilir: onlar
+// asla yanlislikla dusmez, yalnizca bir seyi kacirabilirler.
 const U2K = path.join(KOK, 'skills', 'teknesyum-ui');
 const U2_SKILL = fs.readFileSync(path.join(U2K, 'SKILL.md'), 'utf8');
 const U2_CSS = fs.readFileSync(path.join(U2K, 'assets', 'theme.css'), 'utf8');
@@ -6970,8 +6977,54 @@ const U2_SXAML = fs.readFileSync(path.join(U2K, 'assets', 'Signature.xaml'), 'ut
 const U2_LAYOUT = fs.readFileSync(path.join(U2K, 'references', 'layout.md'), 'utf8');
 const U2_DESKTOP = fs.readFileSync(path.join(U2K, 'references', 'desktop.md'), 'utf8');
 const U2_MOTION = fs.readFileSync(path.join(U2K, 'references', 'motion.md'), 'utf8');
+const U2_COMP = fs.readFileSync(path.join(U2K, 'references', 'components.md'), 'utf8');
 
-ol('ui font zinciri dort kopyada da ayni', () => {
+// --- U2 yardimcilari. Hepsi bos sonucu HATA sayar: bir yardimci sessizce bos donerse
+// ustundeki butun testler yesil kalirken hicbir sey olcmez (denetim turu 1, KRITIK 1).
+
+// Markdown dosyasindaki ``` bloklarinin govdesi. Duzyazi icinde gecen `rounded-2xl`
+// gibi ornekler kapsam disi kalsin diye yalniz cit icindekiler alinir.
+function u2Kod(ad, k) {
+  const l = k.match(/```[a-z]*\r?\n[\s\S]*?```/g) || [];
+  if (!l.length) throw new Error(ad + ': hic kod blogu eslesmedi — desen bozuk olabilir');
+  return l.join('\n');
+}
+
+// SKILL §3'teki rol tablosunu satir satir cozer. Rol adlarina bakmaz — kolon
+// degerlerini okur, cunku rol adi yeniden yazilabilir, 24 punto yazilamaz.
+// Kolonlar: rol | boyut (fs-N) | agirlik | satir | tracking | renk
+function u2Roller() {
+  const s3 = U2_SKILL.slice(U2_SKILL.indexOf('## 3. '), U2_SKILL.indexOf('## 4. '));
+  const roller = [];
+  for (const r of s3.split('\n')) {
+    if (!r.startsWith('|')) continue;
+    const h = r
+      .split('|')
+      .slice(1, -1)
+      .map((c) => c.trim().replace(/[*`]/g, ''));
+    if (h.length !== 6) continue;
+    const boyut = /^(\d+)\s*\(fs-(\d)\)$/.exec(h[1]);
+    const agirlik = /^\d+$/.test(h[2]) ? Number(h[2]) : null;
+    if (!boyut || agirlik === null) continue;
+    const tr = h[4].replace('−', '-');
+    roller.push({
+      rol: h[0],
+      boyut: Number(boyut[1]),
+      fs: 'fs-' + boyut[2],
+      agirlik,
+      satir: Number(h[3]),
+      tracking: tr === '0' ? 0 : Number(/^(-?[\d.]+)em$/.exec(tr)[1]),
+    });
+  }
+  if (roller.length < 6)
+    throw new Error('SKILL §3 rol tablosu cozulemedi, bulunan satir: ' + roller.length);
+  return roller;
+}
+
+ol('ui font zincirinin basi bes kopyada da ayni, kuyrugu platform sinirina uyar', () => {
+  // Ayrisma sayilan tek sey zincirin BASI: sans Atkinson → Segoe UI, mono Cascadia →
+  // Consolas. Kuyrugu (`system-ui`, `ui-monospace`, `Courier New`) CSS'e ozgudur ve
+  // .NET zincirinde karsiligi yoktur; onu aramak platform sinirini kusur saymak olur.
   icerir(U2_CSS, "'Atkinson Hyperlegible Next', 'Segoe UI'");
   icerir(U2_CSS, 'Cascadia Mono, Consolas');
   icerir(U2_XAML, 'Atkinson Hyperlegible Next, Segoe UI');
@@ -6980,6 +7033,12 @@ ol('ui font zinciri dort kopyada da ayni', () => {
   icerir(U2_SKILL, 'Cascadia Mono, Consolas');
   icerir(U2_CS, '"Atkinson Hyperlegible Next", "Segoe UI"');
   icerir(U2_CS, '"Cascadia Mono", "Consolas"');
+  // SKILL "birebir tasir" demez — kuyrugun kisaldigini ve bunun ayrisma olmadigini
+  // yazili soyler. Yazmazsa bir sonraki denetci kuyrugu kusur sanir.
+  icermez(U2_SKILL, 'bu iki satırı\nbirebir taşır');
+  const s3 = U2_SKILL.slice(U2_SKILL.indexOf('## 3. '), U2_SKILL.indexOf('## 4. '));
+  icerir(s3, 'ui-monospace');
+  icerir(s3, 'platform sınırıdır');
   // Roboto tek kaynaga cekildi: CSS'ten cikarildi, SKILL zincirine de girmedi.
   icermez(U2_CSS, 'Roboto');
   icermez(U2_SKILL, 'Roboto');
@@ -6994,7 +7053,13 @@ ol('ui olcegi bes basamak, eski dort basamakli sabit px kalmadi', () => {
     '--tk-fs-5: 30px',
   ])
     icerir(U2_CSS, t);
-  icerir(U2_SKILL, '14 · 16 · 20 · 24 · 30');
+  // Olcegi cumleden degil tablodan okur: rol tablosundaki butun boyutlar bes
+  // basamagin icinde olmali ve besi de kullanilmis olmali.
+  const boyut = [...new Set(u2Roller().map((r) => r.boyut))].sort((a, b) => a - b);
+  esit(boyut.join(','), '14,16,20,24,30', 'SKILL §3 tablosundaki boyut kumesi');
+  // fs tokeni ile punto birbirini tutmali (fs-1=14 … fs-5=30).
+  for (const r of u2Roller())
+    esit(r.fs, 'fs-' + (boyut.indexOf(r.boyut) + 1), r.rol + ' satirinda fs tokeni');
   icermez(U2_CSS, 'font-size: 28px');
   icermez(U2_XAML, '"FontSize" Value="28"');
   for (const v of [
@@ -7016,7 +7081,14 @@ ol('ui agirligi 600, 700 hero disinda hicbir tipografi rolunde yok', () => {
   icerir(U2_XAML, '"FontWeight" Value="Black"', 'hero Black kalir');
   icermez(U2_TSX, 'font-bold');
   icermez(U2_SXAML, '"FontWeight" Value="Bold"');
-  icerir(U2_SKILL, '700 değil 600');
+  // Cumle degil tablo: hicbir rol 700 tasimaz, en agir rol tek basina hero'dur.
+  const roller = u2Roller();
+  for (const r of roller)
+    if (r.agirlik === 700) throw new Error('SKILL §3 tablosunda 700 agirlik: ' + r.rol);
+  const agir = roller.filter((r) => r.agirlik > 600);
+  esit(agir.length, 1, 'yalniz bir rol 600 ustunde olabilir');
+  esit(agir[0].agirlik, 900, 'o rol hero ve 900');
+  esit(agir[0].boyut, 30, 'hero en buyuk basamak');
 });
 
 ol('ui satir yuksekligi ve satir uzunlugu iki platformda tanimli', () => {
@@ -7043,15 +7115,52 @@ ol('ui harf araligi boyutla ters orantili, WPF telafisi sessiz birakilmadi', () 
   ])
     icerir(U2_CSS, t);
   icermez(U2_CSS, 'letter-spacing: 0.1em');
-  icerir(U2_SKILL, 'tracking yoktur — telafisi yazılıdır');
+  // Tablodan: tracking boyutla TERS orantili olmali. Cumle yeniden yazilabilir,
+  // bu siralama yazilamaz.
+  const em = u2Roller()
+    .filter((r) => r.tracking !== 0)
+    .sort((a, b) => a.boyut - b.boyut);
+  for (let i = 1; i < em.length; i++)
+    if (em[i].tracking >= em[i - 1].tracking)
+      throw new Error(
+        'tracking boyutla artiyor: ' + em[i - 1].rol + ' → ' + em[i].rol
+      );
+  if (em.length < 3) throw new Error('tracking tasiyan rol sayisi az: ' + em.length);
+  // WPF/WinForms telafisi sessiz birakilmadi. Isaretler kod tarafinda duruyor,
+  // §3 ise telafinin hangi platformlarda gerektigini teknik adlariyla soyluyor.
+  const s3 = U2_SKILL.slice(U2_SKILL.indexOf('## 3. '), U2_SKILL.indexOf('## 4. '));
+  for (const ad of ['letter-spacing', 'WPF', 'WinForms', 'FontStyle'])
+    icerir(s3, ad, 'tracking telafisi §3 icinde yazili degil');
   icerir(U2_XAML, 'TRACKING TELAFISI');
   icerir(U2_CS, 'AĞIRLIK TELAFİSİ');
 });
 
 ol('ui baslik hiyerarsisi boyutla ayrisir, uc seviye ayni degil', () => {
-  icerir(U2_SKILL, 'Şimdi ayrım **boyutta**: 24 → 20 → 14');
+  const roller = u2Roller();
+  const govde = roller.find((r) => r.agirlik === 400 && r.satir === 1.5 && r.tracking === 0);
+  if (!govde) throw new Error('govde satiri tabloda bulunamadi');
+  // Baslik/etiket rolleri: 600 agirlik, 1.2 satir. Ucu de gorsel olarak ayrisir.
+  const baslik = roller.filter((r) => r.agirlik === 600 && r.satir === 1.2);
+  if (baslik.length < 3) throw new Error('600/1.2 rol sayisi az: ' + baslik.length);
+  const boyut = baslik.map((r) => r.boyut);
+  esit(new Set(boyut).size, boyut.length, 'iki baslik seviyesi ayni boyutta');
+  for (const b of baslik)
+    if (b.boyut === govde.boyut)
+      throw new Error('baslik govdeyle ayni boyutta: ' + b.rol + ' = ' + b.boyut);
+  // Boyut yetmediginde ikinci sinyal cizgidir; CSS'te gercekten var.
   icerir(U2_CSS, '.tk-h3-rule');
-  icermez(U2_SKILL, '| Bölüm başlığı (h3) | 16 |');
+  icerir(U2_CSS, 'border-bottom: 1px solid var(--tk-border-decorative)');
+  // CSS siniflari tablodaki basamaklara bakar, sabit px yazmaz.
+  for (const [sinif, fs] of [
+    ['.tk-h2 {', '--tk-fs-4'],
+    ['.tk-h3 {', '--tk-fs-3'],
+    ['.tk-label {', '--tk-fs-1'],
+  ]) {
+    const g = U2_CSS.slice(U2_CSS.indexOf(sinif), U2_CSS.indexOf('}', U2_CSS.indexOf(sinif)));
+    if (!g) throw new Error('CSS sinifi bulunamadi: ' + sinif);
+    icerir(g, 'var(' + fs + ')', sinif + ' yanlis basamaga bakiyor');
+    icerir(g, 'font-weight: 600', sinif);
+  }
 });
 
 ol('ui olu soluk metin tokeni uc dosyadan silindi, yerine tooltip zorunlulugu geldi', () => {
@@ -7060,29 +7169,49 @@ ol('ui olu soluk metin tokeni uc dosyadan silindi, yerine tooltip zorunlulugu ge
   icerir(U2_CSS, 'ToolTip');
   icerir(U2_XAML, 'ZORUNLU');
   icerir(U2_CS, 'ZORUNLU');
-  icerir(U2_SKILL, '**Tooltip zorunludur**');
+  if (!/tooltip\s+zorunlu/i.test(U2_SKILL.replace(/\*/g, '')))
+    throw new Error('SKILL tooltip zorunlulugunu soylemiyor');
 });
 
 ol('ui hero glow tek token, iki platformda ayni yogunluk', () => {
   icerir(U2_CSS, '--tk-glow-hero: 0 0 8px rgba(0, 243, 255, 0.8)');
   icerir(U2_CSS, 'drop-shadow(var(--tk-glow-hero))');
-  icerir(U2_XAML, 'x:Key="HeroGlow"');
-  icerir(U2_XAML, 'BlurRadius="8" ShadowDepth="0" Opacity="0.8"');
+  // Oznitelik sirasina bagimli tek parca yerine oznitelik oznitelik: XAML'i
+  // yeniden bicimlendirmek testi dusurmemeli, degeri degistirmek dusurmeli.
+  const hg = /<DropShadowEffect[^>]*x:Key="HeroGlow"[^>]*\/>/.exec(U2_XAML);
+  if (!hg) throw new Error('Theme.xaml icinde HeroGlow efekti bulunamadi');
+  for (const oz of ['BlurRadius="8"', 'ShadowDepth="0"', 'Opacity="0.8"'])
+    icerir(hg[0], oz, 'HeroGlow');
   icermez(U2_XAML, 'BlurRadius="10"');
-  icerir(U2_SKILL, 'blur 8, opaklık 0.8');
+  // Iki platformun ayni yogunlugu tasidigi SKILL'de token adiyla anilir.
+  icerir(U2_SKILL, '--tk-glow-hero');
+  icerir(U2_SKILL, 'HeroGlow');
 });
 
 ol('ui sayi ayrimi: veri sayisi mono, cumle ici sayi sans+tabular', () => {
   icerir(U2_CSS, 'font-variant-numeric: tabular-nums');
   icerir(U2_XAML, 'Typography.NumeralAlignment" Value="Tabular"');
   icerir(U2_SKILL, 'Typography.NumeralAlignment="Tabular"');
-  icerir(U2_SKILL, "cümle içi sayı mono'ya zorlanmaz");
+  icerir(U2_SKILL, 'font-variant-numeric: tabular-nums');
+  // Ayrimi cumleden degil §3'teki iki satirlik tablodan okur: bir satir mono,
+  // oteki sans+tabular demeli.
+  const s3 = U2_SKILL.slice(U2_SKILL.indexOf('## 3. '), U2_SKILL.indexOf('## 4. '));
+  const ayrim = s3
+    .split('\n')
+    .filter((r) => r.startsWith('|') && /\bmono\b|tabular/.test(r) && !/^\|\s*-/.test(r));
+  if (ayrim.length < 2) throw new Error('sayi ayrimi tablosu bulunamadi: ' + ayrim.length);
+  if (!ayrim.some((r) => /tabular/.test(r) && !/\.tk-mono/.test(r)))
+    throw new Error('cumle ici sayi icin sans+tabular satiri yok');
+  if (!ayrim.some((r) => /\.tk-mono|MonoValue/.test(r)))
+    throw new Error('veri sayisi icin mono satiri yok');
 });
 
 ol('ui XAML Hint stili var, CSS ve WinForms karsiligiyla ayni olcude', () => {
   icerir(U2_XAML, 'x:Key="Hint"');
   icerir(U2_CSS, '.tk-hint');
-  icerir(U2_CS, 'Hint       = new(SansAdi, 10.5f)');
+  // Bosluk hizasi bicimlendirme isidir, kural degil.
+  if (!/\bHint\s*=\s*new\(SansAdi,\s*10\.5f\)/.test(U2_CS))
+    throw new Error('Palette.cs Hint fontu 10.5f degil');
 });
 
 ol('ui yaricapi tek deger, 16/12/8 merdiveni kalmadi', () => {
@@ -7091,23 +7220,42 @@ ol('ui yaricapi tek deger, 16/12/8 merdiveni kalmadi', () => {
   icermez(U2_XAML, 'CornerRadius" Value="16"');
   icermez(U2_XAML, 'CornerRadius="12"');
   icerir(U2_XAML, 'CornerRadius="6"');
-  icerir(U2_SKILL, 'Yarıçap tektir');
   icermez(U2_SKILL, 'kutu `16px`, buton/kart `12px`');
   icerir(U2_CS, 'public const int Radius = 6;');
-  icerir(U2_LAYOUT, 'bu dosya lehine');
+  // Dort dosyada da tek bir yaricap sayisi gecer. XAML'da 6 disinda CornerRadius
+  // yoksa merdiven gercekten kalkmis demektir — cumleye bakmaya gerek yok.
+  const kose = [...U2_XAML.matchAll(/CornerRadius(?:="|" Value=")(\d+)"/g)].map((m) => m[1]);
+  if (!kose.length) throw new Error('Theme.xaml icinde hic CornerRadius yok — desen bozuk');
+  esit([...new Set(kose)].join(','), '6', 'Theme.xaml yaricap kumesi');
+  // layout.md yaricabin tek kaynagini ve celiskinin kapandigi tarihi tasir.
+  icerir(U2_LAYOUT, '--tk-r: 6px');
+  icerir(U2_LAYOUT, '6 DIP');
 });
 
 ol('ui genel bir oncelik kurali yazmaz, celiskiler tek tek sorulur', () => {
-  icermez(U2_SKILL, 'Çelişkide `SKILL.md` kazanır');
-  icerir(U2_LAYOUT, 'bilerek yoktur');
+  // Bu testin isi bir cumlenin varligi degil YOKLUGU: kestirme bir oncelik kurali
+  // yazilmasin. Negatif esleme duzyazi olabilir, asla yanlislikla dusmez.
+  for (const k of [U2_SKILL, U2_LAYOUT, U2_DESKTOP]) {
+    icermez(k, 'Çelişkide `SKILL.md` kazanır');
+    icermez(k, 'çelişkide SKILL.md kazanır');
+  }
 });
 
 ol('ui renk tek basina anlam tasimaz, durum noktasi sekille de ayrisir', () => {
   icerir(U2_SKILL, 'WCAG 1.4.1');
-  icerir(U2_SKILL, 'dolu daire = kurulu, halka');
-  icerir(U2_CSS, '.tk-dot-on');
-  icerir(U2_CSS, '.tk-dot-off');
-  icerir(U2_DESKTOP, 'dolu daire**, kurulu değil **halka');
+  // Sekil farki CSS'te gercekten uygulanmis mi: biri dolu (dolgu var, cerceve yok),
+  // oteki halka (dolgu seffaf, cerceve var). Iki sinif ayni gorunuyorsa test duser.
+  const on = U2_CSS.slice(U2_CSS.indexOf('.tk-dot-on'), U2_CSS.indexOf('}', U2_CSS.indexOf('.tk-dot-on')));
+  const off = U2_CSS.slice(U2_CSS.indexOf('.tk-dot-off'), U2_CSS.indexOf('}', U2_CSS.indexOf('.tk-dot-off')));
+  if (!on || !off) throw new Error('durum noktasi siniflari bulunamadi');
+  icerir(on, 'border: 0', 'dolu daire cerceve tasimaz');
+  icerir(off, 'background: transparent', 'halkanin ici bos');
+  if (!/border:\s*\dpx solid/.test(off)) throw new Error('halkanin cercevesi yok');
+  icerir(U2_CSS, 'border-radius: 50%');
+  // desktop.md ayni ayrimi kelimeleriyle tasir; cumlenin bicimi serbest.
+  const d = U2_DESKTOP.replace(/\*/g, '');
+  if (!/dolu daire/.test(d) || !/halka/.test(d))
+    throw new Error('desktop.md durum noktasinin sekil farkini yazmiyor');
 });
 
 ol('ui olculmemis sayilar etiketli, olculmus gibi sunulmuyor', () => {
@@ -7136,16 +7284,24 @@ ol('ui pencere dugmesi celiskisi 42x30 lehine kapandi', () => {
 
 ol('ui standardi yalniz karanliktir ve bunu §0 icinde soyler', () => {
   const sifir = U2_SKILL.slice(U2_SKILL.indexOf('## 0.'), U2_SKILL.indexOf('## 1.'));
-  icerir(sifir, 'yalnız karanlıktır');
-  icerir(sifir, 'ileriye bırakılmıştır');
+  if (!/yalnız karanlık/i.test(sifir)) throw new Error('§0 karanlik beyanini tasimiyor');
+  if (!/aydınlık/i.test(sifir)) throw new Error('§0 aydinlik paletin ne oldugunu soylemiyor');
 });
 
 ol('ui hareket gerekceleri motion.md icine tasindi ve gozden kacmiyor', () => {
-  icerir(U2_SKILL, 'Hareket işi yapmadan önce `references/motion.md` okunur');
-  icerir(U2_SKILL, '`references/motion.md` zorunlu');
-  icerir(U2_MOTION, 'Hareket işi yapmadan önce bu dosya okunur');
-  // SKILL'de kalan tablonun HER satiri motion.md basligina atif verir.
   const s54 = U2_SKILL.slice(U2_SKILL.indexOf('## 5.4 '), U2_SKILL.indexOf('## 5.5 '));
+  // Yonlendirme tablodan ONCE gelmeli: tabloyu okuyup gecen kisi gerekceyi kacirmasin.
+  const atif = s54.indexOf('references/motion.md');
+  const ilkSatir = s54.search(/\n\| /);
+  if (atif < 0) throw new Error('§5.4 motion.md yonlendirmesi tasimiyor');
+  if (ilkSatir < 0) throw new Error('§5.4 icinde tablo bulunamadi — desen bozuk');
+  if (atif > ilkSatir) throw new Error('motion.md yonlendirmesi tablodan sonra geliyor');
+  // Yonlendirme §5.4 disinda da en az bir yerde tekrarlanir (hata listesi / kapanis).
+  const kac = (U2_SKILL.match(/references\/motion\.md/g) || []).length;
+  if (kac < 3) throw new Error('SKILL motion.md atif sayisi az: ' + kac);
+  // motion.md geri atif verir; okuyan hangi bolumun devami oldugunu bilir.
+  icerir(U2_MOTION, '§5.4');
+  // SKILL'de kalan tablonun HER satiri motion.md basligina atif verir.
   const satir = s54
     .split('\n')
     .filter((r) => r.startsWith('| ') && !r.startsWith('| Olay') && !r.startsWith('| Durum'));
@@ -7159,12 +7315,56 @@ ol('ui hareket gerekceleri motion.md icine tasindi ve gozden kacmiyor', () => {
   icermez(U2_SKILL, 'Tabandan muaf olan tek şey');
 });
 
+// Bir testin kendisi olu olabilir ve yesil kalir. Bu yardimci eslesme sayisini olcer:
+// sifir eslesme, "yorum yok" degil "desen bozuk" demektir ve test dusurulur.
+function yorumlar(ad, k) {
+  const desen = new RegExp('<!--' + '[\\s\\S]' + '*?-->', 'g');
+  const l = k.match(desen) || [];
+  if (!l.length) throw new Error(ad + ': hic yorum eslesmedi — desen bozuk olabilir');
+  return l;
+}
+
 ol('ui XAML yorumlari cift tire tasimaz, dosya ayristirilabilir kalir', () => {
   // XML yorumunun icinde '--' gecmesi dosyayi ayristirilamaz yapar; CSS token
   // adlarini (--tk-*) yoruma yazarken tam olarak bu oldu. Test o hatayi tutar.
   for (const [ad, k] of [['Theme.xaml', U2_XAML], ['Signature.xaml', U2_SXAML]])
-    for (const y of k.match(/<!--[sS]*?-->/g) || [])
+    // ÖLÇÜLDÜ (23.08.2026, U2 denetimi): burada `[\s\S]` yerine `[sS]` yazılıydı — ters
+    // bölüler kabuk katmanında yenmişti. Sınıf yalnız 's'/'S' harfini eşliyordu, hiçbir
+    // yorum tutmuyordu, `|| []` sessizce yutuyordu ve döngü gövdesi hiç çalışmıyordu.
+    // Testin kendisi ölüydü ve 412/412 yeşil kalıyordu. Aşağıdaki `bosMu` kontrolü aynı
+    // hatanın tekrarını yakalar: eşleşme sıfırsa test artık düşer.
+    for (const y of yorumlar(ad, k))
       if (y.slice(4, -3).includes('--')) throw new Error(ad + ' yorumunda cift tire: ' + y.slice(0, 60));
+});
+
+// BESINCI KOPYA. components.md `SKILL.md` §5'in "kopyalanabilir siniflar" kaynagidir;
+// standardi uygulayan ajan siniflari oradan kopyalar. Denetim turu 1'e kadar hicbir test
+// bu dosyaya bakmiyordu ve dosya eski hiyerarsiyi (20/16/14, 700, 0.1em) ve eski yaricap
+// merdivenini tasimaya devam ediyordu. Asagidakiler kod bloklarini olcer; duzyazi icinde
+// "eski `rounded-2xl` kaldirildi" demek serbest, kod blogunda yazmak degil.
+ol('ui kopyalanabilir siniflar tipografi olceginin tokenlarini okur', () => {
+  const kod = u2Kod('components.md', U2_COMP);
+  // Baslik uc basamakta ve tokenla: 24 / 20 / 14.
+  for (const t of ['--tk-fs-4', '--tk-fs-3', '--tk-fs-1'])
+    icerir(kod, 'var(' + t + ')', 'components.md baslik basamagi');
+  for (const t of ['--tk-tr-h2', '--tk-tr-h3', '--tk-tr-label'])
+    icerir(kod, 'var(' + t + ')', 'components.md tracking basamagi');
+  icerir(kod, 'font-semibold');
+  // Eski hiyerarsi: dort sinyalin dordu de ayni. Hicbiri kod blogunda kalmaz.
+  for (const eski of ['font-bold', 'tracking-widest', 'text-base', 'text-xl', 'text-sm'])
+    icermez(kod, eski, 'components.md kod blogunda Tailwind varsayilani');
+  // Govdeyle ayni boyutta baslik kalmadi: fs-2 yalniz mono degerde gecebilir.
+  for (const b of kod.split('\n').filter((r) => /^(h2|h3|lbl)\b/.test(r)))
+    icermez(b, '--tk-fs-2', 'baslik govde basamagina inmis: ' + b);
+});
+
+ol('ui kopyalanabilir siniflarda yaricap tek deger, daire istisnasi duruyor', () => {
+  const kod = u2Kod('components.md', U2_COMP);
+  icerir(kod, 'rounded-[var(--tk-r)]');
+  for (const eski of ['rounded-2xl', 'rounded-xl', 'rounded-lg', 'rounded-md'])
+    icermez(kod, eski, 'components.md kod blogunda eski yaricap merdiveni');
+  // Daire istisnasi kaldirilmadi: anahtar sapi, slider thumb, ilerleme cubugu.
+  icerir(kod, 'rounded-full', 'daire istisnasi silinmis');
 });
 
 ol('ui odak stili depoda gercekten var olan adla anilir', () => {

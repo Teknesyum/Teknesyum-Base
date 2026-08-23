@@ -14,3 +14,29 @@
 2026-08-23 · U3-U9 owns daraltıldı — yedisi de SKILL.md ve test/run.js istiyordu, çakışma
              kalktı. Paylaşılan dört dosya U10 birleştirme sözleşmesine toplandı.
 2026-08-23 · U10 açıldı — birleştirme, depends: U3..U9
+2026-08-23 · U2 submitted → denetime verildi (tur 1)
+2026-08-23 · U7 · U9 active — konseyleri açıldı; kod konsey yazılmadan başlamaz
+2026-08-23 · U4 · U8 bekliyor — U2 denetimi sürerken owns dosyalarına dokunulmaz
+             (U4 theme.css/Theme.xaml/Palette.cs, U8 motion.md — denetçi ikisini de okuyor)
+2026-08-24 · U9 submitted (tur 1) — pembe/mor ölçüldü, sonuç kötü: protanopide ΔE2000
+             5.8, metin rolünde 5.2-5.6. İki kural birden yazıldı. Viénot 1999, matris
+             iki bağımsız yoldan doğrulandı; ΔE2000 Sharma 2005 Tablo I 34 çiftiyle.
+             docs/olcumler/renk-korlugu.md + test/u9-renkkorlugu.js, 256 doğrulama geçti.
+             SKILL §2 metni U9 Çıktı'da hazır — U10 alacak. Üç karar sorusu Çıktı'da.
+2026-08-24 · U7 submitted — Theme.axaml, Signature.axaml, references/avalonia.md ve
+             test/u7-avalonia.js (17/0 GEÇTİ). SKILL.md metni Çıktı bölümünde, U10 alacak.
+2026-08-24 · U8 submitted — motion.md M15 (glow ve kaydırma) + test/u8-glow.js (77/0 GEÇTİ,
+             sekiz mutasyonun sekizi yakalandı). Ölçüldü: 4 glow tokenı, glow taşıyan
+             5 seçici, 1 backdrop-filter, tekrar eden öğeye düşen glow 0. Kare süresi
+             ölçülmedi — Node'dan ölçülemez, 16 ms reçete olarak yazıldı. SKILL §2 metni
+             (24px pay + inset/scrollbar sınırı) Çıktı'da, U10 alacak. U8 sözleşmesinin
+             kayıp `## Kabul kriteri` bölümü HEAD~2'den geri kondu; U7'de de aynı hasar.
+
+2026-08-24 · U4 submitted (tur 1) — anlamsal renk katmanı: danger, danger-text, warning,
+             warning/50, success. --tk-info EKLENMEDİ (konsey madde 5), gerekçesi üç
+             dosyada yazılı ve yokluğu testte ölçülüyor. Kontrast yeniden hesaplandı:
+             amber 12.58 / 11.94, beyaz metin 1.67 (dolgu yasağının gerekçesi),
+             amber/50 çerçeve 3.59 — pembe/50 2.17 ve mor/50 1.83 taşımıyordu.
+             theme.css @theme + :root, Theme.xaml, Palette.cs + ANSI sabiti.
+             test/u4-renk.js 101/0 GEÇTİ. SKILL §2 metni ve Theme.axaml rol listesi
+             Çıktı bölümünde — U10 alacak. İki karar sorusu Çıktı §5'te.

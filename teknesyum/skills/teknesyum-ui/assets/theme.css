@@ -10,6 +10,17 @@
   --color-surface: #08090a;
   --color-dark-glass: rgba(10, 10, 15, 0.85);
 
+  /* Anlamsal rol katmanı — Tailwind tarafı. `--tk-*` katmanı ile bu katman
+     AYRI iki katmandır; birini güncelleyip ötekini bırakan `bg-danger` gibi bir
+     yardımcı sınıfın eski hex'te kalmasına yol açar. İkisi birlikte gezilir ve
+     denetimde eşitlikleri ölçülür (`test/u4-renk.js`).
+     Rolün Tailwind karşılığı marka adını değil rol adını taşır: `text-danger`,
+     `border-warning`. `--color-neon-success` rol adına çevrilmedi çünkü
+     `references/components.md` ona adıyla bağlı; rol adı `--tk-success`'tedir. */
+  --color-danger: #ff00ea;
+  --color-danger-text: #ff54eb;
+  --color-warning: #fbbf24;
+
   /* Zincirin tek kaynağı SKILL §3'tür; buradaki sıra oradaki sırayla aynıdır.
      Atkinson Hyperlegible Next varsayılandır ve projeye gömülür, sistemde var
      sayılmaz. Gömülü değilse zincir Segoe UI'ye düşer — bu bir kabul değil, bir
@@ -45,6 +56,44 @@
 
   --tk-pink-text: #ff54eb;
   --tk-purple-text: #c67eff;
+
+  /* --- anlamsal rol katmanı (SKILL §2) ---
+     ROL KAZANIR. Durum bildiren her bileşen — hata metni, form doğrulama,
+     uyarı kutusu, durum noktası, tehlike butonu — bu katmanı yazar. Marka ve
+     dekor (glow, scrollbar, hero, başlık) marka tokenını yazmayı sürdürür.
+     Rol tokenı marka tokenının DEĞERİNİ izler, kopyasını değil: hex elden
+     yazılmaz, `var()` ile bağlanır. Tek istisna `--tk-warning` — marka
+     üçlüsünde karşılığı yok, kendi hex'ini taşır.
+     `--tk-success` yukarıda tanımlı ve zaten rol tokenıdır; ikinci ad
+     verilmedi, çünkü iki adı olan tek değer er geç ayrışır.
+     `--tk-info` BİLEREK YOK: bilgi kutusu bugün yok ve kullanılmayan token
+     borçtur. Açılırsa maviye bağlanır (`var(--tk-blue)`) ve birincil butonla
+     aynı ekranda info dolgusu kullanılmaz — ikisi de mavi dolgu olur, kullanıcı
+     tıklanabilir olanı ayırt edemez. */
+  --tk-danger: var(--tk-pink);
+  /* Tehlikenin METİN rolü. Dolgu hex'i `#ff00ea` metinde 6.11:1 verir ve §2'nin
+     7:1 eşiğinin altındadır; hata metni bu yüzden dolgu tokenını değil bunu
+     yazar (7.33:1). Pembe/mor'un dolgu-metin ayrımı rol katmanında da sürer. */
+  --tk-danger-text: var(--tk-pink-text);
+
+  /* `warning #fbbf24` — YALNIZCA UYARI YÜZEYİ: metin, çerçeve, ikon.
+     Dolgu ve buton yok. Kısıt `success`in kalıbının aynısıdır, yeni kalıp değil.
+     Yasağın gerekçesi ölçüldü: amber dolgu üstünde beyaz metin 1.67:1 — çöker.
+     Siyah metin 12.58:1 verirdi, ama dolguya izin veren bir kalıp yazının
+     rengini her seferinde yeniden tartışmaya açar; uyarı yüzeyi metin, çerçeve
+     ve ikonla kurulur.
+     YERİNE NE KONUR: uyarı metni `--tk-warning` (12.58:1 / 11.94:1), çerçeve
+     `--tk-warning-border` (`#08090a` üstünde 3.59:1 — 1.4.11'in 3:1 eşiğini
+     geçer; pembe /50 2.17, mor /50 1.82 ile bu merdiveni TAŞIMIYORDU, amber
+     taşıyor), ikon aynı renk. Eylem gerekiyorsa buton birincil (mavi) ya da
+     `danger` (pembe) olur — uyarı rengi butona girmez.
+     RENK TEK BAŞINA ANLAM TAŞIMAZ, amber için de baştan: amber ile `success`
+     protanopide ΔE2000 15.2 ile ayrışmıyor (`docs/olcumler/renk-korlugu.md`).
+     Uyarı satırı renge ek olarak ikon ya da metin taşır — istisnası yok.
+     ŞERH: `warning` hex'i `U9` ΔE ölçümüne tabidir. Kötü çıkarsa değişecek olan
+     bu iki satırdır; rol adı ve kısıt değişmez. */
+  --tk-warning: #fbbf24;
+  --tk-warning-border: rgba(251, 191, 36, 0.5);
 
   --tk-text: #ffffff;
   --tk-text-label: #00f3ff;
@@ -201,7 +250,9 @@ body {
 .tk-btn:active { transform: scale(0.98); transition-duration: var(--tk-t-instant); }
 .tk-btn-primary   { background: var(--tk-blue);   color: #000; box-shadow: var(--tk-glow-blue); }
 .tk-btn-primary:hover   { background: rgba(0, 243, 255, 0.8); }
-.tk-btn-danger    { background: var(--tk-pink);   color: #000; box-shadow: var(--tk-glow-pink); }
+/* Sınıf adı zaten rol dilindeydi; içi de rol tokenına geçti. Hale marka
+   tokenında kalır — glow dekordur, durum bildirmez. */
+.tk-btn-danger    { background: var(--tk-danger); color: #000; box-shadow: var(--tk-glow-pink); }
 .tk-btn-danger:hover    { background: rgba(255, 0, 234, 0.8); }
 .tk-btn-ghost {
   background: rgba(176, 38, 255, 0.1);
@@ -242,7 +293,21 @@ body {
 /* --- durum noktasi: renk tek basina anlam tasimaz (WCAG 1.4.1, §2) --- */
 .tk-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .tk-dot-on  { background: var(--tk-success); border: 0; }
-.tk-dot-off { background: transparent; border: 2px solid var(--tk-pink); }
+/* Durum bildiriyor, marka değil — rol tokenı yazar. Şekil farkı (dolu daire /
+   halka) rengin yanındaki ikinci taşıyıcıdır; renk kalksa da bilgi durur. */
+.tk-dot-off { background: transparent; border: 2px solid var(--tk-danger); }
+
+/* --- uyari yuzeyi (§2) ---
+   `.tk-panel` uzerine modifier olarak kullanilir: <div class="tk-panel tk-warn">.
+   DOLGU YOK — panel zemini `surface` kalir, degisen sey cerceve ve metin rengi.
+   Kutu renge ek olarak bir ikon ya da "Uyari" metni tasimak zorunda; amber ile
+   success protanopide ayrismiyor (yukaridaki olcum). */
+.tk-warn { border-color: var(--tk-warning-border); color: var(--tk-warning); }
+/* Uyari metni tek basina, kutusuz da kullanilabilir. Glow yok: metne glow
+   verilmez (§2), tek istisna hero sayidir. */
+.tk-warn-text { color: var(--tk-warning); }
+/* Hata metni dolgu pembesini degil metin pembesini yazar — 7:1 esigi. */
+.tk-danger-text { color: var(--tk-danger-text); }
 
 /* --- hareket: azaltilmis hareket ayari (ayrinti: references/motion.md) --- */
 @media (prefers-reduced-motion: reduce) {

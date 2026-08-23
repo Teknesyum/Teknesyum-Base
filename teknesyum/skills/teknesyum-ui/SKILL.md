@@ -224,7 +224,12 @@ bilgi kaybolmayan ayraçlar. Bir çerçeve "buraya kadar" diyorsa `/50`'dir.
 ## 3. Tipografi (varsayılan)
 
 **Zincirin tek kaynağı burasıdır.** `theme.css`, `Theme.xaml` ve `Palette.cs` bu iki satırı
-birebir taşır; üçünden biri ayrışıyorsa hata odur, burası değil.
+taşır; üçünden biri ayrışıyorsa hata odur, burası değil. **Zincirin başı üçünde de aynıdır**
+— sans `Atkinson Hyperlegible Next` → `Segoe UI`, mono `Cascadia Mono` → `Consolas`.
+Kuyruğu WPF ve WinForms kısaltır: `system-ui`, `-apple-system`, `ui-monospace` ve
+`Courier New` CSS'e özgü ya da başka platformların adlarıdır, .NET font zincirinde
+karşılıkları yoktur. **Bu platform sınırıdır, ayrışma değil** — ayrışma sayılan tek şey
+zincirin başındaki adların ya da sıralarının farklılaşmasıdır.
 
 ```
 Sans: 'Atkinson Hyperlegible Next', 'Segoe UI', system-ui, -apple-system, sans-serif

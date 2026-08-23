@@ -11,7 +11,7 @@
   <SolidColorBrush x:Key="NeonBlue"    Color="#FF00F3FF"/>
   <SolidColorBrush x:Key="NeonPink"    Color="#FFFF00EA"/>
   <SolidColorBrush x:Key="NeonPurple"  Color="#FFB026FF"/>
-  <SolidColorBrush x:Key="NeonSuccess" Color="#FF34D399"/>
+  <SolidColorBrush x:Key="Success"     Color="#FF34D399"/>
   <SolidColorBrush x:Key="Surface"     Color="#F208090A"/>
   <SolidColorBrush x:Key="AppBg"       Color="#FF000000"/>
 
@@ -39,6 +39,37 @@
 
   <SolidColorBrush x:Key="PinkText"   Color="#FFFF54EB"/>
   <SolidColorBrush x:Key="PurpleText" Color="#FFC67EFF"/>
+
+  <!-- ANLAMSAL ROL KATMANI (SKILL §2).
+       ROL KAZANIR: durum bildiren her kontrol (hata metni, form dogrulama,
+       uyari kutusu, durum noktasi, tehlike dugmesi) bu fircalari yazar. Marka
+       ve dekor (glow, scrollbar, hero, baslik) marka fircasini yazmayi surdurur.
+       XAML'da takma ad yoktur; her rol AYRI bir firca nesnesidir ve marka
+       fircasiyla ayni hex'i tasir. Tek dogruluk kaynagi hex tablosudur, hex
+       elden degistirilmez; esitlik denetimde olculur (test/u4-renk.js).
+       `Success` fircasi 23.08.2026'da `NeonSuccess` adindan cevrildi: success bir
+       marka rengi degil, bir roldur. Ayni cevrim Theme.axaml'da da yapilmali
+       (U7'nin dosyasi).
+       `Info` BILEREK YOK: bilgi kutusu bugun yok, kullanilmayan token borctur.
+       Acilirsa maviye baglanir ve birincil dugmeyle ayni ekranda info dolgusu
+       kullanilmaz. -->
+  <SolidColorBrush x:Key="Danger"     Color="#FFFF00EA"/>
+  <!-- Tehlikenin METIN rolu. Dolgu hex'i metinde 6.11:1 verir, 7:1 esiginin
+       altinda; hata metni bu fircayi yazar (7.33:1). -->
+  <SolidColorBrush x:Key="DangerText" Color="#FFFF54EB"/>
+
+  <!-- warning #FBBF24 — YALNIZCA UYARI YUZEYI: metin, cerceve, ikon.
+       DOLGU VE DUGME YOK. Kisit success'in kalibinin aynisidir.
+       Yasagin gerekcesi olculdu: amber dolgu ustunde beyaz metin 1.67:1, coker.
+       YERINE NE KONUR: uyari metni `Warning` (12.58:1 / 11.94:1), cerceve
+       `Warning50` (#08090a ustunde 3.59:1, 3:1 esigini gecer), ikon ayni renk.
+       Eylem gerekiyorsa dugme birincil (mavi) ya da `Danger` (pembe) olur.
+       RENK TEK BASINA ANLAM TASIMAZ, amber icin de bastan: amber ile success
+       protanopide dE2000 15.2 ile ayrismiyor (docs/olcumler/renk-korlugu.md).
+       Uyari satiri renge ek olarak ikon ya da metin tasir.
+       SERH: bu hex U9 dE olcumune tabidir. -->
+  <SolidColorBrush x:Key="Warning"    Color="#FFFBBF24"/>
+  <SolidColorBrush x:Key="Warning50"  Color="#80FBBF24"/>
 
   <SolidColorBrush x:Key="TextBody"  Color="#FFFFFFFF"/>
   <SolidColorBrush x:Key="TextLabel" Color="#FF00F3FF"/>
@@ -190,6 +221,23 @@
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius" Value="6"/>
     <Setter Property="Padding" Value="24"/>
+  </Style>
+
+  <!-- Uyari yuzeyi. `Panel`den turer, degisen tek sey cercevedir: zemin
+       `Surface` kalir cunku amber dolgu yasaktir. Kutunun icine renge ek olarak
+       bir ikon ya da "Uyari" metni konur. -->
+  <Style x:Key="WarningPanel" TargetType="Border" BasedOn="{StaticResource Panel}">
+    <Setter Property="BorderBrush" Value="{StaticResource Warning50}"/>
+  </Style>
+
+  <!-- Uyari metni. Glow yok: metne glow verilmez (SKILL §2), tek istisna hero. -->
+  <Style x:Key="WarningBody" TargetType="TextBlock" BasedOn="{StaticResource Body}">
+    <Setter Property="Foreground" Value="{StaticResource Warning}"/>
+  </Style>
+
+  <!-- Hata metni dolgu pembesini degil metin pembesini yazar — 7:1 esigi. -->
+  <Style x:Key="DangerBody" TargetType="TextBlock" BasedOn="{StaticResource Body}">
+    <Setter Property="Foreground" Value="{StaticResource DangerText}"/>
   </Style>
 
   <Style x:Key="PrimaryButton" TargetType="Button">

@@ -6,7 +6,7 @@ atıf verir. Gerekçeyi bilmeden tabloyu uygulayan kişi tabloyu yanlış uygula
 kısaltılmış bir ek değil, kuralın kendisinin yarısıdır.
 
 Bir satırın neden orada olduğunu anlamak istiyorsan `SKILL.md` §5.4'teki atıf numarasını
-(`M1` … `M14`) burada ara.
+(`M1` … `M15`) burada ara.
 
 ---
 
@@ -181,3 +181,71 @@ pencere gizliyken animasyon durdurulur.
 
 Azaltılmış hareket kontrolü WPF'te otomatik değildir: her sonsuz storyboard
 `SystemParameters.ClientAreaAnimation` okur ve kapalıysa başlatılmaz (M4).
+
+## M15 · Glow ve kaydırma
+
+Glow bu temanın en pahalı görsel efektidir ve maliyeti **öğe sayısından değil**, glow'lu
+yüzeyin kaydırılmasından ya da yeniden çizilmesinden gelir. On duruk glow ucuzdur; beş
+glow'lu sanallaştırılmış liste kaydırmada pahalıdır. Kural bu yüzden bir sayı eşiği
+değildir — "10'dan fazla glow'lu öğede glow kalkar" tipi eşik reddedildi, çünkü sayı
+yanlış vekildir (`docs/KARARLAR-ui-2026-08-23.md` B2).
+
+### Yapısal kural
+
+Glow, kaydırılabilir ya da sanallaştırılmış **tekrar eden öğeye** verilmez. Kapsam tanımı:
+*aynı şablondan üretilen ve sayısı veriyle değişen kardeş öğe.* Ayırt edici soru:
+**"bu 300 tane olabilir mi?"**
+
+| Glow **yasak** | Glow **serbest** |
+|---|---|
+| liste satırı · tablo satırı · grid hücresi | panel (`.tk-panel`) |
+| ağaç düğümü · log/terminal satırı | kart — **tekilse**, sayısı koddan geliyorsa |
+| `ItemsControl` / `.map()` çıktısı olan her şey | buton · hero sayı · modal |
+
+Üç satır da olsa üç yüz satır da olsa aynı: sayı eşiği yok.
+
+**Yerine ne konur.** Glow kaydırılan öğeden alınır, **kapsayıcı panele** verilir; tekrar
+eden öğe kenarlıkla ve arka plan opaklığıyla ayrılır. Seçili satır vurgusu glow değildir:
+dolgu `/20` → `/30` ya da kenarlık `/60` ile yapılır — M8'in kullandığı merdivenin aynısı,
+yeni değer değil.
+
+**Sınır durumu — sabit sayıda kart:** dashboard'daki 3-4 kartın sayısı koddan geliyorsa
+serbest, veriden geliyorsa yasak.
+
+### Platform ayrımı — WPF sert, CSS yumuşak
+
+**WPF'te tekrar eden öğede `DropShadowEffect` mutlak yasaktır.** `Effect` alt ağacı ara bir
+yüzeye render eder ve kaydırmada her karede yeniden çizdirir; sanallaştırma öğeyi geri
+dönüşüme soktukça bu maliyet her geri dönüşte tekrarlanır.
+
+Yerine: `Border` + `BorderBrush` (neon `/50`, güçlü hâl `/60`) ve opak dolgu. Hale
+gerçekten isteniyorsa **kapsayıcının tek bir `Border`'ına** verilir, öğe şablonuna değil.
+Tekil ve sayısı koddan gelen yüzeyler bu yasağın dışındadır — `HeroGlow` yerinde kalır.
+
+CSS tarafı yumuşaktır: duruk `box-shadow` GPU'da ucuzdur, tekil yüzeyde sorun değildir.
+Pahalı olan iki şey ayrıca kayıtlıdır:
+
+- **`backdrop-filter` yığılması** — aynı kaydırma yolunda birden fazla bulanık yüzey.
+  Bulanıklık tek katmanda kalır; ikinci bir `backdrop-filter` gerekiyorsa opak zemin
+  kullanılır.
+- **Gölge animasyonu** — burada tekrarlanmaz, kuralı **M6**'dadır.
+
+### Ölçüt ve reçetesi
+
+Eşik: kaydırma sırasında kare süresi **≤ 16 ms** (60 fps). Bu eşik standardın eşiğidir;
+**ölçümü teslim eden proje yapar.** Bu depoda ölçülmez — ne WPF çalıştırılabiliyor ne de
+başsız tarayıcı var, o yüzden 16 ms burada kabul kriteri değil reçetedir.
+
+- **Web:** DevTools → Performance → kayıt başlat → ölçülecek listeyi uçtan uca kaydır →
+  kaydı durdur. Bakılan şey Main track'te kare başına toplam süredir; 16 ms'yi aşan kareler
+  işaretlenir. CPU kısma **4×** açıkken bakılır, kısmasız değil.
+- **WPF:** `CompositionTarget.Rendering` olayına bağlan, ardışık iki olay arasındaki
+  `Stopwatch` delta'sını topla; kaydırma boyunca **95. yüzdelik ≤ 16 ms** olmalı.
+  Alternatif araç: PerfView ya da WPF Performance Suite'in Perforator'ı.
+
+Ölçüm yapılmadıysa **"ölçülmedi" yazılır**; ölçülmemiş sayı ölçülmüş gibi raporlanmaz.
+
+Kuralın makinece denetlenebilen kısmı `test/u8-glow.js` içindedir: glow tokenlarının
+değeri, glow'un tekrar eden öğe seçicisine düşüp düşmediği, `transition`/`animation`
+bildirimlerinde `box-shadow`/`filter` geçip geçmediği (M6) ve `backdrop-filter` sayısı.
+Test envanteri her koşuda yeniden sayar, sabit sayı taşımaz.

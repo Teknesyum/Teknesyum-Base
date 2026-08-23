@@ -1,0 +1,140 @@
+<!-- Teknesyum imza blogu (Avalonia 11). Yeri baslik seridi, kucult dugmesinin solu
+     (SKILL.md §4). Theme.axaml Application.Styles icinde olmali; renkler, sureler ve
+     "sigchip" azaltilmis hareket kurali oradan gelir.
+
+     WPF surumunden uc yapisal fark var, ucu de Avalonia'da karsiligi olmadigi icin:
+     1) Hyperlink yok. Cip artik Border degil Button; tiklama, klavye odagi, Enter ve
+        Space bedava gelir. WPF'te Hyperlink metnin icindeydi, tiklama alani yazi
+        kadardi; burada butun cip tiklaniyor ve §4'un 24 DIP kurali kendiliginden
+        saglaniyor.
+     2) WindowChrome.IsHitTestVisibleInChrome yok. Avalonia'da surukleme kendi
+        yazdiginiz baslik seridinin PointerPressed'inde BeginMoveDrag ile baslar;
+        Button pointer olayini tuketir, yani bu blok surukleme alanini kendiliginden
+        bolmez. Baslik seridini bir Border'a sarip surukleme kodunu ORAYA baglayin,
+        Grid'in tamamina degil.
+     3) RequestNavigate yok. Tiklama Click olayidir, adres Tag'de durur; acma kodu
+        asagida ve references/avalonia.md §5'te.
+
+     loc:Str = locale/*.json okuyan markup extension (desktop.md §9). Avalonia'da da
+     markup extension yazilabilir ama sinif WPF'inkiyle ayni degildir; gereken imza
+     references/avalonia.md §6'da. Kendi i18n katmaniniz varsa xmlns'i ona cevirin.
+     Baslik seridi yoksa bu blok ayarlar/hakkinda panelinin en altina, saga yasli
+     konur (§4). -->
+<StackPanel xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:loc="clr-namespace:Teknesyum.Localization"
+            Orientation="Horizontal" VerticalAlignment="Center">
+
+  <StackPanel.Resources>
+
+    <!-- Ne duruk ne hover'da dolgu gelir; zemin transparent, sinyal yalniz olcek.
+         Kutu glow'u da yok: 12px'lik hale 24px bosluk ister (SKILL §8), baslik
+         seridinde o bosluk yok, hale komsu dugmenin altinda kesilir. -->
+    <ControlTheme x:Key="SigChip" TargetType="Button">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="Padding" Value="10,3"/>
+      <Setter Property="MinHeight" Value="24"/>
+      <Setter Property="MinWidth" Value="24"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template">
+        <ControlTemplate TargetType="Button">
+          <Border Name="bd"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Padding="{TemplateBinding Padding}"
+                  RenderTransformOrigin="50%,50%">
+            <!-- Keyframe degil Transition: pointerover'dan cikista Avalonia
+                 keyframe'i geri sarmaz, cip buyumus halde takili kalir. -->
+            <Border.Transitions>
+              <Transitions>
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource TInstant}"
+                                               Easing="{StaticResource EOut}"/>
+              </Transitions>
+            </Border.Transitions>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+
+      <!-- Duruk hal TAM OPAKTIR. Olculdu (23.08.2026, U1): eski 0.8 opaklik
+           pink-text'i 7:1'in altina dusuruyordu. Sinyal opaklik degil olcek.
+           Deger metin olarak veriliyor, nesne olarak degil: transform nesnesi
+           Setter degeri olunca butun cipler arasinda paylasilir (U1 dersi). -->
+      <Style Selector="^:pointerover /template/ Border#bd">
+        <Setter Property="RenderTransform" Value="scale(1.02)"/>
+      </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="SigText" TargetType="TextBlock">
+      <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
+      <Setter Property="FontSize" Value="14"/>
+      <!-- Agirlik 600, SKILL §3. 700 hero disi hicbir tipografi rolunde kalmadi. -->
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </ControlTheme>
+
+  </StackPanel.Resources>
+
+  <Button Theme="{StaticResource SigChip}" Classes="sigchip"
+          BorderBrush="{StaticResource PinkText}"
+          Margin="0,0,8,0"
+          Tag="https://github.com/sponsors/Teknesyum"
+          Click="OnSignatureNavigate"
+          ToolTip.Tip="{loc:Str sig.supportTitle}">
+    <StackPanel Orientation="Horizontal">
+      <!-- Ikon 12px, stroke tabanli Path. Emoji kullanilmaz (SKILL §4).
+           Avalonia'da StrokeStartLineCap/StrokeEndLineCap yok, tek ozellik
+           StrokeLineCap; StrokeLineJoin'in adi StrokeJoin. -->
+      <Canvas Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,6,0">
+        <Path Stroke="{StaticResource PinkText}" StrokeThickness="2"
+              StrokeJoin="Round" StrokeLineCap="Round"
+              Data="M2 4.5 H8.5 V8 A2 2 0 0 1 6.5 10 H4 A2 2 0 0 1 2 8 Z
+                    M8.5 5.5 H9.25 A1.25 1.25 0 0 1 9.25 8 H8.5
+                    M4 1.25 V2.25 M6 1.25 V2.25"/>
+      </Canvas>
+      <TextBlock Theme="{StaticResource SigText}"
+                 Foreground="{StaticResource PinkText}"
+                 Text="{loc:Str sig.support}"/>
+    </StackPanel>
+  </Button>
+
+  <Button Theme="{StaticResource SigChip}" Classes="sigchip"
+          BorderBrush="{StaticResource NeonBlue}"
+          Tag="https://github.com/Teknesyum"
+          Click="OnSignatureNavigate"
+          ToolTip.Tip="{loc:Str sig.brandTitle}">
+    <TextBlock Theme="{StaticResource SigText}"
+               Foreground="{StaticResource NeonBlue}"
+               Text="{loc:Str sig.brand}"/>
+  </Button>
+</StackPanel>
+
+<!-- code-behind:
+
+private async void OnSignatureNavigate(object? sender, RoutedEventArgs e)
+{
+    if (sender is not Control c || c.Tag is not string adres) return;
+    var ust = TopLevel.GetTopLevel(c);
+    if (ust is null) return;
+    await ust.Launcher.LaunchUriAsync(new Uri(adres));
+}
+
+TopLevel.Launcher Avalonia 11.1 ile geldi (SURUM TEYIDI YAPILMADI). Daha eski bir
+surumdeyseniz karsiligi WPF'teki ile ayni kalir ve masaustunde calisir:
+
+    Process.Start(new ProcessStartInfo(adres) { UseShellExecute = true });
+
+Ikisi arasindaki fark tarayici degil hedef: Launcher browser ve mobil hedeflerde de
+calisir, Process.Start yalniz masaustunde.
+-->

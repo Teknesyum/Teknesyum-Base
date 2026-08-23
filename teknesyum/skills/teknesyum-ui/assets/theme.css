@@ -20,10 +20,11 @@
   --tk-purple: #b026ff;
   --tk-success: #34d399;
   --tk-surface: #08090a;
+  --tk-bg-donus: 48s;
   --tk-bg-from: #000000;
   --tk-bg-to: #08090a;
   --tk-bg: linear-gradient(
-    160deg,
+    var(--tk-bg-aci, 160deg),
     #000000 0%,
     #010101 10%,
     #020202 20%,
@@ -68,6 +69,17 @@
   --tk-glow-purple: 0 0 20px rgba(176, 38, 255, 0.3);
 }
 
+@property --tk-bg-aci {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 160deg;
+}
+
+@keyframes tk-bg-donus {
+  from { --tk-bg-aci: 150deg; }
+  to   { --tk-bg-aci: 170deg; }
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -75,6 +87,7 @@ body {
   color: var(--tk-text);
   background: var(--tk-bg);
   background-attachment: fixed;
+  animation: tk-bg-donus var(--tk-bg-donus) linear infinite alternate;
 }
 
 /* --- tipografi --- */
@@ -159,6 +172,8 @@ body {
 ::-webkit-scrollbar-thumb {
   background: var(--tk-purple); border-radius: 4px;
   box-shadow: 0 0 10px var(--tk-purple);
+  transition: background-color var(--tk-t-instant) var(--tk-e-out),
+              box-shadow var(--tk-t-instant) var(--tk-e-out);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--tk-pink); box-shadow: 0 0 10px var(--tk-pink);

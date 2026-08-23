@@ -804,7 +804,9 @@ function cssKurallari(metin, ofset) {
   for (let i = 0; i < metin.length; i++) {
     const c = metin[i];
     if (c === '{') {
-      const ham = metin.slice(bas, i);
+      const ham = metin
+        .slice(bas, i)
+        .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
       const bosluk = (/^\s*/.exec(ham)[0].match(/\n/g) || []).length;
       yigin.push({ sec: ham.trim(), satir: ofset + basSatir + bosluk, govdeBas: i + 1 });
       bas = i + 1;

@@ -1,6 +1,6 @@
 ---
-description: Otomatik sıkıştırma penceresini profilden türetir ya da elle bir sayıya sabitler
-argument-hint: <sayı> | (boş — profilden türet)
+description: Otomatik sıkıştırma penceresini profilden türetir ya da elle bir değere sabitler
+argument-hint: <100000-1000000> | auto | (boş — profilden türet)
 allowed-tools: Bash
 ---
 
@@ -13,20 +13,35 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/premium.js" autocompact $ARGUMENTS
 `${CLAUDE_PLUGIN_ROOT}` çözülmezse betik `~/.claude/plugins/**/teknesyum/scripts/premium.js`
 altındadır. Çıktıyı olduğu gibi bas, kendin `settings.json` düzenleme.
 
-Argüman **boşsa** değer makine profilinden türer — `eco 100000`, `normal 160000`,
-`premium 250000`. Argüman bir **sayıysa** o sayı yazılır ve profil bağı kopar: sonraki
+Argüman **boşsa** değer makine profilinden türer: `eco 100000` · `normal auto` · `premium
+1000000`. Argüman **`auto`** ise anahtar `settings.json`'dan silinir ve Claude Code kendi
+varsayılanına döner. Argüman bir **sayıysa** o değer yazılır ve profil bağı kopar — sonraki
 profil değişimleri pencereyi geri almaz, tekrar bağlamak için komutu argümansız çalıştır.
 
-**Pencere neden profile bağlı.** Sıkıştırma eşiği tek başına bir konfor ayarı değil, maliyet
-ayarıdır: pencere büyüdükçe her istek daha çok bağlam taşır. `eco` seçen kullanıcı ucuz
-istek istemiştir, 250000'lik pencere o kararı sessizce iptal eder. Bu yüzden kurulum artık
-kendi başına bir sayı seçmez — `/teknesyum:setup` önce profili sorar, pencere ondan çıkar.
+**Geçerli aralık 100000–1000000.** Ölçüldü (23.08.2026, `claude.exe` 2.1.241): ayarın şeması
+`int().min(1e5).max(1e6)` ve aralık dışını `.catch(void 0)` ile **sessizce düşürüyor** —
+hata almazsın, pencere `auto`ya döner ve yazdığını sandığın değer hiç uygulanmaz. Komut bu
+yüzden aralık dışını yazmadan önce durur.
+
+**Pencere neden profile bağlı.** Sıkıştırma eşiği konfor ayarı değil maliyet ayarıdır:
+pencere büyüdükçe her istek daha çok bağlam taşır. `eco` seçen kullanıcı ucuz istek
+istemiştir, 1M'lik pencere o kararı sessizce iptal eder. Bu yüzden kurulum kendi başına bir
+sayı seçmez — `/teknesyum:setup` önce profili sorar, pencere ondan çıkar.
+
+**`1000000` bir garanti değil tavandır.** Fiili pencere modelin bağlam penceresiyle
+sınırlıdır: Opus'ta ~200k, 1M bağlam açık Sonnet'te gerçekten 1M. Premium'da bu değer
+"modelin verdiği en genişi kullan" demektir.
+
+**Max 20x'te kısıt token faturası değil oturum limitleridir.** Geniş pencere limitleri daha
+hızlı tüketir; premium'da erken limite takılıyorsan ilk kısılacak düğme budur.
+
+**`CLAUDE_CODE_AUTO_COMPACT_WINDOW` ortam değişkeni bu ayarı ezer.** Set edilmişse yazdığın
+değerin etkisi olmaz; komut bunu çıktısında söyler, önce onu kaldır.
 
 **Değer makine genelidir.** `settings.json`'a yazılır, çünkü koşum ortamı onu oturum
 açılışında okur. Profilin kendisi oturuma inebilir (`/premium eco` yalnız o sohbeti
 değiştirir) ama pencere inemez: oturum içi profil geçişi `autoCompactWindow`'a **dokunmaz**,
-`durum` bunu tek satırla söyler. Pencereyi gerçekten değiştirmek makine kararıdır —
-`/premium <profil> --genel` ya da bu komut.
+`/premium durum` bunu tek satırla söyler.
 
 Kullanıcının kendi yazdığı bir değer varsa kurulum onu **ezmez**; bu komut ezer, çünkü
 çağıran kullanıcının kendisidir.

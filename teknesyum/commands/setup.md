@@ -76,9 +76,9 @@ Karar kullanıcınındır, varsayma. Hepsini tek mesajda, numaralı sor:
 
   | Profil | Ajanlar | `autoCompactWindow` |
   |---|---|---|
-  | `eco` | haiku · 1 paralel ajan · denetim yalnız kritik sözleşmede | `100000` |
-  | `normal` | sonnet · 2 paralel ajan · her sözleşme denetlenir | `160000` |
-  | `premium` | opus/xhigh · 20 paralel ajan · konsey + ikinci görüş | `250000` |
+  | `eco` | haiku · 1 paralel ajan · denetim yalnız kritik sözleşmede | `100000` (en erken sıkıştırma) |
+  | `normal` | sonnet · 2 paralel ajan · her sözleşme denetlenir | `auto` (anahtar yazılmaz) |
+  | `premium` | opus/xhigh · 20 paralel ajan · konsey + ikinci görüş | `1000000` (şema tavanı) |
 
   **Varsayılan `normal`.** Cevabı `node "<eklenti>/scripts/premium.js" <profil> --genel`
   ile yaz — komut hem `teknesyum.json`'a profili hem `settings.json`'a pencereyi yazar.

@@ -16,7 +16,7 @@
   <SolidColorBrush x:Key="AppBg"       Color="#FF000000"/>
 
   <!-- Pencere zemini: duz renk degil, 11 durakli yumusak gradient (SKILL §2). -->
-  <LinearGradientBrush x:Key="AppBgGradient"
+  <LinearGradientBrush x:Key="AppBgGradient" x:Shared="False"
                        StartPoint="0,0" EndPoint="0.6,1"
                        ColorInterpolationMode="ScRgbLinearInterpolation">
     <GradientStop Offset="0.0" Color="#FF000000"/>
@@ -31,6 +31,11 @@
     <GradientStop Offset="0.9" Color="#FF070809"/>
     <GradientStop Offset="1.0" Color="#FF08090A"/>
   </LinearGradientBrush>
+
+  <Storyboard x:Key="AppBgDonus" RepeatBehavior="Forever" AutoReverse="True">
+    <PointAnimation Storyboard.TargetProperty="Background.EndPoint"
+                    From="0.5,1" To="0.7,1" Duration="0:0:48"/>
+  </Storyboard>
 
   <SolidColorBrush x:Key="PinkText"   Color="#FFFF54EB"/>
   <SolidColorBrush x:Key="PurpleText" Color="#FFC67EFF"/>

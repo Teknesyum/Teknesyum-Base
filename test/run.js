@@ -2668,7 +2668,9 @@ ol('autocompact tablosu premium.js ile post-install.js arasinda ayni', () => {
   const kaynak = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'post-install.js'), 'utf8');
   const m = kaynak.match(/const AUTOCOMPACT = (\{[^}]*\})/);
   if (!m) throw new Error('post-install.js AUTOCOMPACT tablosunu kaybetmis');
-  const kurulum = JSON.parse(m[1].replace(/([a-z]+):/g, '"$1":'));
+  const kurulum = JSON.parse(
+    m[1].replace(/([a-z]+):/g, '"$1":').replace(/'/g, '"')
+  );
   for (const profil of ['eco', 'normal', 'premium'])
     esit(
       String(kurulum[profil]),
@@ -2679,6 +2681,7 @@ ol('autocompact tablosu premium.js ile post-install.js arasinda ayni', () => {
 
 ol('autocompact modele hic yazilmaz, sapma satirinda gorunmez', () => {
   esit(premiumTablo.sapmalar('eco').autocompact, '100000', 'sapma tablosunda olmali');
+  esit(premiumTablo.DUGME.normal.autocompact, 'auto', 'taban Claude Code varsayilanini kullanmali');
   if (/autocompact/.test(premiumTablo.sapmaSatiri('eco')))
     throw new Error('kanca dugmesi modele enjekte ediliyor: ' + premiumTablo.sapmaSatiri('eco'));
   if (/autocompact/.test(premiumTablo.sapmaSatiri('premium')))
@@ -2701,7 +2704,7 @@ ol('oturum profili pencereyi tasimaz, durum bunu soyler', () => {
   premiumCalistir(['premium', '--genel'], p, cfg);
   esit(
     JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
-    250000
+    1000000
   );
   const ek = { CLAUDE_CODE_SESSION_ID: 'oturum-7' };
   const r = premiumCalistir('eco', p, cfg, ek);
@@ -2709,19 +2712,19 @@ ol('oturum profili pencereyi tasimaz, durum bunu soyler', () => {
   icerir(r.out, 'oturum profili makine ayarını taşımaz');
   esit(
     JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
-    250000,
+    1000000,
     'oturum profili makine penceresini ezmis'
   );
   const d = premiumCalistir('durum', p, cfg, ek);
   icerir(d.out, 'yürürlükteki profil: eco (kaynak: oturum)');
-  icerir(d.out, 'sıkıştırma penceresi: 250000 · eco profili 100000 ister');
+  icerir(d.out, 'sıkıştırma penceresi: 1000000 · eco profili 100000 ister');
 });
 
 ol('autocompact komutu profilden turetir, sayi verilince elle yazar', () => {
   const { p, cfg } = premiumKopya();
-  premiumCalistir(['normal', '--genel'], p, cfg);
+  premiumCalistir(['premium', '--genel'], p, cfg);
   const t = premiumCalistir('autocompact', p, cfg);
-  icerir(t.out, 'autoCompactWindow: 160000');
+  icerir(t.out, 'autoCompactWindow: 1000000');
   const e = premiumCalistir(['autocompact', '432000'], p, cfg);
   esit(e.kod, 0, e.err);
   icerir(e.out, 'yazıldı (elle)');
@@ -2730,6 +2733,15 @@ ol('autocompact komutu profilden turetir, sayi verilince elle yazar', () => {
     432000
   );
   esit(premiumCalistir(['autocompact', 'bes'], p, cfg).kod, 1, 'sayi olmayan deger kabul edildi');
+  esit(premiumCalistir(['autocompact', '50000'], p, cfg).kod, 1, 'alt sinirin altini kabul etti');
+  esit(premiumCalistir(['autocompact', '2000000'], p, cfg).kod, 1, 'ust siniri asani kabul etti');
+  const o = premiumCalistir(['autocompact', 'auto'], p, cfg);
+  esit(o.kod, 0, o.err);
+  esit(
+    JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
+    undefined,
+    'auto anahtari silmeliydi'
+  );
 });
 
 ol('sapma tablosu yalniz tabandan ayrilan dugmeleri verir', () => {
@@ -4342,17 +4354,20 @@ ol('tur ozeti sure ve token tahminini tek satirda verir', () => {
   const m = turSatiri(
     calistir(IZLE, { ...ort(p), transcript_path: t, hook_event_name: 'Stop' }, ek)
   );
-  icerir(m, 'Total Süre: ~');
-  icerir(m, 'sn     Base tahmini, ana oturum + alt ajanlar: ~');
-  const tok = parseInt(m.match(/: ~(\d+) token/)[1], 10);
-  if (tok < 900 || tok > 1200) throw new Error('token tahmini bekleneni tutmadi: ' + tok);
+  icerir(m, 'Total Süre: ');
+  icerir(m, ' <> Ana Oturum: ');
+  icerir(m, ' Token <> Alt Ajanlar: ');
+  if (/~/.test(m)) throw new Error('makbuzda hâlâ ~ var: ' + m);
+  esit(m.match(/Ana Oturum: (\S+) Token/)[1], '1k', 'ana oturum tahmini: ' + m);
+  esit(m.match(/Alt Ajanlar: (\S+) Token/)[1], '0', 'alt ajan sifir olmali: ' + m);
 });
 
 ol('tur makbuzunun adi neyi saydigini soyler', () => {
   const { p, ek } = turProje();
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
   const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
-  icerir(m, 'Base tahmini, ana oturum + alt ajanlar:');
+  icerir(m, 'Ana Oturum:');
+  icerir(m, 'Alt Ajanlar:');
   if (/Tahmini Token/.test(m))
     throw new Error('makbuz hâlâ bütçe sayacıyla ayni adi tasiyor: ' + m);
 });
@@ -4421,7 +4436,7 @@ ol('kullanicidan cevap beklenen tur tek ozet basar, sure birikir', () => {
   d2.t = Date.now() - 20000;
   fs.writeFileSync(damga, JSON.stringify(d2));
   const son = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek);
-  icerir(turSatiri(son), 'Total Süre: ~1dk');
+  icerir(turSatiri(son), 'Total Süre: 1dk');
   esit(fs.existsSync(damga), false, 'kapanista damga silinmedi');
 });
 
@@ -4433,7 +4448,7 @@ ol('bir dakikayi asan tur dakika ve saniye ile yazilir', () => {
   d.t = Date.now() - 215000;
   fs.writeFileSync(f, JSON.stringify(d));
   const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
-  icerir(m, 'Total Süre: ~3dk 35sn');
+  icerir(m, 'Total Süre: 3dk 35sn');
 });
 
 ol('ingilizce kurulumda tur ozeti ingilizce yazilir', () => {
@@ -4449,8 +4464,10 @@ ol('ingilizce kurulumda tur ozeti ingilizce yazilir', () => {
   const m = turSatiri(
     calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, { ...ek, TEKNESYUM_DIL: 'en' })
   );
-  icerir(m, 'Total Time: ~');
-  icerir(m, 'Base estimate, main session + subagents: ~');
+  icerir(m, 'Total Time: ');
+  icerir(m, ' <> Main Session: ');
+  icerir(m, ' Tokens <> Subagents: ');
+  if (/~/.test(m)) throw new Error('ingilizce makbuzda hâlâ ~ var: ' + m);
 });
 
 ol('alt ajan transkripti de token tahminine girer', () => {
@@ -4467,8 +4484,8 @@ ol('alt ajan transkripti de token tahminine girer', () => {
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
   fs.appendFileSync(at, 'y'.repeat(8000) + '\n');
   const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
-  const tok = parseInt(m.match(/: ~(\d+) token/)[1], 10);
-  if (tok < 1900 || tok > 2200) throw new Error('alt ajan transkripti sayilmadi: ' + tok);
+  esit(m.match(/Alt Ajanlar: (\S+) Token/)[1], '2k', 'alt ajan transkripti sayilmadi: ' + m);
+  esit(m.match(/Ana Oturum: (\S+) Token/)[1], '0', 'ana oturum alt ajanla karismis: ' + m);
 });
 
 // Turun `.tur` damgasini geriye alir: `ms` turun basindan bu yana gecen duvar saati,
@@ -4488,7 +4505,7 @@ ol('duraklamali turda sure duvar saatinden kucuk cikar', () => {
   turGeriAl(ek, 600000, 300000);
   calistir(IZLE, { ...ort(p), hook_event_name: 'PostToolUse', tool_name: 'Read' }, ek);
   const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
-  icerir(m, 'Total Süre: ~5dk ');
+  icerir(m, 'Total Süre: 5dk ');
   if (m.includes('10dk')) throw new Error('duvar saati düşülmemiş: ' + m);
 });
 
@@ -4498,7 +4515,7 @@ ol('duraklamasiz kisa turda sure duvar saatine yakin kalir', () => {
   turGeriAl(ek, 40000);
   calistir(IZLE, { ...ort(p), hook_event_name: 'PostToolUse', tool_name: 'Read' }, ek);
   const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
-  const sn = parseInt(m.match(/~(\d+)sn/)[1], 10);
+  const sn = parseInt(m.match(/Total Süre: (\d+)sn/)[1], 10);
   if (sn < 38 || sn > 42) throw new Error('duraklamasiz tur duvar saatinden saptı: ' + m);
 });
 
@@ -4512,7 +4529,7 @@ ol('uzun suren arac duraklama sayilmaz', () => {
     ek
   );
   const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek));
-  icerir(m, 'Total Süre: ~5dk ');
+  icerir(m, 'Total Süre: 5dk ');
 });
 
 console.log('\nBildirim biçimi');

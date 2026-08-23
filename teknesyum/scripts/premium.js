@@ -67,7 +67,7 @@ const DUGME = {
     agent_loop: '5',
   },
   normal: {
-    autocompact: '160000',
+    autocompact: 'auto',
     ask_threshold: 'critical',
     approval_gate: 'none',
     audit: 'every-contract',
@@ -85,7 +85,7 @@ const DUGME = {
     agent_loop: '5',
   },
   premium: {
-    autocompact: '250000',
+    autocompact: '1000000',
     ask_threshold: 'critical',
     approval_gate: 'none',
     audit: 'every-contract',
@@ -145,18 +145,32 @@ function ayarYolu() {
   return path.join(konfigKok(), 'settings.json');
 }
 
-function autocompactYaz(profil) {
-  const yol = ayarYolu();
-  const hedef = Number(DUGME[profil].autocompact);
+const AC_ALT = 100000;
+const AC_UST = 1000000;
+const AC_EZEN = 'CLAUDE_CODE_AUTO_COMPACT_WINDOW';
+
+function acEzenNotu() {
+  const e = process.env[AC_EZEN];
+  return e ? AC_EZEN + '=' + e + ' ortam değişkeni ayarı eziyor; kaldırmadan etkisi yok\n' : '';
+}
+
+function acYaz(yol, deger) {
   let a = {};
   try {
     a = JSON.parse(fs.readFileSync(yol, 'utf8'));
   } catch {}
-  if (a.autoCompactWindow === hedef) return { yol, deger: hedef, degisti: false };
-  a.autoCompactWindow = hedef;
+  const simdi = typeof a.autoCompactWindow === 'number' ? a.autoCompactWindow : 'auto';
+  if (simdi === deger) return { yol, deger, degisti: false };
+  if (deger === 'auto') delete a.autoCompactWindow;
+  else a.autoCompactWindow = deger;
   fs.mkdirSync(path.dirname(yol), { recursive: true });
   fs.writeFileSync(yol, JSON.stringify(a, null, 2) + '\n', 'utf8');
-  return { yol, deger: hedef, degisti: true };
+  return { yol, deger, degisti: true };
+}
+
+function autocompactYaz(profil) {
+  const ham = DUGME[profil].autocompact;
+  return acYaz(ayarYolu(), ham === 'auto' ? 'auto' : Number(ham));
 }
 
 function bayatSil(dizin) {
@@ -267,20 +281,23 @@ function uygula(profil, genel) {
 }
 
 function acDurum(beklenen) {
-  const hedef = Number(DUGME[beklenen].autocompact);
-  let simdi = null;
+  const ham = DUGME[beklenen].autocompact;
+  const hedef = ham === 'auto' ? 'auto' : Number(ham);
+  let ayar = null;
   try {
-    simdi = JSON.parse(fs.readFileSync(ayarYolu(), 'utf8')).autoCompactWindow;
+    ayar = JSON.parse(fs.readFileSync(ayarYolu(), 'utf8')).autoCompactWindow;
   } catch {}
-  if (typeof simdi !== 'number') return 'settings.json yazılmamış · profil önerisi ' + hedef;
-  if (simdi === hedef) return simdi + ' · profille uyumlu';
+  const simdi = typeof ayar === 'number' ? ayar : 'auto';
+  const not = process.env[AC_EZEN] ? ' · ' + AC_EZEN + ' eziyor' : '';
+  if (simdi === hedef) return simdi + ' · profille uyumlu' + not;
   return (
     simdi +
     ' · ' +
     beklenen +
     ' profili ' +
     hedef +
-    ' ister — makine geneli, oturum profili taşımaz; /autocompact ile bağla'
+    ' ister — makine geneli, oturum profili taşımaz; /autocompact ile bağla' +
+    not
   );
 }
 
@@ -394,21 +411,32 @@ function autocompact() {
     const profil = konfigProfili(c);
     const r = autocompactYaz(profil);
     process.stdout.write(
-      'profil: ' + profil + ' (makine)\nautoCompactWindow: ' + r.deger +
-        (r.degisti ? ' yazıldı' : ' zaten böyleydi') + '\n' + r.yol + '\n'
+      'profil: ' +
+        profil +
+        ' (makine)\nautoCompactWindow: ' +
+        r.deger +
+        (r.degisti ? ' yazıldı' : ' zaten böyleydi') +
+        '\n' +
+        r.yol +
+        '\n' +
+        acEzenNotu()
     );
     return;
   }
-  if (!/^\d+$/.test(istek)) dur('autocompact bir sayı ister: node premium.js autocompact 200000');
-  const yol = ayarYolu();
-  let a = {};
-  try {
-    a = JSON.parse(fs.readFileSync(yol, 'utf8'));
-  } catch {}
-  a.autoCompactWindow = Number(istek);
-  fs.mkdirSync(path.dirname(yol), { recursive: true });
-  fs.writeFileSync(yol, JSON.stringify(a, null, 2) + '\n', 'utf8');
-  process.stdout.write('autoCompactWindow: ' + istek + ' yazıldı (elle)\n' + yol + '\n');
+  if (istek !== 'auto' && !/^\d+$/.test(istek))
+    dur('autocompact `auto` ya da bir sayı ister: node premium.js autocompact 400000');
+  if (istek !== 'auto' && (Number(istek) < AC_ALT || Number(istek) > AC_UST))
+    dur(
+      'autoCompactWindow ' +
+        AC_ALT +
+        '–' +
+        AC_UST +
+        ' aralığında olmalı; dışını Claude Code sessizce yok sayar ve `auto` çalışır'
+    );
+  const r = acYaz(ayarYolu(), istek === 'auto' ? 'auto' : Number(istek));
+  process.stdout.write(
+    'autoCompactWindow: ' + r.deger + ' yazıldı (elle)\n' + r.yol + '\n' + acEzenNotu()
+  );
 }
 
 function main() {

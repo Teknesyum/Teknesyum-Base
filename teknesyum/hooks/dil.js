@@ -100,18 +100,10 @@ const S = {
     en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
   },
   turOzeti: {
-    tr: (sure, token) =>
-      '`Total Süre: ~' +
-      sure +
-      '     Base tahmini, ana oturum + alt ajanlar: ~' +
-      token +
-      ' token`',
-    en: (sure, token) =>
-      '`Total Time: ~' +
-      sure +
-      '     Base estimate, main session + subagents: ~' +
-      token +
-      ' tokens`',
+    tr: (sure, ana, alt) =>
+      '`Total Süre: ' + sure + ' <> Ana Oturum: ' + ana + ' Token <> Alt Ajanlar: ' + alt + ' Token`',
+    en: (sure, ana, alt) =>
+      '`Total Time: ' + sure + ' <> Main Session: ' + ana + ' Tokens <> Subagents: ' + alt + ' Tokens`',
   },
   turOzetiYonerge: {
     tr: (satir) =>

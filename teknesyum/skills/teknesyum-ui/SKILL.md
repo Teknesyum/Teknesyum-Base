@@ -123,8 +123,18 @@ teslimdir.
 - Uçlar `bg` `#000000` ile `surface` `#08090a` arasındadır; aradaki fark 1.06:1. Gradient
   bir **doku**dur, geçiş değil: hiyerarşi kurmaz, hiçbir bilgiyi taşımaz.
 - Tek kesintisiz yüzeydir. Üst şeride bir, içeriğe başka bir gradient verip dikiş bırakma.
-- **Statiktir.** Kayan, nefes alan, döngüye giren gradient §5.4'te yasaktır; buradaki
-  gradient hareket etmez.
+- **Yavaşça hareket eder.** Zemin gradienti §5.4'teki sonsuz döngü yasağının **tek adı
+  konmuş istisnasıdır**: açıları çok yavaş kayar, kullanıcı baktığında hareketi fark eder
+  ama okurken dikkatini dağıtmaz. Ölçü: **döngü ≥ 40 s**, açı oynaması ≤ 20°, durak
+  renkleri değişmez — yalnız gradientin ekseni döner. Süre token'ı `--tk-bg-donus`;
+  bilerek `--tk-t-*` ölçeğinin **dışındadır**, çünkü bu bir geçiş süresi değil döngü
+  periyodudur ve ölçeğin içine girerse hareket tavanını 48 sn'ye çıkarır.
+  Parlaklık dalgalanması, renk
+  değişimi, nefes alan opaklık yok; bunlar hâlâ yasak.
+- **`prefers-reduced-motion: reduce` altında durur** ve statik gradiente düşer. WPF'te
+  `SystemParameters.ClientAreaAnimation` kapalıysa aynısı. Bu isteğe bağlı değil.
+- **Tek animasyon zemindedir.** Panellerin, kartların, kutuların kendi gradienti dönmez;
+  hareket eden yüzey uygulamada birdir.
 - Token `--tk-bg`. WPF'te enterpolasyon `ScRgbLinearInterpolation`
   (`references/layout.md` §5.6).
 
@@ -530,10 +540,16 @@ ve düz yazının tam tersini yapar.
 sekme dönüşünde, her veri tazelemesinde tekrar oynayan giriş animasyonu hatadır: kullanıcı
 aynı ekranı ikinci kez görüyordur ve beklemek zorunda kalır.
 
-**Sonsuz döngü yasak.** Nefes alan arka planlar, sürekli dönen çizgiler, kayan gradient
-duvarlar bu temada yok. Tek istisna **süreç göstergesidir** — gerçekten bir iş yürürken
-çalışır, iş bitince durur. Yükleme iskeleti (`skeleton`) parıltısı da buna dahildir:
-döngü ≥ 1.4 s ve kontrastı düşük olur.
+**Sonsuz döngü yasak.** Nefes alan paneller, sürekli dönen çizgiler, parlaklığı dalgalanan
+yüzeyler bu temada yok. İki istisna var:
+
+1. **Süreç göstergesi** — gerçekten bir iş yürürken çalışır, iş bitince durur. Yükleme
+   iskeleti (`skeleton`) parıltısı da buna dahildir: döngü ≥ 1.4 s, kontrastı düşük.
+2. **Uygulama zemininin gradienti** (§2) — ekseni çok yavaş döner. Ölçü: döngü ≥ 40 s,
+   açı oynaması ≤ 20°, durak renkleri sabit. Uygulamada hareket eden **tek** sonsuz yüzey
+   budur; ikinci bir tanesi eklenirse ikisi de yasağa girer.
+
+İkisi de `prefers-reduced-motion: reduce` altında durur.
 
 **Sürükleyerek yapılan her işin tek dokunuşluk alternatifi olur.** Dosya bırakma alanı
 varsa "Dosya seç" düğmesi de olur; sıra değiştirme sürüklemeyle yapılıyorsa yukarı/aşağı

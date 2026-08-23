@@ -77,7 +77,7 @@ is full, don't append; delete the weakest line or merge two. Added with \`/rule\
     }
   }
 
-  const AUTOCOMPACT = { eco: 100000, normal: 160000, premium: 250000 };
+  const AUTOCOMPACT = { eco: 100000, normal: 'auto', premium: 1000000 };
   let profil = '';
   try {
     const tk = JSON.parse(fs.readFileSync(path.join(HOME, 'teknesyum.json'), 'utf8'));
@@ -88,12 +88,14 @@ is full, don't append; delete the weakest line or merge two. Added with \`/rule\
     atlanan.push('autoCompactWindow atlandı (TEKNESYUM_AUTOCOMPACT=kapali)');
   } else if (typeof s.autoCompactWindow === 'number') {
     atlanan.push('autoCompactWindow zaten ' + s.autoCompactWindow + ', dokunulmadı');
-  } else if (acIstek && !/^\d+$/.test(acIstek)) {
-    atlanan.push('TEKNESYUM_AUTOCOMPACT sayı değil (' + acIstek + '), autoCompactWindow atlandı');
+  } else if (acIstek && (!/^\d+$/.test(acIstek) || Number(acIstek) < 100000 || Number(acIstek) > 1000000)) {
+    atlanan.push('TEKNESYUM_AUTOCOMPACT 100000–1000000 aralığında değil (' + acIstek + '), atlandı');
   } else if (acIstek) {
     s.autoCompactWindow = Number(acIstek);
     sDegisti = true;
     yapilan.push('autoCompactWindow = ' + acIstek + ' yazıldı (TEKNESYUM_AUTOCOMPACT)');
+  } else if (profil && AUTOCOMPACT[profil] === 'auto') {
+    atlanan.push('autoCompactWindow yazılmadı — ' + profil + ' profili Claude Code varsayılanını (auto) kullanır');
   } else if (profil) {
     s.autoCompactWindow = AUTOCOMPACT[profil];
     sDegisti = true;

@@ -401,8 +401,8 @@ function ajanTranskripti(j) {
   return base && base !== j.session_id ? String(tp) : null;
 }
 
-function toplamTranskript(j, live) {
-  let toplam = transkriptBoyu(j.transcript_path);
+function altTranskript(live) {
+  let toplam = 0;
   for (const f of dosyalar(live)) {
     if (!f.endsWith('.json') || f.startsWith('_')) continue;
     const a = read(path.join(live, f));
@@ -593,7 +593,8 @@ function turBasla(j, root) {
         son: now,
         durak: 0,
         sn0: zincir ? onceki.sn0 || 0 : 0,
-        boy: zincir ? onceki.boy || 0 : toplamTranskript(j, turIzi(j, root)),
+        boyAna: zincir ? onceki.boyAna || 0 : transkriptBoyu(j.transcript_path),
+        boyAlt: zincir ? onceki.boyAlt || 0 : altTranskript(turIzi(j, root)),
       })
     );
   } catch {}
@@ -627,16 +628,26 @@ function turBitir(j, root, kapanis) {
   const now = Date.now();
   const sn =
     (d.sn0 || 0) + Math.max(0, Math.round((now - d.t - durakToplami(d, now, null)) / 1000));
-  const artis = Math.max(0, toplamTranskript(j, turIzi(j, root)) - (d.boy || 0));
+  const iz = turIzi(j, root);
+  const ana = Math.max(0, transkriptBoyu(j.transcript_path) - (d.boyAna || 0));
+  const alt = Math.max(0, altTranskript(iz) - (d.boyAlt || 0));
   const k = kapanis || { govde: '', engel: '' };
   if (k.engel || SENDEN_ALAN.test(k.govde || '')) {
-    yaz(f, { t: now, son: now, durak: 0, sn0: sn, boy: d.boy || 0, bekleyen: 1 });
+    yaz(f, {
+      t: now,
+      son: now,
+      durak: 0,
+      sn0: sn,
+      boyAna: d.boyAna || 0,
+      boyAlt: d.boyAlt || 0,
+      bekleyen: 1,
+    });
     return;
   }
   try {
     fs.unlinkSync(f);
   } catch {}
-  turOzetiBas(ceviri('turOzeti', sureMetni(sn), Math.round(artis / 4)));
+  turOzetiBas(ceviri('turOzeti', sureMetni(sn), tokenMetni(ana), tokenMetni(alt)));
 }
 
 // ÖLÇÜLDÜ (22.08.2026): `Stop` olayı `additionalContext` kabul ediyor — 2.1.237
@@ -658,6 +669,11 @@ function turOzetiBas(satir) {
       additionalContext: ceviri('turOzetiYonerge', satir),
     },
   });
+}
+
+function tokenMetni(bayt) {
+  const t = Math.round(bayt / 4);
+  return t >= 1000 ? Math.round(t / 1000) + 'k' : String(t);
 }
 
 function sureMetni(sn) {

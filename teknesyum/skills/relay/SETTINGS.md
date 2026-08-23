@@ -24,7 +24,7 @@ second_opinion     : off            # off | on — karar düğümünde fable kı
 research_repos     : 10             # ön araştırmada taranacak en az depo sayısı — eco 1 · normal 10 · premium 50
 agent_stall        : 10             # kaç dakika sessiz kalan ajan bildirilir
 agent_loop         : 5              # aynı eylem kaç kez üst üste tekrarlarsa döngü sayılır
-autocompact        : 160000         # settings.json → autoCompactWindow — eco 100000 · premium 250000
+autocompact        : auto           # settings.json → autoCompactWindow — eco 100000 · premium 1000000
 ```
 
 ## Anlamları
@@ -119,15 +119,38 @@ gelmemişse ana oturuma tek satır bildirim çıkar ve `live/_sorun.log` dosyas�
 Kanca ajanı durduramaz — durdurma kararı ana oturumdadır, `TaskStop` aracıyla verilir.
 Statusline'ın kayıp ajan eşiği de 10 dakikadır; ikisini birlikte değiştir.
 
-**autocompact** — `settings.json` içindeki `autoCompactWindow`, yani otomatik sıkıştırma
-eşiği. Eşik tek başına bir konfor ayarı değil maliyet ayarıdır: pencere büyüdükçe her
-istek daha çok bağlam taşır, o yüzden profile bağlıdır — `eco` seçen kullanıcı ucuz istek
-istemiştir ve 250000'lik pencere o kararı sessizce iptal ederdi. Modele hiç yazılmaz;
-`agent_stall` gibi bunu da kanca değil koşum ortamı okur. **Makine genelidir:** oturuma
-inen profil (`/premium eco`) ajan modellerini değiştirir ama bu pencereyi değiştirmez,
-çünkü koşum ortamı değeri oturum açılışında okur. Pencereyi gerçekten oynatmak makine
-kararıdır — `/premium <profil> --genel` ya da `/autocompact`. `/premium durum` yürürlükteki
-değeri ve profille uyuşup uyuşmadığını tek satırda söyler.
+**autocompact** — `settings.json` içindeki `autoCompactWindow`, yani otomatik sıkıştırmanın
+hangi token doluluğunda tetikleneceği. Eşik konfor ayarı değil maliyet ayarıdır: pencere
+büyüdükçe her istek daha çok bağlam taşır. `eco` seçen kullanıcı ucuz istek istemiştir,
+geniş pencere o kararı sessizce iptal ederdi. Bu yüzden profile bağlıdır.
+
+**Ölçüldü (23.08.2026, `claude.exe` 2.1.241 üzerinden):** şema `int().min(1e5).max(1e6)` —
+yani geçerli aralık **100000–1000000**, ondalık yok. Aralık dışındaki değer hata vermez,
+şema `.catch(void 0)` ile onu **sessizce düşürür** ve pencere `auto`ya döner; bu yüzden
+`/autocompact` aralık dışını yazmadan önce durur. CLI karşılığı `--autocompact <auto|tokens>`.
+
+Üç profilin değeri:
+
+- **eco `100000`** — şemanın izin verdiği en küçük pencere. En erken sıkıştırma, en ucuz istek.
+- **normal `auto`** — anahtar `settings.json`'a **hiç yazılmaz**. Claude Code'un kendi
+  varsayılanı modele göre pencere seçer; `/config` ekranı bunu ezmeyi "yüksek token
+  kullanımına yol açabilir" diye işaretler. Taban profil satıcı varsayılanının dışına çıkmaz.
+- **premium `1000000`** — şemanın tavanı. "Token bütçesi kısıt olmaktan çıkar" felsefesinin
+  karşılığı. **Fiili pencere modelin bağlam penceresiyle sınırlıdır:** Opus'ta ~200k, 1M
+  bağlam açık Sonnet'te gerçekten 1M. Yani `1000000` yazmak "modelin verdiği en genişi kullan"
+  demektir, 1M garantisi değil.
+
+**Max 20x uyarısı.** Bu abonelikte kısıt token faturası değil oturum limitleridir. Geniş
+pencere limitleri daha hızlı tüketir — premium'da erken limite takılıyorsan ilk bakılacak
+düğme budur.
+
+**`CLAUDE_CODE_AUTO_COMPACT_WINDOW` ortam değişkeni ayarı ezer.** Set edilmişse `settings.json`
+ne yazarsa yazsın etkisi olmaz; `/premium durum` ve `/autocompact` bunu tek satırla söyler.
+
+Modele hiç yazılmaz; `agent_stall` gibi bunu da kanca değil koşum ortamı okur. **Makine
+genelidir:** oturuma inen profil (`/premium eco`) ajan modellerini değiştirir ama bu pencereyi
+değiştirmez, çünkü koşum ortamı değeri oturum açılışında okur. Pencereyi gerçekten oynatmak
+makine kararıdır — `/premium <profil> --genel` ya da `/autocompact`.
 
 **agent_loop** — ajan ilerliyor ama aynı yerde: `last_action` bu sayı kadar üst üste aynı
 kalır ve ajanın transkript dosyası bu sırada büyümeye devam ederse döngü sayılır. Büyüme
@@ -182,7 +205,7 @@ edilemez**; premium farkını `model` taşır, efor ikinci derece kaldıraçtır
 | `research_repos` | 1 | 10 | 50 |
 | `agent_stall` | 10 | 10 | 10 |
 | `agent_loop` | 5 | 5 | 5 |
-| `autocompact` | 100000 | 160000 | 250000 |
+| `autocompact` | 100000 | auto | 1000000 |
 
 **normal** varsayılandır ve eski `standart` profilin aynısıdır — yalnız adı değişti.
 `/premium kapat` hâlâ buraya götürür.

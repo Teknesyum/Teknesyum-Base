@@ -40,3 +40,14 @@
              theme.css @theme + :root, Theme.xaml, Palette.cs + ANSI sabiti.
              test/u4-renk.js 101/0 GEÇTİ. SKILL §2 metni ve Theme.axaml rol listesi
              Çıktı bölümünde — U10 alacak. İki karar sorusu Çıktı §5'te.
+
+24.08.2026  U2 tur 2 · ui-builder · submitted
+             components.md beşinci kopya olarak hizaya girdi: başlık 24/20/14,
+             ağırlık 600, tracking tokenlardan; gövdeyle aynı boyutta başlık yok.
+             Eski yarıçap merdiveni kod bloklarından kalktı, daire istisnası durdu.
+             SKILL §3 "birebir taşır" → zincirin başı ortak, kuyruğu platform sınırı.
+             test/run.js: U2_COMP eklendi, iki yeni test, on dört prose eşlemesi
+             davranış ölçümüne çevrildi (tablo ayrıştırma, öznitelik tek tek, yapısal
+             sıra kontrolü). u2Kod/u2Roller ölü-test korumalı. 414/414 GEÇTİ.
+             Not: başka bir ajan git reset --hard çalıştırdı, işim silindi ve geri
+             yüklendi (_sorun.log). SKILL tablosu mutasyonları doğrulanmadı — Çıktı.

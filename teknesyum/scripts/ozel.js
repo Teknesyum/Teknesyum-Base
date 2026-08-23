@@ -116,7 +116,8 @@ function sparseAyarla(klon, klasorler) {
   git(klon, ['sparse-checkout', 'set'].concat(klasorler), true);
   git(klon, ['sparse-checkout', 'reapply'], true);
   const eksik = klasorler.filter(
-    (k) => (git(klon, ['ls-tree', '-d', '--name-only', 'HEAD', k], true) || '').trim() &&
+    (k) =>
+      (git(klon, ['ls-tree', '-d', '--name-only', 'HEAD', k], true) || '').trim() &&
       !fs.existsSync(path.join(klon, k))
   );
   if (eksik.length) git(klon, ['sparse-checkout', 'reapply'], true);
@@ -333,7 +334,10 @@ function durum() {
     satir.push('Kayıtlı dosya yok.  /ozel ekle <yol>');
     return bas(satir);
   }
-  const en = Math.max.apply(null, f.map((d) => d.kaynak.length));
+  const en = Math.max.apply(
+    null,
+    f.map((d) => d.kaynak.length)
+  );
   const ISARET = { ayni: 'aynı', degisti: 'değişti', yeni: 'yeni', eksik: 'kaynak yok' };
   for (const d of f) satir.push('  ' + d.kaynak.padEnd(en) + '   ' + ISARET[d.durum]);
   const bekleyen = f.filter((d) => d.durum === 'degisti' || d.durum === 'yeni').length;
@@ -350,7 +354,10 @@ function projeler() {
   const klon = klonYolu(a);
   // `ls-tree` ağaçtan okur; dosya içeriği inmediği için bu liste depoyu çekmeden gelir.
   const c = git(klon, ['ls-tree', '-d', '--name-only', 'HEAD'], true);
-  const hepsi = (c || '').split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+  const hepsi = (c || '')
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   const inen = sparseListe(klon);
   if (!hepsi.length) return bas(['Depoda henüz proje klasörü yok.']);
   bas(
@@ -400,7 +407,8 @@ function cek(argv) {
   }
   const satir = ['Aynadan çekildi: ' + yazilan.length + ' dosya'];
   for (const y of yazilan) satir.push('  yazıldı  ' + y);
-  for (const y of korunan) satir.push('  korundu  ' + y + '  — yereldeki farklı, üzerine yazılmadı');
+  for (const y of korunan)
+    satir.push('  korundu  ' + y + '  — yereldeki farklı, üzerine yazılmadı');
   if (korunan.length) satir.push('', 'Yereli aynadakiyle ezmek için:  /ozel cek --zorla');
   bas(satir);
 }

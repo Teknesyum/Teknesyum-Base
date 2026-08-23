@@ -201,9 +201,18 @@ function durum(gocSatiri) {
       'platform · ' + process.platform + ' üzerinde `bip <hz> <ms>` çalışmaz, yalnız dosya çalar'
     );
   if (uzaktaMi())
-    not.push('uzak denetim açık · makinede çalan ses telefona ulaşmaz, `PushNotification` ayrı yol');
+    not.push(
+      'uzak denetim açık · makinede çalan ses telefona ulaşmaz, `PushNotification` ayrı yol'
+    );
   else not.push('uzaktan sürerken (`/rc`) bu ses telefona ulaşmaz — o yol `PushNotification`');
-  bas([...gocSatiri, ...(gocSatiri.length ? [''] : []), ...gen, ciz(gen2), ...satir.map(ciz), ...not]);
+  bas([
+    ...gocSatiri,
+    ...(gocSatiri.length ? [''] : []),
+    ...gen,
+    ciz(gen2),
+    ...satir.map(ciz),
+    ...not,
+  ]);
 }
 
 function dinle() {

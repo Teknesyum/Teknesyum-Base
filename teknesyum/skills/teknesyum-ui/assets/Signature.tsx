@@ -15,23 +15,13 @@ export type Translate = (key: string) => string;
 
 type Props = { t: Translate };
 
-// ÖLÇÜLDÜ (23.08.2026, U1 denetimi): duruk hâlde `opacity-80` bütün öğeye, metne dahil
-// uygulanıyordu. `#ff54eb` %80 opaklıkla siyah üstünde **5.10:1**, başlık şeridinin
-// gerçek zemini `#08090a` üstünde **4.95:1** — §2'nin 7:1 kuralının altında. Mor metin
-// zaten 4.57 olduğu için pembeye geçilmişti; %80 opaklık o kazancı geri veriyordu.
-// Kullanıcı zamanının neredeyse tamamında duruk hâli görür, hover'ı değil.
-//
-// Aynı ölçümde çerçeve de düştü: `pink-text/50` siyah üstünde **2.51:1**, %80 opaklıkla
-// **~1.9:1** — 1.4.11'in 3:1 eşiğinin altında. `/50` merdiveni yalnız `neon-blue` için
-// ölçülmüştü (4.07); pembe ve mor o merdiveni taşımıyor.
-//
-// Duruk hâl artık tam opak ve çerçeve tam token. Hover sinyali §5'in kendi buton değeri
-// olan `scale(1.02)`; opaklık sinyali kontrastı bozmadan taşınamıyordu.
+// Duruk hâl tam opak, çerçeve tam token, hover sinyali `scale(1.02)`.
+// Gerekçe ve ölçüm tek yerde: `teknesyum-ui/SKILL.md` §4.
 const BASE =
   'inline-flex items-center justify-center min-h-6 min-w-6 no-underline select-none ' +
   'text-sm font-bold tracking-[0.15em] rounded-md border bg-transparent ' +
   'px-2.5 py-1 ease-[--tk-e-out] duration-[--tk-t-instant] hover:scale-[1.02] ' +
-  'transition-[color,border-color,transform]';
+  'transition-[transform]';
 
 const SUPPORT = `${BASE} gap-1.5 text-[var(--tk-pink-text)] border-[var(--tk-pink-text)]`;
 

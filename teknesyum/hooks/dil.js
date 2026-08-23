@@ -101,9 +101,21 @@ const S = {
   },
   turOzeti: {
     tr: (sure, ana, alt) =>
-      '`Total Süre: ' + sure + ' <> Ana Oturum: ' + ana + ' Token <> Alt Ajanlar: ' + alt + ' Token`',
+      '`Total Süre: ' +
+      sure +
+      ' <> Ana Oturum: ' +
+      ana +
+      ' Token <> Alt Ajanlar: ' +
+      alt +
+      ' Token`',
     en: (sure, ana, alt) =>
-      '`Total Time: ' + sure + ' <> Main Session: ' + ana + ' Tokens <> Subagents: ' + alt + ' Tokens`',
+      '`Total Time: ' +
+      sure +
+      ' <> Main Session: ' +
+      ana +
+      ' Tokens <> Subagents: ' +
+      alt +
+      ' Tokens`',
   },
   turOzetiYonerge: {
     tr: (satir) =>
@@ -120,12 +132,13 @@ const S = {
     tr: (n) =>
       n + ' açık hata günlüğü var — `/log` ile bak, çözüp `/log kapat` ya da `/log arsivle` de',
     en: (n) =>
-      n + ' open bug log(s) — read them with `/log`, then close with `/log kapat` or `/log arsivle`',
+      n +
+      ' open bug log(s) — read them with `/log`, then close with `/log kapat` or `/log arsivle`',
   },
 
   gunlukProseduru: {
     tr: () =>
-      'Teknesyum\'un bir işlevi bozuk davranırsa sohbeti kesme, günlük bırak: ' +
+      "Teknesyum'un bir işlevi bozuk davranırsa sohbeti kesme, günlük bırak: " +
       '`/log yaz --baslik "..." --belirti "..." --kaynak "<dosya>"` — günlük makine geneli ' +
       'makaraya düşer, Teknesyum Base açıldığında çözülür.',
     en: () =>

@@ -940,11 +940,15 @@ ol('duraklama bildiren mesaj senden bolumu olmadan kapanmaz', () => {
     '---\nstatus: active\n---\n'
   );
   const m = 'T3 oturum limitine takildi, isi guvenli noktada durdurdum.\nRapor: PLAN.md';
-  const r = calistir(IZLE, {
-    ...ort(p),
-    hook_event_name: 'Stop',
-    transcript_path: transcript(m),
-  }, ek);
+  const r = calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'Stop',
+      transcript_path: transcript(m),
+    },
+    ek
+  );
   const o = JSON.parse(r.out);
   esit(o.decision, 'block');
   icerir(o.reason, 'Senden istediklerim');
@@ -959,11 +963,15 @@ ol('senden bolumu varsa duraklama serbest', () => {
   );
   const m =
     'T3 oturum limitine takildi.\nRapor: PLAN.md\n\n## Senden istediklerim\n\n1. Limit donunce yaz: `T3 devam`';
-  const r = calistir(IZLE, {
-    ...ort(p),
-    hook_event_name: 'Stop',
-    transcript_path: transcript(m),
-  }, ek);
+  const r = calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'Stop',
+      transcript_path: transcript(m),
+    },
+    ek
+  );
   esit(r.out, '', 'gecerli duraklama engellendi');
 });
 
@@ -974,11 +982,15 @@ ol('duraklama yoksa senden bolumu istenmez', () => {
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
   );
-  const r = calistir(IZLE, {
-    ...ort(p),
-    hook_event_name: 'Stop',
-    transcript_path: transcript('T3 uzerinde calisiyorum, band olcumu suruyor.'),
-  }, ek);
+  const r = calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'Stop',
+      transcript_path: transcript('T3 uzerinde calisiyorum, band olcumu suruyor.'),
+    },
+    ek
+  );
   esit(r.out, '', 'gereksiz engel');
 });
 
@@ -2675,9 +2687,7 @@ ol('autocompact tablosu premium.js ile post-install.js arasinda ayni', () => {
   const kaynak = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'post-install.js'), 'utf8');
   const m = kaynak.match(/const AUTOCOMPACT = (\{[^}]*\})/);
   if (!m) throw new Error('post-install.js AUTOCOMPACT tablosunu kaybetmis');
-  const kurulum = JSON.parse(
-    m[1].replace(/([a-z]+):/g, '"$1":').replace(/'/g, '"')
-  );
+  const kurulum = JSON.parse(m[1].replace(/([a-z]+):/g, '"$1":').replace(/'/g, '"'));
   for (const profil of ['eco', 'normal', 'premium'])
     esit(
       String(kurulum[profil]),
@@ -2703,7 +2713,10 @@ ol('--genel makine varsayilanini ve pencereyi birlikte yazar', () => {
   icerir(r.out, 'autoCompactWindow: 100000');
   const k = JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8'));
   esit(k.profil, 'eco');
-  esit(JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow, 100000);
+  esit(
+    JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
+    100000
+  );
 });
 
 ol('oturum profili pencereyi tasimaz, durum bunu soyler', () => {
@@ -2781,12 +2794,7 @@ ol('premium kapatildiginda dosyalar bire bir geri doner', () => {
 ol('uc profil de uygulanir, durum yururlukteki profili soyler', () => {
   const { p, cfg } = premiumKopya();
   const beklenen = {
-    eco: [
-      'varsayılan model: haiku',
-      'parallel_width 1',
-      'research_repos 1',
-      'audit very-critical',
-    ],
+    eco: ['varsayılan model: haiku', 'parallel_width 1', 'research_repos 1', 'audit very-critical'],
     normal: ['varsayılan model: sonnet', 'sapan düğme: yok — taban profil'],
     premium: [
       'varsayılan model: opus',
@@ -5307,7 +5315,14 @@ ol('tarama muhursuz sozlesmeyi sayar, mühürlüyü gecirir', () => {
 ol('denetim esigi geri donus maliyetine gore acilir', () => {
   const p = taramaProje(50);
   const done = path.join(p, '.claude', 'relay', 'contracts', 'done');
-  const sozlesme = (n) => '---\nowns:\n' + 'abcde'.slice(0, n).split('').map((h) => '  - ' + h).join('\n') + '\naudit: —\n---\n';
+  const sozlesme = (n) =>
+    '---\nowns:\n' +
+    'abcde'
+      .slice(0, n)
+      .split('')
+      .map((h) => '  - ' + h)
+      .join('\n') +
+    '\naudit: —\n---\n';
   fs.writeFileSync(path.join(done, 'T1.md'), sozlesme(5));
   fs.writeFileSync(path.join(done, 'T2.md'), sozlesme(3));
   fs.writeFileSync(path.join(done, 'T3.md'), sozlesme(2));
@@ -5322,8 +5337,14 @@ ol('denetim esigi geri donus maliyetine gore acilir', () => {
 ol('sozlesme kendi risk seviyesini soyleyebilir, owns vekili ezilir', () => {
   const p = taramaProje(50);
   const done = path.join(p, '.claude', 'relay', 'contracts', 'done');
-  fs.writeFileSync(path.join(done, 'T1.md'), '---\nowns:\n  - a\nrisk: very-critical\naudit: —\n---\n');
-  fs.writeFileSync(path.join(done, 'T2.md'), '---\nowns:\n  - a\n  - b\n  - c\nrisk: medium\naudit: —\n---\n');
+  fs.writeFileSync(
+    path.join(done, 'T1.md'),
+    '---\nowns:\n  - a\nrisk: very-critical\naudit: —\n---\n'
+  );
+  fs.writeFileSync(
+    path.join(done, 'T2.md'),
+    '---\nowns:\n  - a\n  - b\n  - c\nrisk: medium\naudit: —\n---\n'
+  );
   const bak = (profil) =>
     JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[2].muhursuz.join(',');
   esit(bak('eco'), 'T1.md', 'tek dosyali sozlesme risk alanıyla denetime girmeli');
@@ -5811,7 +5832,10 @@ ol('ui kipi tailwind hover utility"sinde gecis eksigini yakalar', () => {
 ol('ui kipi gecissiz bileseni ve animasyonsuz listeyi yakalar', () => {
   const { p, yaz } = uiProje();
   yaz('src/Panel.tsx', 'export const P = () => <div>durgun</div>;\n');
-  yaz('src/Modal.tsx', 'import { motion } from "motion";\nexport const M = () => <motion.div />;\n');
+  yaz(
+    'src/Modal.tsx',
+    'import { motion } from "motion";\nexport const M = () => <motion.div />;\n'
+  );
   yaz('src/Liste.tsx', 'export const L = (a) => <ul>{a.map((x) => <li>{x}</li>)}</ul>;\n');
   yaz(
     'src/Canli.tsx',
@@ -6228,11 +6252,7 @@ ol('ciplak beep makineye yazar, oturum kaydi acmaz', () => {
 ol('beep this eki yalniz oturumu yazar, makine dosyasi ellenmez', () => {
   const cfg = beepCfg();
   const sid = 'beep-oturum';
-  esit(
-    beepCalistir(['off', 'this'], cfg, { CLAUDE_CODE_SESSION_ID: sid }).kod,
-    0,
-    'cikis kodu'
-  );
+  esit(beepCalistir(['off', 'this'], cfg, { CLAUDE_CODE_SESSION_ID: sid }).kod, 0, 'cikis kodu');
   esit(fs.existsSync(path.join(cfg, 'teknesyum-beep.json')), false, 'makine dosyasi acilmamali');
   const k = JSON.parse(fs.readFileSync(beepOturumYolu(cfg, sid), 'utf8'));
   esit(k.beep.kapali, true);
@@ -6345,7 +6365,10 @@ ol('beep gocu elle eklenmis ses kancalarini siler, otekilere dokunmaz', () => {
         {
           matcher: '',
           hooks: [
-            { type: 'command', command: 'powershell -NoProfile -Command "[console]::beep(880,200)"' },
+            {
+              type: 'command',
+              command: 'powershell -NoProfile -Command "[console]::beep(880,200)"',
+            },
           ],
         },
       ],
@@ -6355,7 +6378,8 @@ ol('beep gocu elle eklenmis ses kancalarini siler, otekilere dokunmaz', () => {
           hooks: [
             {
               type: 'command',
-              command: "powershell -NoProfile -Command \"(New-Object Media.SoundPlayer 'x.wav').PlaySync()\"",
+              command:
+                'powershell -NoProfile -Command "(New-Object Media.SoundPlayer \'x.wav\').PlaySync()"',
             },
             { type: 'command', command: 'node baska.js' },
           ],
@@ -6382,7 +6406,9 @@ ol('beep gocu ilgisiz powershell kancasini silmez', () => {
     path.join(cfg, 'settings.json'),
     JSON.stringify({
       hooks: {
-        Stop: [{ hooks: [{ type: 'command', command: 'powershell -NoProfile -Command "git status"' }] }],
+        Stop: [
+          { hooks: [{ type: 'command', command: 'powershell -NoProfile -Command "git status"' }] },
+        ],
       },
     })
   );
@@ -6512,7 +6538,13 @@ function gitCalistir(kok, argv) {
     cwd: kok,
     encoding: 'utf8',
     timeout: 60000,
-    env: { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' },
+    env: {
+      ...process.env,
+      GIT_AUTHOR_NAME: 't',
+      GIT_AUTHOR_EMAIL: 't@t',
+      GIT_COMMITTER_NAME: 't',
+      GIT_COMMITTER_EMAIL: 't@t',
+    },
   });
 }
 
@@ -6654,7 +6686,11 @@ ol('autoCompactWindow yazilinca yeniden baslatma ve tavan notu basilir', () => {
   icerir(ilk, 'Claude Code yeniden başlayınca');
   const ikinci = c(['autocompact', '900000']).stdout;
   icermez(ikinci, 'yeniden başlayınca', 'deger degismediyse yeniden baslatma notu cikmamali');
-  icermez(c(['autocompact', '150000']).stdout, 'tavan, garanti değil', '200k alti tavan notu almamali');
+  icermez(
+    c(['autocompact', '150000']).stdout,
+    'tavan, garanti değil',
+    '200k alti tavan notu almamali'
+  );
 });
 
 // Kullanici "pusla" diyor, `/pusla` yazmiyor. Iki depoyu birden gondermeyi modelin
@@ -6718,7 +6754,15 @@ ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
     });
   icerir(c([]).stdout, 'Açık günlük yok');
 
-  const y = c(['yaz', '--baslik', 'Statusline yanlış sayıyor', '--belirti', 'üç ajanı bir gösteriyor', '--kaynak', 'bridge.js']);
+  const y = c([
+    'yaz',
+    '--baslik',
+    'Statusline yanlış sayıyor',
+    '--belirti',
+    'üç ajanı bir gösteriyor',
+    '--kaynak',
+    'bridge.js',
+  ]);
   esit(y.status, 0, 'yaz cikis kodu');
   const yol = path.join(cfg, 'teknesyum', 'openlogs', 'HATA-statusline-yanlis-sayiyor.md');
   esit(fs.existsSync(yol), true, 'gunluk makaraya dusmeli');
@@ -6754,7 +6798,9 @@ ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
 
   icerir(cb(['arsivle', 'statusline']).stdout, 'Arşivlendi');
   esit(
-    fs.existsSync(path.join(base, 'docs', 'openlogs', 'kapali', 'HATA-statusline-yanlis-sayiyor.md')),
+    fs.existsSync(
+      path.join(base, 'docs', 'openlogs', 'kapali', 'HATA-statusline-yanlis-sayiyor.md')
+    ),
     true,
     'arsive tasinmali'
   );

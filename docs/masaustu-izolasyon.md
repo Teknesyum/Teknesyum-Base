@@ -114,9 +114,22 @@ Ajanın ekranı **istemesi** engellenemez ama **habersiz alması** engellenebili
    **Tümden sökmek:** `teknesyum/hooks/ekran-kapisi.js` ile `teknesyum/commands/ekran.md`
    dosyalarını sil ve `hooks.json` içindeki `PreToolUse` bloğundan
    `matcher: "Bash|mcp__computer-use__.*|mcp__Windows-MCP__.*"` girdisini kaldır.
-   Başka hiçbir dosyaya dokunmaz — `relay-watch.js` kapıdan habersizdir, kapı onun tur
-   dosyasını yalnız okur. `dil.js`'teki `ekran*` metinleri geride kalırsa çağrısız durur.
-   Sökme fiilen sınandı: üçü kaldırıldığında kalan test kümesi 282/282 geçiyor.
+   Üretim kodunda başka hiçbir dosyaya dokunmaz — `relay-watch.js` kapıdan habersizdir,
+   kapı onun tur dosyasını yalnız okur. `dil.js`'teki `ekran*` metinleri geride kalırsa
+   çağrısız durur.
+
+   **Test tarafında iki düzenleme daha gerekir** ve reçete bunu uzun süre söylemiyordu:
+   `test/run.js` içindeki kapı testleri (`ekran kapisi …` ve `/ekran …` adlı bloklar) ile
+   `komut kümesi eksiksiz` testinin beklenen liste dizgisindeki `ekran.md` girdisi.
+   İkincisi kapının kendi testi değil, genel komut envanteri testidir; `ekran.md`
+   silinip liste güncellenmezse o test kalır.
+
+   ÖLÇÜLDÜ (23.08.2026): `git archive HEAD` ile açılan temiz bir kopyada
+   `ekran-kapisi.js` silinip `hooks.json` bloğu kaldırıldığında **390 testin 373'ü
+   geçiyor ve kalan 17 kaldının 17'si de kapının kendi testi.** Yani sökmenin yan hasarı
+   yok; kaldıran tek şey kaldırılan özelliğin kendi doğrulaması. Reçete harfiyen
+   uygulanıp `ekran.md` de silinirse buna `komut kümesi eksiksiz` eklenir — o yüzden
+   yukarıdaki iki düzenleme reçetenin parçasıdır.
 2. **Kural.** `standartlar.md`'ye tek madde: uygulama doğrulaması başsız koşuyla yapılır;
    arayüz gerekiyorsa UIA, ekran sürme son çaredir ve izin ister.
 3. **Test kipi maddesi.** Her masaüstü programına `--test` bayrağı: pencere ekran dışında,

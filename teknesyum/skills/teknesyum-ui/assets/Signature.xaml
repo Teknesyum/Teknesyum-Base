@@ -15,20 +15,15 @@
       <Setter Property="MinHeight" Value="24"/>
       <Setter Property="Cursor" Value="Hand"/>
       <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
-      <Setter Property="RenderTransform">
-        <Setter.Value>
-          <ScaleTransform ScaleX="1" ScaleY="1"/>
-        </Setter.Value>
-      </Setter>
       <Style.Triggers>
         <Trigger Property="IsMouseOver" Value="True">
           <Trigger.EnterActions>
             <BeginStoryboard>
               <Storyboard>
-                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1.02"
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02"
                                  Duration="{StaticResource TInstant}"
                                  EasingFunction="{StaticResource EOut}"/>
-                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1.02"
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02"
                                  Duration="{StaticResource TInstant}"
                                  EasingFunction="{StaticResource EOut}"/>
               </Storyboard>
@@ -37,10 +32,10 @@
           <Trigger.ExitActions>
             <BeginStoryboard>
               <Storyboard>
-                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1"
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1"
                                  Duration="{StaticResource TInstant}"
                                  EasingFunction="{StaticResource EIn}"/>
-                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1"
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1"
                                  Duration="{StaticResource TInstant}"
                                  EasingFunction="{StaticResource EIn}"/>
               </Storyboard>
@@ -60,6 +55,9 @@
 
   <Border Style="{StaticResource SigChip}" BorderBrush="{StaticResource PinkText}"
           Margin="0,0,8,0" ToolTip="{loc:Str sig.supportTitle}">
+    <Border.RenderTransform>
+      <ScaleTransform ScaleX="1" ScaleY="1"/>
+    </Border.RenderTransform>
     <StackPanel Orientation="Horizontal">
       <Canvas Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,6,0">
         <Path Stroke="{StaticResource PinkText}" StrokeThickness="2" StrokeLineJoin="Round"
@@ -80,6 +78,9 @@
 
   <Border Style="{StaticResource SigChip}" BorderBrush="{StaticResource NeonBlue}"
           ToolTip="{loc:Str sig.brandTitle}">
+    <Border.RenderTransform>
+      <ScaleTransform ScaleX="1" ScaleY="1"/>
+    </Border.RenderTransform>
     <TextBlock Style="{StaticResource SigText}">
       <Hyperlink NavigateUri="https://github.com/Teknesyum"
                  TextDecorations="None" Foreground="{StaticResource NeonBlue}"

@@ -506,7 +506,6 @@ function kapsamAyir(arg) {
   return { arg: a, oturuma };
 }
 
-
 function autocompact(arg) {
   const istek = (arg || pozisyonelHepsi(3))[0];
   if (istek === undefined) {

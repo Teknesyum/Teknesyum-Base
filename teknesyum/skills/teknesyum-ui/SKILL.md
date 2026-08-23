@@ -232,9 +232,11 @@ uyar: düğme, sekme, etiket, menü, panel başlığı, bölüm başlığı.
 - **Türkçe büyütme haritası zorunlu:** `i` → `İ`, `ı` → `I`. Kültüre duyarsız
   `toUpperCase()` / `ToUpper()` `i`'yi `I` yapar ve `İşlem` yerine `Islem` yazar. JS'te
   `toLocaleUpperCase('tr')`, .NET'te `CultureInfo("tr-TR")` kullanılır.
-- **Tam cümleler bu kuralın dışındadır.** Tooltip, hata mesajı, boş durum açıklaması ve
-  onay metni cümledir: yalnız ilk harfi büyük yazılır. Kural etiketler içindir, cümleler
-  başlık gibi büyütülmez.
+- **Tam cümleler de bu kurala uyar.** Tooltip, hata mesajı, boş durum açıklaması ve onay
+  metni dahil, görünen her metinde her kelimenin ilk harfi büyüktür. Bir dönem "cümleler
+  muaftır" diye bir madde vardı; o muafiyeti kullanıcı istemedi, tek taraflı eklenmişti ve
+  23.08.2026'da kaldırıldı. Bağlaç kuralı burada da geçerlidir: `ve`, `veya`, `ile`, `ki`,
+  `da`, `de` küçük kalır.
 - İstisna **özel adlar ve kısaltmalar**: `MP4`, `GPU`, `Teknesyum`, `Windows`.
   Cümle ortasında da büyük kalırlar.
 - Aynı kural depoya, klasöre ve gösterilen dosya adına da uygulanır (bkz. relay §2).

@@ -118,7 +118,10 @@ function dosyalar(dizin, kaynak) {
 
 function baslikOku(yol) {
   try {
-    const ilk = fs.readFileSync(yol, 'utf8').split(/\r?\n/).find((s) => s.startsWith('# '));
+    const ilk = fs
+      .readFileSync(yol, 'utf8')
+      .split(/\r?\n/)
+      .find((s) => s.startsWith('# '));
     return ilk ? ilk.slice(2).trim() : '';
   } catch {
     return '';
@@ -160,7 +163,10 @@ function durum() {
   }
   satir.push(h.length + ' açık günlük:');
   satir.push('');
-  const en = Math.max.apply(null, h.map((g) => g.id.length));
+  const en = Math.max.apply(
+    null,
+    h.map((g) => g.id.length)
+  );
   for (const g of h)
     satir.push(
       '  ' + g.id.padEnd(en) + '  ' + g.kaynak.padEnd(7) + gun(g.ms).padEnd(12) + g.baslik
@@ -193,8 +199,7 @@ function yaz(argv) {
   const dizin = makaraKoku();
   fs.mkdirSync(dizin, { recursive: true });
   const yol = path.join(dizin, ONEK + slug(baslik) + '.md');
-  if (fs.existsSync(yol))
-    return bas(['Bu başlıkta günlük zaten var, üzerine yazılmadı: ' + yol]);
+  if (fs.existsSync(yol)) return bas(['Bu başlıkta günlük zaten var, üzerine yazılmadı: ' + yol]);
   const govde = [
     '# Hata: ' + baslik,
     '',
@@ -231,7 +236,10 @@ function al(argv) {
   fs.mkdirSync(d, { recursive: true });
   const hedef = path.join(d, g.dosya);
   fs.renameSync(g.yol, hedef);
-  bas(['Depoya taşındı: ' + hedef, 'Artık sürüm kontrolünde; çözülünce /log kapat ya da /log arsivle.']);
+  bas([
+    'Depoya taşındı: ' + hedef,
+    'Artık sürüm kontrolünde; çözülünce /log kapat ya da /log arsivle.',
+  ]);
 }
 
 function kapat(argv) {
@@ -259,7 +267,7 @@ function sayi() {
 
 function yardim() {
   bas([
-    'Açık hata günlükleri — bozuk işlev görüldüğü yerde yazılır, Teknesyum Base\'de çözülür.',
+    "Açık hata günlükleri — bozuk işlev görüldüğü yerde yazılır, Teknesyum Base'de çözülür.",
     '',
     '  /log                      açık günlükleri listele',
     '  /log oku <ad>             bir günlüğü tam oku',

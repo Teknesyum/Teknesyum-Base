@@ -27,7 +27,10 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   whoever installs the plugin gets their own repo, not mine.
 - `/pusla` runs the whole push: tests, then the public repo, then `/ozel pusla`. The
   private step is unconditional and unprompted; with no mirror set up it prints one
-  line and moves on.
+  line and moves on. No command needs typing either — `relay-watch.js` sees the word
+  `puşla`/`pusla` in a prompt and injects the flow, because leaving the second repo to
+  the model's memory means it eventually gets skipped on the one turn nobody notices.
+  The reminder only exists once a mirror is configured on the machine.
 - `.github/FUNDING.yml` turns on GitHub's native Sponsor button on the repo page.
 
 ### Changed
@@ -47,6 +50,9 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- `UserPromptSubmit` context is now appended rather than overwritten. Two hook paths
+  writing in the same turn used `Object.assign` on `hookSpecificOutput`, so the second
+  silently erased the first one's text.
 - `/ozel` project keys are normalised through `realpath`. On Windows `os.tmpdir()`
   hands back an 8.3 short path while `git rev-parse` returns the long one, and
   `path.resolve` does not reconcile them; the project name would quietly fall back to

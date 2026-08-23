@@ -62,6 +62,7 @@ function run(j) {
     const k = String(j.prompt || '').match(/^[ ]*\/([a-z0-9:-]+)/i);
     if (k) kullanimSay('komut:' + k[1].toLowerCase());
     turBasla(j, root);
+    puslaHatirlat(j);
     return hatirlat(j, root, kap && kapsayici.etkin(kapDurum));
   }
   if (j.hook_event_name === 'Stop') {
@@ -827,16 +828,47 @@ function hatirlat(j, root, etkinProje) {
   // Seviye 2'de kullanıcı her dokunuşu görmek istiyor: base olmasaydı olmayacak her
   // kararın kendi satırı olur. Biçim relay SKILL 7.2'de.
   if (!eko && seviye() === 2) metin += ' ' + ceviri('seviye2');
+  baglamEkle(metin);
+}
+
+// Kullanıcı "puşla" diyor, `/pusla` yazmıyor. İki depoyu birden göndermek modelin o anki
+// hatırlamasına bırakılırsa er geç unutulur ve unutulduğu tur fark edilmez — kişisel
+// dosyanın yedeklenmediği, makine değişince anlaşılır. Deterministik araç modelden önce
+// gelir: kelime geçtiğinde akış hatırlatılır.
+//
+// Ayna kurulu değilse hiç yazılmaz. Eklentiyi kuran başkasının istemini benim iş akışımla
+// kirletmeyiz; `/ozel kur` çalıştırılmadan bu satır hiç doğmaz.
+const PUSLA_SOZU = /(^|[^a-zçğıöşü])pu[şs]la/i;
+
+function puslaHatirlat(j) {
+  const p = String(j.prompt || '');
+  if (/^[ ]*\//.test(p)) return;
+  if (!PUSLA_SOZU.test(p)) return;
+  try {
+    if (!fs.existsSync(path.join(konfigKok(), 'teknesyum-ozel.json'))) return;
+  } catch {
+    return;
+  }
+  baglamEkle(ceviri('puslaAkisi', path.join(__dirname, '..', 'scripts', 'ozel.js')));
+}
+
+// `ciktiEkle` alanı olduğu gibi değiştiriyor: aynı turda iki ayrı çağrı yapılırsa ikincisi
+// birincinin metnini siliyor ve silinen taraf sessizce kayboluyor. Bağlam tek alan olduğu
+// için birleştirilerek yazılır.
+function baglamEkle(metin) {
+  if (!metin) return;
+  const o = (_cikti && _cikti.hookSpecificOutput) || {};
+  const onceki = o.hookEventName === 'UserPromptSubmit' ? o.additionalContext || '' : '';
   ciktiEkle({
-    hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
+    hookSpecificOutput: {
+      hookEventName: 'UserPromptSubmit',
+      additionalContext: onceki ? onceki + ' ' + metin : metin,
+    },
   });
 }
 
 function kapEkle(metin) {
-  if (!metin) return;
-  ciktiEkle({
-    hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: metin },
-  });
+  return baglamEkle(metin);
 }
 
 // Oturum başına kaç kez yazdığımızı sayar. Sayaç dosyası oturuma özel; `supur()`

@@ -116,6 +116,23 @@ const S = {
       satir,
   },
 
+  puslaAkisi: {
+    tr: (yol) =>
+      'Kullanıcı "puşla" dedi ve bu makinede özel dosya aynası kurulu. `/pusla` akışını ' +
+      'çalıştır: önce testler (kaldıysa dur, gönderme), sonra genel depoya commit ve push, ' +
+      'sonra koşulsuz olarak `node "' +
+      yol +
+      '" pusla`. Özel adım sorulmaz ve atlanmaz; değişiklik yoksa betik zaten "ayna güncel" ' +
+      'der. Raporun sonunda iki depoya ne gittiğini tek satırda söyle.',
+    en: (yol) =>
+      'The user said "puşla" and a private file mirror is set up on this machine. Run the ' +
+      '`/pusla` flow: tests first (stop if they fail), then commit and push the public repo, ' +
+      'then unconditionally `node "' +
+      yol +
+      '" pusla`. The private step is never skipped or asked about; with no changes the ' +
+      'script just says the mirror is current. Report what went to each repo in one line.',
+  },
+
   ajanSessiz: {
     tr: (rol, kim, dk, eylem) =>
       '`Teknesyum ▸ Sağlık ▸ ' +

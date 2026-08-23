@@ -6,7 +6,11 @@ allowed-tools: Bash
 
 İstenen commit mesajı: $ARGUMENTS
 
-Kullanıcı **"puşla"** dediğinde bu akış çalışır. Tek bir `git push` değildir: bir projenin
+Kullanıcı **"puşla"** dediğinde bu akış çalışır ve komut yazması gerekmez: `relay-watch.js`
+istemde `puşla`/`pusla` kelimesini görürse bu akışı modele hatırlatır. Hatırlatma yalnız
+bu makinede özel ayna kuruluysa doğar; kurmamış birinin istemi kirletilmez.
+
+Tek bir `git push` değildir: bir projenin
 iki deposu vardır — herkesin gördüğü genel depo ve yalnız kullanıcının gördüğü özel ayna
 (`/ozel`). İkisi ayrı gönderilir; birini gönderip ötekini unutmak makine değiştirince
 fark edilir, o noktada geç olur.

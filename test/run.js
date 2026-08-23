@@ -6596,6 +6596,29 @@ ol('autoCompactWindow yazilinca yeniden baslatma ve tavan notu basilir', () => {
   icermez(c(['autocompact', '150000']).stdout, 'tavan, garanti değil', '200k alti tavan notu almamali');
 });
 
+// Kullanici "pusla" diyor, `/pusla` yazmiyor. Iki depoyu birden gondermeyi modelin
+// hatirlamasina birakmak, unutuldugu turda fark edilmeyen bir yedek kaybidir.
+ol('pusla sozu ayna kuruluyken iki depo akisini hatirlatir', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-pusla-'));
+  const ek = konfig(true);
+  const sor = (prompt) => {
+    const r = calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt }, ek);
+    try {
+      return JSON.parse(r.out).hookSpecificOutput.additionalContext || '';
+    } catch {
+      return '';
+    }
+  };
+  icermez(sor('puşla'), 'scripts' + path.sep + 'ozel.js', 'ayna kurulu degilken yazilmamali');
+  fs.writeFileSync(path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum-ozel.json'), '{"depo":"x"}');
+  const m = sor('tamamdır puşla');
+  icerir(m, 'ozel.js');
+  icerir(m, 'koşulsuz');
+  icerir(sor('pusla bakalım'), 'ozel.js', 'sapkasiz yazim da yakalanmali');
+  icermez(sor('/pusla'), 'ozel.js', 'komut zaten kendi belgesinden geliyor');
+  icermez(sor('pushla dedim ama puslu hava'), 'ozel.js', 'benzeyen kelime tetiklememeli');
+});
+
 ol('ozel.md ve pusla.md akisi anlatir', () => {
   const o = fs.readFileSync(path.join(KOK, 'commands', 'ozel.md'), 'utf8');
   icerir(o, 'scripts/ozel.js');

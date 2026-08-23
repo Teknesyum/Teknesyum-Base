@@ -90,3 +90,20 @@ Buradaki durum aynı: §4 tablosu tek bakışta okunacak kadar açık, iki satı
 doğru uygulandı, diğeri gözden kaçtı ve arada bunu söyleyen hiçbir adım olmadı.
 Ortak sonuç, kuralın metni değil, kuralın ne zaman okunacağıdır — yazılı olması
 uygulanmasını sağlamıyor.
+
+---
+
+## Duzeltme — 23.08.2026
+
+**Bu raporun Title Case tespiti gecersiz.** `Buy Me a Coffee` etiketinin her kelimesinin
+buyuk harfle baslamasini §3 ihlali diye yazmistim; o tespit `teknesyum-ui` 2.46.0'a
+dayaniyordu. 2.50.1'de §3 tersine dondu ve tam cumlelerin de kurala uydugunu, yani her
+kelimenin ilk harfinin buyuk oldugunu soyluyor. Title Case dogru olan.
+
+Raporun **asil bulgusu etkilenmiyor**: `Teknesyum` etiketine `<>` simgesi konmasi §4
+imza tablosuna hala aykiri, o satirin Simge sutunu "yok" diyor. Bu madde VidShrink T16
+sozlesmesinde duzeltildi.
+
+Metinlerin `locale/` yerine XAML'e gomulu olmasi maddesi de gecerliligini koruyor.
+
+Nedeni ayri bir gunlukte: `HATA-surum-gomulu-yol-eski-standardi-okuyor.md`.

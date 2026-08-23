@@ -48,7 +48,8 @@
     <Style x:Key="SigText" TargetType="TextBlock">
       <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
       <Setter Property="FontSize" Value="14"/>
-      <Setter Property="FontWeight" Value="Bold"/>
+      <!-- Agirlik 600 — SKILL §3. 700 yalniz hero disi hicbir tipografi rolunde kalmadi. -->
+      <Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
   </StackPanel.Resources>

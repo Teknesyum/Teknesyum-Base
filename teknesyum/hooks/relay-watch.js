@@ -625,6 +625,26 @@ function turDamga(j) {
   yaz(f, d);
 }
 
+// "Her şey gerçekten bitti mi?" — `Stop` bu soruyu cevaplamıyor. Ana oturumun turu
+// bitmiş olabilir ama arka planda ajanlar sürüyordur; kullanıcının ekranında sol taraftaki
+// nokta hâlâ yanıp söner ve "2 running tasks" yazar. Makbuz o anda basılırsa yalan söyler,
+// ses o anda çalarsa duran bir şey yokken "durdu" der.
+//
+// Ölçülebilir cevap `_running.json` içinde: `SubagentStart` kaydı ekliyor, `SubagentStop`
+// siliyor, statusline zaten oradan okuyor. Liste boşsa açık ajan yoktur.
+//
+// BAYAT_CALISAN: ajan çökerse kaydı silinmez ve makbuz sonsuza kadar ertelenir. Bu yüzden
+// kayıt yaşı da ölçülür — iki saati aşan kayıt ölü sayılır ve ertelemeyi tutmaz. Yanlış
+// zamanlı makbuz kötüdür, hiç gelmeyen makbuz daha kötüdür.
+const BAYAT_CALISAN = 2 * 60 * 60 * 1000;
+
+function acikIsVar(iz) {
+  const l = read(path.join(iz, CALISAN));
+  if (!Array.isArray(l) || !l.length) return 0;
+  const simdi = Date.now();
+  return l.filter((x) => simdi - (Number(x && x.start) || 0) < BAYAT_CALISAN).length;
+}
+
 function turBitir(j, root) {
   const f = turYolu(j);
   const d = read(f);
@@ -635,22 +655,30 @@ function turBitir(j, root) {
   const iz = turIzi(j, root);
   const ana = Math.max(0, transkriptBoyu(j.transcript_path) - (d.boyAna || 0));
   const alt = Math.max(0, altTranskript(iz) - (d.boyAlt || 0));
-  // Ölçülen pencere **kullanıcının inputundan kullanıcının inputuna kadardır.** Klavye
-  // kullanıcıya geçtiği her an makbuz basılır: iş engellendiyse de, yarım kaldıysa da,
-  // durdurulduysa da, "Senden istediklerim" denip beklemeye geçildiyse de. O ana kadarki
-  // maliyet o anda görülmelidir; bir sonraki turun makbuzuna eklemek, kullanıcının
-  // gördüğü sayıyı gördüğü ana ait olmaktan çıkarır.
+  // Arka planda ajan varken tur bitmiş sayılmaz. Kullanıcının ekranında nokta hâlâ yanıp
+  // söner ve "N running tasks" yazar; o anda basılan makbuz yalan söyler. Ölçü ertelenir,
+  // damga korunur, süre ve token bir sonraki kapanışa birikir.
   //
-  // Eski davranış tersiydi ve engelli kapanışı `bekleyen: 1` ile erteliyordu. Kullanıcı
-  // 23.08.2026'da kuralı bu yönde belirledi.
-  //
-  // `SubagentStop` buraya hiç gelmez ve gelmemeli: alt ajan bittiğinde kullanıcı yazmaya
-  // başlamaz, ana oturum çalışmaya devam eder. Orada tur bitmiş sayılmaz.
+  // ÖNEMLİ: damga dosyası yalnız **gerçekten basılan** dalda silinir. Erteleme dalında
+  // silinirse ertelenen turun süresi ve token tabanı kaybolur — eski `bekleyen`
+  // mekanizmasının kırıldığı yer buydu (fable, 23.08.2026).
+  if (acikIsVar(iz)) {
+    yaz(f, {
+      t: now,
+      son: now,
+      durak: 0,
+      sn0: sn,
+      boyAna: d.boyAna || 0,
+      boyAlt: d.boyAlt || 0,
+      bekleyen: 1,
+    });
+    return;
+  }
   try {
     fs.unlinkSync(f);
   } catch {}
   bitisSesi(j);
-  turOzetiBas(ceviri('turOzeti', sureMetni(sn), tokenMetni(ana), tokenMetni(alt)));
+  turOzetiBas(ceviri('turOzeti', sureMetni(sn), tokenMetni(ana), tokenMetni(alt)), iz);
 }
 
 // Bitiş sesi `Stop` olayına değil, makbuzun basıldığı yere bağlıdır. `Stop` bir turda
@@ -682,30 +710,30 @@ function bitisSesi(j) {
   } catch {}
 }
 
-// ÖLÇÜLDÜ (23.08.2026): `model` kanalı cevabın tamamını tekrarlatıyor. `Stop` olayı
-// `additionalContext` kabul ediyor ve önek oluşmuyor — o kısım doğru. Yanlış olan
-// varsayım şuydu: satırı modele vermek satırı cevabın altına koydurur. `Stop` cevap
-// yazıldıktan sonra çalışır; basılmış mesaj geri alınamaz, modelin elindeki tek yol
-// yeni bir mesaj yazmaktır. "Cevabının en altına yaz" talimatını doğru anlayan model
-// cevabı yeniden üretiyor. Üç turun üçünde de tekrarladı.
+// Makbuz akışa basılmaz, **statusline'a yazılır.** Üç kanal denendi ve ikisi kapalı:
 //
-// Damga dosyası ikinci makbuzu engelliyor ama ikinci cevabı engellemiyor; eski not
-// yanlış şeyi güvenceye almıştı. Takas da yanlış tartılmıştı: `Stop says:` öneki tek
-// satırın başında altı karakter, tekrar ise ekranın tamamı.
-//   'kullanici' → satır `systemMessage` ile basılır, `Stop says:` öneki görünür
-//                 (`BILDIRIM_BICIMI = 'blok'` öneki kendi satırında bırakır)
-//   'model'     → satır `additionalContext` ile modele gider, önek yok, cevap tekrarlanır
-const OZET_KANALI = 'kullanici';
+//   'model'     → `additionalContext`. Önek yok ama `Stop` cevap yazıldıktan sonra
+//                 çalışıyor; modelin elindeki tek yol yeni bir mesaj yazmak ve
+//                 "cevabının en altına yaz" talimatını doğru anlayan model cevabı
+//                 yeniden üretiyor. Üç turun üçünde de tekrarladı (ölçüldü 23.08.2026).
+//   'kullanici' → `systemMessage`. Render katmanı satırı
+//                 `[hookName, " says: ", content]` olarak kuruyor ve `hookName` olay
+//                 adından geliyor — konfigden değil, komut adından değil. Yani
+//                 **`Stop says:` öneki hiçbir ayarla kaldırılamıyor.** Kullanıcı o
+//                 metni istemiyor; kanal bu yüzden kapandı (ölçüldü 23.08.2026).
+//   'statusline'→ Bizim kendi betiğimiz, önek üretmiyor. Seçilen yol.
+//
+// Bölüşme nettir: **`turBitir` hesaplar, statusline yalnız gösterir.** İki yerde hesap,
+// iki farklı sayı demektir. Kanca satırı hazır metin olarak `_makbuz.json` dosyasına
+// yazar; betik okur ve basar, tek bir toplama bile yapmaz.
+const MAKBUZ = '_makbuz.json';
 
-function turOzetiBas(satir) {
-  if (OZET_KANALI === 'kullanici') return duyur(satir, 1, true);
-  if (seviye() < 1) return;
-  ciktiEkle({
-    hookSpecificOutput: {
-      hookEventName: 'Stop',
-      additionalContext: ceviri('turOzetiYonerge', satir),
-    },
-  });
+function turOzetiBas(satir, iz) {
+  if (!iz) return;
+  try {
+    fs.mkdirSync(iz, { recursive: true });
+    yaz(path.join(iz, MAKBUZ), { metin: satir, ts: Date.now() });
+  } catch {}
 }
 
 function tokenMetni(bayt) {

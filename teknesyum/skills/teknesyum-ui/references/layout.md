@@ -33,8 +33,15 @@ sonuç pencere boyutuna göre değişir. Panele **`MinHeight`** verilir (örn. k
 paneli 254 DIP), sütun ona uyar. **`Height` yazma** — sabit yükseklik, yazı tipi/DPI/dil
 değişince içeriği keser; kesilen ilk şey panelin en alt satırı olur.
 
-**Yarıçap tektir.** Genel `CornerRadius` **6 DIP**. Daire yalnızca işlevsel istisnadır:
-`?` rozeti, slider thumb, durum noktası. Kart/panel/düğme için farklı yarıçap üretme.
+**Yarıçap tektir.** Genel `CornerRadius` **6 DIP** *(varsayılan, ölçülmedi)*. Daire yalnızca
+işlevsel istisnadır: `?` rozeti, slider thumb, durum noktası. Kart/panel/düğme için farklı
+yarıçap üretme; daha yumuşak bir köşe gerekiyorsa çözüm ara bir değer değil dairedir.
+
+`SKILL.md` §5 bir dönem 16/12/8/6 merdiveni veriyordu ve bu satırla çelişiyordu. Çelişki
+23.08.2026'da **bu dosya lehine** kapatıldı: yuvarlatılmış dikdörtgen daha küçük köşe alır.
+Merdiven kaldırıldı, token `--tk-r: 6px` tek kaynak oldu. Bu bir öncelik kuralı değildir —
+depoda "çelişkide şu dosya kazanır" diye genel bir kural **bilerek yoktur**; her çelişki tek
+tek tespit edilir ve kullanıcıya sorulur.
 
 ## 5.2 Gradientler — bantlaşma hatadır
 
@@ -55,7 +62,10 @@ yuvarlaklık ve gölgeleri bizim değil. Ama **hangi işin hangi yüzeye ait old
 konusunda yılların birikimi var; o kısım alınır.
 
 **Gezinme.** Beş üstü hedef varsa sol dikey kenar çubuğu; beş ve altındaysa üst yatay
-sekme. İkisi aynı anda kullanılmaz. Kenar çubuğu 240 DIP açık, 48 DIP kapalı; daraldığında
+sekme. İkisi aynı anda kullanılmaz. Kenar çubuğu **240 DIP açık, 48 DIP kapalı**
+*(varsayılan, ölçülmedi)* — iki sayı da yaygın masaüstü kabuklarından alınmış bir başlangıç
+değeri, bu depoda ölçülmedi. Ölçüt sayı değil: açık hâlde en uzun gezinme etiketi
+kırpılmadan sığmalı, kapalı hâlde 24×24 ikon hücresi iki yanında pay bırakmalı. Daraldığında
 metin gizlenir, ikon kalır.
 
 **Dar pencere.** Sıra şudur: **yeniden konumlandır → yeniden boyutlandır → yeniden ak →

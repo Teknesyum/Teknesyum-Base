@@ -218,7 +218,8 @@ yabancı cisimdir. Her stack'te karşılığı var, üçü de zorunlu:
 | Web / PWA | — | uygulanmaz, atla |
 
 Çizilen şerit: yükseklik **32–40px**, zemin `surface`, altında `1px` `neon-blue/50` çizgi.
-Solda ikon + uygulama adı (14px/700/`0.1em`, odaklıyken neon-blue, odak dışıyken beyaz).
+Solda ikon + uygulama adı (14px/**600**/`0.15em`, odaklıyken neon-blue, odak dışıyken beyaz)
+— etiket rolüdür, SKILL §3'ün etiket satırını taşır.
 Sağda imza bloğu (§4) ve üç düğme; ikonlar **10–12px** ve `stroke="currentColor"` SVG/Path —
 emoji veya harf (`X`, `—`) kullanma. Hover: kapat **neon-pink**, diğerleri **neon-blue**,
 ikisi de glow'lu; dolgu gelmez. Dosya yolu, sürüm, config yolu başlık şeridine yazılmaz —
@@ -233,7 +234,10 @@ sürükleyerek taşıma, başlığa çift tıkla büyüt/geri al, Aero Snap, ken
 kaybolmalarının sebebi: `references/desktop.md` §8. **Teslimden önce dördü de fiilen denenir.**
 
 **Pencere köşeleri yuvarlatılır.** Keskin dikdörtgen pencere neon temayla uyuşmuyor; yarıçap
-**12px**. Çerçevesiz pencerede (§8) işletim sistemi yuvarlatma uygulamaz — şekli kendin kırp
+**12px** *(varsayılan, ölçülmedi)*. Bu değer **pencere kabuğunundur**, bileşen yarıçapı
+değil: SKILL §5'in tek yarıçapı (`6px`) panel, kart, düğme ve hücre içindir. İkisinin ayrı
+kalması bilinçli mi, yoksa pencere de 6'ya mı inmeli — **karara bağlanmadı, kullanıcıya
+soruldu.** Çerçevesiz pencerede (§8) işletim sistemi yuvarlatma uygulamaz — şekli kendin kırp
 (WinForms `Region`, WPF `Border.CornerRadius` + `WindowChrome`, web `border-radius`).
 **Büyütülmüş pencere kare kalır:** ekran kenarında yuvarlatılmış köşe arkadaki masaüstünü
 gösterir. Bu yüzden köşe bölgesi her yeniden boyutlandırmada yeniden hesaplanır.
@@ -283,7 +287,10 @@ kendi çizmeyen bir denetime yarı saydam renk verme.
 
 **Başlık çubuğu düğmeleri görünür boyutta ve beyaz çizilir.** Kapat/büyüt/küçült simgeleri harf
 değil çizgidir; 12pt altında kenar yumuşatma onları griye çevirir ve kullanıcı "sönük" görür.
-Tıklama alanı **52×36px**, simge yazı tipi **12pt**, duruk renk `#FFFFFF`.
+Tıklama alanı **42×30 DIP**, simge yazı tipi **12pt**, duruk renk `#FFFFFF`.
+Değer `SKILL.md` §5.3 ile aynıdır ve orada gerekçesi yazılıdır: bir dönem bu dosya
+52×36px diyordu, çelişki 23.08.2026'da kullanıcı kararıyla 42×30 lehine kapandı.
+
 Renk yalnız hover'da neona döner: büyüt/küçült neon-blue, kapat neon-pink.
 
 **Alt bilgi şeridi tek satır ve mümkün olan en kısa.** Etiket yazı tipi + alt uzantısı kadar
@@ -291,7 +298,10 @@ yükseklik (ölçülen: 18px), üstündeki düğme sırasına yapışık. İçer
 durum metni, sürüm ve dil anahtarı. **İmza ve destek bağlantısı burada değil, başlık
 çubuğundadır** (§4) — alt şerit boş kalıyorsa daraltılır, doldurulmaz.
 **Bağlantı ve değer metinleri neon-blue**, yalnız durum noktası anlamına göre renklenir
-(kurulu `#34D399`, değil `#FF00EA`).
+(kurulu `#34D399`, değil `#FF00EA`). **Renk tek başına yetmez** (WCAG 1.4.1, SKILL §2):
+noktanın **şekli de** farklıdır — kurulu **dolu daire**, kurulu değil **halka** (içi boş,
+2 DIP çerçeve). Renk körü kullanıcı iki yeşilimsi/pembemsi tonu ayırt edemeyebilir, dolu
+ile boşu ayırt eder. CSS karşılığı `.tk-dot-on` / `.tk-dot-off`.
 
 **Panel başlıkları neon-blue çizilir.** `Güvenlik` / `Davranış` / `Ayrıntılar` gibi bölüm
 başlıkları gri değil, `#00F3FF` — ve ilki büyük gerisi küçük yazılır (SKILL §3). Gri

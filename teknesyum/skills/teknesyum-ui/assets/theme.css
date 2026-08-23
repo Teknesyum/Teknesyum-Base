@@ -10,8 +10,12 @@
   --color-surface: #08090a;
   --color-dark-glass: rgba(10, 10, 15, 0.85);
 
-  --font-sans: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
-  --font-mono: Consolas, 'Cascadia Mono', ui-monospace, 'Courier New', monospace;
+  /* Zincirin tek kaynağı SKILL §3'tür; buradaki sıra oradaki sırayla aynıdır.
+     Atkinson Hyperlegible Next varsayılandır ve projeye gömülür, sistemde var
+     sayılmaz. Gömülü değilse zincir Segoe UI'ye düşer — bu bir kabul değil, bir
+     eksikliktir; gömme işi teslimin parçasıdır. */
+  --font-sans: 'Atkinson Hyperlegible Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: Cascadia Mono, Consolas, ui-monospace, 'Courier New', monospace;
 }
 
 :root {
@@ -43,18 +47,46 @@
   --tk-purple-text: #c67eff;
 
   --tk-text: #ffffff;
-  --tk-text-dim: #ffffff;
   --tk-text-label: #00f3ff;
+  /* Devre dışı kontrol 7:1'den muaftır (SKILL §2) ve bu muafiyetin bedeli vardır:
+     renk körü kullanıcı griyi göremez. Bu yüzden `--tk-disabled` tek başına
+     kullanılmaz — devre dışı her kontrol griliğe ek olarak bir işaret taşır:
+     `title`/`ToolTip` metni zorunludur, yanına `cursor: not-allowed` ve mümkünse
+     bir ikon konur. Yalnız soluklaştırılmış kontrol eksik teslimdir. */
   --tk-disabled: #71717a;
 
   --tk-border: rgba(0, 243, 255, 0.5);
   --tk-border-strong: rgba(0, 243, 255, 0.6);
   --tk-border-decorative: rgba(0, 243, 255, 0.3);
 
-  --tk-r-box: 16px;
-  --tk-r-btn: 12px;
-  --tk-r-cell: 8px;
-  --tk-r-chip: 6px;
+  /* Yarıçap tektir: 6px. Çelişki 23.08.2026'da `layout.md` lehine kapatıldı —
+     yuvarlatılmış dikdörtgen daha küçük köşe alır (SKILL §5). Eski 16/12/8/6
+     merdiveni kaldırıldı; aşağıdaki dört ad geriye dönük uyumluluk için durur ve
+     hepsi aynı tek değere bakar. Tek istisna dairedir (`?` rozeti, slider thumb,
+     durum noktası) — orada `border-radius: 50%`. */
+  --tk-r: 6px;
+  --tk-r-box: var(--tk-r);
+  --tk-r-btn: var(--tk-r);
+  --tk-r-cell: var(--tk-r);
+  --tk-r-chip: var(--tk-r);
+
+  /* Tipografi ölçeği — 1.25 major third, beş basamak. Ara boyut ekleme;
+     gerekiyorsa ölçeğin kendisi tartışılır, tek bir kullanım yeri değil. */
+  --tk-fs-1: 14px;
+  --tk-fs-2: 16px;
+  --tk-fs-3: 20px;
+  --tk-fs-4: 24px;
+  --tk-fs-5: 30px;
+
+  --tk-lh-body: 1.5;
+  --tk-lh-heading: 1.2;
+  --tk-lh-mono: 1.4;
+  --tk-measure: 65ch;
+
+  --tk-tr-label: 0.15em;
+  --tk-tr-h3: 0.05em;
+  --tk-tr-h2: 0.02em;
+  --tk-tr-hero: -0.01em;
 
   --tk-t-instant: 90ms;
   --tk-t-fast: 160ms;
@@ -67,6 +99,9 @@
   --tk-glow-blue: 0 0 20px rgba(0, 243, 255, 0.3);
   --tk-glow-pink: 0 0 20px rgba(255, 0, 234, 0.3);
   --tk-glow-purple: 0 0 20px rgba(176, 38, 255, 0.3);
+  /* Hero glow'u tek tokendır ve iki platformda aynı yoğunluğu verir:
+     blur 8, opaklık 0.8. XAML karşılığı `HeroGlow` (Theme.xaml). */
+  --tk-glow-hero: 0 0 8px rgba(0, 243, 255, 0.8);
 }
 
 @property --tk-bg-aci {
@@ -83,7 +118,11 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: var(--font-sans, 'Segoe UI', system-ui, sans-serif);
+  font-family: var(--font-sans, 'Atkinson Hyperlegible Next', 'Segoe UI', system-ui, sans-serif);
+  font-size: var(--tk-fs-2);
+  line-height: var(--tk-lh-body);
+  /* Cümle içi sayı sans kalır ama hizalanır; veri sayısı `.tk-mono`'ya gider (§3). */
+  font-variant-numeric: tabular-nums;
   color: var(--tk-text);
   background: var(--tk-bg);
   background-attachment: fixed;
@@ -92,34 +131,46 @@ body {
 
 /* --- tipografi --- */
 .tk-h2 {
-  font-size: 20px; font-weight: 700; letter-spacing: 0.1em;
+  font-size: var(--tk-fs-4); font-weight: 600;
+  line-height: var(--tk-lh-heading); letter-spacing: var(--tk-tr-h2);
   color: var(--tk-blue);
 }
 .tk-h3 {
-  font-size: 16px; font-weight: 700; letter-spacing: 0.1em;
+  font-size: var(--tk-fs-3); font-weight: 600;
+  line-height: var(--tk-lh-heading); letter-spacing: var(--tk-tr-h3);
   color: var(--tk-text-label);
 }
 .tk-label {
-  font-size: 14px; font-weight: 700; letter-spacing: 0.15em;
+  font-size: var(--tk-fs-1); font-weight: 600;
+  line-height: var(--tk-lh-heading); letter-spacing: var(--tk-tr-label);
   color: var(--tk-text-label);
 }
 .tk-mono {
   font-family: var(--font-mono, monospace);
-  font-size: 16px; font-weight: 700; color: var(--tk-pink-text);
+  font-size: var(--tk-fs-2); font-weight: 600;
+  line-height: var(--tk-lh-mono);
+  color: var(--tk-pink-text);
 }
 .tk-hero {
   font-family: var(--font-mono, monospace);
-  font-size: 28px; font-weight: 900;
-  color: var(--tk-blue); filter: drop-shadow(0 0 8px var(--tk-blue));
+  font-size: var(--tk-fs-5); font-weight: 900;
+  line-height: var(--tk-lh-heading); letter-spacing: var(--tk-tr-hero);
+  color: var(--tk-blue); filter: drop-shadow(var(--tk-glow-hero));
 }
-.tk-hint { font-size: 14px; color: var(--tk-text); }
+.tk-hint {
+  font-size: var(--tk-fs-1); line-height: var(--tk-lh-body); color: var(--tk-text);
+}
+/* Okunabilir satır uzunluğu. Uzun metin bloğu bu sınıfa sarılır (§3.2). */
+.tk-prose { max-width: var(--tk-measure); line-height: var(--tk-lh-body); }
+/* h3'ü etiketten ayıran ikinci sinyal — boyut yetmediğinde (§3). */
+.tk-h3-rule { border-bottom: 1px solid var(--tk-border-decorative); padding-bottom: 8px; }
 
 /* --- yüzeyler --- */
 .tk-panel {
   background: rgba(8, 9, 10, 0.95);
   backdrop-filter: blur(16px);
   border: 1px solid var(--tk-border);
-  border-radius: var(--tk-r-box);
+  border-radius: var(--tk-r);
   padding: 24px;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
 }
@@ -137,8 +188,9 @@ body {
 
 /* --- butonlar --- */
 .tk-btn {
-  font-weight: 700; letter-spacing: 0.1em;
-  padding: 14px 20px; border-radius: var(--tk-r-btn);
+  font-weight: 600; letter-spacing: var(--tk-tr-h2);
+  font-size: var(--tk-fs-2); line-height: var(--tk-lh-heading);
+  padding: 14px 20px; border-radius: var(--tk-r);
   border: 1px solid transparent; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center; gap: 12px;
   transition: transform var(--tk-t-instant) var(--tk-e-out),
@@ -157,6 +209,7 @@ body {
   color: var(--tk-purple-text);
 }
 .tk-btn-ghost:hover { background: rgba(176, 38, 255, 0.2); }
+/* Devre dışı hâl yalnız solmakla bitmez: `title` metni zorunludur (§2). */
 .tk-btn:disabled {
   color: var(--tk-disabled);
   background: transparent;
@@ -186,7 +239,12 @@ body {
 .tk-titlebar button,
 .tk-no-drag { -webkit-app-region: no-drag; }
 
-/* --- hareket: azaltilmis hareket ayari --- */
+/* --- durum noktasi: renk tek basina anlam tasimaz (WCAG 1.4.1, §2) --- */
+.tk-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.tk-dot-on  { background: var(--tk-success); border: 0; }
+.tk-dot-off { background: transparent; border: 2px solid var(--tk-pink); }
+
+/* --- hareket: azaltilmis hareket ayari (ayrinti: references/motion.md) --- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

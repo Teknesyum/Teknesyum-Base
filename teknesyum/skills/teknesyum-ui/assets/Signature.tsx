@@ -19,7 +19,9 @@ type Props = { t: Translate };
 // Gerekçe ve ölçüm tek yerde: `teknesyum-ui/SKILL.md` §4.
 const BASE =
   'inline-flex items-center justify-center min-h-6 min-w-6 no-underline select-none ' +
-  'text-sm font-bold tracking-[0.15em] rounded-md border bg-transparent ' +
+  // Ağırlık 600 (`font-semibold`) — SKILL §3; 700 yalnız hero dışı hiçbir tipografi
+  // rolünde kalmadı. Yarıçap `rounded-md` = 6px, tek yarıçap değeri (§5).
+  'text-sm font-semibold tracking-[0.15em] rounded-md border bg-transparent ' +
   'px-2.5 py-1 ease-[--tk-e-out] duration-[--tk-t-instant] hover:scale-[1.02] ' +
   'transition-[transform]';
 

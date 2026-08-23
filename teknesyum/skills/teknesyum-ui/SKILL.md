@@ -30,6 +30,14 @@ Dosya yürürlükteyken:
 `/uisetup` bir şablon sunar, bir kimlik dayatmaz: neon paleti hazır cevap olarak durur,
 kullanıcı kendi rengini, fontunu ve imzasını yazdığı anda standart onun olur.
 
+**Bu standart yalnız karanlıktır.** Aydınlık tema hiçbir dosyada tanımlı değildir ve bu bir
+unutma değil, yazılı bir karardır: `#00f3ff` beyaz zeminde ~1.4:1 verir, yani aydınlık
+sürüm 11 rengin tamamını, opaklık merdivenini ve glow mantığını sıfırdan ölçmeyi gerektirir.
+Aydınlık istenirse bu ayrı bir palet işidir ve **ileriye bırakılmıştır** — tam stabil sürüm
+çıkmadan öncelik değil, ama kapalı da değil; ayarların içinde opsiyon olarak açılabilir.
+`prefers-color-scheme: light` kullanıcısında da karanlık kalınır. Yerine ne konacağı bellidir:
+aydınlık isteyen proje bu standardı kapatır (`"kapali": true`) ve kendi paletini kurar.
+
 ## 1. Kurulum (yeni proje)
 
 | Stack | Kopyala | Nereye |
@@ -122,7 +130,23 @@ getirir. Bir öğe okunacaksa birinci satır, sınır çiziyorsa ikinci satır, 
 duruyorsa üçüncü satır geçerlidir.
 
 Devre dışı kontrol 7:1'den muaftır; o da griliğe ek bir işaretle belli edilir (ikon,
-imleç, tooltip) — renk körü kullanıcı griyi göremez.
+imleç, tooltip) — renk körü kullanıcı griyi göremez. **Tooltip zorunludur**, üçü arasında
+seçmeli değil: devre dışı bırakılan her kontrol neden devre dışı olduğunu yazan bir
+`title`/`ToolTip` taşır. Kural asset yorumlarında da duruyor (`theme.css`, `Theme.xaml`,
+`Palette.cs`).
+
+**Renk tek başına anlam taşımaz** — WCAG 1.4.1, **A** seviyesi. Bir bilgiyi yalnız renkle
+anlatan arayüz, renk körü kullanıcıda o bilgiyi hiç vermez. Her renk sinyalinin ikinci bir
+taşıyıcısı olur: şekil, ikon, metin ya da konum.
+
+| Yer | Yalnız renk yetmez | Yerine ne konur |
+|---|---|---|
+| Alt bilgi durum noktası | yeşil / pembe nokta | **dolu daire = kurulu, halka (içi boş) = kurulu değil** — şekil farkı; CSS `.tk-dot-on` / `.tk-dot-off` |
+| Mod anahtarı | mor = açık | anahtarın yanına durum metni (`Açık` / `Kapalı`) |
+| Form doğrulama | pembe çerçeve | çerçevenin altına hata metni + uyarı ikonu |
+| Devre dışı kontrol | gri | tooltip (yukarıdaki kural) + `not-allowed` imleci |
+
+Ölçüt tek cümle: **ekran görüntüsünü gri tonlamaya çevir, bilgi hâlâ okunuyorsa geçer.**
 
 **Dolgulu butonun yazısı siyahtır.** Neon dolgu üzerine beyaz yazı `neon-blue`'da
 1.38:1 verir — okunmaz. `tk-btn-primary` ve `tk-btn-danger` `color: #000` kullanır.
@@ -132,14 +156,19 @@ Kural asset'te uygulanıyordu ama burada yazılı değildi.
 tek bir gradient bulunur; panel ve kutular onun üstüne oturur. Düz `#000000` dolgu eksik
 teslimdir.
 
-- Duraklar **en az 11** ve birbirine çok yakın — iki duraklı gradient koyu temada bantlaşır.
+- Duraklar **en az 11** *(varsayılan, ölçülmedi)* ve birbirine çok yakın — iki duraklı
+  gradient koyu temada bantlaşır. Bantlaşmanın kendisi ölçülmüş bir hatadır; 11 sayısı
+  pratikte yeterli bulunmuş bir taban, ölçülmüş bir eşik değil. Ölçüt sayı değil sonuçtur:
+  gradient 8-bit ekran görüntüsünde görünür şerit vermiyorsa geçer.
 - Uçlar `bg` `#000000` ile `surface` `#08090a` arasındadır; aradaki fark 1.06:1. Gradient
   bir **doku**dur, geçiş değil: hiyerarşi kurmaz, hiçbir bilgiyi taşımaz.
 - Tek kesintisiz yüzeydir. Üst şeride bir, içeriğe başka bir gradient verip dikiş bırakma.
 - **Yavaşça hareket eder.** Zemin gradienti §5.4'teki sonsuz döngü yasağının **tek adı
   konmuş istisnasıdır**: açıları çok yavaş kayar, kullanıcı baktığında hareketi fark eder
-  ama okurken dikkatini dağıtmaz. Ölçü: **döngü ≥ 40 s**, açı oynaması ≤ 20°, durak
-  renkleri değişmez — yalnız gradientin ekseni döner. Süre token'ı `--tk-bg-donus`;
+  ama okurken dikkatini dağıtmaz. Ölçü: **döngü ≥ 40 s**, açı oynaması ≤ 20°
+  *(varsayılan, ölçülmedi)* — iki sayı da bir algı ölçümüne değil, "fark edilir ama
+  rahatsız etmez" yargısına dayanıyor; asset'teki gerçek değer 48 s'dir. Durak renkleri
+  değişmez, yalnız gradientin ekseni döner. Süre token'ı `--tk-bg-donus`;
   bilerek `--tk-t-*` ölçeğinin **dışındadır**, çünkü bu bir geçiş süresi değil döngü
   periyodudur ve ölçeğin içine girerse hareket tavanını 48 sn'ye çıkarır.
   Parlaklık dalgalanması, renk
@@ -165,8 +194,13 @@ Glow **kutuya** uygulanır: dolgulu buton `box-shadow: 0 0 20px <renk>40`, çer�
 
 **Metne glow verilmez.** Ölçüldü: hale kenarları yumuşatıyor, küçük puntoda okunurluğu
 düşürüyor, ekran görüntüsünde bulanık çıkıyor. Neon etkisi zaten renkten geliyor. Tek
-istisna **hero sayı** (24px+, 900) — harf yeterince kalın. Başlık, etiket, gövde, bağlantı,
+istisna **hero sayı** (30px, 900) — harf yeterince kalın. Başlık, etiket, gövde, bağlantı,
 tablo değeri: glow yok. **Okunurluk gösterişten üstündür.**
+
+Hero glow'u tek tokendır ve iki platformda **aynı yoğunluğu** verir: **blur 8, opaklık 0.8**.
+CSS `--tk-glow-hero` → `filter: drop-shadow(var(--tk-glow-hero))`; WPF `HeroGlow` →
+`DropShadowEffect BlurRadius="8" ShadowDepth="0" Opacity="0.8"`. Inline değer yazılmaz;
+iki dosyada iki ayrı sayı, "aynı standart" iddiasını çürütür.
 
 Opaklık merdiveni — sadece bunlar: dolgu `/10`, hover `/20`, aktif `/30`, **çerçeve `/50`**,
 güçlü çerçeve `/60`.
@@ -189,33 +223,105 @@ bilgi kaybolmayan ayraçlar. Bir çerçeve "buraya kadar" diyorsa `/50`'dir.
 
 ## 3. Tipografi (varsayılan)
 
-Sans: `'Segoe UI', system-ui, -apple-system, sans-serif` — metin, etiket, başlık.
-Okunurluğun kritik olduğu, veri yoğun ya da uzun süre bakılan arayüzlerde **Atkinson
-Hyperlegible Next** tercih edilir (benzer harfleri — `l/I/1`, `O/0`, `rn/m` — ayırt
-edilebilir çizer). Kullanılacaksa **projeye gömülür**, sistemde var sayılmaz.
-Mono: `Consolas, 'Cascadia Mono', ui-monospace, monospace` — **her sayı, tuş, kod, ID,
-süre**. Sayıyı sans ile yazma.
+**Zincirin tek kaynağı burasıdır.** `theme.css`, `Theme.xaml` ve `Palette.cs` bu iki satırı
+birebir taşır; üçünden biri ayrışıyorsa hata odur, burası değil.
+
+```
+Sans: 'Atkinson Hyperlegible Next', 'Segoe UI', system-ui, -apple-system, sans-serif
+Mono: Cascadia Mono, Consolas, ui-monospace, 'Courier New', monospace
+```
+
+**Atkinson Hyperlegible Next varsayılandır, koşullu değil.** Eskiden "veri yoğun arayüzde
+tercih edilir" diye bir koşulu vardı; koşulu kimse ölçemediği için font pratikte hiç
+kullanılmadı. Varlık sebebi okunurluk: benzer harfleri (`l/I/1`, `O/0`, `rn/m`) ayırt
+edilebilir çizer ve bu standardın kimliği neon + okunurluk üzerine kurulu. **Projeye
+gömülür** (web `@font-face`, WPF pack URI, WinForms `PrivateFontCollection`), sistemde var
+sayılmaz. Gömülmediyse zincir Segoe UI'ye düşer — bu bir kabul değil, eksik teslimdir.
+
+Segoe UI zincirde **yedek** olarak durur, varsayılan olarak değil: bir sistem fontudur,
+macOS ve Linux'ta bambaşka bir yüz render olur, yani "standart" iki makinede iki ayrı sonuç
+verir. Mono'da **Cascadia Mono** başta, `Consolas` geride — Consolas 2007 fontudur.
+*Ölçülmedi:* Cascadia Mono'nun eski sürümlerinde `İ` noktası sorunu vardı; gömülecek sürüm
+gözle doğrulanır.
+
+Mono **her sayı, tuş, kod, ID, süre** içindir. Ama **cümle içi sayı mono'ya zorlanmaz** —
+cümlenin ortasında font değişimi görsel gürültüdür. Ayrım nettir:
+
+| Sayının yeri | Font | Nasıl |
+|---|---|---|
+| Veri sayısı — tablo hücresi, sayaç, süre, ID, tuş, kod, boyut | **mono** | `.tk-mono` / `MonoValue` |
+| Cümle içinde geçen sayı — "3 dosya seçildi", "en az 11 durak" | **sans + tabular** | gövdede `font-variant-numeric: tabular-nums` açık |
+
+Gövdeye `font-variant-numeric: tabular-nums` (WPF: `Typography.NumeralAlignment="Tabular"`)
+verilir; böylece sans içindeki sayılar da sabit genişlikte olur ve değişen değer satırı
+oynatmaz.
 
 **Taban: normal metin 16, ikincil/yardım metni 14'ün altına inmez.** Bu bir tercih değil
 alt sınır; 10-13 punto etiketler koyu zeminde okunmuyor ve kullanıcı okumak için ekrana
 yaklaşıyor. Birim: web `px`, WPF `DIP` — 96 dpi'de aynı şey.
 
-| Rol | Boyut | Ağırlık | Tracking | Renk |
-|---|---|---|---|---|
-| Panel başlığı (h2) | 20 | 700 | 0.1em | neon-blue |
-| Bölüm başlığı (h3) | 16 | 700 | 0.1em | neon-blue |
-| Etiket | 14 | 700 | 0.15em | neon-blue |
-| Gövde | 16 | 400 | 0 | `#ffffff` |
-| Mono değer | 16 | 700 | 0 | **pink-text** `#ff54eb` |
-| Hero sayı | 28 | 900 | 0 | neon-blue + glow |
-| Yardım / ipucu | 14 | 400 | 0 | `#ffffff` |
+**Ölçek 1.25 major third, beş basamak: 14 · 16 · 20 · 24 · 30.** Tokenlar `--tk-fs-1` …
+`--tk-fs-5`. Eski ölçek (14/16/20/28) elle seçilmişti — oranları 1.143, 1.25, 1.4 ile
+tutarsızdı ve **h1 yoktu**, yani sayfa başlığı ile panel başlığı aynı basamağı paylaşmak
+zorundaydı. Ara boyut ekleme: yeni bir boyut gerekiyorsa ölçeğin kendisi tartışılır, tek
+bir kullanım yeri değil.
 
-Ölçek 14 → 16 → 20 → 28. Ara boyut ekleme.
+| Rol | Boyut | Ağırlık | Satır | Tracking | Renk |
+|---|---|---|---|---|---|
+| Hero sayı | 30 (`fs-5`) | 900 | 1.2 | −0.01em | neon-blue + glow |
+| Panel başlığı (h2) | 24 (`fs-4`) | **600** | 1.2 | 0.02em | neon-blue |
+| Bölüm başlığı (h3) | 20 (`fs-3`) | **600** | 1.2 | 0.05em | neon-blue |
+| Gövde | 16 (`fs-2`) | 400 | 1.5 | 0 | `#ffffff` |
+| Mono değer | 16 (`fs-2`) | **600** | 1.4 | 0 | **pink-text** `#ff54eb` |
+| Etiket | 14 (`fs-1`) | **600** | 1.2 | 0.15em | neon-blue |
+| Yardım / ipucu | 14 (`fs-1`) | 400 | 1.5 | 0 | `#ffffff` |
+
+**Ağırlık 700 değil 600.** Karanlık zeminde açık renkli metin optik olarak kalınlaşır ve
+bunun telafisi yoktu. Asıl sorun tek bir değer değildi: **700 ağırlık + 0.1em tracking +
+mavi renk** üçlüsü her başlık seviyesinde birlikte tekrarlanıyordu — "her şey bağırıyor"
+hissinin kaynağı buydu. Üçü birlikte gevşetildi. **700, hero dışında hiçbir tipografi
+rolünde kalmadı**; hero 900 kalır, çünkü glow taşıyabilmesi için kalın olması gerekiyor.
+Yerine ne konacağı bellidir: vurgu gerekiyorsa **bir basamak büyüt**, kalınlaştırma.
+
+**Tracking boyutla ters orantılıdır.** Geniş pozitif harf aralığı bir *küçük etiket*
+tekniğidir; 20px'lik bir başlığa uygulanınca başlık etiket gibi görünür. Bu yüzden aralık
+boyut büyüdükçe düşer: etiket `0.15em` → h3 `0.05em` → h2 `0.02em` → hero `-0.01em`.
+Tokenlar `--tk-tr-label` · `--tk-tr-h3` · `--tk-tr-h2` · `--tk-tr-hero`.
+
+**WPF ve WinForms'ta tracking yoktur — telafisi yazılıdır, sessiz bırakılmadı.** CSS
+`letter-spacing` uygular, XAML'ın karşılığı yoktur (attached behavior yazılmadıkça).
+Telafi: o iki platformda etiketi gövdeden ayıran şey **boyut, ağırlık ve renktir**, aralık
+değil — etiket 14'te ve mavi bırakılır, başlık 24'e çıkarılır, yani ayrımın tamamı
+boyuta yüklenir. Attached behavior yazan proje bu telafiyi kaldırır ve yukarıdaki `em`
+değerlerini birebir uygular. WinForms'ta ayrıca **600 ağırlık da yoktur** (`FontStyle`
+yalnız Regular/Bold tanır); orada başlık Bold kalır ve fark yine boyutla kurulur
+(`Palette.cs` yorumu).
+
+**Başlık hiyerarşisi gözle ayrışır.** Eskiden h2 (20/700/mavi/0.1em), h3 (16/700/mavi/0.1em)
+ve etiket (14/700/mavi/0.15em) neredeyse aynıydı; h3 gövdeyle aynı boyuttaydı ve h3 ile
+etiketi ayıran tek şey 2px'ti. Dört sinyalin (boyut, ağırlık, renk, tracking) dördü de
+hiyerarşi taşımıyordu. Şimdi ayrım **boyutta**: 24 → 20 → 14, aralarında birer basamak.
+Boyut yetmediği yerde ikinci sinyal **çizgidir** (`.tk-h3-rule`, `--tk-border-decorative`
+alt çizgi), parlaklık değil.
 
 Mono değer satırı `neon-pink`'ten `pink-text`'e taşındı: dolgu hex'i 6.44:1 veriyordu, yani
 her sayı, süre ve ID kendi 7:1 kuralının altında yazılıyordu (§2).
 
-Etiket ile gövdeyi ayıran şey parlaklık değil: etiket **kalın, harf aralıklı ve mavi**;
+**Satır yüksekliği ve satır uzunluğu tanımlıdır.** Tanımsızlık yanlış tanımdan kötüdür:
+yanlış tanım düzeltilir, tanımsızlık fark bile edilmez ve her platform kendi varsayılanını
+yaşar.
+
+```
+--tk-lh-body: 1.5      gövde, ipucu — 16px'te 24px, 4'lük ızgaraya oturur
+--tk-lh-heading: 1.2   başlık, etiket, hero
+--tk-lh-mono: 1.4      mono değer
+--tk-measure: 65ch     uzun metin bloğunun azami satır uzunluğu (.tk-prose)
+```
+
+WPF karşılığı `LineHeight` **ve** `LineStackingStrategy="BlockLineHeight"` birlikte yazılır;
+ikincisi olmadan WPF satır kutusunu en uzun harfe göre büyütür ve CSS'ten ayrışır.
+
+Etiket ile gövdeyi ayıran şey parlaklık değil: etiket **yarı kalın, harf aralıklı ve mavi**;
 gövde **normal ağırlıkta ve beyaz**. Bir bilgiyi göstermeye değer bulduysan okunacak
 kadar büyük ve parlak yaz; değmiyorsa ekrandan kaldır. Küçük punto, silinmemiş içeriğin
 bahanesidir.
@@ -267,8 +373,10 @@ eklemek bir dosya kopyalamaktan ibaret olmalı — kod değişikliği gerekiyors
 Anahtar bulunamazsa uygulama çökmez: kaynak dile düşer ve bunu bir kez loglar. Sayı, tarih
 ve dosya boyutu biçimlendirmesi de dile bağlıdır, elle `ToString()` ile kurulmaz.
 
-**Yerleşimi en uzun dil belirler.** Taşma kontrolü Türkçe metinle yapılır (Türkçe İngilizce'den
-tipik olarak %20-30 uzundur), sonra dil değiştirilip İngilizce hâli de gözle doğrulanır.
+**Yerleşimi en uzun dil belirler.** Taşma kontrolü Türkçe metinle yapılır (Türkçe
+İngilizce'den tipik olarak %20-30 uzundur — *varsayılan, ölçülmedi*: bu depoda ölçüm
+yapılmadı ve literatürdeki %20-30 rakamı genelde Almanca için söylenir; sayı bir taban
+tahmini, kural değil), sonra dil değiştirilip İngilizce hâli de gözle doğrulanır.
 Bir dilde sığıp diğerinde kırpılan etiket, iki dilde de hatalıdır — kontrol genişliği uzun
 olana göre kurulur.
 
@@ -362,9 +470,22 @@ Kullanıcı ayarında `"imza": { "kapali": true }` varsa **ekleme**.
 Kopyalanabilir sınıflar: `references/components.md`. Sadece bir bileşenin tam kodu
 lazımsa oku.
 
-Panel: `bg-[#08090a]/95 backdrop-blur-xl border border-neon-blue/50 rounded-2xl p-6
+Panel: `bg-[#08090a]/95 backdrop-blur-xl border border-neon-blue/50 rounded-md p-6
 shadow-[0_0_40px_rgba(0,0,0,0.8)]`
-Radius: kutu `16px`, buton/kart `12px`, hücre `8px`, çip `6px`. Başka değer yok.
+
+**Yarıçap tektir: `6px`** — kutu, panel, kart, düğme, hücre, çip, hepsi aynı. Token
+`--tk-r` (eski `--tk-r-box` / `--tk-r-btn` / `--tk-r-cell` / `--tk-r-chip` adları geriye
+dönük uyumluluk için durur ve dördü de aynı değere bakar). Eski 16/12/8/6 merdiveni
+kaldırıldı: `layout.md` §5.1 "genel `CornerRadius` 6 DIP, kart/panel/düğme için farklı
+yarıçap üretme" diyordu, iki dosya birbirini yalanlıyordu. Çelişki 23.08.2026'da
+**`layout.md` lehine** kapatıldı — yuvarlatılmış dikdörtgen daha küçük köşe alır.
+Merdivenin kendisi zaten *(varsayılan, ölçülmedi)* idi; 16/12/8/6 basamakları hiçbir
+ölçüme dayanmıyordu.
+
+Yasak değil, yerine konan var: **daha yumuşak bir köşe gerekiyorsa çözüm yarıçap değil
+dairedir.** Daire işlevsel istisnadır ve serbesttir: `?` rozeti, slider thumb, durum
+noktası, avatar. Arada bir değer (10px, 14px) üretilmez.
+
 Aralık: 4 / 8 / 12 / 16 / 24. Panel padding `24px`, bölüm arası `24px`, satır arası `12px`.
 Geçiş süresi burada tekrar edilmez — tek kaynağı §5.4'ün token ölçeğidir
 (`--tk-t-instant` · `--tk-t-fast` · `--tk-t-base` · `--tk-t-slow`). Hover `scale(1.02)`
@@ -372,6 +493,9 @@ buton, `1.1` ikon.
 
 **Yerleşim, piksel disiplini, gradient ve geri bildirim yüzeyleri:** `references/layout.md`.
 Bir panel, pencere veya sayfa yerleşimi kurarken o dosya okunur.
+
+**Hareketin gerekçeleri:** `references/motion.md`. §5.4'ün tabloları oradaki `M1` … `M14`
+başlıklarına atıf verir; **hareket işi yapmadan önce o dosya okunur.**
 
 ## 5.3 Bileşen ölçüleri
 
@@ -412,8 +536,11 @@ mavi dolguda **1.00**, beyaz halka mavi dolguda **1.38**.
 
 **Halka yalnız klavye modalitesinde çıkar.** Seçici `:focus-visible`, `:focus` değil. Fare
 tıklamasında halka çıkmaz — neon temada her tıklamada parlayan halka gürültüdür; klavyede
-hiç halka olmaması ise engeldir. WPF'in `FocusVisualStyle`'ı bu ayrımı zaten yapıyor,
-`assets/Theme.xaml` içindeki `NeonFocusVisual` onu neon hâle çeviriyor.
+hiç halka olmaması ise engeldir. WPF'in `FocusVisualStyle`'ı bu ayrımı zaten yapıyor;
+`assets/Theme.xaml` onu **`{x:Static SystemParameters.FocusVisualStyleKey}` anahtarlı
+adsız stille** neon hâle çeviriyor. Stilin `x:Key`'i sistem anahtarının kendisidir, bu
+yüzden uygulama genelinde otomatik geçerlidir ve tek tek kontrollere bağlanmaz. (Bu satır
+eskiden depoda hiç bulunmayan bir stil adı gösteriyordu; ad 23.08.2026'da düzeltildi.)
 
 **Odak anında taşınır, halka geçişsiz belirir.** Panel 240 ms açılırken odak beklemez.
 Yalnız `opacity` ve `transform` animasyonlandığı için öğe ilk kareden itibaren odaklanabilir
@@ -454,62 +581,50 @@ taşıyan panele sabit `Height` verilmez; alt kenarı yiyen şey odur.
 metinden **6 DIP** uzakta `?`. Tooltip ayrıntılı ve **iki dilli**. Hover'da yalnızca
 **rengi** değişir: glow yok, büyüme yok, kayma yok.
 
-**Pencere düğmeleri** — 42×30 DIP. Küçült simgesi 10×2 DIP düz çizgi. Soldan sağa sıra:
-`Destek`, `Teknesyum`, küçült, büyüt, kapat (§4).
+**Pencere düğmeleri** — 42×30 DIP *(varsayılan, ölçülmedi)*. Küçült simgesi 10×2 DIP düz
+çizgi. Soldan sağa sıra: `Destek`, `Teknesyum`, küçült, büyüt, kapat (§4).
+
+Bu ölçü 23.08.2026'da **kullanıcı kararıyla** sabitlendi. `references/desktop.md` §10 bir
+dönem aynı düğme için 52×36px diyordu ve iki dosya birbirini yalanlıyordu; ikisi de
+ölçülmemişti, seçimi kullanıcı yaptı. Bir pencerede bütün düğmeler **tek bir değeri**
+paylaşır; aynı şeritte iki ayrı ölçü kullanılmaz.
 
 ## 5.4 Hareket — modern, animasyonlu, iptal edilebilir
 
-**Duruş: bu tema animasyonlu bir temadır.** Hedef modern ve hareketli bir arayüzdür;
-durgun teslim varsayılan değil, eksiktir. Aşağıdaki tavan animasyonun **nereye
-konmayacağını** söyler — ne kadar az olacağını değil.
+**Hareket işi yapmadan önce `references/motion.md` okunur.** Bu bölümde tablolar ve
+tokenlar durur; her satırın **neden** orada olduğu `motion.md`'dedir ve satırların yanındaki
+`M1` … `M14` atıfları oradaki başlıkları gösterir. Gerekçeyi okumadan tabloyu uygulayan
+kişi tabloyu yanlış uygular — atıf süs değil, işin parçasıdır.
 
-Bu temada animasyon **süs değil geri bildirimdir**: kullanıcıya bir şeyin değiştiğini,
-nereden nereye gittiğini ve sistemin çalıştığını söyler. Söyleyeceği bir şey yoksa animasyon
-konmaz.
-
-**Bu cümle bir tavandır, taban değil.** Tek başına okununca "emin değilsem koymayayım" diye
-anlaşılıyor ve çıktı durgun arayüz oluyor — şikâyet buradan geldi. Tavan neyin fazla
-olduğunu söyler; aşağıdaki taban neyin **eksik** olduğunu söyler. İkisi birlikte okunur.
+**Duruş: bu tema animasyonlu bir temadır.** Durgun teslim varsayılan değil, eksiktir.
+Animasyon süs değil geri bildirimdir. *"Söyleyeceği bir şey yoksa animasyon yok"* bir
+**tavandır**, taban değil; aşağıdaki taban neyin eksik olduğunu söyler. İkisi birlikte
+okunur → `motion.md` **M1**.
 
 ### Animasyon tabanı — bunlar animasyonsuz teslim edilemez
 
-Aşağıdaki olayların söyleyeceği bir şey **vardır**. Biri animasyonsuzsa arayüz eksiktir;
-"gerek görmedim" geçerli bir gerekçe değildir.
+Biri animasyonsuzsa arayüz eksiktir; "gerek görmedim" geçerli bir gerekçe değildir →
+`motion.md` **M2**. Bir olayın tabana girip girmediği ve sıklık muafiyeti → **M3**.
 
-| Olay | Beklenen | Süre · eğri |
-|---|---|---|
-| Panel, diyalog, çekmece açılışı | opaklık `0→1` + 8 DIP kayma ya da `scale(0.98)→1` | `--tk-t-base` · `--tk-e-out` |
-| Aynısının kapanışı | girişin tersi, **bir kademe kısa** | `--tk-t-fast` · `--tk-e-in` |
-| Sekme ve görünüm değişimi | giden içerik solar, gelen belirir — ani takas yok | `--tk-t-base` |
-| Liste/tablo satırı eklenme, silinme, sıralanma | kalan satırların **konumu** animasyonlanır | `--tk-t-base` |
-| Bildirim yığını | giriş, çıkış **ve** yığının kayması — üçü de | giriş `--tk-t-fast`, çıkış `--tk-t-instant` |
-| Hover ve basma — **her** etkileşimli öğe | renk ya da opaklık; basmada `scale(0.98)` | `--tk-t-instant` |
-| Açılır menü, tooltip, çip | opaklık + 4 DIP kayma | `--tk-t-fast` · `--tk-e-out` |
-| Yükleniyor | iskelet ya da ilerleme göstergesi — donuk ekran değil | döngü ≥ 1.4 s |
-| Boş durum → dolu durum | içeriğin belirişi; ekran bir anda dolmaz | `--tk-t-base`, 40 ms kademe |
-| Değer değişimi (ilerleme, sayaç, rozet) | eski değerden yeniye geçiş görünür | `--tk-t-base` |
-| Odak halkası | **geçişsiz** — tek istisna, klavye kullanıcısı beklemez | 0 ms |
+| Olay | Beklenen | Süre · eğri | Gerekçe |
+|---|---|---|---|
+| Panel, diyalog, çekmece açılışı | opaklık `0→1` + 8 DIP kayma ya da `scale(0.98)→1` | `--tk-t-base` · `--tk-e-out` | M2 · M6 |
+| Aynısının kapanışı | girişin tersi, **bir kademe kısa** | `--tk-t-fast` · `--tk-e-in` | M2 |
+| Sekme ve görünüm değişimi | giden içerik solar, gelen belirir — ani takas yok | `--tk-t-base` | M2 |
+| Liste/tablo satırı eklenme, silinme, sıralanma | kalan satırların **konumu** animasyonlanır | `--tk-t-base` | M2 · M12 |
+| Bildirim yığını | giriş, çıkış **ve** yığının kayması — üçü de | giriş `--tk-t-fast`, çıkış `--tk-t-instant` | M2 |
+| Hover ve basma — **her** etkileşimli öğe | renk ya da opaklık; basmada `scale(0.98)` | `--tk-t-instant` | M8 |
+| Açılır menü, tooltip, çip | opaklık + 4 DIP kayma | `--tk-t-fast` · `--tk-e-out` | M2 |
+| Yükleniyor | iskelet ya da ilerleme göstergesi — donuk ekran değil | döngü ≥ 1.4 s *(varsayılan, ölçülmedi)* | M2 · M10 |
+| Boş durum → dolu durum | içeriğin belirişi; ekran bir anda dolmaz | `--tk-t-base`, 40 ms kademe | M8 |
+| Değer değişimi (ilerleme, sayaç, rozet) | eski değerden yeniye geçiş görünür | `--tk-t-base` | M2 |
+| Odak halkası | **geçişsiz** — tek istisna, klavye kullanıcısı beklemez | 0 ms | M2 |
 
-**Kural cümlesi:** *"Söyleyeceği bir şey yoksa animasyon yok" bir tavandır; yukarıdaki
-olayların söyleyeceği bir şey vardır ve animasyonsuz teslim edilemez.*
+**Giriş animasyonu bir kez oynar** — bileşen ilk kez göründüğünde → **M9**.
 
-**Bir olay tabana giriyor mu — ölçüt:** durum değişimi hareketsiz **algılanmıyorsa** girer.
-Kullanıcı ekrana bakarken bir şeyin değiştiğini fark etmiyorsa eksik olan animasyondur,
-metin değil. Süs sorusu değil, anlaşılırlık sorusudur.
+### Süre ve yumuşatma tokenları
 
-**Tabandan muaf olan tek şey ölçülmüş sıklıktır.** Günde yüzlerce kez tekrarlanan eylem
-(her tuş vuruşunda arama sonucu, kaydırma, imleç hareketi) animasyonsuz kalır — orada
-hareket geri bildirim değil gecikmedir. Ölçüt sıklıktır, tahmin değil.
-
-**Taban `prefers-reduced-motion` açıkken de yürürlüktedir.** Ayar açıkken konum ve ölçek
-düşer, **opaklık geçişleri kalır** — yani taban opaklık yarısıyla karşılanır. Ne taban
-erişilebilirliği ezer, ne erişilebilirlik durgun arayüzün bahanesi olur.
-
-**Kütüphane varsayılanı token değildir.** `motion` çok keyframe'li geçişte 800 ms,
-`anime` genelde 1000 ms, `auto-animate` 250 ms kullanıyor; üçü de sahne için ayarlanmış.
-Tabanı kurarken süreler yukarıdaki tokenlardan okunur, kütüphanenin varsayılanı ezilir.
-
-**Süre ve yumuşatma tokendır.** Rastgele `0.3s` yazılmaz.
+Rastgele `0.3s` yazılmaz; kütüphane varsayılanı token değildir → **M5**.
 
 ```
 --tk-t-instant   90ms    renk, opaklık, hover
@@ -521,21 +636,16 @@ Tabanı kurarken süreler yukarıdaki tokenlardan okunur, kütüphanenin varsay�
 --tk-e-spring   cubic-bezier(0.34, 1.36, 0.64, 1)  yalnızca basma geri bildirimi
 ```
 
-360 ms'yi geçen hiçbir arayüz hareketi yok. Kullanıcı ikinci kez gördüğünde beklemeye
-başlıyorsa animasyon uzundur.
+360 ms'yi geçen hiçbir arayüz hareketi yok.
 
-**Yalnızca `opacity` ve `transform` animasyonlanır.** `width`, `height`, `top`, `left`,
-`margin`, `box-shadow`, `filter` animasyonu yerleşimi yeniden hesaplattırır; kare düşer,
-zayıf makinede takılma görünür. Boyut değişimi gerekiyorsa `scale` ile yapılır.
+**Yalnızca `opacity` ve `transform` animasyonlanır**; boyut değişimi `scale` ile yapılır →
+**M6**. **Geçiş tercih edilir, keyframe değil** — geçiş yarıda iptal edilebilir → **M7**.
 
-**Geçiş (`transition`) tercih edilir, keyframe değil.** Sebep: geçiş yarıda iptal edilebilir.
-Kullanıcı açılmakta olan paneli kapatırsa panel bulunduğu yerden geri döner; keyframe
-animasyonu ise başa sarar ve sıçrar. Keyframe yalnızca gerçekten döngüsel olan şey içindir
-(yükleniyor göstergesi).
+### Azaltılmış hareket — zorunlu, sonradan eklenmez
 
-**`prefers-reduced-motion` zorunludur, sonradan eklenmez.** Ayar açıkken konum ve ölçek
-animasyonları kapanır, **opaklık geçişleri kalır** — arayüz cansızlaşmaz ama baş döndürmez.
-Web'de tek blok yeter; WPF'te `SystemParameters.ClientAreaAnimation` okunur.
+Ayar açıkken konum ve ölçek kapanır, opaklık geçişleri kalır. Taban bu ayar açıkken de
+yürürlüktedir. `transition-property: opacity` satırı ve `*` seçicili `transform: none`
+satırı zorunludur; WPF'te `SystemParameters.ClientAreaAnimation` okunur → **M4**.
 
 ```css
 @media (prefers-reduced-motion: reduce) {
@@ -545,74 +655,39 @@ Web'de tek blok yeter; WPF'te `SystemParameters.ClientAreaAnimation` okunur.
     transition-property: opacity !important;
     transition-duration: var(--tk-t-instant) !important;
   }
+  *, *::before, *::after { transform: none !important; }
 }
 ```
 
-`transition-property: opacity` satırı zorunludur. O olmadan blok konum ve ölçek geçişlerini
-**kapatmaz, 90 ms'ye kısaltır** — 90 ms'lik bir `scale` ya da 8 DIP kayma hâlâ harekettir
-ve düz yazının tam tersini yapar.
+### Mikro etkileşim tavanları
 
-**Mikro etkileşim tavanları** — abartı buradan başlar, sınırlar kesindir:
+Sınırlar kesindir; her satırın gerekçesi (hit-test, yankı, kademe) → **M8**.
 
-| Durum | İzin verilen | Yasak |
-|---|---|---|
-| Hover | `scale(1.02)`, glow opaklığı `/20`→`/30`, renk | 1.05+ büyüme, kayma, dönme |
-| Basma | `scale(0.98)`, 90 ms | zıplama, `spring` yankısı |
-| Odak | halka **anında** belirir | halkayı yumuşatarak geciktirmek |
-| Giriş | 8 DIP kayma + opaklık, 240 ms | 40 DIP uçuş, dönerek gelme |
-| Liste | 40 ms kademe, **en çok 6 eleman** | 20 elemanı tek tek düşürmek |
+| Durum | İzin verilen | Yasak — yerine ne konur | Gerekçe |
+|---|---|---|---|
+| Hover | `scale(1.02)`, glow opaklığı `/20`→`/30`, renk | 1.05+ büyüme, kayma, dönme → renk ve glow opaklığı kullan | M8 |
+| Basma | `scale(0.98)`, 90 ms | zıplama, `spring` yankısı → tek seferlik `--tk-e-spring` | M8 |
+| Odak | halka **anında** belirir | halkayı yumuşatarak geciktirmek → 0 ms bırak | M2 |
+| Giriş | 8 DIP kayma + opaklık, 240 ms | 40 DIP uçuş, dönerek gelme → 8 DIP ile aynı etki | M2 |
+| Liste | 40 ms kademe, **en çok 6 eleman** | 20 elemanı tek tek düşürmek → kademeyi kaldır, hepsi birlikte belirsin | M8 |
 
-**Giriş animasyonu bir kez oynar** — bileşen ilk kez göründüğünde. Her `render`'da, her
-sekme dönüşünde, her veri tazelemesinde tekrar oynayan giriş animasyonu hatadır: kullanıcı
-aynı ekranı ikinci kez görüyordur ve beklemek zorunda kalır.
+### Sonsuz döngü — yasak, iki adı konmuş istisna
 
-**Sonsuz döngü yasak.** Nefes alan paneller, sürekli dönen çizgiler, parlaklığı dalgalanan
-yüzeyler bu temada yok. İki istisna var:
+Nefes alan panel, sürekli dönen süs, dalgalanan parlaklık yok. İstisnalar: **süreç
+göstergesi** (iş bitince durur) ve **uygulama zemininin gradienti** (§2). İkisi de
+`prefers-reduced-motion` altında durur; CSS döngüleri `motion-safe:` altına alınır →
+**M10**.
 
-1. **Süreç göstergesi** — gerçekten bir iş yürürken çalışır, iş bitince durur. Yükleme
-   iskeleti (`skeleton`) parıltısı da buna dahildir: döngü ≥ 1.4 s, kontrastı düşük.
-2. **Uygulama zemininin gradienti** (§2) — ekseni çok yavaş döner. Ölçü: döngü ≥ 40 s,
-   açı oynaması ≤ 20°, durak renkleri sabit. Uygulamada hareket eden **tek** sonsuz yüzey
-   budur; ikinci bir tanesi eklenirse ikisi de yasağa girer.
+### Sürükleme ve yerleşim
 
-İkisi de `prefers-reduced-motion: reduce` altında durur.
+Sürükleyerek yapılan her işin **tek dokunuşluk alternatifi** olur (WCAG 2.2 §2.5.7) →
+**M11**. Hareket, tıklanacak şeyi kaçırmaz: açılan panel komşularını itmez → **M12**.
 
-**Sürükleyerek yapılan her işin tek dokunuşluk alternatifi olur.** Dosya bırakma alanı
-varsa "Dosya seç" düğmesi de olur; sıra değiştirme sürüklemeyle yapılıyorsa yukarı/aşağı
-düğmesi de bulunur. WCAG 2.2 §2.5.7; el titremesi olan ve işaretçi hassasiyeti düşük
-kullanıcılar sürükleyemez.
+### Platform
 
-**Hareket, tıklanacak şeyi kaçırmaz.** Kullanıcı bir düğmeye giderken düğme yer değiştiriyorsa
-animasyon zarar veriyordur. Yerleşim animasyonu yalnızca kullanıcı eylemiyle başlar, kendi
-kendine değil; açılan panel komşularını itmez, üstlerine biner.
-
-React/Electron tarafında varsayılan animasyon kütüphanesi **`motion`** (eski adıyla
-Framer Motion): `useReducedMotion` hook'u ve iptal edilebilir geçişler hazır gelir. Süre ve
-eğri değerleri yine yukarıdaki tokenlardan okunur, bileşen içinde sayı yazılmaz.
-
-**`<MotionConfig reducedMotion="user">` kök sarmalayıcıda zorunludur.** Motion'ın
-varsayılanı `reducedMotion: "never"`'dır (`MotionConfigContext.tsx:72`) — hook gelir,
-politika gelmez. Bu satır yazılmazsa kütüphane sistem ayarını yok sayar ve arayüz
-`prefers-reduced-motion` kuralını hiç uygulamamış olur.
-
-```jsx
-<MotionConfig reducedMotion="user">
-  <App />
-</MotionConfig>
-```
-
-Ayar açıkken Motion yalnızca `positionalKeys` grubunu (`width, height, top, left, right,
-bottom` + tüm transform'lar) anında yapar; opaklık ve renk kalır. Bu bizim kuralımızla
-birebir aynı — bu yüzden `"user"` doğru değer, `"always"` değil.
-
-**`MotionConfig` yalnız kütüphaneyi kapsar.** CSS ile yazılmış sonsuz döngüler ondan
-etkilenmez; `@media` bloğu da onları durdurmaz, hızlandırır. Süreç göstergesi gibi meşru
-döngüler `motion-safe:` altına alınır (§5.4 sonsuz döngü kuralı).
-
-**WPF karşılıkları** — `Storyboard` yalnızca `RenderTransform` ve `Opacity` üzerinde çalışır,
-`Width`/`Height` üzerinde değil. Yumuşatma `PowerEase`/`CubicEase` ile `EasingMode="EaseOut"`.
-Storyboard'lar `Freeze()` edilir. Sürekli çalışan `DispatcherTimer` tabanlı animasyon yok;
-pencere gizliyken animasyon durdurulur.
+React/Electron: `motion`, kök sarmalayıcıda `<MotionConfig reducedMotion="user">`
+**zorunlu** → **M13**. WPF: `Storyboard` yalnız `RenderTransform` ve `Opacity` üzerinde,
+`Freeze()` edilir → **M14**.
 
 ## 5.5 Tanıtım sayfası istisnası
 
@@ -678,9 +753,26 @@ Lisansı olmayan depo "serbest" demek değildir — telif varsayılan olarak sah
 - Panele sabit `Height` → içerik büyüyünce alt satır kesilir; `MinHeight` kullan
 - "Derlendi, düzelmiştir" → yarım anahat derlemede görünmez; ekran görüntüsü + büyütme
   olmadan geçti sayma (§8.2)
-- Sayıyı sans font ile yazmak → mono
+- **Veri** sayısını sans font ile yazmak → mono (`.tk-mono`). Cümle içi sayı sans kalır,
+  gövdedeki `tabular-nums` onu hizalar (§3)
 - Glow'suz neon renk → ölü görünür
-- Başlıkta tracking unutmak
+- Başlıkta tracking unutmak — ya da tersi: başlığa etiket tracking'i (`0.1em`+) vermek →
+  aralık boyutla ters orantılıdır, h2 `0.02em` (§3)
+- Başlık ya da etiketi `700` ağırlıkta bırakmak → `600`; `700` yalnız hero dışı hiçbir
+  tipografi rolünde yok. Vurgu gerekiyorsa bir basamak büyüt (§3)
+- h2/h3/etiketi aynı boyut ve renkte bırakmak → hiyerarşi boyutta kurulur: 24 / 20 / 14 (§3)
+- `line-height` yazmamak → tarayıcı ve WPF varsayılanları farklı; `--tk-lh-*` tokenları ve
+  WPF'te `LineStackingStrategy="BlockLineHeight"` (§3)
+- Hero'yu 28'de bırakmak ya da ara boyut uydurmak → ölçek 14/16/20/24/30, `--tk-fs-*` (§3)
+- Yarıçapta 16/12/8 kullanmak → tek değer `6px` (`--tk-r`); daha yumuşak köşe gerekiyorsa
+  daire (§5)
+- Hero glow'unu inline yazmak → `--tk-glow-hero` / `HeroGlow`, iki platformda blur 8,
+  opaklık 0.8 (§2)
+- Devre dışı kontrolü yalnız soluklaştırmak → tooltip zorunlu, renk tek başına anlam
+  taşımaz (§2, WCAG 1.4.1)
+- Durum noktasını yalnız renkle ayırmak → dolu daire / halka şekil farkı (§2)
+- §5.4 tablosunu `references/motion.md` okumadan uygulamak → satırların gerekçesi orada,
+  atıflar `M1` … `M14`
 - Etiketi UPPERCASE veya Title Case yazmak → ilki büyük gerisi küçük (§3)
 - Beş satırlık paragraf, boşluksuz açıklama metni → 2-4 satırlık bloklar (§3.2)
 - `width`/`height`/`box-shadow` animasyonu → `transform` + `opacity` (§5.4)
@@ -702,6 +794,10 @@ Lisansı olmayan depo "serbest" demek değildir — telif varsayılan olarak sah
 
 WinForms/WPF işinde **`references/desktop.md`** zorunlu: taşma/kırpılma kuralları,
 pencere çerçevesi ve başlık çubuğu, `locale/` klasörü. Web/React işinde açma.
+
+**Hareket işi yapan her platformda `references/motion.md` zorunlu** — web, React, Electron,
+WPF, WinForms ayrımsız. §5.4'te kalan tablolar orayı gösterir; gerekçe okunmadan tablo
+uygulanmaz.
 
 ## 8. Varsayılanlar — tartışılmadan uygulanır
 

@@ -41,8 +41,14 @@
   <SolidColorBrush x:Key="PurpleText" Color="#FFC67EFF"/>
 
   <SolidColorBrush x:Key="TextBody"  Color="#FFFFFFFF"/>
-  <SolidColorBrush x:Key="TextDim"   Color="#FFFFFFFF"/>
   <SolidColorBrush x:Key="TextLabel" Color="#FF00F3FF"/>
+  <!-- Devre disi kontrol 7:1'den muaftir (SKILL §2) ve bedeli vardir: renk koru
+       kullanici griyi goremez. Bu firca tek basina kullanilmaz — devre disi her
+       kontrol grilige ek bir isaret tasir: ToolTip metni ZORUNLU, yaninda
+       Cursor="No" ve mumkunse bir ikon. Yalniz soluklastirilmis kontrol eksik
+       teslimdir. "Soluk metin" fircasi 23.08.2026'da silindi: beyazla birebir ayni
+       degeri tasiyordu ve iki adi olan tek deger er gec ayrisir. Ikincil metin
+       icin cozum gri degil, metni silmektir (SKILL §2, "ara gri yok"). -->
   <SolidColorBrush x:Key="Disabled"  Color="#FF71717A"/>
 
   <SolidColorBrush x:Key="NeonBlue10"   Color="#1A00F3FF"/>
@@ -70,13 +76,19 @@
   <SolidColorBrush x:Key="BorderStrong"     Color="#9900F3FF"/>
   <SolidColorBrush x:Key="BorderDecorative" Color="#4D00F3FF"/>
 
-  <FontFamily x:Key="FontSans">Segoe UI</FontFamily>
-  <FontFamily x:Key="FontMono">Consolas, Cascadia Mono</FontFamily>
+  <!-- Zincirin tek kaynagi SKILL §3'tur; sira orayla ayni. Atkinson Hyperlegible
+       Next varsayilandir ve projeye GOMULUR (pack URI), sistemde var sayilmaz. -->
+  <FontFamily x:Key="FontSans">Atkinson Hyperlegible Next, Segoe UI</FontFamily>
+  <FontFamily x:Key="FontMono">Cascadia Mono, Consolas</FontFamily>
 
   <Duration x:Key="TInstant">0:0:0.09</Duration>
   <Duration x:Key="TFast">0:0:0.16</Duration>
   <Duration x:Key="TBase">0:0:0.24</Duration>
   <Duration x:Key="TSlow">0:0:0.36</Duration>
+  <!-- Hero glow: CSS tokeni `tk-glow-hero` ile ayni yogunluk — blur 8, opaklik 0.8. -->
+  <DropShadowEffect x:Key="HeroGlow" x:Shared="False" Color="#FF00F3FF"
+                    BlurRadius="8" ShadowDepth="0" Opacity="0.8"/>
+
   <CubicEase x:Key="EOut" EasingMode="EaseOut"/>
   <CubicEase x:Key="EIn" EasingMode="EaseIn"/>
 
@@ -85,9 +97,11 @@
       <Setter.Value>
         <ControlTemplate>
           <Grid Margin="-5" SnapsToDevicePixels="True" UseLayoutRounding="True">
-            <Rectangle Margin="4" RadiusX="13" RadiusY="13"
+            <!-- Yaricap 6 DIP tabanindan turetildi: ic katman ogenin 1 DIP disinda
+                 (6+1=7), dis katman 3 DIP disinda (6+3=9). Elle secilmis sayi degil. -->
+            <Rectangle Margin="4" RadiusX="7" RadiusY="7"
                        Stroke="#FF000000" StrokeThickness="2"/>
-            <Rectangle Margin="2" RadiusX="15" RadiusY="15"
+            <Rectangle Margin="2" RadiusX="9" RadiusY="9"
                        Stroke="#FF00F3FF" StrokeThickness="2"/>
           </Grid>
         </ControlTemplate>
@@ -95,49 +109,78 @@
     </Setter>
   </Style>
 
+  <!-- Olcek 1.25 major third: 14 / 16 / 20 / 24 / 30 DIP. Satir yuksekligi
+       LineHeight + LineStackingStrategy="BlockLineHeight" ile kurulur; ikincisi
+       yazilmazsa WPF satir kutusunu en uzun harfe gore buyutur ve CSS'ten ayrisir.
+       Agirlik: baslik ve etiket SemiBold (600), yalniz hero Black (900).
+       TRACKING TELAFISI: WPF'te harf araligi yok. CSS h2 0.02em, h3 0.05em, etiket
+       0.15em uygular; burada uygulanamaz. Telafi SKILL §3'te yazili — WPF'te etiketi
+       govdeden ayiran sey boyut, agirlik ve renktir, aralik degil. Attached behavior
+       yazilirsa telafi kalkar ve CSS degerleri birebir kullanilir. -->
+
   <Style x:Key="H2" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
-    <Setter Property="FontSize" Value="20"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontSize" Value="24"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="LineHeight" Value="29"/>
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
     <Setter Property="Foreground" Value="{StaticResource NeonBlue}"/>
   </Style>
 
   <Style x:Key="H3" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
-    <Setter Property="FontSize" Value="16"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontSize" Value="20"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="LineHeight" Value="24"/>
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
     <Setter Property="Foreground" Value="{StaticResource TextLabel}"/>
   </Style>
 
   <Style x:Key="Label" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
     <Setter Property="FontSize" Value="14"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="LineHeight" Value="17"/>
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
     <Setter Property="Foreground" Value="{StaticResource TextLabel}"/>
   </Style>
 
   <Style x:Key="Body" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
     <Setter Property="FontSize" Value="16"/>
+    <Setter Property="LineHeight" Value="24"/>
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBody}"/>
+  </Style>
+
+  <!-- Yardim / ipucu metni. CSS karsiligi .tk-hint. -->
+  <Style x:Key="Hint" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="LineHeight" Value="21"/>
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
     <Setter Property="Foreground" Value="{StaticResource TextBody}"/>
   </Style>
 
   <Style x:Key="Hero" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontMono}"/>
-    <Setter Property="FontSize" Value="28"/>
+    <Setter Property="FontSize" Value="30"/>
     <Setter Property="FontWeight" Value="Black"/>
+    <Setter Property="LineHeight" Value="36"/>
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
     <Setter Property="Foreground" Value="{StaticResource NeonBlue}"/>
-    <Setter Property="Effect">
-      <Setter.Value>
-        <DropShadowEffect Color="{StaticResource NeonBlueColor}" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
-      </Setter.Value>
-    </Setter>
+    <Setter Property="Effect" Value="{StaticResource HeroGlow}"/>
   </Style>
 
   <Style x:Key="MonoValue" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontMono}"/>
     <Setter Property="FontSize" Value="16"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="LineHeight" Value="22"/>
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight"/>
     <Setter Property="Foreground" Value="{StaticResource PinkText}"/>
   </Style>
 
@@ -145,14 +188,14 @@
     <Setter Property="Background" Value="{StaticResource Surface}"/>
     <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="16"/>
+    <Setter Property="CornerRadius" Value="6"/>
     <Setter Property="Padding" Value="24"/>
   </Style>
 
   <Style x:Key="PrimaryButton" TargetType="Button">
     <Setter Property="Background" Value="{StaticResource NeonBlue}"/>
     <Setter Property="Foreground" Value="Black"/>
-    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
     <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
     <Setter Property="Padding" Value="20,14"/>
     <Setter Property="BorderThickness" Value="0"/>
@@ -160,7 +203,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="12"
+          <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6"
                   Padding="{TemplateBinding Padding}" RenderTransformOrigin="0.5,0.5">
             <Border.RenderTransform>
               <ScaleTransform ScaleX="1" ScaleY="1"/>

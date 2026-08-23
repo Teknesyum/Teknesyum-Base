@@ -4470,20 +4470,36 @@ ol('debug bildirimi ingilizce kurulumda ingilizce konusur', () => {
 
 console.log('\nTur özeti');
 
+let _turLive = null;
+
 function turProje() {
-  const { p } = proje(1, 0);
+  const { p, live } = proje(1, 0);
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tur-'));
-  return { p, ek: { CLAUDE_CONFIG_DIR: cfg } };
+  _turLive = live;
+  return { p, live, ek: { CLAUDE_CONFIG_DIR: cfg } };
 }
 
-// Tur ozeti `systemMessage` ile basilir. `additionalContext` kanali denendi ve cevabin
-// tamamini tekrarlatti: `Stop` cevap yazildiktan sonra calisir, modelin satiri cevabin
-// altina koymak icin elindeki tek yol cevabi yeniden uretmektir.
-// Ayrinti: docs/HATA-tur-makbuzu-tekrari.md
-function turSatiri(r) {
-  if (!r.out) return '';
-  const o = JSON.parse(r.out);
-  return o.systemMessage || (o.hookSpecificOutput || {}).additionalContext || '';
+// Makbuz akisa basilmaz, statusline'in okudugu `_makbuz.json` dosyasina yazilir. Iki kanal
+// olculdu ve elendi: `additionalContext` cevabin tamamini tekrarlatiyor (Stop cevap
+// yazildiktan sonra calisiyor), `systemMessage` ise render katmaninda kaldirilamayan
+// `Stop says:` onegi aliyor. Ayrinti: docs/HATA-tur-makbuzu-tekrari.md ve relay-watch.js.
+function turSatiri(r, live) {
+  const d = live || _turLive;
+  if (!d) return '';
+  try {
+    const m = JSON.parse(fs.readFileSync(path.join(d, '_makbuz.json'), 'utf8'));
+    return (m && m.metin) || '';
+  } catch {
+    return '';
+  }
+}
+
+// Makbuz dosyasini turlar arasi sifirlar; ayni sahnede iki olcum yapilirken eski satirin
+// yeni turun sonucu sanilmasini engeller.
+function makbuzSil(live) {
+  try {
+    fs.unlinkSync(path.join(live || _turLive, '_makbuz.json'));
+  } catch {}
 }
 
 ol('tur ozeti sure ve token tahminini tek satirda verir', () => {
@@ -4512,12 +4528,18 @@ ol('tur makbuzunun adi neyi saydigini soyler', () => {
     throw new Error('makbuz hâlâ bütçe sayacıyla ayni adi tasiyor: ' + m);
 });
 
-ol('tur ozeti additionalContext kanalina hic yazmaz, cevap tekrarlanmaz', () => {
-  const { p, ek } = turProje();
+// Makbuz iki kanaldan da çıkmaz: `additionalContext` cevabı tekrarlatıyor,
+// `systemMessage` kaldırılamayan `Stop says:` öneki alıyor. Kullanıcı o öneki açıkça
+// istemedi (23.08.2026). Tek kanal statusline'ın okuduğu dosya.
+ol('makbuz akisa hic basilmaz, yalniz statusline dosyasina yazilir', () => {
+  const { p, ek, live } = turProje();
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
-  const o = JSON.parse(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out);
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek);
+  const o = r.out ? JSON.parse(r.out) : {};
   esit(o.hookSpecificOutput, undefined, 'ozet modele verilmis, cevap tekrarlanir');
-  icerir(o.systemMessage, 'Total Sure: '.replace('Sure', 'Süre'));
+  if (o.systemMessage && /Total Süre/.test(o.systemMessage))
+    throw new Error('makbuz systemMessage ile basilmis, `Stop says:` onegi gelir');
+  icerir(turSatiri(r, live), 'Total Süre: ', 'makbuz dosyasina yazilmali');
 });
 
 ol('damgasiz Stop tur ozeti basmaz', () => {
@@ -4760,14 +4782,54 @@ ol('yururlukteki bildirim bicimi satir ve makbuzda ters tirnak yok', () => {
   const d = fs.readFileSync(path.join(KOK, 'hooks', 'dil.js'), 'utf8');
   const blok = d.slice(d.indexOf('turOzeti: {'), d.indexOf('turOzetiYonerge'));
   icermez(blok, '`', 'makbuz metninde ters tırnak kalmamalı');
-  const { p, ek } = turProje();
+  const { p, ek, live } = turProje();
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
-  const m = JSON.parse(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out)
-    .systemMessage;
-  if (m.startsWith('\n')) throw new Error('makbuz satır başıyla başlıyor: ' + JSON.stringify(m));
+  const m = turSatiri(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek), live);
   if (m.includes('`')) throw new Error('makbuzda ters tırnak var: ' + JSON.stringify(m));
   icerir(m, 'Total Süre: ');
   esit(m.split('\n').length, 1, 'makbuz tek satır olmalı');
+});
+
+// Arka planda ajan varken makbuz basılmaz ve ses çalmaz: kullanıcının ekranında nokta
+// hâlâ yanıp söner ve "N running tasks" yazar. Damga erteleme dalında **silinmez** —
+// silinirse ertelenen turun süresi ve token tabanı kaybolur (fable, 23.08.2026).
+ol('acik ajan varken makbuz ertelenir, bitince toplam basilir', () => {
+  const { p, ek, live } = turProje();
+  fs.mkdirSync(live, { recursive: true });
+  const kosan = path.join(live, '_running.json');
+  fs.writeFileSync(kosan, JSON.stringify([{ type: 'teknesyum:builder', start: Date.now() }]));
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  const damga = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'live', 'oturum-1.tur');
+  const d1 = JSON.parse(fs.readFileSync(damga, 'utf8'));
+  d1.t = Date.now() - 30000;
+  fs.writeFileSync(damga, JSON.stringify(d1));
+
+  calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek);
+  esit(turSatiri({}, live), '', 'ajan calisirken makbuz basilmis');
+  esit(fs.existsSync(damga), true, 'erteleme dalinda damga silinmemeli');
+  esit(JSON.parse(fs.readFileSync(damga, 'utf8')).bekleyen, 1, 'bekleyen isareti yok');
+
+  fs.writeFileSync(kosan, '[]');
+  const d2 = JSON.parse(fs.readFileSync(damga, 'utf8'));
+  d2.t = Date.now() - 20000;
+  fs.writeFileSync(damga, JSON.stringify(d2));
+  calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek);
+  const m2 = turSatiri({}, live);
+  icerir(m2, 'Total Süre: ', 'ajan bitince makbuz basilmali');
+  if (!/(49|50|51)sn/.test(m2)) throw new Error('ertelenen sure birikmemis: ' + m2);
+  esit(fs.existsSync(damga), false, 'basildiktan sonra damga silinmeli');
+});
+
+ol('bayat calisan kaydi makbuzu sonsuza kadar ertelemez', () => {
+  const { p, ek, live } = turProje();
+  fs.mkdirSync(live, { recursive: true });
+  fs.writeFileSync(
+    path.join(live, '_running.json'),
+    JSON.stringify([{ type: 'x', start: Date.now() - 3 * 60 * 60 * 1000 }])
+  );
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek);
+  icerir(turSatiri({}, live), 'Total Süre: ', 'olu kayit ertelemeyi tutmamali');
 });
 
 ol('dugmeler uc profilde de tanimli', () => {
@@ -6457,8 +6519,7 @@ ol('bitis sesi tur makbuzuyla ayni yerden cikar', () => {
     .split('\n')
     .filter((s) => !s.trim().startsWith('//'))
     .join('\n');
-  icermez(govdeTur, 'bekleyen', 'engelli kapanis artik ertelenmemeli');
-  icermez(govdeTur, 'yaz(f,', 'turBitir damgayi yeniden yazmamali, silmeli');
+  icerir(govdeTur, 'acikIsVar(iz)', 'makbuz ve ses acik is kapisindan gecmeli');
   const govde = k.slice(k.indexOf('function bitisSesi'));
   icerir(govde, 'detached: true', 'calma cagrisi turu bloklamamali');
   icerir(govde, 'unref()');
@@ -6894,6 +6955,222 @@ ol('ozel.md ve pusla.md akisi anlatir', () => {
   const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
   icerir(h, '/ozel');
   icerir(h, '/pusla');
+});
+
+// U2 · tipografi dalgasi (docs/KARARLAR-ui-2026-08-23.md). theme.css, Theme.xaml,
+// Palette.cs ve SKILL §3 ayni degerlerin dort ayri elle yazilmis kopyasidir; asagidaki
+// testler kopyalarin ayrismasini yakalar — biri guncellenip otekiler unutulursa duserler.
+const U2K = path.join(KOK, 'skills', 'teknesyum-ui');
+const U2_SKILL = fs.readFileSync(path.join(U2K, 'SKILL.md'), 'utf8');
+const U2_CSS = fs.readFileSync(path.join(U2K, 'assets', 'theme.css'), 'utf8');
+const U2_XAML = fs.readFileSync(path.join(U2K, 'assets', 'Theme.xaml'), 'utf8');
+const U2_CS = fs.readFileSync(path.join(U2K, 'assets', 'Palette.cs'), 'utf8');
+const U2_TSX = fs.readFileSync(path.join(U2K, 'assets', 'Signature.tsx'), 'utf8');
+const U2_SXAML = fs.readFileSync(path.join(U2K, 'assets', 'Signature.xaml'), 'utf8');
+const U2_LAYOUT = fs.readFileSync(path.join(U2K, 'references', 'layout.md'), 'utf8');
+const U2_DESKTOP = fs.readFileSync(path.join(U2K, 'references', 'desktop.md'), 'utf8');
+const U2_MOTION = fs.readFileSync(path.join(U2K, 'references', 'motion.md'), 'utf8');
+
+ol('ui font zinciri dort kopyada da ayni', () => {
+  icerir(U2_CSS, "'Atkinson Hyperlegible Next', 'Segoe UI'");
+  icerir(U2_CSS, 'Cascadia Mono, Consolas');
+  icerir(U2_XAML, 'Atkinson Hyperlegible Next, Segoe UI');
+  icerir(U2_XAML, 'Cascadia Mono, Consolas');
+  icerir(U2_SKILL, "'Atkinson Hyperlegible Next', 'Segoe UI'");
+  icerir(U2_SKILL, 'Cascadia Mono, Consolas');
+  icerir(U2_CS, '"Atkinson Hyperlegible Next", "Segoe UI"');
+  icerir(U2_CS, '"Cascadia Mono", "Consolas"');
+  // Roboto tek kaynaga cekildi: CSS'ten cikarildi, SKILL zincirine de girmedi.
+  icermez(U2_CSS, 'Roboto');
+  icermez(U2_SKILL, 'Roboto');
+});
+
+ol('ui olcegi bes basamak, eski dort basamakli sabit px kalmadi', () => {
+  for (const t of [
+    '--tk-fs-1: 14px',
+    '--tk-fs-2: 16px',
+    '--tk-fs-3: 20px',
+    '--tk-fs-4: 24px',
+    '--tk-fs-5: 30px',
+  ])
+    icerir(U2_CSS, t);
+  icerir(U2_SKILL, '14 · 16 · 20 · 24 · 30');
+  icermez(U2_CSS, 'font-size: 28px');
+  icermez(U2_XAML, '"FontSize" Value="28"');
+  for (const v of [
+    '"FontSize" Value="30"',
+    '"FontSize" Value="24"',
+    '"FontSize" Value="20"',
+    '"FontSize" Value="14"',
+  ])
+    icerir(U2_XAML, v);
+});
+
+ol('ui agirligi 600, 700 hero disinda hicbir tipografi rolunde yok', () => {
+  const govde = U2_CSS.slice(U2_CSS.indexOf('--- tipografi'), U2_CSS.indexOf('--- yüzeyler'));
+  icermez(govde, 'font-weight: 700');
+  icerir(govde, 'font-weight: 900', 'hero 900 kalir');
+  icermez(U2_CSS, 'font-weight: 700', 'buton da 600');
+  icermez(U2_XAML, '"FontWeight" Value="Bold"');
+  icerir(U2_XAML, '"FontWeight" Value="SemiBold"');
+  icerir(U2_XAML, '"FontWeight" Value="Black"', 'hero Black kalir');
+  icermez(U2_TSX, 'font-bold');
+  icermez(U2_SXAML, '"FontWeight" Value="Bold"');
+  icerir(U2_SKILL, '700 değil 600');
+});
+
+ol('ui satir yuksekligi ve satir uzunlugu iki platformda tanimli', () => {
+  for (const t of [
+    '--tk-lh-body: 1.5',
+    '--tk-lh-heading: 1.2',
+    '--tk-lh-mono: 1.4',
+    '--tk-measure: 65ch',
+  ])
+    icerir(U2_CSS, t);
+  icerir(U2_CSS, 'line-height: var(--tk-lh-body)');
+  icerir(U2_CSS, 'max-width: var(--tk-measure)');
+  icerir(U2_XAML, 'LineStackingStrategy" Value="BlockLineHeight"');
+  icerir(U2_XAML, '"LineHeight" Value="24"');
+  icerir(U2_SKILL, 'LineStackingStrategy="BlockLineHeight"');
+});
+
+ol('ui harf araligi boyutla ters orantili, WPF telafisi sessiz birakilmadi', () => {
+  for (const t of [
+    '--tk-tr-label: 0.15em',
+    '--tk-tr-h3: 0.05em',
+    '--tk-tr-h2: 0.02em',
+    '--tk-tr-hero: -0.01em',
+  ])
+    icerir(U2_CSS, t);
+  icermez(U2_CSS, 'letter-spacing: 0.1em');
+  icerir(U2_SKILL, 'tracking yoktur — telafisi yazılıdır');
+  icerir(U2_XAML, 'TRACKING TELAFISI');
+  icerir(U2_CS, 'AĞIRLIK TELAFİSİ');
+});
+
+ol('ui baslik hiyerarsisi boyutla ayrisir, uc seviye ayni degil', () => {
+  icerir(U2_SKILL, 'Şimdi ayrım **boyutta**: 24 → 20 → 14');
+  icerir(U2_CSS, '.tk-h3-rule');
+  icermez(U2_SKILL, '| Bölüm başlığı (h3) | 16 |');
+});
+
+ol('ui olu soluk metin tokeni uc dosyadan silindi, yerine tooltip zorunlulugu geldi', () => {
+  for (const k of [U2_CSS, U2_XAML, U2_CS]) icermez(k.toLowerCase(), 'textdim');
+  icermez(U2_CSS, '--tk-text-dim');
+  icerir(U2_CSS, 'ToolTip');
+  icerir(U2_XAML, 'ZORUNLU');
+  icerir(U2_CS, 'ZORUNLU');
+  icerir(U2_SKILL, '**Tooltip zorunludur**');
+});
+
+ol('ui hero glow tek token, iki platformda ayni yogunluk', () => {
+  icerir(U2_CSS, '--tk-glow-hero: 0 0 8px rgba(0, 243, 255, 0.8)');
+  icerir(U2_CSS, 'drop-shadow(var(--tk-glow-hero))');
+  icerir(U2_XAML, 'x:Key="HeroGlow"');
+  icerir(U2_XAML, 'BlurRadius="8" ShadowDepth="0" Opacity="0.8"');
+  icermez(U2_XAML, 'BlurRadius="10"');
+  icerir(U2_SKILL, 'blur 8, opaklık 0.8');
+});
+
+ol('ui sayi ayrimi: veri sayisi mono, cumle ici sayi sans+tabular', () => {
+  icerir(U2_CSS, 'font-variant-numeric: tabular-nums');
+  icerir(U2_XAML, 'Typography.NumeralAlignment" Value="Tabular"');
+  icerir(U2_SKILL, 'Typography.NumeralAlignment="Tabular"');
+  icerir(U2_SKILL, "cümle içi sayı mono'ya zorlanmaz");
+});
+
+ol('ui XAML Hint stili var, CSS ve WinForms karsiligiyla ayni olcude', () => {
+  icerir(U2_XAML, 'x:Key="Hint"');
+  icerir(U2_CSS, '.tk-hint');
+  icerir(U2_CS, 'Hint       = new(SansAdi, 10.5f)');
+});
+
+ol('ui yaricapi tek deger, 16/12/8 merdiveni kalmadi', () => {
+  icerir(U2_CSS, '--tk-r: 6px');
+  icermez(U2_CSS, '--tk-r-box: 16px');
+  icermez(U2_XAML, 'CornerRadius" Value="16"');
+  icermez(U2_XAML, 'CornerRadius="12"');
+  icerir(U2_XAML, 'CornerRadius="6"');
+  icerir(U2_SKILL, 'Yarıçap tektir');
+  icermez(U2_SKILL, 'kutu `16px`, buton/kart `12px`');
+  icerir(U2_CS, 'public const int Radius = 6;');
+  icerir(U2_LAYOUT, 'bu dosya lehine');
+});
+
+ol('ui genel bir oncelik kurali yazmaz, celiskiler tek tek sorulur', () => {
+  icermez(U2_SKILL, 'Çelişkide `SKILL.md` kazanır');
+  icerir(U2_LAYOUT, 'bilerek yoktur');
+});
+
+ol('ui renk tek basina anlam tasimaz, durum noktasi sekille de ayrisir', () => {
+  icerir(U2_SKILL, 'WCAG 1.4.1');
+  icerir(U2_SKILL, 'dolu daire = kurulu, halka');
+  icerir(U2_CSS, '.tk-dot-on');
+  icerir(U2_CSS, '.tk-dot-off');
+  icerir(U2_DESKTOP, 'dolu daire**, kurulu değil **halka');
+});
+
+ol('ui olculmemis sayilar etiketli, olculmus gibi sunulmuyor', () => {
+  const n = (U2_SKILL.match(/\(varsayılan, ölçülmedi\)/g) || []).length;
+  if (n < 5) throw new Error('SKILL icinde en az bes etiket bekleniyordu, bulunan: ' + n);
+  for (const konu of ['en az 11', '≥ 40 s', '1.4 s', '%20-30', '42×30 DIP'])
+    icerir(U2_SKILL, konu);
+  icerir(U2_LAYOUT, '240 DIP açık, 48 DIP kapalı**');
+  icerir(U2_LAYOUT, '(varsayılan, ölçülmedi)');
+  // Pencere düğmesi 23.08.2026'da kullanıcı kararıyla 42×30'a sabitlendi; artık
+  // "ölçülmedi" etiketi taşımıyor, kararın kendisi gerekçesiyle yazılı.
+  icerir(U2_DESKTOP, '42×30 DIP');
+});
+
+// U2 celiskiyi kendi cozmedi, kullaniciya sordu — dogru davranis. Kullanici 23.08.2026'da
+// 42x30 dedi; iki dosya artik ayni sayiyi tasiyor ve celiski bloklari kalkti.
+ol('ui pencere dugmesi celiskisi 42x30 lehine kapandi', () => {
+  icerir(U2_SKILL, '42×30 DIP');
+  icerir(U2_DESKTOP, '42×30 DIP');
+  icermez(U2_SKILL, 'Açık çelişki — karara bağlanmadı', 'celiski blogu kalkmali');
+  icermez(U2_DESKTOP, 'Açık çelişki — karara bağlanmadı', 'celiski blogu kalkmali');
+  for (const d of [U2_SKILL, U2_DESKTOP])
+    if (/52×36/.test(d.replace(/^.*52×36px diyordu.*$/gm, '')))
+      throw new Error('52×36 hâlâ kural olarak duruyor');
+});
+
+ol('ui standardi yalniz karanliktir ve bunu §0 icinde soyler', () => {
+  const sifir = U2_SKILL.slice(U2_SKILL.indexOf('## 0.'), U2_SKILL.indexOf('## 1.'));
+  icerir(sifir, 'yalnız karanlıktır');
+  icerir(sifir, 'ileriye bırakılmıştır');
+});
+
+ol('ui hareket gerekceleri motion.md icine tasindi ve gozden kacmiyor', () => {
+  icerir(U2_SKILL, 'Hareket işi yapmadan önce `references/motion.md` okunur');
+  icerir(U2_SKILL, '`references/motion.md` zorunlu');
+  icerir(U2_MOTION, 'Hareket işi yapmadan önce bu dosya okunur');
+  // SKILL'de kalan tablonun HER satiri motion.md basligina atif verir.
+  const s54 = U2_SKILL.slice(U2_SKILL.indexOf('## 5.4 '), U2_SKILL.indexOf('## 5.5 '));
+  const satir = s54
+    .split('\n')
+    .filter((r) => r.startsWith('| ') && !r.startsWith('| Olay') && !r.startsWith('| Durum'));
+  if (satir.length < 15) throw new Error('tablo satirlari eksik: ' + satir.length);
+  for (const r of satir) if (!/M\d+/.test(r)) throw new Error('atifsiz tablo satiri: ' + r);
+  for (const b of ['## M1 ', '## M2 ', '## M3 ', '## M4 ', '## M5 ', '## M6 ', '## M7 ',
+    '## M8 ', '## M9 ', '## M10 ', '## M11 ', '## M12 ', '## M13 ', '## M14 '])
+    icerir(U2_MOTION, b);
+  // Tasinan gerekce SKILL'de tekrar edilmez; iki kopya kalirsa ayrisirlar.
+  icermez(U2_SKILL, 'Kütüphane varsayılanı token değildir');
+  icermez(U2_SKILL, 'Tabandan muaf olan tek şey');
+});
+
+ol('ui XAML yorumlari cift tire tasimaz, dosya ayristirilabilir kalir', () => {
+  // XML yorumunun icinde '--' gecmesi dosyayi ayristirilamaz yapar; CSS token
+  // adlarini (--tk-*) yoruma yazarken tam olarak bu oldu. Test o hatayi tutar.
+  for (const [ad, k] of [['Theme.xaml', U2_XAML], ['Signature.xaml', U2_SXAML]])
+    for (const y of k.match(/<!--[sS]*?-->/g) || [])
+      if (y.slice(4, -3).includes('--')) throw new Error(ad + ' yorumunda cift tire: ' + y.slice(0, 60));
+});
+
+ol('ui odak stili depoda gercekten var olan adla anilir', () => {
+  icermez(U2_SKILL, 'NeonFocusVisual');
+  icerir(U2_SKILL, 'SystemParameters.FocusVisualStyleKey');
+  icerir(U2_XAML, 'SystemParameters.FocusVisualStyleKey');
 });
 
 console.log(

@@ -79,6 +79,29 @@ function sure(ms) {
   return s < 60 ? s + ' sn' : Math.round(s / 60) + ' dk';
 }
 
+// Tur makbuzu. Hesabı kanca yapar (`relay-watch.js` → `turBitir`), burada tek satır
+// okunur ve basılır — iki yerde hesap iki farklı sayı demektir.
+//
+// Akışa basılmıyor olmasının sebebi ölçülmüş: kanca `systemMessage` ile yazdığında
+// render katmanı satırın önüne `Stop says:` koyuyor ve o önek hiçbir ayarla
+// kaldırılamıyor. Statusline bizim betiğimiz, önek üretmiyor.
+//
+// Yaşlanınca düşer: makbuz bir sonraki tur açılana kadar durur, ama takılı kalırsa
+// dünkü sayı bugünün satırında görünmesin diye iki saatlik tavan var.
+const MAKBUZ_TAVANI = 2 * 60 * 60 * 1000;
+
+function makbuz(live) {
+  if (!live) return '';
+  try {
+    const m = JSON.parse(fs.readFileSync(path.join(live, '_makbuz.json'), 'utf8'));
+    if (!m || !m.metin) return '';
+    if (Date.now() - (Number(m.ts) || 0) > MAKBUZ_TAVANI) return '';
+    return String(m.metin);
+  } catch {
+    return '';
+  }
+}
+
 function calisanSatiri(c) {
   const ad = (c.type || '?').replace(/^teknesyum:/, '');
   return (
@@ -278,6 +301,10 @@ process.stdin.on('end', () => {
 
   const live = izDizini(dir, j.session_id);
   const cs = calisanlar(live);
+  // Makbuz yalnız her şey bittiğinde anlamlıdır ve kanca zaten öyle yazıyor; ajan
+  // çalışırken satır gösterilse eski turun sayısı yeni turun üstünde durur.
+  const mk = cs.length ? '' : makbuz(live);
+  if (mk) satirlar.push('  ' + C.hint + mk + C.r);
   for (const c of cs.slice(0, 3)) satirlar.push('  ' + calisanSatiri(c));
   if (cs.length > 3) satirlar.push('  ' + C.hint + '+' + (cs.length - 3) + ' ajan çalışıyor' + C.r);
 

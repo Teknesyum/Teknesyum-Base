@@ -10,3 +10,7 @@
 2026-08-23 · U2 açıldı — tipografi ve hızlı düzeltmeler dalgası (18 kriter, konsey kararı)
 2026-08-23 · S2 açıldı — /scan ui standart kapısı ve iki fazlı dönüşüm
 2026-08-23 · U3-U9 açıldı — konseyin yedi büyük maddesi, her biri kendi fable görüşüyle
+2026-08-23 · U2 active — ui-builder dağıtıldı, tipografi dalgası başladı
+2026-08-23 · U3-U9 owns daraltıldı — yedisi de SKILL.md ve test/run.js istiyordu, çakışma
+             kalktı. Paylaşılan dört dosya U10 birleştirme sözleşmesine toplandı.
+2026-08-23 · U10 açıldı — birleştirme, depends: U3..U9

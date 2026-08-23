@@ -56,7 +56,12 @@ function run(j) {
   }
 
   if (j.hook_event_name === 'SessionStart') {
-    return acilis(root, kap ? ceviri('kapsayiciAcilis', path.basename(kap)) : '', j.session_id);
+    return acilis(
+      root,
+      kap ? ceviri('kapsayiciAcilis', path.basename(kap)) : '',
+      j.session_id,
+      j.cwd
+    );
   }
   if (j.hook_event_name === 'UserPromptSubmit') {
     const k = String(j.prompt || '').match(/^[ ]*\/([a-z0-9:-]+)/i);
@@ -838,7 +843,10 @@ function hatirlat(j, root, etkinProje) {
 //
 // Ayna kurulu değilse hiç yazılmaz. Eklentiyi kuran başkasının istemini benim iş akışımla
 // kirletmeyiz; `/ozel kur` çalıştırılmadan bu satır hiç doğmaz.
-const PUSLA_SOZU = /(^|[^a-zçğıöşü])pu[şs]la/i;
+// Üç yazım da aynı sözdür: `puşla`, `pusla`, `pushla`. Klavye şapkasız olduğunda ikisi
+// birden çıkıyor ve hangisinin yazıldığı kullanıcının umurunda değil; tetikleyici de
+// ayırmamalı. `h` isteğe bağlı, çünkü "pushla" İngilizce push'un Türkçe çekimi.
+const PUSLA_SOZU = /(^|[^a-zçğıöşü])pu[şs]h?la/i;
 
 function puslaHatirlat(j) {
   const p = String(j.prompt || '');
@@ -1127,7 +1135,24 @@ function oncekiOturum(proje, simdiki) {
   return dk < 90 ? ceviri('dakikaOnce', dk) : ceviri('saatOnce', Math.round(dk / 60));
 }
 
-function acilis(root, kapNotu, oturumId) {
+// Açık hata günlüğü sayısı. Günlükler iki yerde durabilir — makine geneli makara ve
+// Teknesyum Base deposu — ama açılışta yalnız sayı gerekiyor; `log.js`'i ayrı süreç
+// olarak çağırmak açılışa yüz milisaniye eklerdi, dizin okumak bedava.
+function acikGunlukSayisi(cwd) {
+  let n = 0;
+  const say = (d) => {
+    try {
+      n += fs.readdirSync(d).filter((f) => f.startsWith('HATA-') && f.endsWith('.md')).length;
+    } catch {}
+  };
+  say(path.join(konfigKok(), 'teknesyum', 'openlogs'));
+  // Proje kökü kancaya girdiden gelir; `process.cwd()` kancanın çalıştırıldığı yer olup
+  // proje olmak zorunda değil ve başka bir projenin günlüklerini sayardı.
+  if (cwd) say(path.join(cwd, 'docs', 'openlogs'));
+  return n;
+}
+
+function acilis(root, kapNotu, oturumId, cwd) {
   const parca = [];
   if (kapNotu) parca.push(kapNotu);
   if (kurulumEksik()) parca.push(ceviri('kurulumEksik'));
@@ -1146,6 +1171,22 @@ function acilis(root, kapNotu, oturumId) {
     const n = sorunSayisi(izYolu(root));
     if (n) parca.push(ceviri('sorunBirikim', n));
   }
+  const gunluk = acikGunlukSayisi(cwd);
+  if (gunluk) parca.push(ceviri('acikGunluk', gunluk));
+  // Bildirme yordamı oturum başına bir kez ve her projede yazılır. İstek başına yazılsaydı
+  // aynı cümle otuz kez tekrarlanırdı; hiç yazılmasaydı başka projedeki oturum bozuk
+  // davranışı görüp yalnız o sohbette anlatır, kayıt hiç doğmazdı.
+  //
+  // Seviye 0 "base sessizce çalışsın" demek ve bu, modele giden metni de kapsar: sessiz
+  // kip isteyen kullanıcı enjeksiyon da istemiyor.
+  if (seviye() >= 1)
+    ciktiEkle({
+      hookSpecificOutput: {
+        hookEventName: 'SessionStart',
+        additionalContext:
+          ceviri('gunlukProseduru') + (gunluk ? ' ' + ceviri('acikGunluk', gunluk) : ''),
+      },
+    });
   if (parca.length) duyur(parca.join('   ·   '));
   const g = guncellemeBak();
   if (g) duyur(ceviri('guncellemeVar', g.uzak, g.kurulu));

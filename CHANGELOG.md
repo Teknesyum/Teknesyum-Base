@@ -6,6 +6,49 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.46.0] - 2026-08-23
+
+### Added
+
+- `/log` — open bug logs. When a Teknesyum feature misbehaves, the session that sees it
+  is usually not the session that can fix it: the user asked for something else, and
+  derailing the chat costs more than the bug. `/log yaz` drops a log from any project
+  into a machine-wide spool (`~/.claude/teknesyum/openlogs/`), and the next session
+  opened on Teknesyum Base reads and solves it. The spool is machine-wide on purpose —
+  requiring other projects to know where Base sits on disk would mean no log gets
+  written at all on the day the path cannot be resolved. `/log al` moves a log into
+  `docs/openlogs/` and version control; closing is two-way and the choice is the
+  user's: `kapat` deletes when the problem is entirely gone, `arsivle` moves it under
+  `docs/openlogs/kapali/` when a measurement or decision is worth keeping. Session
+  start announces open logs and writes the reporting procedure into every project's
+  context once per session.
+- **Runnable acceptance criteria.** A criterion can now carry a `CHECK:` line naming the
+  command that makes it pass or fail, and an optional `EXPECT:` string. No authority
+  moves: the manager still runs the command and pastes the result, and the auditor
+  still has no `Bash` — taking that away was deliberate and it stays away. What changes
+  is that *which command counts as evidence* is written in the contract instead of
+  living in the manager's memory at that moment. Exit code zero is the real condition;
+  a non-zero exit never passes just because the error text contains the expected
+  string. `EXPECT` is optional because string matching is brittle — output language
+  changes, colour codes intrude — and making a brittle condition mandatory produces
+  false failures. `CHECK` is required only at audit threshold `high` and above; below
+  that it is free, because forcing a command onto every criterion of a small,
+  cheap-to-undo job is ceremony, and ceremony gets skipped.
+
+### Changed
+
+- The `puşla` trigger also matches `pushla`. Three spellings, one word; a keyboard
+  without the Turkish layout produces two of them and the user does not care which.
+
+### Fixed
+
+- Turkish dotted capital `İ` broke slug generation in `/log` and `/ozel`.
+  `'İkinci'.toLowerCase()` yields `i` plus a combining dot (U+0307), not a bare `i`, so
+  the name came out as `i-kinci` and `/log kapat ikinci` matched nothing. Both slug
+  functions now decompose to NFD and drop combining marks.
+- The open-log count read `process.cwd()`, which is where the hook happens to run and
+  need not be the project — it would have counted another project's logs.
+
 ## [2.45.1] - 2026-08-23
 
 ### Added

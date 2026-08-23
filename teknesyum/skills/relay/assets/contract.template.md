@@ -19,7 +19,9 @@ verification: —
 
 ## Kabul kriteri
 - [ ] <ölçülebilir, doğrulanabilir madde>
-- [ ] <ölçülebilir, doğrulanabilir madde>
+      CHECK: <geçti/kaldı yapan kabuk komutu>
+      EXPECT: <çıktıda aranan dizgi — isteğe bağlı>
+- [ ] <gözle doğrulanan madde — CHECK yazılamıyorsa satır hiç konmaz>
 
 ## Arayüzler
 <önceki görevlerin ürettiği ve buraya dayanan imzalar — ajan bunları aramasın>

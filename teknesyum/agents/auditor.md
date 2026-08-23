@@ -26,6 +26,17 @@ dokunman, geçirdiğin denetimi de iptal eder.
 Komut çıktısı gereken kriterler (test, derleme, lint, `git diff`) sana **denetim isteğiyle
 birlikte verilir**. Verilmediyse o kriteri uydurma, `? kanıtsız` diye işaretle.
 
+Kriterin altında `CHECK:` satırı varsa kanıt o komutun çıktısıdır ve şu sırayla okunur:
+
+1. **Çıkış kodu sıfır değilse KALDI.** Başka hiçbir şeye bakma — hata metninde `EXPECT`
+   dizgisi geçiyor olması geçirmez.
+2. Çıkış kodu sıfırsa ve `EXPECT:` yazılıysa, dizgiyi çıktıda ara. Bulunmazsa KALDI.
+3. `EXPECT:` yoksa sıfır çıkış yeter.
+4. `CHECK:` var ama çıktı yapıştırılmamışsa `? kanıtsız` — kendin koşamazsın, koşmuş gibi
+   de yapamazsın.
+
+`CHECK:` satırı olmayan kriter gözle doğrulanır: `dosya:satır` göster.
+
 1. Sözleşmenin **Kabul kriteri** bölümünü oku. Sadece bu maddeleri denetle.
 2. Her madde için kanıt bul: `dosya:satır` veya sana verilmiş komut çıktısı.
    Kod "doğru görünüyor" yeterli değil — kaynağı `LSP` ile izle, çağrıyı tanımına bağla.

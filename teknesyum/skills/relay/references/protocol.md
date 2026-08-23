@@ -218,10 +218,48 @@ Her turda `round:` artır. Tur 3'te hâlâ çözülmüyorsa sorun genelde ajanı
 Tek satırlık, gözle doğrulanabilir düzeltmelerde denetçi ajanı harcama — grep'le kontrol et.
 
 **Denetçi komut çalıştıramaz** — `Bash`'i yok, kabuktan dosya değiştirebileceği için
-alındı. Kanıtı sen üretirsin: dağıtmadan önce `git diff --name-only` ve sözleşmenin
-**Doğrulama** satırındaki komutu **sen çalıştır**, çıktıyı denetim isteğine yapıştır.
-Yapıştırmadığın kriteri denetçi `? kanıtsız` işaretler; o işaret sende iş kalmış demektir,
-denetçide değil.
+alındı ve verilmeyecek. Kanıtı sen üretirsin: dağıtmadan önce `git diff --name-only` ve
+her kriterin **`CHECK:`** satırındaki komutu **sen çalıştır**, çıktıyı denetim isteğine
+yapıştır. Yapıştırmadığın kriteri denetçi `? kanıtsız` işaretler; o işaret sende iş kalmış
+demektir, denetçide değil.
+
+### Koşulabilir kriter — `CHECK:` / `EXPECT:`
+
+Kriterin yanına hangi komutun kanıt sayıldığı yazılır. Yetki değişmiyor: komutu yine T0
+koşuyor, denetçi yalnız çıktıyı okuyor. Değişen tek şey, "geçti" derken neye bakıldığının
+sözleşmede **yazılı** olması — bugün o bilgi T0'ın o anki hatırlamasında duruyor.
+
+```markdown
+- [ ] K1: bütün testler geçiyor
+      CHECK: node test/run.js
+      EXPECT: GEÇTİ
+```
+
+| Alan | Zorunlu mu | Ne işe yarar |
+|---|---|---|
+| `CHECK:` | `audit` eşiği `high` ve üstündeyse **evet** | Kanıtı üreten komut |
+| `EXPECT:` | hayır | Çıktıda aranan dizgi |
+| `CWD:` | hayır | Komutun koşacağı dizin — yazılmazsa proje kökü |
+
+**Asıl şart çıkış kodudur.** Sıfırdan farklı çıkış hiçbir koşulda geçmez; hata metninde
+`EXPECT`'in dizgisi geçiyor olması bunu değiştirmez. `EXPECT` bilerek isteğe bağlı:
+metin eşleşmesi kırılgandır — çıktı dili değişir, renk kodu araya girer, sürüm satırı
+kayar. Kırılgan bir şartı zorunlu yapmak yanlış `kaldı` üretir.
+
+**Zorunluluk denetim eşiğine bağlıdır.** `high` ve üstünde `CHECK`siz kriter sözleşmeye
+giremez; `critical` ve altında serbesttir. Küçük ve geri alması ucuz işte her kritere
+komut yazdırmak tören olur, tören de atlanır.
+
+`CHECK` yazılamayan bir kriter varsa iki yol var: kriteri komutu yazılabilir hâle getir,
+ya da §1.5.1 madde 8'i uygula ve sözleşmeye koymadan önce sor. Gözle doğrulanan madde
+`CHECK` satırı olmadan yazılır — uydurma komut, komutsuzluktan kötüdür.
+
+**Yapıştırma biçimi.** Denetim isteğine her kriter için tek blok:
+
+```
+K1 · CHECK: node test/run.js → exit 0
+✓ GEÇTİ  385/385
+```
 
 ## 5. Düşen ajan
 

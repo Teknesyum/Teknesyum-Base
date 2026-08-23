@@ -368,6 +368,7 @@ than silently passing.
 | `/uicheckup` | Scans UI files and prepares an approved relay manifest |
 | `/premium` | Switches between the premium, normal and eco profiles, and reports which one is live |
 | `/beep` | Plays a short sound when a turn needs you, finishes, or fails — bypasses the OS notification system |
+| `/log` | Lists open bug logs written from any project, reads them, and closes them as they are solved |
 | `/ozel` | Keeps personal files in one private repo — only the current project's folder is ever downloaded |
 | `/pusla` | Tests, public repo, then the private mirror — two repos in one push flow |
 | `/scan` | "Does this project meet the premium standard?" Certifies it against a profile and lists what is missing |

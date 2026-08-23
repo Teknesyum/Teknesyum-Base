@@ -116,6 +116,24 @@ const S = {
       satir,
   },
 
+  acikGunluk: {
+    tr: (n) =>
+      n + ' açık hata günlüğü var — `/log` ile bak, çözüp `/log kapat` ya da `/log arsivle` de',
+    en: (n) =>
+      n + ' open bug log(s) — read them with `/log`, then close with `/log kapat` or `/log arsivle`',
+  },
+
+  gunlukProseduru: {
+    tr: () =>
+      'Teknesyum\'un bir işlevi bozuk davranırsa sohbeti kesme, günlük bırak: ' +
+      '`/log yaz --baslik "..." --belirti "..." --kaynak "<dosya>"` — günlük makine geneli ' +
+      'makaraya düşer, Teknesyum Base açıldığında çözülür.',
+    en: () =>
+      'If a Teknesyum feature misbehaves, do not derail the chat — leave a log: ' +
+      '`/log yaz --baslik "..." --belirti "..." --kaynak "<file>"`. It lands in the ' +
+      'machine-wide spool and gets solved next time Teknesyum Base is open.',
+  },
+
   puslaAkisi: {
     tr: (yol) =>
       'Kullanıcı "puşla" dedi ve bu makinede özel dosya aynası kurulu. `/pusla` akışını ' +

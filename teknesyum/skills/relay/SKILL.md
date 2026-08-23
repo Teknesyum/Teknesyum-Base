@@ -81,7 +81,9 @@ ikinci görüş. Düğme değerleri `SETTINGS.md`'deki profil tablosunda.
   sınırdır. Ajanın kendi raporu denetim yerine geçmez.
 - **Mühür kapısı.** `contracts/done/` altına dört alanlı mühür olmadan girilmez.
 - **`owns` disiplini.** Ajan sahiplenmediği dosyaya yazmaz, engele düşer.
-- **Kabul kriteri.** Ölçülebilir madde yazılır ve gerçekten koşulup doğrulanır.
+- **Kabul kriteri.** Ölçülebilir madde yazılır ve gerçekten koşulup doğrulanır. Komutu
+  yazılabilen kriter `CHECK:` satırını taşır; `audit` eşiği `high` ve üstündeyse taşımak
+  zorundadır.
 
 Tasarruf, yapılan işin **miktarından** kesilir; **doğrulandığından** değil. Denetimi
 kısmak kazanılan tokenden pahalıya gelir: yanlış iş ikinci kez yazılır.
@@ -343,7 +345,9 @@ kaldığında" gibi bir cümle ya hiç tetiklenir ya her zaman tetiklenir, o yü
 7. İki ajanın raporu aynı dosya ya da aynı ölçü hakkında farklı şey söylüyor ve ikisini
    birden doğrulayan bir koşu yok.
 8. Bir kabul kriteri sözleşmeye yazıldı ama onu **geçti/kaldı yapan komut yazılamadı.**
-   Ölçüsü olmayan kriter sözleşmeye girmeden önce sorulur.
+   Ölçüsü olmayan kriter sözleşmeye girmeden önce sorulur. Komut yazılabiliyorsa kriterin
+   altına `CHECK:` satırı olarak konur (`references/protocol.md` §4); `audit` eşiği `high`
+   ve üstündeyken `CHECK`siz kriter zaten sözleşmeye giremez.
 9. Geri alınması pahalı bir yayın adımından önce: sürüm etiketi, `main`'e birleştirme,
    yayımlanmış bir arayüzün ya da şemanın değişmesi, bir sürümün geri çekilmesi.
 

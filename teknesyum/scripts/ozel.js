@@ -147,6 +147,10 @@ function slug(ad) {
   return (
     ad
       .toLowerCase()
+      // `'İ'.toLowerCase()` `i` + birleşen nokta veriyor; NFD ayrıştırıp işareti atmazsak
+      // ad `i-kinci` gibi bölünüyor (log.js'de ölçüldü).
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
       .replace(/[çğıöşü]/g, (c) => ({ ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' })[c])
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '') || 'proje'

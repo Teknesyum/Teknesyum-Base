@@ -141,7 +141,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'autocompact.md,beep.md,ekran.md,help.md,load.md,loadall.md,ozel.md,premium.md,pusla.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
+    'autocompact.md,beep.md,ekran.md,help.md,load.md,loadall.md,log.md,ozel.md,premium.md,pusla.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
   );
   const yuru = (d) =>
     fs
@@ -458,9 +458,16 @@ ol('Stop döngüye girmez (stop_hook_active)', () => {
   );
 });
 
-ol('röle kurulu değilse ve makine bağlıysa açılışta susar', () => {
+// "Susar" kullaniciya bir sey basmaz demek. Gunluk bildirme yordami modele giden baglamdir
+// ve rolesiz projede de yazilir — bozukluk cogunlukla rolesiz bir projede gorulur.
+ol('röle kurulu değilse ve makine bağlıysa açılışta kullanıcıya bir şey basmaz', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
-  esit(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(true)).out, '');
+  const m = JSON.parse(
+    calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(true)).out
+  );
+  esit(m.systemMessage, undefined, 'kullaniciya satir cikmamali');
+  esit(Object.keys(m).join(','), 'hookSpecificOutput', 'baska alan olmamali');
+  icerir(m.hookSpecificOutput.additionalContext, 'bozuk davranırsa');
 });
 
 ol('statusline bağlı değilse açılışta kurulumu hatırlatır', () => {
@@ -6615,8 +6622,120 @@ ol('pusla sozu ayna kuruluyken iki depo akisini hatirlatir', () => {
   icerir(m, 'ozel.js');
   icerir(m, 'koşulsuz');
   icerir(sor('pusla bakalım'), 'ozel.js', 'sapkasiz yazim da yakalanmali');
+  icerir(sor('pushla'), 'ozel.js', 'pushla ayni sozdur');
   icermez(sor('/pusla'), 'ozel.js', 'komut zaten kendi belgesinden geliyor');
-  icermez(sor('pushla dedim ama puslu hava'), 'ozel.js', 'benzeyen kelime tetiklememeli');
+  icermez(sor('puslu hava ve pusula yonu'), 'ozel.js', 'benzeyen kelime tetiklememeli');
+});
+
+// Bozuklugu goren oturumla onu cozebilecek oturum ayni degil; gunluk ikisinin arasindaki
+// yol. Makara makine geneli, cunku baska projedeki oturum Base'in yerini bilmek zorunda
+// kalirsa yol bulunamadigi her seferde gunluk hic yazilmaz.
+ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-log-'));
+  const proje = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-logp-'));
+  const c = (a, cwd) =>
+    spawnSync(process.execPath, [path.join(KOK, 'scripts', 'log.js')].concat(a), {
+      encoding: 'utf8',
+      cwd: cwd || proje,
+      env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_BASE: '' },
+      timeout: 60000,
+    });
+  icerir(c([]).stdout, 'Açık günlük yok');
+
+  const y = c(['yaz', '--baslik', 'Statusline yanlış sayıyor', '--belirti', 'üç ajanı bir gösteriyor', '--kaynak', 'bridge.js']);
+  esit(y.status, 0, 'yaz cikis kodu');
+  const yol = path.join(cfg, 'teknesyum', 'openlogs', 'HATA-statusline-yanlis-sayiyor.md');
+  esit(fs.existsSync(yol), true, 'gunluk makaraya dusmeli');
+  const govde = fs.readFileSync(yol, 'utf8');
+  icerir(govde, '# Hata: Statusline yanlış sayıyor');
+  icerir(govde, 'üç ajanı bir gösteriyor');
+  icerir(govde, '## 2. Ölçü');
+  icerir(c(['yaz', '--baslik', 'Statusline yanlış sayıyor']).stdout, 'zaten var');
+
+  const l = c([]).stdout;
+  icerir(l, '1 açık günlük');
+  icerir(l, 'statusline-yanlis-sayiyor');
+  icerir(l, 'makara');
+  icerir(c(['oku', 'statusline']).stdout, '# Hata: Statusline yanlış sayıyor');
+  esit(c(['sayi']).stdout.trim(), '1');
+
+  // Depo kokunu isaret edince `al` gunlugu surum kontrolune tasir.
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-logb-'));
+  fs.mkdirSync(path.join(base, 'teknesyum', '.claude-plugin'), { recursive: true });
+  fs.writeFileSync(path.join(base, 'teknesyum', '.claude-plugin', 'plugin.json'), '{}');
+  const cb = (a) =>
+    spawnSync(process.execPath, [path.join(KOK, 'scripts', 'log.js')].concat(a), {
+      encoding: 'utf8',
+      cwd: proje,
+      env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_BASE: base },
+      timeout: 60000,
+    });
+  icerir(cb(['al', 'statusline']).stdout, 'Depoya taşındı');
+  const depoYol = path.join(base, 'docs', 'openlogs', 'HATA-statusline-yanlis-sayiyor.md');
+  esit(fs.existsSync(depoYol), true, 'depoya tasinmali');
+  esit(fs.existsSync(yol), false, 'makaradan kalkmali');
+  icerir(cb([]).stdout, 'depo');
+
+  icerir(cb(['arsivle', 'statusline']).stdout, 'Arşivlendi');
+  esit(
+    fs.existsSync(path.join(base, 'docs', 'openlogs', 'kapali', 'HATA-statusline-yanlis-sayiyor.md')),
+    true,
+    'arsive tasinmali'
+  );
+  icerir(cb([]).stdout, 'Açık günlük yok', 'arsivlenen acik sayilmamali');
+
+  cb(['yaz', '--baslik', 'İkinci hata']);
+  esit(cb(['kapat', 'ikinci']).status, 0);
+  icerir(cb([]).stdout, 'Açık günlük yok', 'kapat silmeli');
+  esit(cb(['oku', 'ikinci']).status, 1, 'olmayan gunluk hata vermeli');
+});
+
+ol('acilis acik gunlugu ve bildirme yordamini soyler', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-logacilis-'));
+  const ek = konfig(true);
+  const sor = () => calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, ek);
+  const bos = sor();
+  icerir(bos.out, 'bozuk davranırsa', 'yordam her oturumda bir kez yazilmali');
+  icermez(bos.out, 'açık hata günlüğü', 'gunluk yokken sayi satiri cikmamali');
+  const d = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'openlogs');
+  fs.mkdirSync(d, { recursive: true });
+  fs.writeFileSync(path.join(d, 'HATA-deneme.md'), '# Hata: deneme');
+  icerir(sor().out, 'açık hata günlüğü');
+});
+
+// Kosulabilir kriter: yetki degismiyor, komutu T0 kosuyor; degisen tek sey "gecti" derken
+// neye bakildiginin sozlesmede yazili olmasi. Auditor'a Bash verilmedi.
+ol('kosulabilir kriter CHECK ile yazilir, denetciye Bash verilmez', () => {
+  const s = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'references', 'protocol.md'), 'utf8');
+  icerir(s, 'CHECK:');
+  icerir(s, 'Asıl şart çıkış kodudur');
+  icerir(s, '`high` ve üstünde `CHECK`siz kriter sözleşmeye');
+  icerir(s, 'alındı ve verilmeyecek', 'denetciye Bash verilmedigi yazili kalmali');
+  const t = fs.readFileSync(
+    path.join(KOK, 'skills', 'relay', 'assets', 'contract.template.md'),
+    'utf8'
+  );
+  icerir(t, 'CHECK: <geçti/kaldı yapan kabuk komutu>');
+  icerir(t, 'EXPECT: <çıktıda aranan dizgi — isteğe bağlı>');
+  const a = fs.readFileSync(path.join(KOK, 'agents', 'auditor.md'), 'utf8');
+  icerir(a, 'Çıkış kodu sıfır değilse KALDI');
+  icerir(a, '? kanıtsız');
+  const fm = a.slice(0, a.indexOf('---', 4));
+  icermez(fm, 'Bash', 'auditor arac listesine Bash girmemeli');
+  icerir(fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8'), 'CHECK:');
+});
+
+ol('log.md ve openlogs README yordami anlatir', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'log.md'), 'utf8');
+  icerir(k, 'scripts/log.js');
+  icerir(k, '/log arsivle');
+  icerir(k, 'Karar senin değil kullanıcınındır');
+  icerir(k, 'Çözemediysen günlüğü kapatma');
+  const r = fs.readFileSync(path.join(__dirname, '..', 'docs', 'openlogs', 'README.md'), 'utf8');
+  icerir(r, '/log yaz');
+  icerir(r, '## 2. Ölçü');
+  icerir(r, 'kararı kullanıcı verir');
+  icerir(fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8'), '/log');
 });
 
 ol('ozel.md ve pusla.md akisi anlatir', () => {

@@ -3228,9 +3228,15 @@ ol('plan uretimi ikinci gorus tetikleyicisidir ve konseyden ayrilir', () => {
   const j = s.indexOf('## 1.6');
   if (i < 0 || j < i) throw new Error('§1.5.1 bulunamadı');
   const bolum = s.slice(i, j);
-  icerir(bolum, 'Dokuz durumda açılır');
+  icerir(bolum, 'Dokuz hatırlatma maddesi');
   icerir(bolum, 'plan oluştur');
   icerir(bolum, 'Plan konseyi (§1.5)');
+  // Varsayilan acmaktir: liste izin listesi degil hatirlatma listesi, ve acmamanin
+  // gerekcesi sayili. Bakma ani da kural — liste vardi, bakma ani yoktu, tetikleyici
+  // bes tur boyunca hic atesleneme di (docs/openlogs/HATA-ikinci-gorus-tetiklenmiyor.md).
+  icerir(bolum, 'Varsayılan açmaktır, açmamak gerekçe ister');
+  icerir(bolum, 'Açmamanın üç gerekçesi vardır');
+  icerir(bolum, 'Ne zaman bakılacağı da kuraldır');
 });
 
 ol('ikinci gorus tetikleyicileri dokuza cikti ve her biri olculebilir', () => {
@@ -6630,6 +6636,28 @@ ol('pusla sozu ayna kuruluyken iki depo akisini hatirlatir', () => {
 // Bozuklugu goren oturumla onu cozebilecek oturum ayni degil; gunluk ikisinin arasindaki
 // yol. Makara makine geneli, cunku baska projedeki oturum Base'in yerini bilmek zorunda
 // kalirsa yol bulunamadigi her seferde gunluk hic yazilmaz.
+// Alt ajanin bitisi kullanicinin isinin bitisi degil. Kanca gercekten ne yapiyor,
+// kaynaga bakarak degil kosarak olculur.
+ol('alt ajan bitisi ses vermez, ses yalniz tur makbuzuyla cikar', () => {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ses-'));
+  for (const olay of ['SubagentStop', 'SubagentStart', 'PostToolUse', 'UserPromptSubmit']) {
+    const r = calistir(
+      IZLE,
+      { ...ort(p), hook_event_name: olay, agent_id: 'a1', prompt: 'x' },
+      konfig(true)
+    );
+    icermez(r.out, 'beep', olay + ' ses tetiklememeli');
+  }
+  const k = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
+  const cagri = k.split('\n').filter((s) => /^\s*bitisSesi\(j\);/.test(s));
+  esit(cagri.length, 1, 'bitisSesi tek yerden cagrilmali');
+  const t = k.split('\n').filter((s) => /return turBitir\(/.test(s));
+  esit(t.length, 1, 'turBitir tek yerden cagrilmali');
+  const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8')).hooks;
+  for (const olay of ['SubagentStop', 'SubagentStart', 'Stop', 'PostToolUse'])
+    icermez(JSON.stringify(h[olay] || []), 'beep.js', olay + ' kancasinda beep olmamali');
+});
+
 ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-log-'));
   const proje = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-logp-'));

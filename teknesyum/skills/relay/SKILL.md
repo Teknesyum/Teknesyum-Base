@@ -328,8 +328,26 @@ durduğu sürece aynı eforu paylaşıyorlardı. `advisor` premiumda bile `low` 
 **sık olan şeyin ucuz olması gerekir.** Pahalı bir görüş mekanizması, kullanılmayan bir
 görüş mekanizmasıdır.
 
-Dokuz durumda açılır. Her madde ölçülebilir bir eksik ya da çelişki gösterir; "kararsız
-kaldığında" gibi bir cümle ya hiç tetiklenir ya her zaman tetiklenir, o yüzden yok:
+**Varsayılan açmaktır, açmamak gerekçe ister.** Kullanıcı 23.08.2026'da bunu açıkça
+istedi: `advisor` bir acil durum düğmesi değil, sürekli akıl hocasıdır. Liste aşağıda
+duruyor ama artık bir *izin listesi* değil, **hatırlatma listesi**: maddelerden biri
+uyuyorsa açmak zorunludur, hiçbiri uymasa da kararın doğruluğundan emin değilsen açarsın.
+
+Açmamanın üç gerekçesi vardır, dördüncüsü yoktur: iş **mekanik** (kalıbı belli, tek doğru
+cevabı var), soru **kullanıcıya sorulabilir** durumda (o zaman sor — görüş sormanın yerini
+tutmaz), ya da aynı düğümde **bu turda zaten** bir görüş alındı.
+
+Bunun bedeli tartıldı: `advisor` premiumda bile `low` eforla ve `fable` ile çalışır,
+bir görüş 25 saniye ve ~10 bin token. Beş turdur çözülmeyen bir hatanın maliyeti altı
+yapıcı ve beş denetçi koşusudur — ölçüldü, `docs/openlogs/HATA-ikinci-gorus-tetiklenmiyor.md`.
+Yanlış tarafa yanılmak istiyorsak, fazla danışma tarafına yanılırız.
+
+**Ne zaman bakılacağı da kuraldır, ne yapılacağı kadar.** Liste vardı, bakma anı yoktu ve
+tetikleyici beş tur boyunca hiç ateşlenmedi. Bakma anları şunlardır: her denetim raporu
+geldiğinde brifing yazmadan önce · bir sözleşme ikinci düzeltme turuna girerken · plan
+kullanıcıya verilmeden önce · geri alınması pahalı bir adımdan önce.
+
+Dokuz hatırlatma maddesi. Her madde ölçülebilir bir eksik ya da çelişki gösterir:
 
 1. İki yol arasında kalındı ve seçim geri alınması pahalı — mimari sınır, veri modeli,
    bağımlılık kararı.
@@ -373,8 +391,8 @@ Sıfırdan projede `PLAN.md` yazılıyorsa konsey çalışır, teyit ayrıca al�
 zaten baktı. Konsey kapalıyken veya iş sıfırdan proje değilken teyit tek üyeyle alınır.
 
 **Açılmayacağı yerler:** mekanik iş, kalıbı belli iş, tek doğru cevabı olan şey. Cevabını
-bildiğin soruyu sorma — ikinci görüşün maliyeti tur değil dikkattir. Liste dokuz maddeye
-çıktı diye eşik düşmedi: her madde bir eksiği adlandırır, o eksik yoksa madde tetiklenmez.
+bildiğin soruyu sorma. Ama "biliyorum" ile "bildiğimi sanıyorum" arasındaki farkı ancak
+sorunca öğrenirsin; ikisini ayırt edemiyorsan sor.
 
 Çıktı üç başlıktır ve 20 satırı geçmez: görüş, gerekçe, kaçırdığın şey. Üçüncüsü bu işin
 asıl kazancıdır — soruyu soranın görmediği şey oradadır.

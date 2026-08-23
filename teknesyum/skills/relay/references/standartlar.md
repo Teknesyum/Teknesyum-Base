@@ -116,6 +116,10 @@ Bu boru hattı kurulmadan güncelleyici yazılmaz — sırası budur.
 - **Hata kopyalanabilir olur.** Günlük standart yola yazılır, hata penceresinde kopyala
   düğmesi bulunur. Ekran görüntüsünden hata okumak kimsenin işi değildir.
 - **İlk çalıştırmada yapılandırma istenmez.** Program varsayılanlarla açılır.
+- **Pencere tam ekran açılır.** Aksi özellikle belirtilmedikçe program büyütülmüş halde
+  açılır. Ortada, ekranın bir parçasını kaplayarak açılan pencere içeriği sıkıştırır: üstü
+  altı boş dururken paneller gereksiz kaydırma çubuğuna düşer. Normal boyut değerleri
+  yine de tanımlanır — kullanıcı geri yükle dediğinde pencerenin döneceği boyut odur.
 - **Kurulum zorunlu değildir.** Mümkünse tek dosya, yönetici izni istemeden çalışır.
 
 ## 4. Üretilen dosyanın kodlaması

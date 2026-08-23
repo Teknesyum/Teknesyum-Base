@@ -6,6 +6,41 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.47.0] - 2026-08-23
+
+### Changed
+
+- **Second opinion is now the default, and skipping it needs a reason.** The nine
+  triggers in relay §1.5.1 used to read as a permission list: `advisor` opened only when
+  one of them fired. It became a reminder list instead — if a trigger fits, opening is
+  mandatory; if none fits and you are not sure the decision is right, you open it anyway.
+  There are exactly three reasons not to: the work is mechanical, the question can be put
+  to the user (then ask — an opinion does not replace asking), or the same node already
+  got an opinion this round. The cost was weighed: `advisor` runs `fable` at `low` effort,
+  about 25 seconds and ~10k tokens, against the six-builder-five-auditor cost of the bug
+  that ran five rounds unsolved. If we are going to err, we err toward asking too often.
+- **When to look is now a rule too, not just what to do.** The list existed but the moment
+  to consult it did not, and the trigger failed to fire for five consecutive rounds
+  (`docs/openlogs/HATA-ikinci-gorus-tetiklenmiyor.md`). Four moments are now named: when
+  an audit report arrives and before the briefing is written, when a contract enters its
+  second fix round, before a plan goes to the user, and before an expensive-to-undo step.
+
+### Added
+
+- `docs/KONSEY-ui-analizi-2026-08-23.md` — a full council review of the UI standard by two
+  independent `fable` members plus the manager, item by item, with what exists / what
+  `fable` says / what the manager says in three columns, the three points where they
+  disagree, and 23 findings split into "do now", "deserves its own contract", and "your
+  taste, two options". Nothing was changed; the report is for the decision, not the fix.
+
+### Fixed
+
+- A regression test now pins that a subagent finishing makes no sound. `bitisSesi` is
+  called from exactly one place and `turBitir` from exactly one place, and no hook other
+  than `Notification`/`StopFailure` carries `beep.js`. The test runs the hook rather than
+  reading the source, because "which event plays a sound" is the kind of claim that
+  should be measured.
+
 ## [2.46.1] - 2026-08-23
 
 ### Added

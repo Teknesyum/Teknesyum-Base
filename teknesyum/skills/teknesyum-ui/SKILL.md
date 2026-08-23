@@ -334,8 +334,19 @@ WPF tarafında karşılığı `loc:Str` markup extension'ıdır (desktop.md §9)
 `neon-blue`. Dolgu ne duruk ne hover'da gelir; gri kutu ve emoji ikon (`☕`) kullanılmaz —
 ikon 12px `stroke="currentColor"` SVG/Path olarak çizilir.
 
-Hover'da yalnız opaklık `0.8 → 1` çıkar, `--tk-t-instant` süresinde. Şeritte **kutu glow'u
-da yoktur:** 12px'lik bir hale 24px boşluk ister (§8), başlık şeridinde o boşluk yok — hale
+**Duruk hâl tam opaktır ve çerçeve tam tokendır.** ÖLÇÜLDÜ (23.08.2026, U1 denetimi): eski
+hâlde duruk `opacity: 0.8` bütün öğeye — metne dahil — uygulanıyordu. `pink-text` `#ff54eb`
+%80 opaklıkla siyah üstünde **5.10:1**, şeridin gerçek zemini `#08090a` üstünde **4.95:1**;
+7:1 kuralının altında. Mor metin zaten 4.57 verdiği için pembeye geçilmişti, %80 opaklık o
+kazancı geri veriyordu. Aynı ölçümde çerçeve de düştü: `pink-text/50` siyah üstünde
+**2.51:1**, %80 opaklıkla **~1.9:1** — 1.4.11'in 3:1 eşiğinin altında. `/50` merdiveni
+yalnız `neon-blue` için ölçülmüştü (4.07); pembe ve mor o merdiveni taşımıyor.
+
+Hover sinyali bu yüzden opaklık değil **`scale(1.02)`**, `--tk-t-instant` süresinde — §5'in
+kendi buton değeri, yeni sayı değil. Kullanıcı zamanının neredeyse tamamında duruk hâli
+görür; kontrastı hover'a bağlamak, kuralı görülmeyen hâlde sağlamak demektir.
+
+Şeritte **kutu glow'u da yoktur:** 12px'lik bir hale 24px boşluk ister (§8), başlık şeridinde o boşluk yok — hale
 komşu düğmenin altında kesilir.
 
 **Başlık çubuğu olmayan yüzeyde** (düz web sayfası, PWA, gömülü görünüm) blok eski yerinde

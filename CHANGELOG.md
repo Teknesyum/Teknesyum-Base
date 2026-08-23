@@ -6,6 +6,40 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.48.0] - 2026-08-23
+
+### Fixed
+
+- **The signature block failed its own contrast rule in the state users actually see.**
+  A resting `opacity: 0.8` was applied to the whole element, text included: `#ff54eb`
+  at 80% opacity reads **5.10:1** on black and **4.95:1** on the title bar's real
+  surface `#08090a`, under the 7:1 rule. Purple text was replaced by pink precisely
+  because purple measured 4.57 — the opacity multiplier handed that gain straight back,
+  and it applied to the resting state, which is what a user looks at essentially all
+  the time. The resting state is now fully opaque and the hover signal moved from
+  opacity to `scale(1.02)`, which is §5's own button value rather than a new number.
+- The signature chip border was below the 3:1 threshold of WCAG 1.4.11:
+  `pink-text/50` measures **2.51:1** on black and **~1.9:1** once the 0.8 opacity is
+  applied. The `/50` step of the border ladder had only ever been measured for
+  `neon-blue` (4.07); pink and purple do not carry it. Both chips now use the full
+  token.
+- `theme.css` animated `box-shadow` on the scrollbar thumb, which §5.4 forbids by name
+  with no exception. The glow is now static and only the fill colour transitions.
+- Four scanner behaviours had no test touching them — the Tailwind `hover:` branch,
+  `gecissizBilesen`, `animasyonsuzListe`, and a hardcoded duration below the ceiling.
+  The fixtures contained no `hover:` utility, no component-shaped filename, no `.map(`,
+  and no sub-ceiling duration, so the report counted those branches as working without
+  ever running them. Three tests now cover all four.
+- `/ekran` was missing from the `/help` table.
+
+### Changed
+
+- Contracts `E1`, `S1`, `T2`, `U1` went through independent audit. `T2` passed and is
+  sealed under `contracts/done/`. The other three recorded their round-2 results and
+  the fixes above; the audit evidence, including the removability run that proves
+  deleting `ekran-kapisi.js` plus one `hooks.json` block breaks only that feature's own
+  17 tests and nothing else, is written into each contract.
+
 ## [2.47.0] - 2026-08-23
 
 ### Changed

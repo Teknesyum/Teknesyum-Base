@@ -172,8 +172,9 @@ body {
 ::-webkit-scrollbar-thumb {
   background: var(--tk-purple); border-radius: 4px;
   box-shadow: 0 0 10px var(--tk-purple);
-  transition: background-color var(--tk-t-instant) var(--tk-e-out),
-              box-shadow var(--tk-t-instant) var(--tk-e-out);
+  /* §5.4 `box-shadow` animasyonunu adıyla yasaklıyor ve istisnası yok; hale duruk
+     kalır, yalnız dolgu rengi geçer. Denetimde ölçüldü (23.08.2026). */
+  transition: background-color var(--tk-t-instant) var(--tk-e-out);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--tk-pink); box-shadow: 0 0 10px var(--tk-pink);

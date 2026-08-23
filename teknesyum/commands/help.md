@@ -33,6 +33,7 @@ sadece ne istediğini söyle.
 | `/uisetup` | Arayüz standardını değiştirir veya tamamen kapatır |
 | `/premium` | Max 20x profili: opus, xhigh efor, altı paralel ajan, plan konseyi. `durum` ile bak |
 | `/beep` | Sesli bildirim: izin beklerken, tur biterken, tur hata verirken kısa ses çalar |
+| `/ekran` | Ekran kapısını bir tur açar: ajan masaüstüne dokunabilir, sonraki turda kapanır |
 | `/log` | Açık hata günlüklerini listeler, okur ve çözüldükçe kapatır |
 | `/ozel` | Kişisel dosyaları tek private depoda tutar; depo parça parça çekilir, tamamı inmez |
 | `/pusla` | "Puşla." Testler, genel depo, sonra özel ayna — iki depo tek akışta |

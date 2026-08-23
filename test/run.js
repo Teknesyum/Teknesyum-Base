@@ -5791,6 +5791,54 @@ function uiDepo(p) {
   return vcs;
 }
 
+// S1 denetimi (23.08.2026) dort uretim davranisinin hicbir assertion'a degmedigini
+// gosterdi: kurgu dosyalarinda ne `hover:` utility'si, ne bilesen adi, ne `.map(`, ne de
+// tavan altinda kalan sabit sure vardi. Rapor o dallari calisiyor sayiyordu; olculmemisti.
+ol('ui kipi tailwind hover utility"sinde gecis eksigini yakalar', () => {
+  const { p, yaz } = uiProje();
+  yaz('src/Dugme.tsx', 'export const D = () => <b className="hover:opacity-100">x</b>;\n');
+  yaz('src/Iyi.tsx', 'export const I = () => <b className="transition hover:opacity-100">y</b>;\n');
+  // `.css` bulgusu ayri bir daldan (blok cozumlemesi) gelir ve kendi testi var; burada
+  // olculen yalniz tailwind utility dali.
+  const b = uiJson(p).bulgular.filter(
+    (x) => x.tur === 'hoverGecisYok' && /\.tsx$/.test(x.dosya || '')
+  );
+  esit(b.length, 1, 'yalniz gecissiz olan bulgu vermeli');
+  esit(b[0].dosya, 'src/Dugme.tsx');
+  icerir(b[0].mesaj, 'hover var, geçiş yok');
+});
+
+ol('ui kipi gecissiz bileseni ve animasyonsuz listeyi yakalar', () => {
+  const { p, yaz } = uiProje();
+  yaz('src/Panel.tsx', 'export const P = () => <div>durgun</div>;\n');
+  yaz('src/Modal.tsx', 'import { motion } from "motion";\nexport const M = () => <motion.div />;\n');
+  yaz('src/Liste.tsx', 'export const L = (a) => <ul>{a.map((x) => <li>{x}</li>)}</ul>;\n');
+  yaz(
+    'src/Canli.tsx',
+    'import { AnimatePresence } from "motion";\nexport const C = (a) => <AnimatePresence>{a.map((x) => <li>{x}</li>)}</AnimatePresence>;\n'
+  );
+  const j = uiJson(p);
+  const bilesen = j.bulgular.filter((x) => x.tur === 'gecissizBilesen').map((x) => x.dosya);
+  esit(bilesen.join(','), 'src/Panel.tsx', 'hareket izi olan bilesen bulgu vermemeli');
+  const liste = j.bulgular.filter((x) => x.tur === 'animasyonsuzListe').map((x) => x.dosya);
+  esit(liste.join(','), 'src/Liste.tsx', 'AnimatePresence listeyi kurtarmali');
+});
+
+ol('ui kipi tavan altindaki sabit sureyi token disi sayar', () => {
+  const { p } = uiProje({
+    css: ['.hizli {', '  transition: opacity 90ms ease;', '}', ''].join('\n'),
+  });
+  const j = uiJson(p);
+  const sabit = j.bulgular.filter((x) => x.tur === 'sabitSure');
+  esit(sabit.length, 1, 'tavan altinda kalan sure sabitSure olmali');
+  icerir(sabit[0].mesaj, 'sabit süre token değil');
+  esit(
+    j.bulgular.some((x) => x.tur === 'sureTavani'),
+    false,
+    'tavan asilmadigi icin sureTavani cikmamali'
+  );
+});
+
 ol('ui kipi yalniz arayuz dosyalarina bakar, ajan acmaz', () => {
   const { p } = uiProje();
   const j = uiJson(p);

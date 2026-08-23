@@ -99,33 +99,38 @@ const S = {
     tr: (dk, sn) => (dk ? dk + 'dk ' + sn + 'sn' : sn + 'sn'),
     en: (dk, sn) => (dk ? dk + 'm ' + sn + 's' : sn + 's'),
   },
+  // Ters tırnak yok: bu satır `systemMessage` ile basılıyor ve o kanal markdown
+  // işlemiyor — tırnaklar ekranda harfiyen görünüyordu (ölçüldü 23.08.2026).
+  // Model kanalına dönülürse tırnakları `turOzetiYonerge` ekler.
   turOzeti: {
     tr: (sure, ana, alt) =>
-      '`Total Süre: ' +
+      'Total Süre: ' +
       sure +
       ' <> Ana Oturum: ' +
       ana +
       ' Token <> Alt Ajanlar: ' +
       alt +
-      ' Token`',
+      ' Token',
     en: (sure, ana, alt) =>
-      '`Total Time: ' +
+      'Total Time: ' +
       sure +
       ' <> Main Session: ' +
       ana +
       ' Tokens <> Subagents: ' +
       alt +
-      ' Tokens`',
+      ' Tokens',
   },
   turOzetiYonerge: {
     tr: (satir) =>
-      'Turu kapatırken cevabının en altına şu satırı **ters tırnakları dahil** olduğu gibi ' +
-      'yaz, tek satır olarak: ' +
-      satir,
+      'Turu kapatırken cevabının en altına şu satırı **ters tırnak içinde** yaz, tek satır ' +
+      'olarak: `' +
+      satir +
+      '`',
     en: (satir) =>
-      'When you close the turn write this line at the very bottom of your answer, ' +
-      'verbatim and on one line: ' +
-      satir,
+      'When you close the turn write this line at the very bottom of your answer, on one ' +
+      'line and wrapped in backticks: `' +
+      satir +
+      '`',
   },
 
   acikGunluk: {

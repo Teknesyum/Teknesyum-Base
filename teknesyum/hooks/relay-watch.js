@@ -779,7 +779,12 @@ function seviye() {
 // Bu yüzden iki biçim de üretilebilir, seçim tek sabitte:
 //   'blok'  → içerik yeni satırla başlar, önek üstte tek başına kalır
 //   'satir' → içerik önekle aynı satırda kalır (2.39.0'a kadarki davranış)
-const BILDIRIM_BICIMI = 'blok';
+//
+// ÖLÇÜLDÜ (23.08.2026, kullanıcı ekran görüntüsü): `'blok'` öneki kendi satırında
+// bırakmıyor, **iki kez** bastırıyor — render hem kutu başlığına hem içeriğin önüne
+// `Stop says:` koyuyor. Yukarıdaki "ölçülmedi" notunun cevabı budur. `'satir'` tek
+// satır veriyor ve önek altı karakterle sınırlı kalıyor.
+const BILDIRIM_BICIMI = 'satir';
 
 const _duyuru = [];
 

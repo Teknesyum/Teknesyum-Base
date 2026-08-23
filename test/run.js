@@ -4681,9 +4681,9 @@ function bicimKopya(bicim) {
     if (!f.endsWith('.js')) continue;
     let govde = fs.readFileSync(path.join(kaynak, f), 'utf8');
     if (f === 'relay-watch.js') {
-      const eski = "const BILDIRIM_BICIMI = 'blok';";
-      if (!govde.includes(eski)) throw new Error('BILDIRIM_BICIMI sabiti bulunamadı');
-      govde = govde.replace(eski, "const BILDIRIM_BICIMI = '" + bicim + "';");
+      const desen = /const BILDIRIM_BICIMI = '(blok|satir)';/;
+      if (!desen.test(govde)) throw new Error('BILDIRIM_BICIMI sabiti bulunamadı');
+      govde = govde.replace(desen, "const BILDIRIM_BICIMI = '" + bicim + "';");
     }
     fs.writeFileSync(path.join(d, 'hooks', f), govde);
   }
@@ -4748,6 +4748,26 @@ ol('sabit satir yapilinca icerik onekle ayni satirda kalir', () => {
   const m = JSON.parse(calistir(bicimKopya('satir'), AJAN_YUK(p)).out).systemMessage;
   if (m.startsWith('\n')) throw new Error('satır biçiminde satır başı kalmış: ' + m);
   icerir(m, 'Teknesyum ▸ Görev ▸ ');
+});
+
+// ÖLÇÜLDÜ (23.08.2026, kullanıcı ekran görüntüsü): `blok` biçimi öneki kendi satırında
+// bırakmıyor, iki kez bastırıyor — ekranda "Stop says: / Stop says: …" çıkıyor. Yürürlükteki
+// biçim `satir` olmalı. Makbuz `systemMessage` ile basıldığı için ters tırnak da taşımamalı;
+// o kanal markdown işlemiyor ve tırnaklar harfiyen görünüyordu.
+ol('yururlukteki bildirim bicimi satir ve makbuzda ters tirnak yok', () => {
+  const k = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
+  icerir(k, "const BILDIRIM_BICIMI = 'satir';");
+  const d = fs.readFileSync(path.join(KOK, 'hooks', 'dil.js'), 'utf8');
+  const blok = d.slice(d.indexOf('turOzeti: {'), d.indexOf('turOzetiYonerge'));
+  icermez(blok, '`', 'makbuz metninde ters tırnak kalmamalı');
+  const { p, ek } = turProje();
+  calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
+  const m = JSON.parse(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out)
+    .systemMessage;
+  if (m.startsWith('\n')) throw new Error('makbuz satır başıyla başlıyor: ' + JSON.stringify(m));
+  if (m.includes('`')) throw new Error('makbuzda ters tırnak var: ' + JSON.stringify(m));
+  icerir(m, 'Total Süre: ');
+  esit(m.split('\n').length, 1, 'makbuz tek satır olmalı');
 });
 
 ol('dugmeler uc profilde de tanimli', () => {

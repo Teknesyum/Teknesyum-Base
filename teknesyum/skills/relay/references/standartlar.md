@@ -150,3 +150,32 @@ BOM'suz: `68 61 7a c3 84 c2 b1 …` · BOM'lu: `68 61 7a c4 b1 …` (beklenen).
 `.cs`, `.axaml`, `.md`, `.json` etkilenmez: Roslyn ve öteki okuyucular BOM'suz dosyayı
 önce UTF-8 olarak çözmeyi dener ve geçerli UTF-8'i doğru okur. Kural yalnız PowerShell
 betikleri içindir.
+
+## 5. Tema tek kaynaktan gelir
+
+**Renk, ürünün metni gibidir: koda gömülmez, ayrı bir dosyada durur.** `locale/tr.json`
+metinleri nasıl tutuyorsa, tema da öyle tutulur — tek bir token dosyası, ve o dosyadan
+üretilen platform çıktıları.
+
+Kural üç cümledir:
+
+1. **Tek kaynak.** Paletin tanımı bir yerdedir; `theme.tokens.json` ya da projenin
+   karşılığı. CSS, XAML, AXAML, C# sabitleri o kaynaktan **üretilir**, elle yazılmaz.
+2. **Üretilen dosya elle düzenlenmez** ve bu makinece denetlenir: üretici idempotenttir,
+   test *"üret ve diff sıfır mı"* sorar. Elle düzenlenen dosya bir sonraki koşuda düşer.
+3. **Yeni tema eklemek tek dosyadır.** `theme.<ad>.tokens.json` yazılır, üretici koşulur.
+   Başka hiçbir yere dokunulmaz.
+
+**Gerekçe ölçüldü.** Bu kural yazılmadan önce Teknesyum Base'in kendi paleti dört elle
+yazılmış kopyada yaşıyordu ve hex sayıları bile eşit değildi — `theme.css` 20,
+`Theme.xaml` 41, `Theme.axaml` 40, `Palette.cs` 11. Üç ayrı denetim "kopyalar ayrışırsa
+yakalanmaz" diye uyardı. Ayrışma bir olasılık değil, ölçülmüş bir durumdu.
+
+**Sınırı:** kural renk içindir ve zaten token olan süre/font zincirini kapsar. Yarıçap ve
+aralık ölçeği bu kuralın dışındadır *(varsayılan, ölçülmedi)* — onlar da tek kaynağa
+inebilir ama gerekçesi henüz ölçülmedi.
+
+**Kaybedilmemesi gereken şey:** token dosyaları yalnız değer taşımaz, **gerekçe de taşır.**
+Bir rengin neden o değerde olduğu, hangi kısıtla kullanıldığı, hangi tokenın bilerek
+eklenmediği — bunlar üretimde silinirse standardın hafızası gider. Her token bir `neden`
+alanı taşır ve üretici onu çıktıya yorum olarak basar.

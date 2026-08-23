@@ -1,0 +1,421 @@
+<!-- Teknesyum Neon — WPF giris, dogrulama, modal, toast.
+     App.xaml > Application.Resources > MergedDictionaries icine Theme.xaml'DAN SONRA
+     eklenir; butun firca, sure ve font kaynaklarini oradan okur, kendi rengi yoktur.
+     Gerekceler ve olcumler: references/forms.md.
+
+     SERH: modal ve toast form degildir; U10 birlestirmesinde Overlays.xaml'e ayrilmaya
+     adaydir. Dosya adi bilerek boyle birakildi (owns pazarligi yapilmadi).
+
+     XAML yorumunda cift tire kullanilamaz; bu dosyada araliklar "->" yerine "ile" ya da
+     tek tire ile yazildi. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+  <!-- Secim fircasi: varsayilan Windows secimi bu palette okunmuyor. Mavi /30. -->
+  <SolidColorBrush x:Key="TkSelection" Color="#4D00F3FF"/>
+
+  <!-- ======================================================================
+       1 · Metin girisi - bes durum
+       ====================================================================== -->
+
+  <!-- min-height 40: 16px metin + 12 x 2 dikey dolgu.
+       (varsayilan, olculmedi - oran tahmini)
+       SKILL §5.3'un 24 DIP hedef tabanini asar, yerini almaz. -->
+  <sys:Double x:Key="TkInputMinHeight">40</sys:Double>
+
+  <Style x:Key="TkTextBox" TargetType="TextBox">
+    <Setter Property="MinHeight" Value="{StaticResource TkInputMinHeight}"/>
+    <Setter Property="Padding" Value="12"/>
+    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
+    <Setter Property="FontSize" Value="16"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBody}"/>
+    <Setter Property="Background" Value="{StaticResource Surface}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <!-- Caret ve secim. -->
+    <Setter Property="CaretBrush" Value="{StaticResource NeonBlue}"/>
+    <Setter Property="SelectionBrush" Value="{StaticResource TkSelection}"/>
+    <Setter Property="SelectionOpacity" Value="1"/>
+    <!-- Varsayilan WPF hata anahati (kirmizi Adorner) KAPATILIR; palet disidir.
+         Yerine asagidaki TkErrorTemplate cizer. -->
+    <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource TkErrorTemplate}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TextBox">
+          <Border x:Name="bd"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="6"
+                  SnapsToDevicePixels="True">
+            <ScrollViewer x:Name="PART_ContentHost"
+                          Margin="{TemplateBinding Padding}"
+                          VerticalAlignment="Center"
+                          Focusable="False"
+                          HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Hidden"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <!-- hover -->
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsMouseOver" Value="True"/>
+                <Condition Property="IsEnabled" Value="True"/>
+                <Condition Property="IsReadOnly" Value="False"/>
+              </MultiTrigger.Conditions>
+              <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource BorderStrong}"/>
+            </MultiTrigger>
+            <!-- odak. Halkayi FocusVisualStyle cizer (Theme.xaml, cift katman,
+                 gecissiz); burada yalnizca cerceve guclenir. -->
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource BorderStrong}"/>
+            </Trigger>
+            <!-- salt okunur: devre disi DEGILDIR, odaklanabilir kalir, metni beyaz kalir -->
+            <Trigger Property="IsReadOnly" Value="True">
+              <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource BorderDecorative}"/>
+            </Trigger>
+            <!-- hata: TAM Danger hex'i. Pembe /50 cerceve yuzey ustunde 2.17:1 verir ve
+                 WCAG 1.4.11'in 3:1 esigini TASIMAZ; tam hex 6.11:1 verir. -->
+            <Trigger Property="Validation.HasError" Value="True">
+              <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Danger}"/>
+            </Trigger>
+            <!-- devre disi. Tek gri YALNIZ burada. ToolTip zorunludur (SKILL §2);
+                 kontrolun kendisine yazilir, stille verilemez. -->
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="bd" Property="Background" Value="Transparent"/>
+              <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Disabled}"/>
+              <Setter Property="Foreground" Value="{StaticResource Disabled}"/>
+              <Setter Property="Cursor" Value="No"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Sayi, kod, ID, anahtar tasiyan giris mono yazar (SKILL §3). -->
+  <Style x:Key="TkMonoTextBox" TargetType="TextBox" BasedOn="{StaticResource TkTextBox}">
+    <Setter Property="FontFamily" Value="{StaticResource FontMono}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+
+  <!-- PLACEHOLDER YOK.
+       Placeholder metindir ve §2'nin 7:1 esigine tabidir. Disabled grisi (#71717A) yuzey
+       ustunde 4.12:1 verir; o fircayi placeholder'a vermek "tek gri yalniz devre disi"
+       kuralini sessizce genisletir. Ara gri de icat edilmez.
+       YERINE NE KONUR: ornek metin girisin ALTINDA Hint stiliyle yazilir ve alana
+       AutomationProperties.HelpText ile baglanir. WPF'te bu yuzden bir
+       "TkWatermark" stili YOKTUR; eksiklik degil, karardir. -->
+
+  <!-- ======================================================================
+       2 · Dogrulama hatasi
+       ====================================================================== -->
+
+  <!-- Mesaj alanin ALTINDADIR. Ustte olsaydi belirdiginde alani asagi iterdi ve odakli
+       alan kayardi (SKILL §5.4 M12).
+       RENK TEK BASINA ANLAM TASIMAZ: satir ikon ve metin tasir.
+       Metin DangerText fircasini yazar (7.33:1), dolgu fircasini degil (6.11:1). -->
+  <ControlTemplate x:Key="TkErrorTemplate">
+    <StackPanel Orientation="Vertical">
+      <AdornedElementPlaceholder x:Name="ph"/>
+      <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+        <!-- Ikon anlam tasimaz; anlami metin verir. Ekran okuyucudan gizlenir. -->
+        <Path Width="16" Height="16" Stretch="Uniform"
+              Margin="0,1,6,0"
+              AutomationProperties.IsOffscreenBehavior="Offscreen"
+              Fill="{StaticResource DangerText}"
+              Data="M8 1 L15 14 L1 14 Z M8 5.5 L8 10 M8 11.5 L8 12.5"/>
+        <TextBlock Text="{Binding [0].ErrorContent}"
+                   Foreground="{StaticResource DangerText}"
+                   FontFamily="{StaticResource FontSans}"
+                   FontSize="14"
+                   TextWrapping="Wrap"/>
+      </StackPanel>
+    </StackPanel>
+  </ControlTemplate>
+
+  <!-- Hata metni stili - sablon disinda elle yazilan mesajlar icin. -->
+  <Style x:Key="TkErrorText" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource DangerText}"/>
+    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <!-- Metne glow verilmez (SKILL §2); tek istisna hero sayidir. -->
+    <Setter Property="Effect" Value="{x:Null}"/>
+  </Style>
+
+  <!-- EKRAN OKUYUCU BAGLANTISI - uc dugum birlikte, ikisi kontrole elle yazilir:
+         Validation.ErrorTemplate    : TkTextBox stili zaten baglar.
+         AutomationProperties.HelpText : aria-describedby'in UIA karsiligi. Narrator
+                                         alanla birlikte okur. Yardim/ornek metni ve
+                                         hata nedeni buraya yazilir.
+         Validation.HasError         : cerceveyi Danger'a cevirir (tetikleyici yukarida).
+       Ornek:
+         <TextBox Style="{StaticResource TkMonoTextBox}"
+                  AutomationProperties.HelpText="Ornek: 8080"
+                  Text="{Binding Port, UpdateSourceTrigger=PropertyChanged,
+                                 ValidatesOnDataErrors=True, NotifyOnValidationError=True}"/>
+       Alan hata durumundan cikinca HelpText yardim metnine geri doner. -->
+
+  <!-- ======================================================================
+       3 · Modal / diyalog - desktop.md'nin MessageBox yasaginin ikamesi
+       ====================================================================== -->
+
+  <!-- EN UCUZ DOGRU YOL: ayri bir Window + ShowDialog(). Odak tuzagini, Esc ile
+       kapanmayi (IsCancel="True" dugmesi) ve kapanista odagin acan ogeye donmesini
+       pencere yoneticisi ustlenir. Asagidaki stil o pencereyi giydirir.
+       (varsayilan, olculmedi): genislik 560. -->
+  <Style x:Key="TkModalWindow" TargetType="Window">
+    <Setter Property="Width" Value="560"/>
+    <Setter Property="SizeToContent" Value="Height"/>
+    <Setter Property="MaxHeight" Value="720"/>
+    <Setter Property="WindowStartupLocation" Value="CenterOwner"/>
+    <Setter Property="ShowInTaskbar" Value="False"/>
+    <Setter Property="ResizeMode" Value="NoResize"/>
+    <Setter Property="WindowStyle" Value="None"/>
+    <Setter Property="AllowsTransparency" Value="True"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="FontFamily" Value="{StaticResource FontSans}"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBody}"/>
+    <!-- Tab sirasi gorsel sira ile ayni ve tuzak icinde kalir (SKILL §5.3, madde 1). -->
+    <Setter Property="KeyboardNavigation.TabNavigation" Value="Cycle"/>
+  </Style>
+
+  <!-- Modal govdesinin cercevesi. Panel ile ayni yuzey; genislik Window'dan gelir. -->
+  <Style x:Key="TkModalPanel" TargetType="Border" BasedOn="{StaticResource Panel}">
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+    <Setter Property="RenderTransform">
+      <Setter.Value>
+        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Giris: opaklik 0 ile 1 arasi + scale 0.98 ile 1 arasi, TBase / EOut
+       (SKILL §5.4 taban tablosu). Storyboard yalniz RenderTransform ve Opacity
+       uzerinde calisir (M14). Odak beklemez: oge ilk kareden itibaren odaklanabilir. -->
+  <Storyboard x:Key="TkModalGiris">
+    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="0" To="1"
+                     Duration="{StaticResource TBase}"
+                     EasingFunction="{StaticResource EOut}"/>
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                     From="0.98" To="1"
+                     Duration="{StaticResource TBase}"
+                     EasingFunction="{StaticResource EOut}"/>
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                     From="0.98" To="1"
+                     Duration="{StaticResource TBase}"
+                     EasingFunction="{StaticResource EOut}"/>
+  </Storyboard>
+
+  <!-- Cikis girisin tersi ve bir kademe kisa: TFast. -->
+  <Storyboard x:Key="TkModalCikis">
+    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     To="0"
+                     Duration="{StaticResource TFast}"
+                     EasingFunction="{StaticResource EIn}"/>
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                     To="0.98"
+                     Duration="{StaticResource TFast}"
+                     EasingFunction="{StaticResource EIn}"/>
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                     To="0.98"
+                     Duration="{StaticResource TFast}"
+                     EasingFunction="{StaticResource EIn}"/>
+  </Storyboard>
+
+  <!-- Ayni pencere ici overlay tercih edilirse: FocusManager.IsFocusScope YETMEZ; odak
+       kapsami Tab gezinmesini sinirlamaz. Uc sey birden gerekir:
+         1. Overlay kokune KeyboardNavigation.TabNavigation="Cycle" (asagidaki stil).
+         2. Acilista ilk odaklanabilir ogeye Keyboard.Focus.
+         3. Kapanista acan ogeye donus - acilirken Keyboard.FocusedElement saklanir.
+       Ayrica overlay acikken alttaki icerik IsHitTestVisible="False" olur; yoksa fare
+       tuzagin disina cikar.
+       Perde karartmasi rgba(0,0,0,0.6) karsiligi #99000000
+       (varsayilan, olculmedi) - olcut: arkadaki metin okunamaz ama panel siniri secilir.
+       Bulaniklastirma YOKTUR: arkayi okunmaz yapmak karartmanin isi. -->
+  <SolidColorBrush x:Key="TkModalPerde" Color="#99000000"/>
+
+  <Style x:Key="TkModalOverlay" TargetType="Grid">
+    <Setter Property="Background" Value="{StaticResource TkModalPerde}"/>
+    <Setter Property="KeyboardNavigation.TabNavigation" Value="Cycle"/>
+    <Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Cycle"/>
+    <Setter Property="KeyboardNavigation.ControlTabNavigation" Value="None"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+  </Style>
+
+  <!-- ARKA PLAN TIKLAMASI - iki tur, iki davranis. XAML bir sey cizmez; kalibin
+       tasiyicisi bu iki anahtardir ve uygulama kodu bunlari okur. Yazili olmazsa her
+       projede yeniden tartisilir.
+         TkModalOnay  : yikici/geri alinamaz is. Perdeye tiklamak KAPATMAZ - yanlislikla
+                        disari tiklayan kullanici iptal ettigini fark etmez.
+                        Esc kapatir ve iptal sayilir.
+         TkModalBilgi : sonuc/ayrinti. Perdeye tiklamak KAPATIR, Esc kapatir.
+       Her iki turde de acilista odak ILK odaklanabilir ogeye tasinir - yikici eylemin
+       onay dugmesine degil, iptale ya da basliga. -->
+  <sys:Boolean x:Key="TkModalOnayPerdeKapatir">False</sys:Boolean>
+  <sys:Boolean x:Key="TkModalBilgiPerdeKapatir">True</sys:Boolean>
+
+  <!-- ======================================================================
+       4 · Toast
+       ====================================================================== -->
+
+  <!-- Yigin: sag alt, kenarlardan 24. En fazla 3 gorunur; dorduncu gelince en eski
+       duser. Yigin yukari dogru buyur, aralik 12. -->
+  <Style x:Key="TkToastYigin" TargetType="ItemsControl">
+    <Setter Property="HorizontalAlignment" Value="Right"/>
+    <Setter Property="VerticalAlignment" Value="Bottom"/>
+    <Setter Property="Margin" Value="24"/>
+    <Setter Property="IsHitTestVisible" Value="True"/>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Vertical"/>
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Govde metni her cesitte beyaz kalir (19.93:1); renk cerceve, ikon ve baslikta.
+       Genislik 360 (varsayilan, olculmedi). -->
+  <Style x:Key="TkToast" TargetType="Border">
+    <Setter Property="Width" Value="360"/>
+    <Setter Property="Margin" Value="0,12,0,0"/>
+    <Setter Property="Padding" Value="12"/>
+    <Setter Property="Background" Value="{StaticResource Surface}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="TextElement.Foreground" Value="{StaticResource TextBody}"/>
+    <Setter Property="TextElement.FontFamily" Value="{StaticResource FontSans}"/>
+    <Setter Property="TextElement.FontSize" Value="14"/>
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+    <Setter Property="RenderTransform">
+      <Setter.Value>
+        <TranslateTransform X="8"/>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- UC CESIT VAR, DORDUNCU YOK.
+       INFO TOAST YOK, DUZ METIN TOAST VAR - beyaz metin, mavi cerceve yok. Notr bildirim
+       cesit stili almaz: yukaridaki TkToast temelinin kendisidir, ikonu yoktur.
+       Info diye bir firca YOKTUR ve icat edilmeyecektir (U4 konseyi: kullanilmayan token
+       borctur). Mavi cerceveli "bilgi" toast'i ayrica birincil dugmeyle ayni ekranda
+       karisir; ikisi de mavi olur, kullanici tiklanabilir olani ayirt edemez. -->
+  <Style x:Key="TkToastSuccess" TargetType="Border" BasedOn="{StaticResource TkToast}">
+    <Setter Property="BorderBrush" Value="{StaticResource Success}"/>
+  </Style>
+  <Style x:Key="TkToastWarning" TargetType="Border" BasedOn="{StaticResource TkToast}">
+    <Setter Property="BorderBrush" Value="{StaticResource Warning50}"/>
+  </Style>
+  <!-- Cerceve TAM Danger hex'i (6.11:1); /50 pembe 2.17:1 ile 3:1'i tasimaz. -->
+  <Style x:Key="TkToastDanger" TargetType="Border" BasedOn="{StaticResource TkToast}">
+    <Setter Property="BorderBrush" Value="{StaticResource Danger}"/>
+  </Style>
+
+  <!-- Baslik ve ikon rengi ceside gore; govde metni beyaz kalir.
+       RENK TEK BASINA ANLAM TASIMAZ: her cesit toast ikon VE metin tasir. -->
+  <Style x:Key="TkToastBaslikSuccess" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource Success}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <Style x:Key="TkToastBaslikWarning" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource Warning}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+  <!-- Baslik metin rolunu yazar (7.33:1), dolgu rolunu degil. -->
+  <Style x:Key="TkToastBaslikDanger" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource DangerText}"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+
+  <!-- Kapat carpisi: hedef alan 24x24 (SKILL §5.3), simge 14.
+       AutomationProperties.Name zorunlu: "Bildirimi kapat". -->
+  <Style x:Key="TkToastKapat" TargetType="Button">
+    <Setter Property="Width" Value="24"/>
+    <Setter Property="Height" Value="24"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBody}"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="AutomationProperties.Name" Value="Bildirimi kapat"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="bd" Background="Transparent" CornerRadius="6">
+            <Path x:Name="ic" Width="14" Height="14" Stretch="Uniform"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Stroke="{TemplateBinding Foreground}" StrokeThickness="1.5"
+                  Data="M1 1 L13 13 M13 1 L1 13"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ic" Property="Stroke" Value="{StaticResource NeonBlue}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Giris, cikis VE yiginin kaymasi - SKILL §5.4 ucunu birden istiyor.
+       Giris TFast / EOut, cikis TInstant / EIn. -->
+  <Storyboard x:Key="TkToastGiris">
+    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="0" To="1"
+                     Duration="{StaticResource TFast}"
+                     EasingFunction="{StaticResource EOut}"/>
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                     From="8" To="0"
+                     Duration="{StaticResource TFast}"
+                     EasingFunction="{StaticResource EOut}"/>
+  </Storyboard>
+
+  <Storyboard x:Key="TkToastCikis">
+    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     To="0"
+                     Duration="{StaticResource TInstant}"
+                     EasingFunction="{StaticResource EIn}"/>
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                     To="8"
+                     Duration="{StaticResource TInstant}"
+                     EasingFunction="{StaticResource EIn}"/>
+  </Storyboard>
+
+  <!-- SURE VE HOVER - davranis, kaynak degeri degil.
+       Omur: 6 sn (varsayilan, olculmedi) - kaynak yaygin pratik, olcum U5'e devredildi.
+       Sabit adi TK_TOAST_OMUR_MS = 6000. Duration merdiveninin tavani 360 ms'dir; toast
+       omru bir gecis suresi DEGILDIR, bu yuzden TInstant/TFast/TBase/TSlow ailesine
+       eklenmez ve asagida ayri bir sayi olarak durur.
+       danger toast KALICIDIR: kendiliginden kapanmaz, elle kapatilir.
+       HOVER'DA SAYAC DURUR, fare cikinca kaldigi yerden devam eder. Klavye odagi
+       toast'in icindeyken de durur (IsKeyboardFocusWithin) - kapat dugmesine Tab'la
+       ulasan kullanicinin altindan toast kacmamali. Sayaci durduran taraf uygulama
+       kodudur; asagidaki iki tetikleyici o kodun okudugu kancadir. -->
+  <sys:Int32 x:Key="TkToastOmurMs">6000</sys:Int32>
+
+  <Style x:Key="TkToastSayac" TargetType="Border">
+    <Setter Property="Tag" Value="calisiyor"/>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Tag" Value="durdu"/>
+      </Trigger>
+      <Trigger Property="IsKeyboardFocusWithin" Value="True">
+        <Setter Property="Tag" Value="durdu"/>
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <!-- EKRAN OKUYUCU:
+       Yigin kabi AutomationProperties.LiveSetting="Polite" tasir ve sayfa acilirken BOS
+       olarak agacta durur - sonradan eklenen canli bolge okunmaz.
+       LiveSetting="Assertive" (role="alert" karsiligi) YALNIZ kalici hata toast'inda
+       kullanilir; her toast'a verilirse kullanicinin okudugu cumle surekli kesilir.
+       Form hata metninde de kullanilmaz.
+       Dogrulama U5'e devredildi; buradaki kalip olculmus degil, kurala uygun. -->
+
+</ResourceDictionary>

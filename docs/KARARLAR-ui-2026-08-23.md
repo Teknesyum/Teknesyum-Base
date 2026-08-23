@@ -149,3 +149,50 @@ hepsini abine danış."* Yani her biri ayrı sözleşme, ayrı konsey, `fable` g
 
 `U3`–`U9` `U2`'ye bağımlıdır ve her biri iş başlamadan önce kendi `fable` görüşünü alır;
 görüş sözleşmenin `## Konsey` bölümüne yazılmadan kod yazılmaz.
+
+## 23.08.2026 akşamı — iki karar daha
+
+### Renk körlüğü ölçümü: ertelendi
+
+`U9` pembe/mor çiftini ölçtü ve sonuç kötü çıktı (protanopide ΔE **5.8**, metin rolünde
+5.2–5.6, normal görmede bile 14.3). T0 beş aday mor ölçtü ve 270 renklik bir tarama yaptı:
+**7:1 kontrastı koruyan hiçbir mor hem pembeden hem maviden 10'un üstünde ayrışmıyor**,
+tavan 8.8. Sebep yapısal — protanopide pembe zaten mora dönüyor (`#ff00ea` → `#5e5eeb`).
+
+**Kullanıcı kararı:** *"Renk körleri için olan sistemi gerekirse onlara özel ek bir tema
+ile düzenleriz ama acelesi yok. Şu an için sadece normal insanlar için en uygun temayı
+oluşturma derdimiz var."*
+
+Yani: palet **değişmiyor**. Ölçüm belgesi (`docs/olcumler/renk-korlugu.md`) ve
+`U9`'un yazdığı iki kural yerinde kalıyor — ikincisi (*"renk hiçbir durumda tek taşıyıcı
+olamaz"*) zaten WCAG 1.4.1 ve ucuz. Renk körü teması **ileriye**, ayrı bir tema dosyası
+olarak; aşağıdaki karar onu zaten mümkün kılıyor.
+
+`U9`'un sorduğu üç sorudan ikisi bu kararla kapandı. Açık kalan biri: `SKILL §2`'nin
+*"hue farkı ölçüldü, göz aynı rengi görür"* ifadesi ölçümle çelişiyor — **ölçüm kazanır**,
+§2 düzeltilecek.
+
+### Tema renkleri ayrı dosyada tutulacak — yeni ürün standardı
+
+**Kullanıcı kararı:** *"İleride tema renkleri çok kolay değiştirilebilmeli. Bu yüzden
+`locale` dosyasında nasıl string tutuyorsak, bu renkleri de aynı sistematikle ayrı bir
+yerde tutacağız. Değiştirmek ve tema eklemek çok kolay olsun. Bu da program
+standartlarımıza eklenmiş oldu."*
+
+Bu yalnız Base'i değil, **ürettiğimiz her programı** bağlar — o yüzden `teknesyum-ui`'ye
+değil `relay/references/standartlar.md`'ye girer.
+
+Bugünkü hâl ölçüldü, aynı palet **dört elle yazılmış kopyada** yaşıyor:
+
+| Dosya | Benzersiz hex |
+|---|---|
+| `theme.css` | 20 |
+| `Theme.xaml` | 41 |
+| `Theme.axaml` | 40 |
+| `Palette.cs` | 11 |
+
+Beşincisi `SKILL §3` tablosu. Bu oturumda **üç ayrı denetim** "kopyalar ayrışırsa
+yakalanmaz" diye uyardı; bir ajan da `@theme` katmanını unutup Tailwind tarafını eski
+bırakma riskine işaret etti. Karar o sorunu kökünden kapatıyor.
+
+Mimarisi `fable` konseyine soruldu; sonuç `U11` sözleşmesine yazılacak.

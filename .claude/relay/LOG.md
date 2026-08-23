@@ -51,3 +51,5 @@
              sıra kontrolü). u2Kod/u2Roller ölü-test korumalı. 414/414 GEÇTİ.
              Not: başka bir ajan git reset --hard çalıştırdı, işim silindi ve geri
              yüklendi (_sorun.log). SKILL tablosu mutasyonları doğrulanmadı — Çıktı.
+2026-08-23 · Renk körlüğü ertelendi — palet değişmiyor, renk körü teması ileriye
+2026-08-23 · Yeni ürün standardı: tema renkleri locale gibi ayrı dosyada · U11 açılacak

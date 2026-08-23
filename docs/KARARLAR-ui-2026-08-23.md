@@ -130,5 +130,22 @@ hepsini abine danış."* Yani her biri ayrı sözleşme, ayrı konsey, `fable` g
 | Konu | Karar |
 |---|---|
 | Title Case muafiyeti | **Kaldırıldı.** Tam cümlelerde de Title Case uygulanır — tooltip, hata mesajı, boş durum, onay metni dahil. Muafiyet T0'ın tek taraflı eklediği bir maddeydi ve kullanıcı istememişti. |
-| `autocompact` `KANCA_DUGME`'de | Kullanıcı açıklama istedi; cevap verildi, karar bekliyor. |
-| Engellenen turda ölçü satırı | Kullanıcı "birikmeli gibi" dedi ama tam ne kastedildiğini sordu; cevap verildi, karar bekliyor. |
+| `autocompact` `KANCA_DUGME`'de | **Kalıyor, modele yazılmıyor.** Kullanıcının gerekçesi: değer yalnız premium/eco geçişlerinde bir kez değişen global bir değişken; modelin işi görevi yapmaktır. "Şunu yapsam şuna sığmaz" diye düşünmek hem gereksiz düşünmeyi artırır hem de iş yapılmadan sığıp sığmaması **yalnız bir tahmindir** — iyi bir tahminci bile olsa saçma. |
+| Ölçü penceresi | **Kullanıcının inputundan kullanıcının inputuna kadar.** Klavye kullanıcıya geçtiği her an makbuz basılır: iş engellendiyse, yarım kaldıysa, durdurulduysa, "Senden istediklerim" denip beklemeye geçildiyse. O ana kadarki maliyet o anda görülmelidir. Alt ajanın bitişi **stop değildir** — orada kullanıcı yazmaya başlamaz, ana oturum çalışmaya devam eder. Eski erteleme davranışı kaldırıldı. |
+
+## Açılan sözleşmeler
+
+| Sözleşme | İş | Konsey |
+|---|---|---|
+| `U2` | Tipografi ve 18 hızlı düzeltme — A1–A10, B3, B10, B11, T5 | konsey raporu yeterli |
+| `S2` | `/scan ui` standart kapısı, iki fazlı `--tamamla` dönüşümü | — |
+| `U3` | Eksik bileşenler: input · form hatası · modal · toast | kendi `fable` görüşü |
+| `U4` | Anlamsal renk katmanı | kendi `fable` görüşü |
+| `U5` | `§5.8` ekran okuyucu | kendi `fable` görüşü |
+| `U6` | Beş-durum zorunlu şablonu | kendi `fable` görüşü |
+| `U7` | Avalonia `Theme.axaml` | kendi `fable` görüşü |
+| `U8` | Glow performans kuralı ve ölçümü | kendi `fable` görüşü |
+| `U9` | Renk körlüğü simülasyonu | kendi `fable` görüşü |
+
+`U3`–`U9` `U2`'ye bağımlıdır ve her biri iş başlamadan önce kendi `fable` görüşünü alır;
+görüş sözleşmenin `## Konsey` bölümüne yazılmadan kod yazılmaz.

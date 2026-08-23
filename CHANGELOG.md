@@ -6,6 +6,61 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.50.0] - 2026-08-23
+
+### Changed
+
+- **The measured window is now user-input to user-input.** The receipt prints whenever the
+  keyboard goes back to the user: work blocked, work half-finished, work stopped, or the
+  answer ending in a "Senden istediklerim" block. What it cost up to that moment must be
+  visible at that moment; folding it into the next turn detaches the number the user sees
+  from the moment they see it. A subagent finishing is explicitly not a stop — the user
+  does not start typing there, the main session carries on. The old behaviour deferred
+  blocked closures through a `bekleyen` stamp and accumulated them; that is gone, and so
+  is the chain logic in `turBasla`.
+- Full sentences are no longer exempt from Title Case. Tooltips, error messages, empty
+  states and confirmation text all follow the same capitalisation rule as labels. The
+  exemption had been added unilaterally and was never asked for.
+- `autocompact` stays out of the model's context. It is a global that changes once per
+  profile switch, and a model reasoning about whether the work will fit is producing a
+  guess — a good guesser is still guessing, and the cost is extra thinking on every
+  single request.
+
+### Added
+
+- `docs/KARARLAR-ui-2026-08-23.md` — the decision record for the UI council: all 23
+  findings and six open questions, what was decided, and whose view won. It includes the
+  two points where the manager was overruled and the one where it was upheld.
+- Nine contracts opened. `U2` carries the typography wave and the sixteen cheap fixes in
+  one piece, because several of them touch the same three files and separate contracts
+  would collide on `owns`. `S2` rebuilds `/scan ui`: a gate that refuses to run when the
+  UI standard is not installed, a profile mode that reports UI status without failing on
+  it, and a two-phase `--tamamla` where the theoretical pass must finish before the app
+  is ever opened for end-to-end checks. `U3`–`U9` are the seven items that earn their own
+  contract, and each opens its own `fable` council before any code is written.
+
+## [2.49.0] - 2026-08-23
+
+### Fixed
+
+- The signature block's WPF hover animation never worked. `ScaleTransform` was given as a
+  Style Setter value, which fails twice over: a Setter value is a single object, so both
+  chips shared one instance and hovering "Destek" scaled "Teknesyum" too; and a Freezable
+  Setter value is frozen when the style is sealed, so the animation was writing to a
+  frozen object. The correct pattern already existed in `Theme.xaml`. The transform now
+  lives on each Border and the animation path is fully qualified.
+- `.tk-btn-ghost` used a `purple-text/50` border measuring 2.55:1 — the same 1.4.11
+  violation fixed elsewhere in the previous round. The fix had been applied only to the
+  three lines the auditor named, and the fourth instance of the class was missed.
+- Under reduced motion `transform: none` was scoped to `.tk-btn`, so the signature's
+  `scale(1.02)` escaped it. The rule is now universal.
+- The removal recipe in `docs/masaustu-izolasyon.md` omitted two edits it requires on the
+  test side and quoted a stale 282/282 figure. Measured: on a clean checkout, deleting the
+  hook and its one `hooks.json` block leaves 373 of 390 tests passing, and all 17 failures
+  are the feature's own tests.
+- `biome check --write` was run across the repository — 22 files checked, 19 fixed, zero
+  errors remaining, all tests still passing.
+
 ## [2.48.0] - 2026-08-23
 
 ### Fixed

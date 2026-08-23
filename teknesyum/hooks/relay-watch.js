@@ -72,8 +72,8 @@ function run(j) {
   }
   if (j.hook_event_name === 'Stop') {
     if (kap) kapsayiciTopla(kap, kapDurum);
-    const kapanis = paketDenetle(j, root);
-    return turBitir(j, root, kapanis);
+    paketDenetle(j, root);
+    return turBitir(j, root);
   }
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
   if (j.hook_event_name === 'SessionEnd') {
@@ -581,15 +581,13 @@ function turIzi(j, root) {
 // yok. O boşluk kapatılamıyor; süre bu yüzden `~` ile yaklaşık işaretlenir.
 const DURAK_ESIGI = 120000;
 
-// ÖLÇÜLDÜ: özet her `Stop`'ta basılıyordu, ama bir kullanıcı isteği tek `Stop`'a
-// sığmıyor — model soru sorunca ya da kapı turu bloklayınca aynı istek üç dört tura
-// bölünüyor ve her parçası kendi ölçü satırını yazıyordu. Kullanıcı istediği şey tek
-// bir toplam: ölçü zincir boyunca birikir, yalnız istek gerçekten kapanınca basılır.
+// Ölçülen pencere kullanıcının inputundan kullanıcının inputuna kadardır. Her istem yeni
+// bir pencere açar; önceki pencerenin bakiyesi taşınmaz, çünkü önceki pencere kapanırken
+// makbuzunu zaten basmıştır (`turBitir`). Bir dönem engelli kapanış ertelenip zincir
+// boyunca birikiyordu; kullanıcı 23.08.2026'da kuralı tersine çevirdi.
 function turBasla(j, root) {
   const f = turYolu(j);
   const now = Date.now();
-  const onceki = read(f);
-  const zincir = onceki && onceki.bekleyen;
   try {
     fs.mkdirSync(path.dirname(f), { recursive: true });
     fs.writeFileSync(
@@ -598,9 +596,9 @@ function turBasla(j, root) {
         t: now,
         son: now,
         durak: 0,
-        sn0: zincir ? onceki.sn0 || 0 : 0,
-        boyAna: zincir ? onceki.boyAna || 0 : transkriptBoyu(j.transcript_path),
-        boyAlt: zincir ? onceki.boyAlt || 0 : altTranskript(turIzi(j, root)),
+        sn0: 0,
+        boyAna: transkriptBoyu(j.transcript_path),
+        boyAlt: altTranskript(turIzi(j, root)),
       })
     );
   } catch {}
@@ -627,7 +625,7 @@ function turDamga(j) {
   yaz(f, d);
 }
 
-function turBitir(j, root, kapanis) {
+function turBitir(j, root) {
   const f = turYolu(j);
   const d = read(f);
   if (!d || !d.t) return;
@@ -637,19 +635,17 @@ function turBitir(j, root, kapanis) {
   const iz = turIzi(j, root);
   const ana = Math.max(0, transkriptBoyu(j.transcript_path) - (d.boyAna || 0));
   const alt = Math.max(0, altTranskript(iz) - (d.boyAlt || 0));
-  const k = kapanis || { govde: '', engel: '' };
-  if (k.engel || SENDEN_ALAN.test(k.govde || '')) {
-    yaz(f, {
-      t: now,
-      son: now,
-      durak: 0,
-      sn0: sn,
-      boyAna: d.boyAna || 0,
-      boyAlt: d.boyAlt || 0,
-      bekleyen: 1,
-    });
-    return;
-  }
+  // Ölçülen pencere **kullanıcının inputundan kullanıcının inputuna kadardır.** Klavye
+  // kullanıcıya geçtiği her an makbuz basılır: iş engellendiyse de, yarım kaldıysa da,
+  // durdurulduysa da, "Senden istediklerim" denip beklemeye geçildiyse de. O ana kadarki
+  // maliyet o anda görülmelidir; bir sonraki turun makbuzuna eklemek, kullanıcının
+  // gördüğü sayıyı gördüğü ana ait olmaktan çıkarır.
+  //
+  // Eski davranış tersiydi ve engelli kapanışı `bekleyen: 1` ile erteliyordu. Kullanıcı
+  // 23.08.2026'da kuralı bu yönde belirledi.
+  //
+  // `SubagentStop` buraya hiç gelmez ve gelmemeli: alt ajan bittiğinde kullanıcı yazmaya
+  // başlamaz, ana oturum çalışmaya devam eder. Orada tur bitmiş sayılmaz.
   try {
     fs.unlinkSync(f);
   } catch {}

@@ -4525,7 +4525,11 @@ ol('damgasiz Stop tur ozeti basmaz', () => {
   esit(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out, '', 'damgasiz ozet cikti');
 });
 
-ol('engellenen tur ozet basmaz, olcu bir sonraki kapanisa birikir', () => {
+// Ölçülen pencere kullanıcının inputundan kullanıcının inputuna kadardır. Klavye
+// kullanıcıya geçtiği her an makbuz basılır — iş engellendiyse de, yarım kaldıysa da,
+// "Senden istediklerim" denip bekleme başladıysa da. Eski davranış erteliyordu; kullanıcı
+// 23.08.2026'da tersine çevirdi: o ana kadarki maliyet o anda görülmeli.
+ol('engellenen tur da makbuzunu basar, damga birikmez', () => {
   const { p, ek } = turProje();
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T0.md'),
@@ -4542,21 +4546,14 @@ ol('engellenen tur ozet basmaz, olcu bir sonraki kapanisa birikir', () => {
     ek
   );
   const o = JSON.parse(r.out);
-  esit(o.decision, 'block');
+  esit(o.decision, 'block', 'engel yine çalışmalı');
   icerir(o.reason, 'dönüş bloğu');
-  esit(o.hookSpecificOutput, undefined, 'engellenen tur ozet basmis');
+  icerir(turSatiri(r), 'Total Süre: ', 'engellenen tur da makbuz basmalı');
   const damga = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'live', 'oturum-1.tur');
-  esit(JSON.parse(fs.readFileSync(damga, 'utf8')).bekleyen, 1, 'damga silinmis');
-  const kapanis = calistir(
-    IZLE,
-    { ...ort(p), hook_event_name: 'Stop', stop_hook_active: true },
-    ek
-  );
-  icerir(turSatiri(kapanis), 'Total Süre: ');
-  esit(fs.existsSync(damga), false, 'kapanista damga silinmedi');
+  esit(fs.existsSync(damga), false, 'damga silinmeli, birikmemeli');
 });
 
-ol('kullanicidan cevap beklenen tur tek ozet basar, sure birikir', () => {
+ol('senden istediklerim diyen tur da makbuzunu basar', () => {
   const { p, ek } = turProje();
   const damga = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'live', 'oturum-1.tur');
   const soru = transcript('Iki yol var.\n\n## Senden istediklerim\n\n1. Hangisi?');
@@ -4565,19 +4562,16 @@ ol('kullanicidan cevap beklenen tur tek ozet basar, sure birikir', () => {
   d1.t = Date.now() - 40000;
   fs.writeFileSync(damga, JSON.stringify(d1));
   const ilk = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop', transcript_path: soru }, ek);
-  esit(turSatiri(ilk), '', 'soru soran tur ozet basmis');
-  const ara = JSON.parse(fs.readFileSync(damga, 'utf8'));
-  esit(ara.bekleyen, 1, 'zincir surmemis');
-  if (!(ara.sn0 >= 39)) throw new Error('sure birikmemis: ' + ara.sn0);
+  icerir(turSatiri(ilk), 'Total Süre: 40sn', 'soru soran tur o ana kadarki maliyeti basmalı');
+  esit(fs.existsSync(damga), false, 'damga silinmeli');
+  // Sonraki istem yeni bir pencere açar; önceki pencerenin süresi taşınmaz.
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'birincisi' }, ek);
   const d2 = JSON.parse(fs.readFileSync(damga, 'utf8'));
-  esit(d2.sn0, ara.sn0, 'yeni tur birikimi sifirlamis');
-  esit(d2.boy, d1.boy, 'zincir baslangici kaymis');
+  esit(d2.sn0, 0, 'yeni pencere sıfırdan başlamalı');
   d2.t = Date.now() - 20000;
   fs.writeFileSync(damga, JSON.stringify(d2));
   const son = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek);
-  icerir(turSatiri(son), 'Total Süre: 1dk');
-  esit(fs.existsSync(damga), false, 'kapanista damga silinmedi');
+  icerir(turSatiri(son), 'Total Süre: 20sn', 'ikinci pencere yalnız kendi süresini saymalı');
 });
 
 ol('bir dakikayi asan tur dakika ve saniye ile yazilir', () => {
@@ -6433,12 +6427,18 @@ ol('hooks.json beep girisleri async ve ayri grupta', () => {
 ol('bitis sesi tur makbuzuyla ayni yerden cikar', () => {
   const k = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
   const g = k.indexOf('function turBitir');
-  const engel = k.indexOf('k.engel ||', g);
   const ses = k.indexOf('bitisSesi(j)', g);
   const makbuz = k.indexOf('turOzetiBas(', ses);
-  if (g < 0 || engel < 0 || ses < 0 || makbuz < 0) throw new Error('turBitir akisi bulunamadi');
-  esit(engel < ses, true, 'ses ara durak erken donusunden sonra cagrilmali');
+  if (g < 0 || ses < 0 || makbuz < 0) throw new Error('turBitir akisi bulunamadi');
   esit(ses < makbuz, true, 'ses makbuzdan hemen once cagrilmali');
+  // Yorumda eski davranisin adi geciyor; olculen sey kod, o yuzden yorum satirlari atilir.
+  const govdeTur = k
+    .slice(g, makbuz)
+    .split('\n')
+    .filter((s) => !s.trim().startsWith('//'))
+    .join('\n');
+  icermez(govdeTur, 'bekleyen', 'engelli kapanis artik ertelenmemeli');
+  icermez(govdeTur, 'yaz(f,', 'turBitir damgayi yeniden yazmamali, silmeli');
   const govde = k.slice(k.indexOf('function bitisSesi'));
   icerir(govde, 'detached: true', 'calma cagrisi turu bloklamamali');
   icerir(govde, 'unref()');

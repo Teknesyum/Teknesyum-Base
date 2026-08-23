@@ -51,5 +51,17 @@
              sıra kontrolü). u2Kod/u2Roller ölü-test korumalı. 414/414 GEÇTİ.
              Not: başka bir ajan git reset --hard çalıştırdı, işim silindi ve geri
              yüklendi (_sorun.log). SKILL tablosu mutasyonları doğrulanmadı — Çıktı.
+24.08.2026  U3 tur 1 · ui-builder · submitted
+             forms.md/forms.css/Forms.xaml: metin girişi beş durum, doğrulama hatası,
+             modal, toast. Placeholder KALDIRILDI — disabled grisi yüzeyde 4.12:1,
+             yerine yardım metni + aria-describedby. Hata çerçevesi tam --tk-danger;
+             pembe /50 ölçümde 2.17:1 çıktı (sözleşme 2.51 diyordu, hiçbir zeminde
+             çıkmıyor — Çıktı). Info toast yok, üç çeşit sınırı üç dosyaya da yazıldı.
+             Arka plan tıklaması onay/bilgi ayrımı ve hover duraklatma kalıba girdi.
+             Ölçülmemiş dört sayı etiketli. test/u3-forms.js tek başına 299/299 GEÇTİ;
+             desen birim testi + 20/20 mutasyon yakalandı.
+             Not: sözleşmenin Kabul kriteri bölümü silinmişti, HEAD metninden elle
+             geri yazıldı; başka bir ajanın commiti yarım dosyalarımı süpürdü
+             (_sorun.log). components.md/SKILL.md/desktop.md metinleri Çıktı da, U10 a.
 2026-08-23 · Renk körlüğü ertelendi — palet değişmiyor, renk körü teması ileriye
 2026-08-23 · Yeni ürün standardı: tema renkleri locale gibi ayrı dosyada · U11 açılacak

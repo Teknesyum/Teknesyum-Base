@@ -117,3 +117,32 @@ Bu boru hattı kurulmadan güncelleyici yazılmaz — sırası budur.
   düğmesi bulunur. Ekran görüntüsünden hata okumak kimsenin işi değildir.
 - **İlk çalıştırmada yapılandırma istenmez.** Program varsayılanlarla açılır.
 - **Kurulum zorunlu değildir.** Mümkünse tek dosya, yönetici izni istemeden çalışır.
+
+## 4. Üretilen dosyanın kodlaması
+
+**Türkçe karakter içeren `.ps1` dosyasında, dosyanın nasıl çalıştırılacağı kodlamayı
+belirler.** Windows PowerShell 5.1 BOM taşımayan bir betiği UTF-8 değil sistemin ANSI kod
+sayfası olarak okur (Türkçe Windows'ta cp1254); dosya gerçekten UTF-8 olduğu için her
+Türkçe harfin iki baytı iki ayrı karakter olarak çözülür — `ı` dosyada `c4 b1`, ekranda
+`Ä±`.
+
+| Çalıştırma yolu | Kodlama | Neden |
+|---|---|---|
+| `irm <url> \| iex` | **BOM'suz** UTF-8 | `irm` metni HTTP `charset=utf-8` başlığından çözer; BOM eklenirse `iex` ilk komutu tanımaz (`ï»¿$global:…`) |
+| `powershell -File betik.ps1` | **BOM'lu** UTF-8 | BOM'suzken ANSI okunur ve Türkçe bozulur |
+
+**İkisi aynı dosyaysa BOM'suz kalır** — barındırılan yol belgelenmiş yoldur ve orada
+sorun yoktur. O durumda belgelerde `-File` verilmez, açık UTF-8 okuma verilir:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ([IO.File]::ReadAllText('<yol>',[Text.Encoding]::UTF8))"
+```
+
+ÖLÇÜLDÜ (23.08.2026, VidShrink): aynı içerik BOM'lu ve BOM'suz yazılıp `-File` ile
+koşuldu, karşılaştırma konsola bakarak değil çözülen dizge dosyaya yazdırılıp bayt bayt
+yapıldı — konsol katmanı kendi başına bozabildiği için konsol çıktısı kanıt sayılmadı.
+BOM'suz: `68 61 7a c3 84 c2 b1 …` · BOM'lu: `68 61 7a c4 b1 …` (beklenen).
+
+`.cs`, `.axaml`, `.md`, `.json` etkilenmez: Roslyn ve öteki okuyucular BOM'suz dosyayı
+önce UTF-8 olarak çözmeyi dener ve geçerli UTF-8'i doğru okur. Kural yalnız PowerShell
+betikleri içindir.

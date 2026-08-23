@@ -147,3 +147,23 @@ Modülün kapsaması gereken diğer maddeler, bu hatanın komşuları:
 
 Modül kurulana kadar kural en azından `RULES.md` düzeyinde bir satır olarak durmalı;
 yoksa bir sonraki Türkçe betikte aynı hata tekrar edecek.
+
+---
+
+## 4. İlerleme — 23.08.2026, Teknesyum Base
+
+**Ölçü maddesi 1 karşılandı.** Kodlama kuralı yazılı bir yere bağlandı:
+`teknesyum/skills/relay/references/standartlar.md` §4 "Üretilen dosyanın kodlaması".
+İki çalıştırma yolu, hangisinin hangi kodlamayı istediği, ikisi aynı dosyaysa ne
+yapılacağı ve ölçümün kendisi oraya geçti. Standart dosyası `.ps1` üretilen her akışta
+zaten okunuyor, yani kuralı hatırlatacak yer artık var.
+
+**Ölçü maddesi 2 ve 3 açık** ve ikisi de bu depoda değil, VidShrink deposunda:
+- README'deki yerelden çalıştırma komutunun `-File` yerine UTF-8 okuyan biçime çevrilmesi
+- `irm | iex` yolunun BOM'suz kalıp bozulmadığının yeniden ölçülmesi
+
+Bu üçü tamamlanmadan günlük kapatılmaz.
+
+**§3'teki "standart üretim modülü" önerisi bu günlüğün ölçüsüne dahil değil** — ayrı ve
+daha büyük bir iş. Kapatılırken o öneri kaybolmasın diye günlük `kapat` ile silinmemeli,
+`arsivle` ile saklanmalı.

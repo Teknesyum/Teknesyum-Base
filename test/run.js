@@ -141,7 +141,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'autocompact.md,beep.md,ekran.md,help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
+    'autocompact.md,beep.md,ekran.md,help.md,load.md,loadall.md,ozel.md,premium.md,pusla.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
   );
   const yuru = (d) =>
     fs
@@ -6330,16 +6330,32 @@ ol('beep gocu ilgisiz powershell kancasini silmez', () => {
   esit(s.hooks.Stop[0].hooks.length, 1, 'ilgisiz kanca durmali');
 });
 
-ol('hooks.json uc beep girisi de async ve ayri grupta', () => {
+ol('hooks.json beep girisleri async ve ayri grupta', () => {
   const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8')).hooks;
-  for (const olay of ['Notification', 'Stop', 'StopFailure']) {
+  for (const olay of ['Notification', 'StopFailure']) {
     const grup = h[olay].filter((g) => g.hooks.some((k) => k.command.includes('hooks/beep.js')));
     esit(grup.length, 1, olay + ' icin tek beep grubu olmali');
     esit(grup[0].hooks.length, 1, olay + ' beep grubu yalniz beep tasimali');
     esit(grup[0].hooks[0].async, true, olay + ' async olmali');
   }
-  const stop = h.Stop.find((g) => g.hooks.some((k) => k.command.includes('relay-watch.js')));
-  icermez(JSON.stringify(stop), 'beep.js', 'beep relay-watch grubuna karismamali');
+  icermez(JSON.stringify(h.Stop), 'beep.js', 'bitis sesi Stop kancasindan gelmemeli');
+});
+
+// Bitis sesi makbuzla ayni karardan beslenir: `Stop` bir turda birden cok kez gelir,
+// makbuz ara duraklarda basilmaz, ses de basilmamali.
+ol('bitis sesi tur makbuzuyla ayni yerden cikar', () => {
+  const k = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
+  const g = k.indexOf('function turBitir');
+  const engel = k.indexOf('k.engel ||', g);
+  const ses = k.indexOf('bitisSesi(j)', g);
+  const makbuz = k.indexOf('turOzetiBas(', ses);
+  if (g < 0 || engel < 0 || ses < 0 || makbuz < 0) throw new Error('turBitir akisi bulunamadi');
+  esit(engel < ses, true, 'ses ara durak erken donusunden sonra cagrilmali');
+  esit(ses < makbuz, true, 'ses makbuzdan hemen once cagrilmali');
+  const govde = k.slice(k.indexOf('function bitisSesi'));
+  icerir(govde, 'detached: true', 'calma cagrisi turu bloklamamali');
+  icerir(govde, 'unref()');
+  icerir(govde, "hook_event_name: 'Stop'", 'beep.js olay adiyla cozer');
 });
 
 ol('beep.md ve help.md komutu anlatir', () => {
@@ -6350,6 +6366,7 @@ ol('beep.md ve help.md komutu anlatir', () => {
   icerir(k, '/beep dinle');
   icerir(k, 'O üç satırı kısaltma');
   icerir(k, 'PushNotification');
+  icerir(k, '`Stop` kancasına bağlı değildir', 'bitis sesinin kaynagi anlatilmali');
   icerir(fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8'), '/beep');
 });
 
@@ -6413,6 +6430,186 @@ ol('ui-builder standart kapaliyken renk dayatmaz', () => {
 ol('scan ui standart kurulu degilken bulgulari ihlal saymaz', () => {
   const k = fs.readFileSync(path.join(KOK, 'commands', 'scan.md'), 'utf8');
   icerir(k, 'standart kurulu değil, bulgular ihlal değil öneri');
+});
+
+// Ozel dosya aynasi: kisisel dosyalar tek private depoda, projeye gore bolunmus.
+// Depo parca parca cekilir; testler bunu yerel bir bare depoyla uctan uca dogrular.
+const OZEL = path.join(KOK, 'scripts', 'ozel.js');
+
+function ozelCalistir(argv, cfg, cwd) {
+  const r = spawnSync(process.execPath, [OZEL].concat(argv), {
+    encoding: 'utf8',
+    cwd: cwd || cfg,
+    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg },
+    timeout: 120000,
+  });
+  return { kod: r.status, out: (r.stdout || '') + (r.stderr || '') };
+}
+
+function gitCalistir(kok, argv) {
+  return spawnSync('git', argv, {
+    cwd: kok,
+    encoding: 'utf8',
+    timeout: 60000,
+    env: { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' },
+  });
+}
+
+function ozelSahne() {
+  const kok = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ozel-'));
+  const cfg = path.join(kok, 'cfg');
+  const proje = path.join(kok, 'proje');
+  const uzak = path.join(kok, 'uzak.git');
+  fs.mkdirSync(cfg);
+  fs.mkdirSync(proje);
+  gitCalistir(kok, ['init', '--bare', '--initial-branch=main', uzak]);
+  gitCalistir(proje, ['init', '--initial-branch=main']);
+  fs.writeFileSync(path.join(proje, 'not.txt'), 'x');
+  gitCalistir(proje, ['add', '-A']);
+  gitCalistir(proje, ['commit', '-m', 'ilk']);
+  return { kok, cfg, proje, uzak };
+}
+
+ol('ozel kurulu degilken hicbir alt komut cokmez', () => {
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ozel-yok-'));
+  for (const k of [[], ['pusla'], ['cek'], ['projeler'], ['ekle', 'a.txt']]) {
+    const r = ozelCalistir(k, cfg);
+    esit(r.kod, 0, (k[0] || 'durum') + ' cikis kodu 0 olmali');
+    icerir(r.out, 'kurulu değil', (k[0] || 'durum') + ' kurulum yonergesi basmali');
+  }
+  esit(ozelCalistir(['pusla', '--sessiz'], cfg).out.trim(), '', 'sessiz kip hic yazmamali');
+  esit(fs.existsSync(path.join(cfg, 'teknesyum-ozel.json')), false, 'ayar dosyasi acilmamali');
+});
+
+ol('ozel yollari ev ve proje koku onekiyle saklar', () => {
+  const o = require(OZEL);
+  esit(o.hedefAdi('~/.claude/teknesyum.json'), 'ev/.claude/teknesyum.json');
+  esit(o.hedefAdi('./.claude/yerel.json'), 'proje/.claude/yerel.json');
+  esit(o.kisalt(path.join(os.homedir(), '.claude', 'a.json'), 'C:/yok'), '~/.claude/a.json');
+  esit(o.kisalt(path.join(os.tmpdir(), 'p', 'b.json'), path.join(os.tmpdir(), 'p')), './b.json');
+  esit(o.slug('Teknesyum Base'), 'teknesyum-base');
+  esit(o.slug('Şükrü Öğütçü'), 'sukru-ogutcu');
+});
+
+ol('ozel kur kismi klon acar, yalniz proje klasorunu serer', () => {
+  const s = ozelSahne();
+  const r = ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  esit(r.kod, 0, 'kurulum cikis kodu');
+  icerir(r.out, 'deponun kalanı diske serilmez');
+  const a = JSON.parse(fs.readFileSync(path.join(s.cfg, 'teknesyum-ozel.json'), 'utf8'));
+  esit(a.depo, s.uzak);
+  // Anahtar `realpath` ile yazılır: Windows'ta `os.tmpdir()` 8.3 kısa yol verirken
+  // `git rev-parse` uzun yol veriyor, ikisi `path.resolve` ile eşitlenmiyor.
+  esit(a.projeler[fs.realpathSync.native(s.proje)], 'alfa');
+  const klon = path.join(s.cfg, 'teknesyum-ozel');
+  esit(fs.existsSync(path.join(klon, '.git')), true, 'klon acilmali');
+  const filtre = gitCalistir(klon, ['config', '--get', 'remote.origin.promisor']).stdout || '';
+  esit(filtre.trim(), 'true', 'promisor klon olmali — icerikler tembel iner');
+  const sparse = gitCalistir(klon, ['sparse-checkout', 'list']).stdout || '';
+  esit(sparse.trim(), 'alfa', 'yalniz bu projenin klasoru serilmeli');
+});
+
+ol('ozel ekle-pusla-cek dongusu dosyayi tasir', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.mkdirSync(path.join(s.proje, '.claude'), { recursive: true });
+  fs.writeFileSync(path.join(s.proje, '.claude', 'yerel.json'), '{"a":1}');
+
+  const e = ozelCalistir(['ekle', './.claude/yerel.json'], s.cfg, s.proje);
+  icerir(e.out, './.claude/yerel.json');
+  icerir(ozelCalistir([], s.cfg, s.proje).out, 'yeni');
+
+  const p = ozelCalistir(['pusla'], s.cfg, s.proje);
+  esit(p.kod, 0, 'pusla cikis kodu');
+  icerir(p.out, 'Push tamam.');
+  const uzakAgac = gitCalistir(s.uzak, ['ls-tree', '-r', '--name-only', 'main']).stdout || '';
+  icerir(uzakAgac, 'alfa/proje/.claude/yerel.json', 'dosya uzak depoya gitmeli');
+  icerir(uzakAgac, 'alfa/ozel.json', 'manifest depoda durmali');
+
+  icerir(ozelCalistir(['pusla'], s.cfg, s.proje).out, 'güncel', 'fark yokken commit acilmamali');
+
+  fs.writeFileSync(path.join(s.proje, '.claude', 'yerel.json'), '{"a":2}');
+  icerir(ozelCalistir([], s.cfg, s.proje).out, 'değişti');
+  icerir(ozelCalistir(['pusla'], s.cfg, s.proje).out, 'Push tamam.');
+
+  fs.writeFileSync(path.join(s.proje, '.claude', 'yerel.json'), '{"a":3}');
+  const c = ozelCalistir(['cek'], s.cfg, s.proje);
+  icerir(c.out, 'korundu', 'cek yereli sessizce ezmemeli');
+  esit(fs.readFileSync(path.join(s.proje, '.claude', 'yerel.json'), 'utf8'), '{"a":3}');
+  ozelCalistir(['cek', '--zorla'], s.cfg, s.proje);
+  esit(
+    fs.readFileSync(path.join(s.proje, '.claude', 'yerel.json'), 'utf8'),
+    '{"a":2}',
+    'zorla aynadakini yazmali'
+  );
+});
+
+ol('ozel kaynak dosya silinince aynadaki kopyayi dusurmez', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.writeFileSync(path.join(s.proje, 'gizli.txt'), 'veri');
+  ozelCalistir(['ekle', './gizli.txt'], s.cfg, s.proje);
+  ozelCalistir(['pusla'], s.cfg, s.proje);
+  fs.unlinkSync(path.join(s.proje, 'gizli.txt'));
+  const d = ozelCalistir([], s.cfg, s.proje);
+  icerir(d.out, 'kaynak yok');
+  const p = ozelCalistir(['pusla'], s.cfg, s.proje);
+  icerir(p.out, 'güncel', 'eksik kaynak yeni commit acmamali');
+  esit(
+    fs.existsSync(path.join(s.cfg, 'teknesyum-ozel', 'alfa', 'proje', 'gizli.txt')),
+    true,
+    'aynadaki kopya durmali'
+  );
+});
+
+ol('ozel projeler listesi icerik indirmeden okunur', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.writeFileSync(path.join(s.proje, 'a.txt'), '1');
+  ozelCalistir(['ekle', './a.txt'], s.cfg, s.proje);
+  ozelCalistir(['pusla'], s.cfg, s.proje);
+  const klon = path.join(s.cfg, 'teknesyum-ozel');
+  gitCalistir(klon, ['sparse-checkout', 'set', 'beta']);
+  const r = ozelCalistir(['projeler'], s.cfg, s.proje);
+  icerir(r.out, 'alfa');
+  icermez(r.out, '← bu makinede inen', 'serilmeyen klasor inen sayilmamali');
+  esit(fs.existsSync(path.join(klon, 'alfa')), false, 'sparse disi klasor diske inmemeli');
+  ozelCalistir(['ac', 'alfa'], s.cfg, s.proje);
+  esit(fs.existsSync(path.join(klon, 'alfa', 'proje', 'a.txt')), true, 'ac klasoru geri sermeli');
+});
+
+// "Premium dedim, autocontext degismedi" iki ayri sebepten olur: deger oturum acilisinda
+// okunur ve `1000000` bir tavandir. Ikisi de soylenmezse komut calismamis gorunur.
+ol('autoCompactWindow yazilinca yeniden baslatma ve tavan notu basilir', () => {
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ac-'));
+  const c = (a) =>
+    spawnSync(process.execPath, [path.join(KOK, 'scripts', 'premium.js')].concat(a), {
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, CLAUDE_CODE_AUTO_COMPACT_WINDOW: '' },
+      timeout: 60000,
+    });
+  const ilk = c(['autocompact', '900000']).stdout;
+  icerir(ilk, 'tavan, garanti değil');
+  icerir(ilk, 'Claude Code yeniden başlayınca');
+  const ikinci = c(['autocompact', '900000']).stdout;
+  icermez(ikinci, 'yeniden başlayınca', 'deger degismediyse yeniden baslatma notu cikmamali');
+  icermez(c(['autocompact', '150000']).stdout, 'tavan, garanti değil', '200k alti tavan notu almamali');
+});
+
+ol('ozel.md ve pusla.md akisi anlatir', () => {
+  const o = fs.readFileSync(path.join(KOK, 'commands', 'ozel.md'), 'utf8');
+  icerir(o, 'scripts/ozel.js');
+  icerir(o, '--filter=blob:none');
+  icerir(o, 'sparse-checkout');
+  icerir(o, 'Deponun tamamı hiçbir zaman çekilmez');
+  icerir(o, '/ozel cek --zorla');
+  const p = fs.readFileSync(path.join(KOK, 'commands', 'pusla.md'), 'utf8');
+  icerir(p, 'scripts/ozel.js" pusla');
+  icerir(p, 'koşullu değildir');
+  icerir(p, 'test/run.js');
+  const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
+  icerir(h, '/ozel');
+  icerir(h, '/pusla');
 });
 
 console.log(

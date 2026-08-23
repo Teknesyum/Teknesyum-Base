@@ -154,6 +154,27 @@ function acEzenNotu() {
   return e ? AC_EZEN + '=' + e + ' ortam değişkeni ayarı eziyor; kaldırmadan etkisi yok\n' : '';
 }
 
+// `settings.json` oturum açılışında okunur. Değeri yazıp susmak, komutun işe yaramadığı
+// izlenimini veriyor: kullanıcı `/premium premium` diyor, çıktı "1000000 yazıldı" diyor,
+// ekranın üstündeki pencere aynı kalıyor. İki ayrı sebep var ve ikisi de söylenmeli —
+// biri geçici (yeniden başlatma), öteki kalıcı (modelin bağlam tavanı).
+function acYururlukNotu(degisti) {
+  if (!degisti) return [];
+  return [
+    'Bu oturumda henüz yürürlükte değil: settings.json oturum açılışında okunur,',
+    'yeni pencere Claude Code yeniden başlayınca geçerli olur.',
+  ];
+}
+
+// `1000000` bir tavandır, garanti değil. Fiili pencere modelin bağlam penceresiyle
+// sınırlı: Opus'ta ~200k, 1M bağlam açık Sonnet'te gerçekten 1M. Premium'da bu değer
+// "modelin verdiği en genişi kullan" demektir; ekranda 1M görünmemesi arıza değildir.
+function acTavanNotu(deger) {
+  return typeof deger === 'number' && deger > 200000
+    ? ' · tavan, garanti değil — fiili pencere modelin bağlamı kadar (Opus ~200k)'
+    : '';
+}
+
 function acYaz(yol, deger) {
   let a = {};
   try {
@@ -299,7 +320,13 @@ function uygula(profil, oturuma) {
         : []),
       'kayıt: ' + (sid ? 'oturum' : 'makine') + ' · ' + kayit,
       ...(ac
-        ? ['autoCompactWindow: ' + ac.deger + (ac.degisti ? ' yazıldı' : ' zaten böyleydi')]
+        ? [
+            'autoCompactWindow: ' +
+              ac.deger +
+              (ac.degisti ? ' yazıldı' : ' zaten böyleydi') +
+              acTavanNotu(ac.deger),
+            ...acYururlukNotu(ac.degisti),
+          ]
         : ['autoCompactWindow: dokunulmadı — oturum profili makine ayarını taşımaz']),
       ...golgeUyarisi(profil, golge),
     ].join('\n') + '\n'
@@ -344,7 +371,7 @@ function acDurum(beklenen) {
   } catch {}
   const simdi = typeof ayar === 'number' ? ayar : 'auto';
   const not = process.env[AC_EZEN] ? ' · ' + AC_EZEN + ' eziyor' : '';
-  if (simdi === hedef) return simdi + ' · profille uyumlu' + not;
+  if (simdi === hedef) return simdi + ' · profille uyumlu' + acTavanNotu(simdi) + not;
   return (
     simdi +
     ' · ' +
@@ -492,8 +519,9 @@ function autocompact(arg) {
         ' (makine)\nautoCompactWindow: ' +
         r.deger +
         (r.degisti ? ' yazıldı' : ' zaten böyleydi') +
+        acTavanNotu(r.deger) +
         '\n' +
-        r.yol +
+        [...acYururlukNotu(r.degisti), r.yol].join('\n') +
         '\n' +
         acEzenNotu()
     );
@@ -511,7 +539,14 @@ function autocompact(arg) {
     );
   const r = acYaz(ayarYolu(), istek === 'auto' ? 'auto' : Number(istek));
   process.stdout.write(
-    'autoCompactWindow: ' + r.deger + ' yazıldı (elle)\n' + r.yol + '\n' + acEzenNotu()
+    'autoCompactWindow: ' +
+      r.deger +
+      ' yazıldı (elle)' +
+      acTavanNotu(r.deger) +
+      '\n' +
+      [...acYururlukNotu(r.degisti), r.yol].join('\n') +
+      '\n' +
+      acEzenNotu()
   );
 }
 

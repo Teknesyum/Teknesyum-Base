@@ -59,16 +59,6 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/relay-watch.js\""
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/beep.js\"",
-            "async": true,
-            "timeout": 10
-          }
-        ]
       }
     ],
     "UserPromptSubmit": [

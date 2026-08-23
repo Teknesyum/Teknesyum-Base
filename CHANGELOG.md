@@ -6,6 +6,57 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.45.0] - 2026-08-23
+
+### Added
+
+- `/ozel` mirrors personal files — machine settings, rule book, local config, anything
+  that cannot go in a public repo — into a single **private** repo, split per project.
+  The whole repo is never downloaded: the clone is opened with `--filter=blob:none` so
+  blobs stay on the server, and the working tree is laid out with `sparse-checkout` so
+  only the current project's folder reaches disk. Ten projects can share the repo and
+  this machine still only carries one folder; `/ozel projeler` lists the others by
+  reading the tree, without fetching their contents, and `/ozel ac <ad>` adds one.
+  Stored paths are portable by design — `~/…` for home, `./…` for the project root —
+  because an absolute path works on the machine that wrote it and silently points at
+  the wrong place everywhere else. The file list lives in the repo itself
+  (`<proje>/ozel.json`), so a new machine restores it with `kur` + `cek` instead of
+  being rebuilt by hand. `cek` never overwrites a differing local file without
+  `--zorla`, and a deleted source file is skipped rather than dropping the backup.
+  With no mirror configured every subcommand prints setup instructions and exits `0` —
+  whoever installs the plugin gets their own repo, not mine.
+- `/pusla` runs the whole push: tests, then the public repo, then `/ozel pusla`. The
+  private step is unconditional and unprompted; with no mirror set up it prints one
+  line and moves on.
+- `.github/FUNDING.yml` turns on GitHub's native Sponsor button on the repo page.
+
+### Changed
+
+- The `bitti` sound no longer hangs off the `Stop` hook. `Stop` fires several times in
+  one turn — when the model asks a question and stops, when a contract closes blocked,
+  at any intermediate pause — and a sound at those points stops meaning "finished". It
+  now fires from the single place the `Total Süre` receipt is printed
+  (`relay-watch.js` → `turBitir`), which already declines to print at intermediate
+  stops. One decision now feeds both. Steering level `0` hides the receipt but keeps
+  the sound: a sound is not a steering line.
+- Writing `autoCompactWindow` now says that the new window is not live until Claude
+  Code restarts, and that a value above 200000 is a ceiling rather than a guarantee —
+  the effective window is whatever the model's context allows. Without those two lines
+  `/premium premium` reports success while the number on screen stays put, and the
+  command looks broken when it is not.
+
+### Fixed
+
+- `/ozel` project keys are normalised through `realpath`. On Windows `os.tmpdir()`
+  hands back an 8.3 short path while `git rev-parse` returns the long one, and
+  `path.resolve` does not reconcile them; the project name would quietly fall back to
+  the folder name.
+- `git sparse-checkout set` writes the right patterns but does not lay a
+  previously-excluded folder back on disk — the index calls the file present (`H`)
+  while the working tree does not have it. `reapply` fixes it, but run in the same
+  second as `set` it takes two passes. The result is now measured instead of guessed:
+  a second `reapply` runs only when a folder that exists in `HEAD` is missing on disk.
+
 ## [2.44.0] - 2026-08-23
 
 ### Added

@@ -27,18 +27,27 @@ hoparlörü sürücüsü olmayan makinede `Beep()` çağrısı çıkış kodu `0
 
 ## Üç olay
 
-| Olay | Kanca | Ne demek | Varsayılan ses | Süre |
+| Olay | Nereden gelir | Ne demek | Varsayılan ses | Süre |
 |---|---|---|---|---|
-| `bekleme` | `Notification` | izin ya da soru bekleniyor | `Windows Startup.wav` | 0,22 s |
-| `bitti` | `Stop` | tur tamamlandı | `ding.wav` | 0,40 s |
-| `hata` | `StopFailure` | tur hatayla kapandı | `Windows Default.wav` | 0,41 s |
+| `bekleme` | `Notification` kancası | izin ya da soru bekleniyor | `Windows Startup.wav` | 0,22 s |
+| `bitti` | tur makbuzu | işin tamamı bitti | `ding.wav` | 0,40 s |
+| `hata` | `StopFailure` kancası | tur hatayla kapandı | `Windows Default.wav` | 0,41 s |
 
 Üçü de açık gelir ve üçü de yarım saniyenin altındadır. Uzun ses iki gün içinde kapatılır;
 kapatılan bildirim bildirim değildir. Ekran başında oturan biri genelde `bitti` sesini
 kapatıp ötekileri açık bırakır: `/beep bitti off`.
 
+**`bitti` `Stop` kancasına bağlı değildir.** `Stop` bir turda birden çok kez gelir — model
+soru sorup durduğunda, sözleşme engelli kapandığında, ara bir duraklamada. Ses o
+noktalarda çalarsa "bitti" demeyi bırakır. Bunun yerine ses, `Total Süre` makbuzunun
+basıldığı tek yere bağlıdır (`hooks/relay-watch.js` → `turBitir`): makbuz ara duraklarda
+bilerek basılmaz, ses de basılmaz. İkisi tek karardan beslenir, ikisi aynı anda çıkar.
+Yönlendirme seviyesi `0` olduğunda makbuz görünmez ama ses yine duyulur — ses bir
+yönlendirme satırı değildir.
+
 `PostToolUseFailure` bilerek dışarıdadır — tek bir araç çağrısının başarısızlığı normal
-akışın parçasıdır, turda onlarca kez olur, sesi anlamsızlaştırır.
+akışın parçasıdır, turda onlarca kez olur, sesi anlamsızlaştırır. `SubagentStop` da
+dışarıdadır: alt ajanın bitişi kullanıcının işinin bitişi değildir.
 
 ## Kullanım
 
@@ -107,8 +116,10 @@ varsayılanla çalar, ekrana hata düşmez.
 
 ## İki not
 
-Kanca `hooks/hooks.json` içinden gelir ve `async: true` çalışır; kullanıcının
-`settings.json` dosyası kirletilmez, eklenti kaldırılınca ses de kalkar. Betik ilk
+`bekleme` ve `hata` kancaları `hooks/hooks.json` içinden gelir ve `async: true` çalışır;
+`bitti` sesini `relay-watch.js` ayrı ve bağımsız bir süreç olarak doğurur — çalma çağrısı
+0,4 s bloklar, kanca o kadar bekleyemez. Kullanıcının `settings.json` dosyası hiçbir
+durumda kirletilmez, eklenti kaldırılınca ses de kalkar. Betik ilk
 çalıştığında `settings.json` içindeki elle eklenmiş PowerShell ses kancalarını siler —
 silinmezse her olayda çift ses duyulur — ve ne sildiğini tek satırla söyler.
 

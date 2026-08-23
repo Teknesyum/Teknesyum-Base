@@ -647,7 +647,37 @@ function turBitir(j, root, kapanis) {
   try {
     fs.unlinkSync(f);
   } catch {}
+  bitisSesi(j);
   turOzetiBas(ceviri('turOzeti', sureMetni(sn), tokenMetni(ana), tokenMetni(alt)));
+}
+
+// Bitiş sesi `Stop` olayına değil, makbuzun basıldığı yere bağlıdır. `Stop` bir turda
+// birden çok kez gelir — model soru sorup durduğunda, engelli kapanışta, alt ajan
+// dönüşünde. Makbuz o ara duraklarda bilerek basılmaz (yukarıdaki erken dönüş); ses de
+// basılmamalı. İkisi tek karardan beslenince "işin gerçekten bitti" sinyali tek olur.
+//
+// Ayrı süreç: `Media.SoundPlayer.PlaySync()` çalma boyunca (0,4 s) bloklar, kanca o
+// kadar bekleyemez. Süreç `detached` doğar, `unref` ile bırakılır, turu tutmaz.
+// `duyur` seviye 1 istiyor, ses istemiyor — yönlendirme kapalıyken de duyulur.
+function bitisSesi(j) {
+  try {
+    const { spawn } = require('child_process');
+    const c = spawn(process.execPath, [path.join(__dirname, 'beep.js')], {
+      detached: true,
+      stdio: ['pipe', 'ignore', 'ignore'],
+      windowsHide: true,
+    });
+    c.on('error', () => {});
+    c.stdin.on('error', () => {});
+    c.stdin.end(
+      JSON.stringify({
+        hook_event_name: 'Stop',
+        cwd: j.cwd,
+        session_id: j.session_id,
+      })
+    );
+    c.unref();
+  } catch {}
 }
 
 // ÖLÇÜLDÜ (23.08.2026): `model` kanalı cevabın tamamını tekrarlatıyor. `Stop` olayı

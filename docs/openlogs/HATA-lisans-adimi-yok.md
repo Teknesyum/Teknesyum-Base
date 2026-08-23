@@ -1,6 +1,6 @@
 # Hata: Lisans hiç sorulmuyor — depolar ya refleksle MIT ya da lisanssız çıkıyor
 
-**Durum:** açık.
+**Durum:** açık — dört ölçü maddesinden üçü kapandı, birincisi (relay kuralı) duruyor.
 **Belirti:** Teknesyum'un açtığı on genel deponun altısı sorulmadan MIT, dördü hiç lisanssız. Sahibin açıkça ilan ettiği ilkelerle ikisi de çelişiyor.
 **Kaynak:** `teknesyum/skills/relay/SKILL.md` §2 madde 6 — "yeni depo" adımı yalnız adı düzenliyor, lisansa hiç değinmiyor
 **Görüldüğü proje:** Teknesyum-Base (bulgu bütün Teknesyum depolarını kapsıyor)
@@ -157,3 +157,64 @@ yanlış lisans altında dağıtılmış kod geri alınamaz.
 
 Ortak sonuç aynı yere çıkıyor — **kuralın metni değil, ne zaman okunacağı belirleyici.**
 Bu maddede metin de yoktu, bu yüzden hem kural hem kapı birlikte yazılmalı.
+
+---
+
+## 5. Uygulama — 23.08.2026
+
+Kıyasın kararı aynı oturumda uygulandı. On bir depo **AGPL-3.0-or-later**'a geçti;
+her birinde `LICENSE` FSF metninin birebir kopyasıdır, rozet/manifest/README aynı
+commit'te hizalandı.
+
+| Depo | Önce | Sonra | Not |
+|---|---|---|---|
+| CodeXRay | yok | AGPL-3.0 | `package.json` lisans alanı eklendi |
+| Ghostlist | MIT | AGPL-3.0 | winget manifestosu da hizalandı |
+| Gothic-1-Remake-Picklocker | yok | AGPL-3.0 | `master` dalı |
+| ProcWitness | MIT | AGPL-3.0 | uygulama içi ABOUT metni de düzeldi |
+| Quizloop | MIT | AGPL-3.0 | — |
+| Reclatch | yok | AGPL-3.0 | README "MIT" diyordu, dosya yoktu |
+| Runly | MIT | AGPL-3.0 | devir notu da düzeldi |
+| Teknesyum-Base | MIT | AGPL-3.0 | rozet SVG, destek görseli, eklenti manifestosu, DCO |
+| VidShrink | MIT | AGPL-3.0 | — |
+| Webband | yok | AGPL-3.0 | arşivliydi; arşivden çıkarıldı, gönderildi, geri arşivlendi |
+| VideoEdit | yok | AGPL-3.0 | özel depo, `master` dalı |
+
+`teknesyum-ozel` **bilerek atlandı** — dağıtılan bir ürün değil, özel dosya aynası.
+
+### Yayımlar gizlendi
+
+Ghostlist (4), ProcWitness (14), Runly (4) — toplam **22 sürüm taslağa çekildi.** Genel
+API'de artık sıfır sürüm görünüyor, ikili varlıklar indirilemiyor. Silinmediler, geri
+alınabilir.
+
+**Kapanmayan taraf:** git etiketleri duruyor (4 + 13 + 4). Etiket arşivinden kaynak hâlâ
+çekilebilir; etiketi silmek geçmişe atıfları kırdığı için yapılmadı. Ayrıca taslağa
+çekmek **MIT'i geri almaz** — indirilmiş 22 kopya kalıcı olarak MIT'tir. Bu sayı ihmal
+edilebilir olduğu için kabul edildi, ama "geri alındı" değil "kapı kapatıldı" demek doğru.
+
+### Ölçü maddelerinin durumu
+
+| # | Madde | Durum |
+|---|---|---|
+| 1 | relay §2'ye lisans adımı girer | **açık** — kural taslağı §3'te hazır, işlenmedi |
+| 2 | Lisanssız depolar lisans alır | kapandı — beşi de AGPL |
+| 3 | MIT depolar için karar verilip uygulanır | kapandı — altısı da AGPL |
+| 4 | DCO/CLA kurulur | kısmen — Teknesyum-Base'de var, diğerlerinde yok |
+
+Birinci madde kapanmadan günlük kapanmaz.
+
+### Türetilmiş iş — lisans değişiminin açtığı çelişkiler
+
+Ajanlar üç yerde, artık gerekçesi çürüyen ama karar gerektirdiği için ellenmeyen
+kural buldu:
+
+- `Quizloop/docs/kararlar/0001-yigin-ve-lisans.md` ve `docs/PLAN.md` — "Quizloop MIT
+  olacak, bağımlılıklarda AGPL yasak" diyor. Proje artık AGPL; kısıt anlamsız. ADR
+  yerinde düzeltilmeli mi, yoksa geçersiz kılan yeni bir ADR mi yazılmalı?
+- `VidShrink/README.md` — FFmpeg paragrafı "LGPL yapıya geçmeli ya da GPLv3 şartlarını
+  benimsemeli" diyor. AGPL-3.0 GPLv3 ile uyumlu olduğundan bu artık engel değil,
+  kolaylık.
+- `VideoEdit/README.md` — "Detectors must be Apache-2.0. This project is meant to be
+  published, so AGPL tracking stacks are out." Proje kendisi AGPL olduğu için bu cümle
+  kendi kendisiyle çelişiyor.

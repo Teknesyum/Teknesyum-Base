@@ -518,6 +518,36 @@ Yazma işine başlamadan önce, sırayla kontrol et:
    **GitHub deposunda istisna var:** orada kelimeler arasına ayırıcı konabilir —
    `Teknesyum-Base` geçerlidir. Yerel klasör ve çözüm/proje adı bitişik kalır
    (`TeknesyumBase`). Var olan deponun adını kendiliğinden değiştirme, tek satırla söyle.
+
+   **Lisans adla aynı adımda kararlaşır.** `LICENSE` karar verilmeden yazılmaz ve depo
+   lisanssız bırakılmaz. Lisanssız depo "herkese açık" değil, telif hukukunda **"tüm
+   hakları saklıdır"** demektir — görünür durur ama kimse yasal olarak kullanamaz,
+   kopyalayamaz, değiştiremez. Sorulacak tek şey şudur: *bu kodu alıp kapatan birine
+   ne olsun?*
+
+   | Cevap | Lisans |
+   |---|---|
+   | Umursamıyorum, en geniş yayılsın | `MIT` |
+   | Kapatamasın, geliştirmesi geri dönsün | `AGPL-3.0-or-later` |
+   | Kimse ticari ürüne çeviremesin | `PolyForm Noncommercial` |
+   | Kullansın ama rakip ürün yapmasın | `PolyForm Shield` |
+
+   **Teknesyum depolarında bu soru bir kez cevaplandı: `AGPL-3.0-or-later`.** Gerekçe
+   `docs/openlogs/HATA-lisans-adimi-yok.md` içinde duruyor — sponsor sayfasındaki "asla
+   ücretli olmayacak" sözü izin verici lisans altında yalnız yazarı bağlar, copyleft aynı
+   sözü bütün dağıtım zincirine taşır. Bu yüzden yeni depo varsayılan olarak AGPL açılır;
+   **başka bir lisans ancak kullanıcı isterse** seçilir, sessizce değiştirilmez.
+
+   Karar verildiğinde **aynı commit'te** hizalanacaklar: `LICENSE` (lisans metni birebir
+   kopyalanır, tek karakter değiştirilmez — AGPL metninin kendisi değiştirilemez),
+   `package.json` / `*.csproj` / `pyproject.toml` lisans alanı, `README` bölümü ve rozeti,
+   varsa paketleme manifestosu (`winget`, `.claude-plugin/plugin.json`) ve uygulama içi
+   "hakkında" metni. Biri güncellenip öteki unutulursa depo kendi lisansı hakkında iki
+   farklı şey söylüyor demektir.
+
+   **Katkı alınacak bir depoysa `DCO` ve `CONTRIBUTING.md` aynı anda girer.** Telif birden
+   çok kişiye dağıldıktan sonra lisansı düzeltmek, sürüm yükseltmek ya da projeyi devretmek
+   imkânsızlaşır; tek bakımcı varken bu adım bedavadır.
 7. **Sürüm çıkıyor mu?** Kökte `CHANGELOG.md` tutulur, `Keep a Changelog` biçiminde:
    sürüm başlığı + `Eklendi` / `Değişti` / `Düzeltildi` başlıkları. Commit mesajlarından
    otomatik üretilmez — o listeler kullanıcıya bir şey anlatmaz. `changesets` veya

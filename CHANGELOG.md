@@ -6,6 +6,24 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- **Lisans, yeni depo adiminda kararlasan bir alan oldu.** `relay` §2 madde 6 simdiye
+  kadar yalnizca depo adinin buyuk-kucuk harf duzenini baglıyordu; lisans hic
+  sorulmuyordu. Sonucu on genel deponun altisinin refleksle MIT, dordunun ise tamamen
+  lisanssiz kalmasiydi — ve lisanssiz depo "herkese acik" degil "tum haklari sakli"
+  demek oldugu icin o dort depoyu kimse yasal olarak kullanamiyordu. Madde artik tek bir
+  soru soruyor (*bu kodu alip kapatan birine ne olsun?*), dort cevabi dort lisansa
+  esliyor ve karar verilmeden `LICENSE` yazilmasini yasakliyor. Teknesyum depolarinin
+  cevabi `AGPL-3.0-or-later` olarak sabitlendi. Ayni commit'te hizalanacak yuzeyler
+  (manifest, rozet, README, paketleme dosyasi, uygulama ici metin) ve katki alinan
+  depolarda `DCO` + `CONTRIBUTING.md` zorunlulugu da maddeye baglandi.
+
+### Changed
+
+- Depo lisansi MIT'ten **AGPL-3.0-or-later**'a gecti. Rozet, destek gorseli ve eklenti
+  manifestosu hizalandi; `DCO` 1.1 ve `CONTRIBUTING.md` eklendi.
+
 ## [2.50.0] - 2026-08-23
 
 ### Changed

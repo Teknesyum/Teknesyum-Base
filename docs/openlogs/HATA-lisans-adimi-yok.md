@@ -1,6 +1,6 @@
 # Hata: Lisans hiç sorulmuyor — depolar ya refleksle MIT ya da lisanssız çıkıyor
 
-**Durum:** açık — dört ölçü maddesinden üçü kapandı, birincisi (relay kuralı) duruyor.
+**Durum:** açık — dört ölçü maddesinin üçü kapandı, dördüncüsü (DCO) kısmi. Kural yazıldı.
 **Belirti:** Teknesyum'un açtığı on genel deponun altısı sorulmadan MIT, dördü hiç lisanssız. Sahibin açıkça ilan ettiği ilkelerle ikisi de çelişiyor.
 **Kaynak:** `teknesyum/skills/relay/SKILL.md` §2 madde 6 — "yeni depo" adımı yalnız adı düzenliyor, lisansa hiç değinmiyor
 **Görüldüğü proje:** Teknesyum-Base (bulgu bütün Teknesyum depolarını kapsıyor)
@@ -197,12 +197,26 @@ edilebilir olduğu için kabul edildi, ama "geri alındı" değil "kapı kapatı
 
 | # | Madde | Durum |
 |---|---|---|
-| 1 | relay §2'ye lisans adımı girer | **açık** — kural taslağı §3'te hazır, işlenmedi |
+| 1 | relay §2'ye lisans adımı girer | kapandı — `relay/SKILL.md` §2 madde 6, satır 522 |
 | 2 | Lisanssız depolar lisans alır | kapandı — beşi de AGPL |
 | 3 | MIT depolar için karar verilip uygulanır | kapandı — altısı da AGPL |
 | 4 | DCO/CLA kurulur | kısmen — Teknesyum-Base'de var, diğerlerinde yok |
 
-Birinci madde kapanmadan günlük kapanmaz.
+Geriye yalnız dördüncü madde kaldı: `DCO` + `CONTRIBUTING.md` şu an sadece
+Teknesyum-Base'de var. Diğer depolar dışarıdan katkı almaya başlamadıkça bu acil değil,
+ama katkı geldiği gün geç kalınmış olur.
+
+### Kural nereye yazıldı
+
+`teknesyum/skills/relay/SKILL.md` §2 madde 6, depo adı kuralının hemen altına. Madde artık
+tek soru soruyor — *bu kodu alıp kapatan birine ne olsun?* — dört cevabı dört lisansa
+eşliyor, karar verilmeden `LICENSE` yazılmasını yasaklıyor ve Teknesyum depolarının
+cevabını `AGPL-3.0-or-later` olarak sabitliyor. Aynı commit'te hizalanacak yüzeyler
+(manifest, rozet, README, paketleme dosyası, uygulama içi metin) ve katki alınan depolarda
+`DCO` zorunluluğu da maddeye bağlandı.
+
+Bu, günlüğün 4. bölümündeki teşhisin kapanışıdır: kural metni yoktu, şimdi var; kapı da
+aynı maddede duruyor çünkü adım zaten her yeni depoda okunuyor.
 
 ### Türetilmiş iş — lisans değişiminin açtığı çelişkiler
 

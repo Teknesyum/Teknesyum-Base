@@ -30,7 +30,6 @@ Devam ettirildiysen (`SendMessage` ile geldiysen): bağlamın duruyor, sözleşm
 okuma. Denetim raporundaki açık maddeleri kapat, `round:` alanını artır.
 
 Kurallar:
-- Kod yorumu yazma.
 - Mevcut koddaki isimlendirme ve stili taklit et, yenisini icat etme.
 - Kapsam dışına çıkma. Yolda gördüğün başka sorunu düzeltme, Çıktı'ya tek satır not düş.
 - İletişim kısa ve doğrudan olsun; `lütfen` zorunlu değildir. Dönüşte şu şablonu kullan:

@@ -4,9 +4,10 @@
 
 **Say what you want. The system organizes the rest.**
 
-A base layer for Claude Code: a multi-agent work relay, an independent auditor, and a
-neon UI standard. How big a job is, how many pieces it splits into, which agent runs on
-which model, and how the result is verified — the system decides, not you.
+A base layer for Claude Code: a multi-agent work relay, an independent auditor, and an
+optional neon UI standard. How big a job is, how many pieces it splits into, which agent
+runs on which model, and how the result is verified — the system decides, not you. What
+your interface looks like stays yours: the UI standard is off until you ask for it.
 
 <a href="https://github.com/sponsors/Teknesyum"><img src="assets/badge-sponsor.svg" alt="Support Teknesyum" height="38"></a>
 &nbsp;
@@ -363,9 +364,10 @@ than silently passing.
 | `/report` | "Where are we?" Contract progress, running agents, what is left |
 | `/rule` | "Don't do that again." Records a permanent rule in the right layer |
 | `/setup` | Wires this machine up. Once, at install time |
-| `/uisetup` | Configures or disables the UI standard |
+| `/uisetup` | Sets up your UI standard — ready-made template or your own — or turns it off |
 | `/uicheckup` | Scans UI files and prepares an approved relay manifest |
 | `/premium` | Switches between the premium, normal and eco profiles, and reports which one is live |
+| `/beep` | Plays a short sound when a turn needs you, finishes, or fails — bypasses the OS notification system |
 | `/scan` | "Does this project meet the premium standard?" Certifies it against a profile and lists what is missing |
 | `/save` | Writes this session to disk — transcript, context, git state, unsent text |
 | `/load` | Reads a saved session back and picks up where it stopped |
@@ -840,7 +842,11 @@ extensions, the second is ignored and a warning is printed. Disable one.
 
 ## UI standard
 
-Default palette — a neon triad on a dark ground:
+**Optional, and off by default.** Nothing below applies until you run `/uisetup sablon` or
+`/uisetup kendim`; on a fresh clone the plugin imposes no color and no measurement. What
+follows is the template on offer.
+
+Template palette — a neon triad on a dark ground:
 
 | | Hex | Used for |
 |---|---|---|
@@ -887,20 +893,26 @@ language is copying one file, and a translator never opens a source file.
 
 ### Customization
 
+**The UI standard is off until you turn it on.** On a fresh clone there is no
+`teknesyum-ui.json`, and with no such file nothing is imposed — no palette, no type scale,
+no signature. The neon standard below is a template on offer, not a default you have to
+opt out of. Your taste is not the plugin's to decide.
+
 ```
-/uisetup                      show current settings
-/uisetup kapat                disable the UI standard entirely
+/uisetup                      show current settings, or the invitation if it is not set up
+/uisetup sablon               take the ready-made neon template as it is
+/uisetup kendim               build your own standard from four questions
 /uisetup palet #ff6b00        change the primary color
 /uisetup font Inter           change the default font
 /uisetup imza kapat           remove the signature block
 /uisetup not <text>           write your own rule — yours wins on conflict
-/uisetup sifirla              restore defaults
+/uisetup kapat                say no for good; the invitation stops
+/uisetup sifirla              delete the file and go back to not set up
 ```
 
 Settings live in `~/.claude/teknesyum-ui.json`; only the fields you change are written.
 For per-project settings create `.claude/teknesyum-ui.json` in that project — it overrides
-the user-level file. With `kapat`, no color or dimension is imposed at all and the
-project's own style is followed.
+the user-level file.
 
 A small right-aligned signature is added to the settings/about section of generated UIs: a
 GitHub link and a support link, the support button outlined rather than filled. Remove it
@@ -916,7 +928,7 @@ Behavior knobs live in `skills/relay/SETTINGS.md`:
 |---|---|---|
 | `ask_threshold` | `critical` | When an agent stops to ask you something |
 | `approval_gate` | `none` | Whether the plan is submitted for approval |
-| `audit` | `every-contract` | When the auditor runs |
+| `audit` | `critical` | Rollback-cost threshold at which the auditor runs |
 | `fix_ceiling` | `5` | After how many rounds the decision comes to you |
 | `model_escalation` | `on` | Whether round 4 escalates to a stronger model |
 | `parallel_width` | `2` | Cap on concurrent agents — 1 on eco, 20 on premium |
@@ -929,9 +941,10 @@ Per-project override: `<project>/.claude/relay/SETTINGS.md`.
 Three settings are per-machine rather than per-project, and `/setup` asks for all of
 them: `dil` (`en` default, or `tr`) in `~/.claude/teknesyum.json` — it governs both the
 notifications you see and the language agents write to each other in; `steering` (`0` | `1` | `2`, see [Visible steering](#visible-steering)) in
-`~/.claude/teknesyum.json`, and the UI standard in `~/.claude/teknesyum-ui.json` — keep the
-defaults, customize the palette, typography and signature, or switch it off entirely with
-`"kapali": true` so no color or measurement is imposed.
+`~/.claude/teknesyum.json`, and the UI standard in `~/.claude/teknesyum-ui.json` — which
+does not exist until you ask for it, and while it does not exist no color or measurement
+is imposed. `/uisetup sablon` takes the neon template as it stands, `/uisetup kendim`
+builds your own from four questions.
 
 ---
 

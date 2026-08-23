@@ -52,7 +52,7 @@ const DUGME = {
     autocompact: '100000',
     ask_threshold: 'critical',
     approval_gate: 'none',
-    audit: 'critical',
+    audit: 'very-critical',
     fix_ceiling: '3',
     model_escalation: 'on',
     parallel_width: '1',
@@ -70,7 +70,7 @@ const DUGME = {
     autocompact: 'auto',
     ask_threshold: 'critical',
     approval_gate: 'none',
-    audit: 'every-contract',
+    audit: 'critical',
     fix_ceiling: '5',
     model_escalation: 'on',
     parallel_width: '2',
@@ -88,7 +88,7 @@ const DUGME = {
     autocompact: '1000000',
     ask_threshold: 'critical',
     approval_gate: 'none',
-    audit: 'every-contract',
+    audit: 'high',
     fix_ceiling: '8',
     model_escalation: 'off',
     parallel_width: '20',
@@ -197,8 +197,25 @@ function oturumYaz(sid, profil) {
   const yol = oturumProfilYolu(sid);
   fs.mkdirSync(path.dirname(yol), { recursive: true });
   bayatSil(path.dirname(yol));
-  yaz(yol, { profil, pid: process.pid, ts: Date.now(), cwd: process.cwd() });
+  const eski = read(yol) || {};
+  yaz(yol, { ...eski, profil, pid: process.pid, ts: Date.now(), cwd: process.cwd() });
   return yol;
+}
+
+const OTURUM_DEFTER = ['pid', 'ts', 'cwd'];
+
+function oturumSil(sid, anahtar) {
+  const yol = oturumProfilYolu(sid);
+  const k = read(yol);
+  if (!k) return { yol, vardi: false };
+  const vardi = k[anahtar] !== undefined;
+  delete k[anahtar];
+  const kalan = Object.keys(k).filter((a) => !OTURUM_DEFTER.includes(a));
+  try {
+    if (kalan.length) yaz(yol, k);
+    else fs.unlinkSync(yol);
+  } catch {}
+  return { yol, vardi };
 }
 
 function ajanYolu(kok, ad) {
@@ -244,8 +261,16 @@ function sapmaMetni(profil) {
   return sapmaSatiri(profil) || 'yok — taban profil';
 }
 
-function uygula(profil, genel) {
-  const sid = genel ? '' : oturumKimligi();
+// Kapsam sözleşmesi (docs/ROTA-kapsam-this.md): çıplak komut makine varsayılanını yazar,
+// `this` eklenince yalnız içinde bulunulan oturumu yazar. Eskiden tersiydi ve sessizce
+// geri alınan ayar üretiyordu: kullanıcı profili seçiyor, sohbet kapanıyor, varsayılan
+// geri düşüyordu. Nadir olan açıkça istenir, sık olan yazılmaz.
+function uygula(profil, oturuma) {
+  const kimlik = oturumKimligi();
+  if (oturuma && !kimlik)
+    dur('`this` bir oturum kimliği ister; bu koşumda CLAUDE_CODE_SESSION_ID yok');
+  const sid = oturuma ? kimlik : '';
+  const golge = sid ? null : kimlik && oturumProfili(kimlik);
   const kayit = sid ? oturumYaz(sid, profil) : path.join(konfigKok(), 'teknesyum.json');
   if (!sid) konfigYaz(profil);
   const ac = sid ? null : autocompactYaz(profil);
@@ -276,6 +301,36 @@ function uygula(profil, genel) {
       ...(ac
         ? ['autoCompactWindow: ' + ac.deger + (ac.degisti ? ' yazıldı' : ' zaten böyleydi')]
         : ['autoCompactWindow: dokunulmadı — oturum profili makine ayarını taşımaz']),
+      ...golgeUyarisi(profil, golge),
+    ].join('\n') + '\n'
+  );
+}
+
+// ÖLÇÜLDÜ değil, tasarımdan gelen tek gerçek bedel (ROTA-kapsam-this.md §5): oturum
+// kaydı okuma sırasında makine varsayılanının üstündedir. Bu sohbette `this` ile ayar
+// yapılmışsa çıplak komut geneli değiştirir ama burada hiçbir şey değişmez. Söylenmezse
+// kullanıcı komutun çalışmadığını sanır.
+function golgeUyarisi(yazilan, golge) {
+  if (!golge || golge === yazilan) return [];
+  return [
+    '',
+    'Makine varsayılanı ' + yazilan + ' oldu.',
+    'Bu sohbette ' + golge + ' yürürlükte — oturuma özel ayar üstte kalır.',
+    'Bu sohbeti de geneline döndürmek için: /premium this sil',
+  ];
+}
+
+function oturumTemizle() {
+  const sid = oturumKimligi();
+  if (!sid) dur('`this sil` bir oturum kimliği ister; bu koşumda CLAUDE_CODE_SESSION_ID yok');
+  const r = oturumSil(sid, 'profil');
+  const c = konfigOku();
+  process.stdout.write(
+    [
+      r.vardi
+        ? 'oturuma özel profil silindi · ' + r.yol
+        : 'bu sohbette oturuma özel profil zaten yoktu',
+      'yürürlükteki profil: ' + konfigProfili(c) + ' (makine)',
     ].join('\n') + '\n'
   );
 }
@@ -349,30 +404,33 @@ function yardim() {
     [
       'premium.js — üç profil arasında geçiş yapar',
       '',
-      '  node premium.js eco      haiku · 1 paralel ajan · 1 depo · denetim critical',
-      '  node premium.js normal   sonnet · 2 paralel ajan · 10 depo · her sözleşme denetlenir',
-      '  node premium.js premium  opus/xhigh · 20 paralel ajan · 50 depo · her sözleşme denetlenir',
+      '  node premium.js eco      haiku · 1 paralel ajan · 1 depo · denetim very-critical',
+      '  node premium.js normal   sonnet · 2 paralel ajan · 10 depo · denetim critical',
+      '  node premium.js premium  opus/xhigh · 20 paralel ajan · 50 depo · denetim high',
       '  node premium.js durum    hangi profilin yürürlükte olduğunu söyler',
-      '  node premium.js <profil> --genel   oturumu atlar, makine varsayılanını yazar',
+      '  node premium.js <profil> this      yalnız bu oturumu yazar, makineye dokunmaz',
+      '  node premium.js this sil           bu oturuma özel profili siler, geneline döner',
       '  node premium.js autocompact [sayı] pencereyi profilden türetir ya da elle yazar',
       '',
       'Hiçbiri depo dosyası yazmaz. Ajan frontmatter’ı ve relay `SETTINGS.md` makine',
       'tabanıdır ve `' + TABAN + '` profilin değerlerinde donar; profilin tabandan sapan düğmeleri',
-      'oturumun kanca enjeksiyonuyla gider. Profil kaydı oturuma iner: oturum kimliği varsa',
-      '~/.claude/teknesyum/oturumlar/<oturum>.json yazılır ve ~/.claude/teknesyum.json',
-      'değişmez; kimlik yoksa makine varsayılanı yazılır. Yani makine varsayılanı premium',
-      'olsa da tek bir sohbette `eco` çalıştırmak serbesttir; sohbet kapanınca varsayılan',
-      'geri gelir. Varsayılanın kendisini bir oturumun içinden değiştirmek için `--genel`',
-      'gerekir. Eski çağrılar durur: `ac` premium, `kapat` normal demektir.',
+      'oturumun kanca enjeksiyonuyla gider. Kapsam sözleşmesi tek cümledir: çıplak komut',
+      'makine varsayılanını (~/.claude/teknesyum.json) yazar, sonuna `this` eklenirse yalnız',
+      'içinde bulunulan oturumu (~/.claude/teknesyum/oturumlar/<oturum>.json) yazar. Okuma',
+      'sırası değişmez ve oturum kaydı üstte kalır: TEKNESYUM_PREMIUM → oturum → makine →',
+      'normal. Yani makine varsayılanı premium olsa da tek bir sohbette `eco this` serbesttir.',
+      'Oturuma özel ayarı geri almanın yolu `this sil`. Eski çağrılar durur: `ac` premium,',
+      '`kapat` normal, `--genel` çıplak komutla aynı şey demektir.',
       '',
       'eco — token kısıtken. Her rol ' +
         PROFIL.eco.builder.model +
-        ', kod yazan ve denetleyen roller `medium` eforda kalır; denetim yalnız kritik',
-      '  sözleşmede açılır. `/save` ham transkripti gzipli yazar (ham.jsonl.gz), `/loadall`',
+        ', kod yazan ve denetleyen roller `medium` eforda kalır; denetim yalnız geri',
+      '  dönüşü en pahalı sözleşmede açılır. `/save` ham transkripti gzipli yazar',
+      '  (ham.jsonl.gz), `/loadall`',
       '  proje başına tek satır basar — devam promptu ikisinde de kısalmaz.',
       'normal — varsayılan. ' +
         PROFIL.normal.builder.model +
-        ', iki paralel ajan, her sözleşme denetlenir; konsey ve görüş kapalı.',
+        ', iki paralel ajan, denetim kritik eşiğinde; konsey ve görüş kapalı.',
       'premium — hız ve kalite öncelikli. ' +
         PROFIL.premium.builder.model +
         ', 20 paralel ajan, worktree izolasyonu açık. Plan konseyi açılır (' +
@@ -383,16 +441,16 @@ function yardim() {
         ' modelindeki `advisor` ajanı üç başlıklı kısa bir görüş verir; karar T0’da kalır.',
       '',
       'Tek istisna `autoCompactWindow`: o `settings.json` dosyasına yazılır, çünkü koşum',
-      'ortamı onu oturum açılışında okur. Bu yüzden yalnız makine yazımında (`--genel`',
-      'ya da oturumsuz çağrı) güncellenir; oturum içi profil geçişi ona dokunmaz.',
+      'ortamı onu oturum açılışında okur. Bu yüzden yalnız çıplak (makine) yazımda',
+      'güncellenir; `this` ile yapılan oturum yazımı ona dokunmaz.',
       '',
       'Dosya yazılmadığı için eklenti güncellemesiyle profil arasında uyuşmazlık da oluşmaz.',
     ].join('\n') + '\n'
   );
 }
 
-function pozisyonel(n) {
-  const g = process.argv.slice(3);
+function pozisyonelHepsi(bas) {
+  const g = process.argv.slice(bas);
   const c = [];
   for (let i = 0; i < g.length; i++) {
     if (g[i].startsWith('--')) {
@@ -401,11 +459,29 @@ function pozisyonel(n) {
     }
     c.push(g[i]);
   }
-  return c[n];
+  return c;
 }
 
-function autocompact() {
-  const istek = pozisyonel(0);
+// `this` sözlüğün parçası değil, sözlüğün üstüne binen tek kelimelik kapsam ekidir.
+// Yeri hep sonda: ya son kelime, ya `sil` alt komutundan hemen önce. Ortada geçen bir
+// `this` kapsam eki değil argümandır — dosya adı olabilir, düşürülmez.
+function kapsamAyir(arg) {
+  const a = arg.slice();
+  let oturuma = false;
+  const son = a.length - 1;
+  if (a[son] === 'this') {
+    a.pop();
+    oturuma = true;
+  } else if (son >= 1 && a[son] === 'sil' && a[son - 1] === 'this') {
+    a.splice(son - 1, 1);
+    oturuma = true;
+  }
+  return { arg: a, oturuma };
+}
+
+
+function autocompact(arg) {
+  const istek = (arg || pozisyonelHepsi(3))[0];
   if (istek === undefined) {
     const c = konfigOku();
     const profil = konfigProfili(c);
@@ -440,12 +516,15 @@ function autocompact() {
 }
 
 function main() {
-  const komut = process.argv[2];
-  const genel = process.argv.includes('--genel') || process.argv.includes('--global');
+  const { arg, oturuma } = kapsamAyir(pozisyonelHepsi(2));
+  const komut = arg[0];
   const secilen = TAKMA[komut] || (PROFILLER.includes(komut) ? komut : '');
-  if (!komut || komut === '--help' || komut === '-h' || komut === 'yardim') yardim();
-  else if (komut === 'autocompact') autocompact();
-  else if (secilen) uygula(secilen, genel);
+  if (process.argv.includes('--help') || process.argv.includes('-h')) yardim();
+  else if (komut === undefined && oturuma) uygula('premium', true);
+  else if (!komut || komut === 'yardim') yardim();
+  else if (komut === 'sil' && oturuma) oturumTemizle();
+  else if (komut === 'autocompact') autocompact(arg.slice(1));
+  else if (secilen) uygula(secilen, oturuma);
   else if (komut === 'durum' || komut === 'status') durum();
   else dur('bilinmeyen komut: ' + komut);
 }

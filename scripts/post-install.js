@@ -27,16 +27,15 @@ function indir(url, hedef) {
   });
 }
 
+// Kurulum kural yazmaz, kural defteri açar. Buraya konan her satır kurulumu yapan kişinin
+// bütün projelerinde yürürlüğe girer; eklentiyi yazanın alışkanlıkları eklentiyi kuranı
+// bağlamaz. İlk kural `/rule` ile gelir.
 const RULES = `# Rules
 
 Recurring preferences and things that have burned me before. **30-line ceiling** — when it
 is full, don't append; delete the weakest line or merge two. Added with \`/rule\`.
 
-- No comments in code. Don't write them unless I explicitly ask.
-- Don't ask for routine approval. Do anything reversible, then report the result.
-- No long summaries, no walls of prose. What changed, where — that's it.
-- Don't invent colors or measurements. Stay inside the \`teknesyum-ui\` tokens.
-- Don't leave work half done and don't narrow the scope on your own.
+<!-- empty on purpose — add your first rule with /rule -->
 `;
 
 (async () => {

@@ -6,6 +6,86 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.44.0] - 2026-08-23
+
+### Added
+
+- `/beep` plays a short sound when a turn needs you (`Notification`), finishes (`Stop`),
+  or fails (`StopFailure`). The sound goes straight to the audio device and never touches
+  the OS notification system, so a focus mode that swallows the toast does not swallow
+  this. The default route is `Media.SoundPlayer` plus a short wav, not `[console]::beep`:
+  on a machine with no system-speaker driver `Beep()` returns exit code 0 and makes no
+  sound at all, and a notification mechanism that fails silently is the worst kind.
+  Defaults are `Windows Startup.wav` (0.22 s), `ding.wav` (0.40 s) and
+  `Windows Default.wav` (0.41 s) — all under half a second, all on by default, no
+  settings file required. `/beep dinle` plays all three so the install can be verified by
+  ear; `/beep bitti off` is the one-line fix for someone sitting at the screen. Settings
+  live in `~/.claude/teknesyum-beep.json`, with `<project>/.claude/teknesyum-beep.json`
+  above it. The hook is registered from the plugin's own `hooks.json` with `async: true`,
+  in a group of its own so it never sits behind the blocking relay hook, and it never
+  returns non-zero and never prints.
+- On first run `/beep` removes hand-added PowerShell sound hooks from
+  `~/.claude/settings.json` under `Notification`, `Stop` and `StopFailure`, and says in
+  one line what it removed. Left in place they would double every sound now that the
+  plugin ships its own hook. Unrelated hooks in the same event are untouched.
+
+### Changed
+
+- **The scope contract of settings commands is inverted.** A bare command now writes the
+  machine default; a trailing `this` writes only the current chat. `/premium` used to do
+  the opposite — it wrote the session record whenever a session id was present, which is
+  almost always, so the profile silently reverted in the next chat and the user only
+  found out by noticing. What is rare is now what gets typed; what is common is not.
+  Read order is unchanged and the session record still shadows the machine default:
+  `TEKNESYUM_PREMIUM` → session → `teknesyum.json` → `normal`.
+- Because the session record stays on top, a bare command run inside a chat that has a
+  `this` setting changes the machine default and nothing visible happens here. Both
+  `/premium` and `/beep` now print three lines in exactly that case: what the machine
+  default became, what is still in force in this chat, and how to clear it. A new
+  `this sil` subcommand does the clearing — it removes only that command's key and keeps
+  everything else in the session record.
+- **The auditor now runs against a rollback-cost threshold instead of a fixed rule.**
+  The `audit` knob takes `off`, `very-critical`, `critical`, `high` or `every-contract`,
+  and the profiles set it to `very-critical` (eco), `critical` (normal) and `high`
+  (premium). Even on premium not every contract is audited unconditionally: simple work
+  that is cheap to undo does not earn a review pass, and the auditor's care is spent
+  where undoing the work is expensive. A contract's risk is read from a `risk:` line if
+  it declares one, otherwise inferred from how many files it owns.
+- The "write no code comments" rule is gone from the builder and ui-builder agents. It
+  existed to save tokens while generating code, it was relative rather than absolute, and
+  in practice it only caused confusion.
+- **A fresh install no longer inherits anyone else's rules or taste.** The installer used
+  to seed `~/.claude/RULES.md` with five personal rules, which then governed every project
+  on that machine; it now creates the rulebook empty and the first rule arrives via
+  `/rule`. The habits of whoever wrote the plugin are not binding on whoever installs it.
+- **The neon UI standard is opt-in.** With no `teknesyum-ui.json` — the state of every
+  fresh clone — the `teknesyum-ui` skill imposes nothing: no palette, no type scale, no
+  signature. It was previously active by default, with `"kapali": true` as the way out;
+  now the file's existence is the switch. The standard is offered instead: `/uisetup
+  sablon` takes the neon template as it stands, `/uisetup kendim` builds your own from
+  four questions, and `/uisetup kapat` declines for good. `ui-builder` checks the same
+  gate before applying any token, and `/scan ui` says up front when it is measuring
+  distance from a template rather than compliance with a standard. Anyone already running
+  on the defaults keeps them by writing `{"kapali": false}` once.
+
+### Fixed
+
+- The turn receipt was printing the whole answer a second time. `Stop` runs after the
+  answer is written, and anything returned through `additionalContext` reaches the model
+  as new input, so the model re-emitted its answer with the receipt attached. The receipt
+  now goes out over `systemMessage`, which prints directly and cannot cause a second
+  pass. The cost is the unremovable `Stop says:` prefix, which `BILDIRIM_BICIMI = 'blok'`
+  keeps on a line of its own. Both channels still work in code; only the default moved.
+- The two blocking `Stop` warnings that ask for a missing heading now say explicitly not
+  to rewrite the answer. A printed message cannot be taken back in Claude Code, so a
+  correction that regenerates the answer leaves the first copy on screen; the model is
+  told to print only the missing piece, short and separate.
+- The scanner's CSS selector parser did not blank comments before extracting selectors,
+  so a base rule declared under a comment was invisible to the lookup and its `:hover`
+  variant was reported as missing a transition. Comments are now blanked in a
+  newline-preserving way before the selector scan.
+- The scrollbar thumb had a `box-shadow` and a background colour with no transition.
+
 ## [2.43.0] - 2026-08-22
 
 ### Added

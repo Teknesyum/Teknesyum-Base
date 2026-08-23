@@ -279,6 +279,33 @@ function owns(govde) {
   return n;
 }
 
+// `audit` bir eşiktir: sözleşmenin geri dönüş maliyeti bu seviyede ya da üstündeyse
+// denetçi açılır. Sözleşme kendi seviyesini `risk:` alanında söyleyebilir; söylemezse
+// diskte ölçülebilen tek yayılma göstergesi olan `owns` sayısı vekil olarak kullanılır.
+const RISK_SIRA = ['medium', 'high', 'critical', 'very-critical'];
+const DENETIM_ACIKLAMA = {
+  off: 'denetim kapalı',
+  'very-critical': 'yalnız geri dönüşü olmayan sözleşmeler (risk: very-critical · owns ≥ 5)',
+  critical: 'kritik ve üstü (risk: critical · owns ≥ 3)',
+  high: 'geri dönüşü pahalı olan her şey (risk: high · owns ≥ 2)',
+  'every-contract': 'her sözleşme',
+};
+
+function sozlesmeRiski(govde) {
+  const m = govde.match(/^risk:[ \t]*(medium|high|critical|very-critical)[ \t]*$/im);
+  if (m) return m[1].toLowerCase();
+  const n = owns(govde);
+  return n >= 5 ? 'very-critical' : n >= 3 ? 'critical' : n >= 2 ? 'high' : 'medium';
+}
+
+function denetlenirMi(kip, govde) {
+  if (kip === 'off') return false;
+  if (kip === 'every-contract') return true;
+  const esik = RISK_SIRA.indexOf(kip);
+  if (esik < 0) return true;
+  return RISK_SIRA.indexOf(sozlesmeRiski(govde)) >= esik;
+}
+
 function denetim(relay, dugme) {
   const kip = dugme.audit;
   const dizin = relay ? path.join(relay, 'contracts', 'done') : null;
@@ -287,18 +314,11 @@ function denetim(relay, dugme) {
   let bakilan = 0;
   for (const f of hepsi) {
     const govde = oku(path.join(dizin, f)) || '';
-    const kritik = owns(govde) >= 3;
-    if (kip === 'off') continue;
-    if (kip === 'critical' && !kritik) continue;
+    if (!denetlenirMi(kip, govde)) continue;
     bakilan++;
     if (!MUHUR.test(govde) || !KANIT.every((r) => r.test(govde))) muhursuz.push(f);
   }
-  const aciklama =
-    kip === 'off'
-      ? 'denetim kapalı'
-      : kip === 'critical'
-        ? 'yalnız kritik sözleşmeler (owns ≥ 3)'
-        : 'her sözleşme';
+  const aciklama = DENETIM_ACIKLAMA[kip] || 'her sözleşme';
   return {
     ad: 'Denetim',
     gecti: !muhursuz.length,

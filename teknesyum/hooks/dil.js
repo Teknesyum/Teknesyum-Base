@@ -381,16 +381,18 @@ const S = {
   donusEksik: {
     tr:
       'Teknesyum: açık bir paket/sözleşme varken işi bitirdiğini söyleyip dönüş bloğu ' +
-      'vermeden kapanma (multi-session.md §5.1). Mesajın en altına, kopyalanabilir ' +
-      'tek blok olarak en fazla 5 satır ekle: birinci satır <paket/sözleşme> + durum, ' +
-      'ikinci satır "Rapor: <dosya yolu>", varsa üçüncü satır tek açık soru. Rapor ' +
-      'gövdesini sohbete değil dosyaya yaz.',
+      'vermeden kapanma (multi-session.md §5.1). Cevabını yeniden yazma — basılmış mesaj ' +
+      'geri alınamaz, tekrarı kullanıcı görür. Yalnız dönüş bloğunu ayrı ve kısa bir mesaj ' +
+      'olarak bas: kopyalanabilir tek blok, en fazla 5 satır — birinci satır ' +
+      '<paket/sözleşme> + durum, ikinci satır "Rapor: <dosya yolu>", varsa üçüncü satır ' +
+      'tek açık soru. Rapor gövdesini sohbete değil dosyaya yaz.',
     en:
       'Teknesyum: with an open packet/contract you do not get to declare the work finished ' +
-      'and close without a return block (multi-session.md §5.1). Add one copyable block of ' +
-      'at most 5 lines at the very bottom: first line <packet/contract> + status, second ' +
-      'line "Report: <file path>", third line one open question if there is one. The report ' +
-      'body goes in a file, not in the chat.',
+      'and close without a return block (multi-session.md §5.1). Do not rewrite your answer ' +
+      '— a printed message cannot be taken back and the user sees the duplicate. Print only ' +
+      'the return block as a separate, short message: one copyable block of at most 5 lines ' +
+      '— first line <packet/contract> + status, second line "Report: <file path>", third ' +
+      'line one open question if there is one. The report body goes in a file, not the chat.',
   },
   paketSohbete: {
     tr:
@@ -548,16 +550,18 @@ const S = {
   sendenEksik: {
     tr:
       'Teknesyum: kullanıcıdan bir şey bekliyorsun ama **Senden istediklerim** başlığı yok. ' +
-      'Kural: kullanıcıdan aksiyon veya karar bekleniyorsa yanıtın sonunda bu başlığı aç ve ' +
-      'numaralı maddelerde tam kopyalanabilir metni ver — komut, dosya yolu, yazılacak ' +
-      'cümle. Gerekçe yazma; nedenini değil ne yapacağını söyle. Hiçbir şey beklemiyorsan ' +
-      'başlığı hiç açma ve beklemediğini de duyurma.',
+      'Cevabını yeniden yazma — basılmış mesaj geri alınamaz, tekrarı kullanıcı görür. ' +
+      'Yalnız eksik parçayı ayrı ve kısa bir mesaj olarak bas: **Senden istediklerim** ' +
+      'başlığı ve numaralı maddelerde tam kopyalanabilir metin — komut, dosya yolu, ' +
+      'yazılacak cümle. Gerekçe yazma; nedenini değil ne yapacağını söyle. Hiçbir şey ' +
+      'beklemiyorsan başlığı hiç açma ve beklemediğini de duyurma.',
     en:
       'Teknesyum: you are waiting on the user but there is no **What I need from you** ' +
-      'section. The rule: when an action or decision is expected from the user, open that ' +
-      'heading at the end and give the exact text to copy in numbered items — command, file ' +
-      'path, sentence to write. No rationale; say what to do, not why. If you expect ' +
-      'nothing, do not open the heading and do not announce that either.',
+      'section. Do not rewrite your answer — a printed message cannot be taken back and the ' +
+      'user sees the duplicate. Print only the missing piece as a separate, short message: ' +
+      'the **What I need from you** heading and the exact text to copy in numbered items — ' +
+      'command, file path, sentence to write. No rationale; say what to do, not why. If you ' +
+      'expect nothing, do not open the heading and do not announce that either.',
   },
 
   kayitBayat: {

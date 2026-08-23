@@ -99,6 +99,11 @@ başlık odur.
 Ölçüler (palet, süre ölçeği, 360 ms tavanı) `skills/teknesyum-ui/assets/theme.css`
 dosyasından okunur, komuta kopyalanmaz.
 
+**Bu kip `teknesyum-ui` standardına göre ölçer.** Standart kurulu değilse — ne
+`<proje>/.claude/teknesyum-ui.json` ne `~/.claude/teknesyum-ui.json` var — ölçüm bir
+uygunluk denetimi değil, bir şablona uzaklık ölçümüdür. Rapordan önce tek satır söyle:
+standart kurulu değil, bulgular ihlal değil öneri; kurmak isterse `/uisetup`.
+
 ### `ui --tamamla` gerçekten yazar
 
 Öteki üç kipte `--tamamla` dosyaya dokunmaz. `ui` kipinde **mekanik ve geri alınabilir**

@@ -141,7 +141,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'autocompact.md,ekran.md,help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
+    'autocompact.md,beep.md,ekran.md,help.md,load.md,loadall.md,premium.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
   );
   const yuru = (d) =>
     fs
@@ -2707,7 +2707,7 @@ ol('oturum profili pencereyi tasimaz, durum bunu soyler', () => {
     1000000
   );
   const ek = { CLAUDE_CODE_SESSION_ID: 'oturum-7' };
-  const r = premiumCalistir('eco', p, cfg, ek);
+  const r = premiumCalistir(['eco', 'this'], p, cfg, ek);
   icerir(r.out, 'kayıt: oturum');
   icerir(r.out, 'oturum profili makine ayarını taşımaz');
   esit(
@@ -2749,7 +2749,7 @@ ol('sapma tablosu yalniz tabandan ayrilan dugmeleri verir', () => {
   const eco = premiumTablo.sapmalar('eco');
   esit(eco.parallel_width, '1');
   esit(eco.default_model, 'haiku');
-  esit(eco.audit, 'critical');
+  esit(eco.audit, 'very-critical');
   esit(eco.ask_threshold, undefined, 'tabanla ayni deger sapma sayilmamali');
   esit(eco.agent_stall, undefined, 'kanca dugmesi uc profilde de ayni');
   esit(premiumTablo.sapmalar('premium').parallel_width, '20');
@@ -2774,7 +2774,12 @@ ol('premium kapatildiginda dosyalar bire bir geri doner', () => {
 ol('uc profil de uygulanir, durum yururlukteki profili soyler', () => {
   const { p, cfg } = premiumKopya();
   const beklenen = {
-    eco: ['varsayılan model: haiku', 'parallel_width 1', 'research_repos 1', 'audit critical'],
+    eco: [
+      'varsayılan model: haiku',
+      'parallel_width 1',
+      'research_repos 1',
+      'audit very-critical',
+    ],
     normal: ['varsayılan model: sonnet', 'sapan düğme: yok — taban profil'],
     premium: [
       'varsayılan model: opus',
@@ -2871,9 +2876,13 @@ function oturumlarDizini(cfg) {
 
 ol('iki oturum ayri profil kaydi tutar, profil her birine kendi cevabini verir', () => {
   const { p, cfg } = premiumKopya();
-  esit(premiumCalistir('eco', p, cfg, { CLAUDE_CODE_SESSION_ID: 'oturum-a' }).kod, 0, 'eco kodu');
   esit(
-    premiumCalistir('premium', p, cfg, { CLAUDE_CODE_SESSION_ID: 'oturum-b' }).kod,
+    premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'oturum-a' }).kod,
+    0,
+    'eco kodu'
+  );
+  esit(
+    premiumCalistir(['premium', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'oturum-b' }).kod,
     0,
     'premium kodu'
   );
@@ -2907,6 +2916,114 @@ ol('oturum kimligi yokken profil kaydi makineye yazilir', () => {
   icerir(premiumCalistir('durum', p, cfg).out, 'yürürlükteki profil: premium (kaynak: makine)');
 });
 
+ol('ciplak komut makineye yazar, oturum kaydi acmaz', () => {
+  const { p, cfg } = premiumKopya();
+  const ek = { CLAUDE_CODE_SESSION_ID: 'kapsam-1' };
+  const r = premiumCalistir('eco', p, cfg, ek);
+  esit(r.kod, 0, r.err);
+  icerir(r.out, 'kayıt: makine');
+  esit(JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8')).profil, 'eco');
+  esit(
+    fs.existsSync(path.join(oturumlarDizini(cfg), 'kapsam-1.json')),
+    false,
+    'ciplak komut oturum kaydi acmamali'
+  );
+});
+
+ol('this eki yalniz oturumu yazar, makine dosyasi ellenmez', () => {
+  const { p, cfg } = premiumKopya();
+  premiumCalistir('normal', p, cfg);
+  const once = fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8');
+  const ek = { CLAUDE_CODE_SESSION_ID: 'kapsam-2' };
+  const r = premiumCalistir(['eco', 'this'], p, cfg, ek);
+  esit(r.kod, 0, r.err);
+  icerir(r.out, 'kayıt: oturum');
+  esit(oturumProfilOku(cfg, 'kapsam-2'), 'eco');
+  esit(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8'), once, 'makine dosyasi ellenmis');
+});
+
+ol('this tek basina bu sohbeti premium yapar', () => {
+  const { p, cfg } = premiumKopya();
+  const ek = { CLAUDE_CODE_SESSION_ID: 'kapsam-3' };
+  const r = premiumCalistir('this', p, cfg, ek);
+  esit(r.kod, 0, r.err);
+  icerir(r.out, 'profil: premium');
+  icerir(r.out, 'kayıt: oturum');
+  esit(oturumProfilOku(cfg, 'kapsam-3'), 'premium');
+});
+
+ol('oturum kaydi varken ciplak komut sessiz golgelemeyi uc satirda soyler', () => {
+  const { p, cfg } = premiumKopya();
+  const ek = { CLAUDE_CODE_SESSION_ID: 'kapsam-4' };
+  premiumCalistir(['eco', 'this'], p, cfg, ek);
+  const r = premiumCalistir('premium', p, cfg, ek);
+  esit(r.kod, 0, r.err);
+  icerir(r.out, 'Makine varsayılanı premium oldu.');
+  icerir(r.out, 'Bu sohbette eco yürürlükte — oturuma özel ayar üstte kalır.');
+  icerir(r.out, 'Bu sohbeti de geneline döndürmek için: /premium this sil');
+  esit(oturumProfilOku(cfg, 'kapsam-4'), 'eco', 'ciplak komut oturum kaydini ezmemeli');
+});
+
+ol('golge uyarisi yalniz gercek golgede cikar', () => {
+  const { p, cfg } = premiumKopya();
+  const ek = { CLAUDE_CODE_SESSION_ID: 'kapsam-5' };
+  const yok = premiumCalistir('premium', p, cfg, ek);
+  if (yok.out.includes('üstte kalır')) throw new Error('kayit yokken golge uyarisi cikti');
+  premiumCalistir(['premium', 'this'], p, cfg, ek);
+  const ayni = premiumCalistir('premium', p, cfg, ek);
+  if (ayni.out.includes('üstte kalır')) throw new Error('ayni degerde golge uyarisi cikti');
+});
+
+ol('this sil oturum kaydini kaldirir, makine varsayilanina donulur', () => {
+  const { p, cfg } = premiumKopya();
+  const ek = { CLAUDE_CODE_SESSION_ID: 'kapsam-6' };
+  premiumCalistir('premium', p, cfg);
+  premiumCalistir(['eco', 'this'], p, cfg, ek);
+  esit(oturumProfilOku(cfg, 'kapsam-6'), 'eco');
+  const r = premiumCalistir(['this', 'sil'], p, cfg, ek);
+  esit(r.kod, 0, r.err);
+  icerir(r.out, 'oturuma özel profil silindi');
+  icerir(r.out, 'yürürlükteki profil: premium (makine)');
+  esit(oturumProfilOku(cfg, 'kapsam-6'), 'premium', 'silme sonrasi makine varsayilani gecerli');
+  const yine = premiumCalistir(['this', 'sil'], p, cfg, ek);
+  esit(yine.kod, 0, 'ikinci silme hata vermemeli');
+  icerir(yine.out, 'zaten yoktu');
+});
+
+ol('this sil oturum kaydindaki oteki anahtarlari korur', () => {
+  const { p, cfg } = premiumKopya();
+  const ek = { CLAUDE_CODE_SESSION_ID: 'kapsam-7' };
+  premiumCalistir(['eco', 'this'], p, cfg, ek);
+  const yol = path.join(oturumlarDizini(cfg), 'kapsam-7.json');
+  const k = JSON.parse(fs.readFileSync(yol, 'utf8'));
+  k.beep = { kapali: true };
+  fs.writeFileSync(yol, JSON.stringify(k));
+  premiumCalistir(['this', 'sil'], p, cfg, ek);
+  esit(fs.existsSync(yol), true, 'beep ayari varken dosya silinmemeli');
+  const son = JSON.parse(fs.readFileSync(yol, 'utf8'));
+  esit(son.profil, undefined, 'profil anahtari kalmis');
+  esit(son.beep.kapali, true, 'beep anahtari silinmis');
+});
+
+ol('kapsam eki almayan alt komut this yazilinca hata basmaz', () => {
+  const { p, cfg } = premiumKopya();
+  premiumCalistir('normal', p, cfg);
+  const d = premiumCalistir(['durum', 'this'], p, cfg);
+  esit(d.kod, 0, d.err);
+  icerir(d.out, 'yürürlükteki profil: normal');
+  const a = premiumCalistir(['autocompact', 'this'], p, cfg);
+  esit(a.kod, 0, a.err);
+  icerir(a.out, 'autoCompactWindow: auto');
+});
+
+ol('this oturum kimligi yokken acikca durur', () => {
+  const { p, cfg } = premiumKopya();
+  const r = premiumCalistir(['eco', 'this'], p, cfg);
+  esit(r.kod, 1, 'kimliksiz this sessizce makineye yazmis');
+  icerir(r.err, 'oturum kimliği ister');
+  esit(fs.existsSync(path.join(cfg, 'teknesyum.json')), false, 'makine dosyasi yazilmis');
+});
+
 ol('bayat oturum kaydi yok sayilir ve yeni kayit yazilirken silinir', () => {
   const { p, cfg } = premiumKopya();
   premiumCalistir('eco', p, cfg);
@@ -2917,7 +3034,7 @@ ol('bayat oturum kaydi yok sayilir ve yeni kayit yazilirken silinir', () => {
   fs.writeFileSync(path.join(dizin, 'taze.json'), kayit(Date.now()));
   esit(oturumProfilOku(cfg, 'bayat'), 'eco', 'bayat kayit makine varsayilanina dusmeli');
   esit(oturumProfilOku(cfg, 'taze'), 'premium', 'taze kayit okunmali');
-  premiumCalistir('normal', p, cfg, { CLAUDE_CODE_SESSION_ID: 'yeni' });
+  premiumCalistir(['normal', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'yeni' });
   esit(fs.existsSync(path.join(dizin, 'bayat.json')), false, 'bayat kayit silinmeli');
   esit(fs.existsSync(path.join(dizin, 'taze.json')), true, 'taze kayit durmali');
 });
@@ -2929,7 +3046,7 @@ ol('durum profil kaynagini ve eforun izole olmadigini soyler', () => {
   icerir(makine, 'yürürlükteki profil: normal (kaynak: makine)');
   icerir(makine, 'efor: taban — oturuma izole değil, ajan dosyasından gelir');
   const sid = { CLAUDE_CODE_SESSION_ID: 'oturum-c' };
-  icerir(premiumCalistir('premium', p, cfg, sid).out, 'kayıt: oturum');
+  icerir(premiumCalistir(['premium', 'this'], p, cfg, sid).out, 'kayıt: oturum');
   const d = premiumCalistir('durum', p, cfg, sid).out;
   icerir(d, 'yürürlükteki profil: premium (kaynak: oturum)');
   icerir(d, 'konfig profili: normal');
@@ -2949,7 +3066,7 @@ ol('okunamayan oturum kaydi bayat sayilmaz, silinmez', () => {
   fs.writeFileSync(yarim, '{"profil": "premi');
   const bos = path.join(dizin, 'bos.json');
   fs.writeFileSync(bos, '');
-  premiumCalistir('eco', p, cfg, { CLAUDE_CODE_SESSION_ID: 'yazan' });
+  premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'yazan' });
   esit(fs.existsSync(yarim), true, 'yarim yazilmis kayit silinmemeli');
   esit(fs.existsSync(bos), true, 'bos kayit silinmemeli');
   esit(oturumProfilOku(cfg, 'yarim'), 'normal', 'okunamayan kayit makine varsayilanina dusmeli');
@@ -2960,18 +3077,18 @@ ol('durum iki oturumda ayri profil basar, uyusmazlik satiri hic cikmaz', () => {
   const A = { CLAUDE_CODE_SESSION_ID: 'oturum-A' };
   const B = { CLAUDE_CODE_SESSION_ID: 'oturum-B' };
   const once = ajanMetni(p) + ayarMetni(p);
-  esit(premiumCalistir('eco', p, cfg, A).kod, 0, 'A eco kodu');
-  esit(premiumCalistir('premium', p, cfg, B).kod, 0, 'B premium kodu');
+  esit(premiumCalistir(['eco', 'this'], p, cfg, A).kod, 0, 'A eco kodu');
+  esit(premiumCalistir(['premium', 'this'], p, cfg, B).kod, 0, 'B premium kodu');
   const a = premiumCalistir('durum', p, cfg, A).out;
   const b = premiumCalistir('durum', p, cfg, B).out;
   icerir(a, 'yürürlükteki profil: eco (kaynak: oturum)');
-  icerir(a, 'paralel: 1 ajan · ön araştırma: 1+ depo · denetim: critical');
+  icerir(a, 'paralel: 1 ajan · ön araştırma: 1+ depo · denetim: very-critical');
   icerir(a, 'plan konseyi: off');
-  icerir(a, 'sapan düğme: audit critical');
+  icerir(a, 'sapan düğme: audit very-critical');
   icerir(b, 'yürürlükteki profil: premium (kaynak: oturum)');
-  icerir(b, 'paralel: 20 ajan · ön araştırma: 50+ depo · denetim: every-contract');
+  icerir(b, 'paralel: 20 ajan · ön araştırma: 50+ depo · denetim: high');
   icerir(b, 'plan konseyi: fable + opus');
-  icerir(b, 'sapan düğme: fix_ceiling 8');
+  icerir(b, 'sapan düğme: audit high · fix_ceiling 8');
   for (const [ad, cikti] of [
     ['ajan dosyaları', a],
     ['relay düğmeleri', b],
@@ -3314,9 +3431,9 @@ function ayarOku(cfg, sid, anahtar, root) {
 
 ol('iki oturum kimliginde parallel_width farkli deger doner', () => {
   const { p, cfg } = premiumKopya();
-  premiumCalistir('eco', p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-eco' });
-  premiumCalistir('premium', p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-prem' });
-  premiumCalistir('normal', p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-std' });
+  premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-eco' });
+  premiumCalistir(['premium', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-prem' });
+  premiumCalistir(['normal', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-std' });
   esit(ayarOku(cfg, 'w-eco', 'parallel_width'), '1', 'eco oturumu');
   esit(ayarOku(cfg, 'w-prem', 'parallel_width'), '20', 'premium oturumu');
   esit(ayarOku(cfg, 'w-std', 'parallel_width'), '2', 'normal oturumu dosyadan okumali');
@@ -3324,7 +3441,7 @@ ol('iki oturum kimliginde parallel_width farkli deger doner', () => {
 
 ol('sapmayan dugmede proje SETTINGS.md hala gecerli', () => {
   const { p, cfg } = premiumKopya();
-  premiumCalistir('eco', p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-kat' });
+  premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-kat' });
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kat-'));
   fs.writeFileSync(path.join(root, 'SETTINGS.md'), 'agent_stall : 3\nparallel_width : 7\n');
   esit(ayarOku(cfg, 'w-kat', 'agent_stall', root), '3', 'sapmayan dugme projeden okunmali');
@@ -3336,7 +3453,7 @@ ol('enjeksiyona yalniz tabandan sapan dugmeler girer', () => {
   const { p } = proje(1, 0);
   const eco = profilIstek(p, profilKonfig({ profil: 'eco' }));
   icerir(eco, 'Tabandan sapan düğmeler: ');
-  for (const s of ['parallel_width 1', 'default_model haiku', 'audit critical'])
+  for (const s of ['parallel_width 1', 'default_model haiku', 'audit very-critical'])
     icerir(eco, s, 'eco sapmasi');
   for (const s of ['ask_threshold', 'approval_gate', 'worktree_isolation', 'report_length'])
     if (eco.includes(s)) throw new Error('tabandan sapmayan düğme enjekte edildi: ' + s);
@@ -3345,7 +3462,7 @@ ol('enjeksiyona yalniz tabandan sapan dugmeler girer', () => {
   const prem = profilIstek(p, profilKonfig({ profil: 'premium' }));
   icerir(prem, 'parallel_width 20');
   icerir(prem, 'plan_council on');
-  if (prem.includes('audit ')) throw new Error('premiumda tabanla ayni audit enjekte edildi');
+  icerir(prem, 'audit high', 'premium denetim esigi enjekte edilmeli');
 });
 
 ol('taban profil enjeksiyona dugme satiri yazmaz', () => {
@@ -4338,12 +4455,14 @@ function turProje() {
   return { p, ek: { CLAUDE_CONFIG_DIR: cfg } };
 }
 
-// Tur özeti `systemMessage` ile basılmıyor: `Stop says:` öneki oluşmasın diye satır
-// `additionalContext` ile modele veriliyor.
+// Tur ozeti `systemMessage` ile basilir. `additionalContext` kanali denendi ve cevabin
+// tamamini tekrarlatti: `Stop` cevap yazildiktan sonra calisir, modelin satiri cevabin
+// altina koymak icin elindeki tek yol cevabi yeniden uretmektir.
+// Ayrinti: docs/HATA-tur-makbuzu-tekrari.md
 function turSatiri(r) {
   if (!r.out) return '';
   const o = JSON.parse(r.out);
-  return (o.hookSpecificOutput || {}).additionalContext || '';
+  return o.systemMessage || (o.hookSpecificOutput || {}).additionalContext || '';
 }
 
 ol('tur ozeti sure ve token tahminini tek satirda verir', () => {
@@ -4372,12 +4491,12 @@ ol('tur makbuzunun adi neyi saydigini soyler', () => {
     throw new Error('makbuz hâlâ bütçe sayacıyla ayni adi tasiyor: ' + m);
 });
 
-ol('tur ozeti systemMessage kanalina hic yazmaz', () => {
+ol('tur ozeti additionalContext kanalina hic yazmaz, cevap tekrarlanmaz', () => {
   const { p, ek } = turProje();
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
   const o = JSON.parse(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, ek).out);
-  esit(o.systemMessage, undefined, 'ozet systemMessage ile basilmis');
-  esit(o.hookSpecificOutput.hookEventName, 'Stop');
+  esit(o.hookSpecificOutput, undefined, 'ozet modele verilmis, cevap tekrarlanir');
+  icerir(o.systemMessage, 'Total Sure: '.replace('Sure', 'Süre'));
 });
 
 ol('damgasiz Stop tur ozeti basmaz', () => {
@@ -4787,9 +4906,9 @@ ol('eco baslik tamponu kucultur, normal yarim megabayt okur', () => {
 ol('durum uc profilin ayirt edici degerlerini basar', () => {
   const { p, cfg } = premiumKopya();
   const beklenen = {
-    eco: ['paralel: 1 ajan', 'ön araştırma: 1+ depo', 'denetim: critical'],
-    normal: ['paralel: 2 ajan', 'ön araştırma: 10+ depo', 'denetim: every-contract'],
-    premium: ['paralel: 20 ajan', 'ön araştırma: 50+ depo', 'denetim: every-contract'],
+    eco: ['paralel: 1 ajan', 'ön araştırma: 1+ depo', 'denetim: very-critical'],
+    normal: ['paralel: 2 ajan', 'ön araştırma: 10+ depo', 'denetim: critical'],
+    premium: ['paralel: 20 ajan', 'ön araştırma: 50+ depo', 'denetim: high'],
   };
   for (const ad of ['eco', 'normal', 'premium']) {
     esit(premiumCalistir(ad, p, cfg).kod, 0, ad + ' cikis kodu');
@@ -5108,7 +5227,7 @@ ol('tarama esikleri premium.js DUGME tablosundan okur, kopyalamaz', () => {
   esit(t.normal.research_repos, '10', 'normal');
   esit(t.premium.research_repos, '50', 'premium');
   esit(t.premium.default_model, 'opus', 'premium modeli');
-  esit(t.eco.audit, 'critical', 'eco denetimi');
+  esit(t.eco.audit, 'very-critical', 'eco denetimi');
   esit(
     /research_repos[ \t]*:/.test(fs.readFileSync(TARAMA, 'utf8')),
     false,
@@ -5166,23 +5285,36 @@ ol('tarama muhursuz sozlesmeyi sayar, mühürlüyü gecirir', () => {
   const p = taramaProje(50);
   const done = path.join(p, '.claude', 'relay', 'contracts', 'done');
   fs.writeFileSync(path.join(done, 'T1.md'), MUHURLU + '# is\n');
-  fs.writeFileSync(path.join(done, 'T2.md'), '---\nstatus: done\naudit: —\n---\n');
+  fs.writeFileSync(path.join(done, 'T2.md'), '---\nstatus: done\nrisk: high\naudit: —\n---\n');
   const j = JSON.parse(taramaCalistir(p, 'premium', '--json').out);
   esit(j.maddeler[2].muhursuz.join(','), 'T2.md', 'yalniz muhursuz olan');
   icerir(taramaCalistir(p, 'premium').out, 'mühürsüz: T2.md');
 });
 
-ol('eco denetimi yalniz kritik sozlesmeye bakar', () => {
+ol('denetim esigi geri donus maliyetine gore acilir', () => {
   const p = taramaProje(50);
   const done = path.join(p, '.claude', 'relay', 'contracts', 'done');
-  fs.writeFileSync(path.join(done, 'T1.md'), '---\nowns:\n  - a\n  - b\n  - c\naudit: —\n---\n');
-  fs.writeFileSync(path.join(done, 'T2.md'), '---\nowns:\n  - a\naudit: —\n---\n');
-  esit(JSON.parse(taramaCalistir(p, 'eco', '--json').out).maddeler[2].muhursuz.length, 1, 'eco');
-  esit(
-    JSON.parse(taramaCalistir(p, 'premium', '--json').out).maddeler[2].muhursuz.length,
-    2,
-    'premium'
-  );
+  const sozlesme = (n) => '---\nowns:\n' + 'abcde'.slice(0, n).split('').map((h) => '  - ' + h).join('\n') + '\naudit: —\n---\n';
+  fs.writeFileSync(path.join(done, 'T1.md'), sozlesme(5));
+  fs.writeFileSync(path.join(done, 'T2.md'), sozlesme(3));
+  fs.writeFileSync(path.join(done, 'T3.md'), sozlesme(2));
+  fs.writeFileSync(path.join(done, 'T4.md'), sozlesme(1));
+  const bak = (profil) =>
+    JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[2].muhursuz.length;
+  esit(bak('eco'), 1, 'eco yalniz geri donusu olmayani denetler');
+  esit(bak('normal'), 2, 'normal kritik ve ustunu denetler');
+  esit(bak('premium'), 3, 'premium basit sozlesmeyi denetlemez');
+});
+
+ol('sozlesme kendi risk seviyesini soyleyebilir, owns vekili ezilir', () => {
+  const p = taramaProje(50);
+  const done = path.join(p, '.claude', 'relay', 'contracts', 'done');
+  fs.writeFileSync(path.join(done, 'T1.md'), '---\nowns:\n  - a\nrisk: very-critical\naudit: —\n---\n');
+  fs.writeFileSync(path.join(done, 'T2.md'), '---\nowns:\n  - a\n  - b\n  - c\nrisk: medium\naudit: —\n---\n');
+  const bak = (profil) =>
+    JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[2].muhursuz.join(',');
+  esit(bak('eco'), 'T1.md', 'tek dosyali sozlesme risk alanıyla denetime girmeli');
+  esit(bak('normal'), 'T1.md', 'medium diyen uc dosyali sozlesme denetim disi kalmali');
 });
 
 ol('tarama belge tutarliligini surumle karsilastirir', () => {
@@ -5893,6 +6025,394 @@ ol('scan.md ui kipini anlatir', () => {
   icerir(k, '--tamamla');
   const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
   icerir(h, '/scan');
+});
+
+const BEEP = path.join(KOK, 'scripts', 'beep.js');
+const BEEP_KANCA = path.join(KOK, 'hooks', 'beep.js');
+
+function beepCfg() {
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-beep-cfg-'));
+}
+
+function beepCalistir(argv, cfg, ek) {
+  const r = spawnSync(process.execPath, [BEEP, ...argv], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      CLAUDE_CONFIG_DIR: cfg,
+      CLAUDE_CODE_SESSION_ID: '',
+      CLAUDE_CODE_HOST_SESSION_ID: '',
+      TEKNESYUM_BEEP_SESSIZ: '1',
+      TEKNESYUM_DIL: 'tr',
+      ...(ek || {}),
+    },
+  });
+  return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
+}
+
+function beepKanca(olay, cfg, ek) {
+  const r = spawnSync(process.execPath, [BEEP_KANCA], {
+    encoding: 'utf8',
+    input: typeof olay === 'string' ? olay : JSON.stringify(olay),
+    env: {
+      ...process.env,
+      CLAUDE_CONFIG_DIR: cfg,
+      CLAUDE_CODE_SESSION_ID: '',
+      CLAUDE_CODE_HOST_SESSION_ID: '',
+      TEKNESYUM_BEEP_SESSIZ: '1',
+      ...(ek || {}),
+    },
+  });
+  return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
+}
+
+function beepCoz(cfg, cwd, sid) {
+  const eski = process.env.CLAUDE_CONFIG_DIR;
+  process.env.CLAUDE_CONFIG_DIR = cfg;
+  try {
+    return require(BEEP_KANCA).coz(cwd || cfg, sid);
+  } finally {
+    if (eski === undefined) delete process.env.CLAUDE_CONFIG_DIR;
+    else process.env.CLAUDE_CONFIG_DIR = eski;
+  }
+}
+
+function beepMakine(cfg) {
+  return JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum-beep.json'), 'utf8'));
+}
+
+function beepOturumYolu(cfg, sid) {
+  return path.join(cfg, 'teknesyum', 'oturumlar', sid + '.json');
+}
+
+ol('beep argumansiz uc olayi kaynagiyla basar, ayar dosyasi yazmaz', () => {
+  const cfg = beepCfg();
+  const r = beepCalistir([], cfg);
+  esit(r.kod, 0, 'cikis kodu');
+  for (const o of ['bekleme', 'bitti', 'hata']) icerir(r.out, o);
+  icerir(r.out, 'Windows Startup.wav');
+  icerir(r.out, 'ding.wav');
+  icerir(r.out, 'Windows Default.wav');
+  icerir(r.out, '(varsayılan)');
+  icerir(r.out, 'kaynak');
+  esit(fs.existsSync(path.join(cfg, 'teknesyum-beep.json')), false, 'ayar dosyasi acilmamali');
+});
+
+ol('beep durum tablosu sureyi wav basligindan okur', () => {
+  const r = beepCalistir([], beepCfg());
+  icerir(r.out, '0,22 s');
+  icerir(r.out, '0,40 s');
+  icerir(r.out, '0,41 s');
+});
+
+ol('ayar dosyasi hic yokken kanca sesi varsayilanla cozer', () => {
+  const cfg = beepCfg();
+  const a = beepCoz(cfg, null, null);
+  esit(a.toptan.deger, false, 'toptan acik gelmeli');
+  esit(a.olaylar.bitti.dosya, 'ding.wav');
+  esit(a.olaylar.bitti.kapali, false);
+  esit(a.olaylar.bitti.kaynak, 'varsayılan');
+});
+
+ol('beep bitti off yalniz o olayi kapatir, otekiler acik kalir', () => {
+  const cfg = beepCfg();
+  esit(beepCalistir(['bitti', 'off'], cfg).kod, 0, 'cikis kodu');
+  esit(beepMakine(cfg).olaylar.bitti.kapali, true);
+  const a = beepCoz(cfg, null, null);
+  esit(a.olaylar.bitti.kapali, true, 'bitti kapali olmali');
+  esit(a.olaylar.bekleme.kapali, false, 'bekleme acik kalmali');
+  beepCalistir(['bitti', 'on'], cfg);
+  esit(beepMakine(cfg).olaylar.bitti.kapali, false, 'on geri acmali');
+});
+
+ol('beep off uctagini susturur, beep on tek tek ayarlari korur', () => {
+  const cfg = beepCfg();
+  beepCalistir(['bitti', 'off'], cfg);
+  beepCalistir(['off'], cfg);
+  const kapali = beepCoz(cfg, null, null);
+  esit(kapali.toptan.deger, true, 'toptan kapali olmali');
+  beepCalistir(['on'], cfg);
+  const acik = beepCoz(cfg, null, null);
+  esit(acik.toptan.deger, false, 'toptan acilmali');
+  esit(acik.olaylar.bitti.kapali, true, 'tek tek yapilmis ayar korunmali');
+});
+
+ol('beep <olay> <dosya> sesi degistirir ve dosyaya yazar', () => {
+  const cfg = beepCfg();
+  esit(beepCalistir(['bekleme', 'chord.wav'], cfg).kod, 0, 'cikis kodu');
+  esit(beepMakine(cfg).olaylar.bekleme.dosya, 'chord.wav');
+  const a = beepCoz(cfg, null, null);
+  esit(a.olaylar.bekleme.dosya, 'chord.wav');
+  esit(a.olaylar.bekleme.kaynak, 'makine');
+});
+
+ol('beep bip hz/ms yazar ve dosya alanini dusurur', () => {
+  const cfg = beepCfg();
+  esit(beepCalistir(['hata', 'bip', '900', '120'], cfg).kod, 0, 'cikis kodu');
+  const o = beepMakine(cfg).olaylar.hata;
+  esit(o.hz, 900);
+  esit(o.ms, 120);
+  esit(o.dosya, undefined, 'dosya alani kalmamali');
+  esit(beepCalistir(['hata', 'bip', '9', '120'], cfg).kod, 1, 'gecersiz hz durmali');
+});
+
+ol('ciplak beep makineye yazar, oturum kaydi acmaz', () => {
+  const cfg = beepCfg();
+  const sid = 'beep-genel';
+  beepCalistir(['off'], cfg, { CLAUDE_CODE_SESSION_ID: sid });
+  esit(beepMakine(cfg).kapali, true);
+  esit(fs.existsSync(beepOturumYolu(cfg, sid)), false, 'oturum kaydi acilmamali');
+});
+
+ol('beep this eki yalniz oturumu yazar, makine dosyasi ellenmez', () => {
+  const cfg = beepCfg();
+  const sid = 'beep-oturum';
+  esit(
+    beepCalistir(['off', 'this'], cfg, { CLAUDE_CODE_SESSION_ID: sid }).kod,
+    0,
+    'cikis kodu'
+  );
+  esit(fs.existsSync(path.join(cfg, 'teknesyum-beep.json')), false, 'makine dosyasi acilmamali');
+  const k = JSON.parse(fs.readFileSync(beepOturumYolu(cfg, sid), 'utf8'));
+  esit(k.beep.kapali, true);
+  esit(beepCoz(cfg, null, sid).toptan.kaynak, 'oturum');
+});
+
+ol('oturum kaydi varken ciplak beep sessiz golgelemeyi uc satirda soyler', () => {
+  const cfg = beepCfg();
+  const sid = 'beep-golge';
+  beepCalistir(['off', 'this'], cfg, { CLAUDE_CODE_SESSION_ID: sid });
+  const r = beepCalistir(['on'], cfg, { CLAUDE_CODE_SESSION_ID: sid });
+  icerir(r.out, 'Makine varsayılanı yazıldı.');
+  icerir(r.out, 'oturuma özel ayar üstte kalır');
+  icerir(r.out, '/beep this sil');
+});
+
+ol('beep golge uyarisi oturum kaydi yokken cikmaz', () => {
+  const cfg = beepCfg();
+  const r = beepCalistir(['on'], cfg, { CLAUDE_CODE_SESSION_ID: 'beep-temiz' });
+  icermez(r.out, 'oturuma özel ayar üstte kalır');
+});
+
+ol('beep this sil oturum kaydini kaldirir, makineye donulur', () => {
+  const cfg = beepCfg();
+  const sid = 'beep-sil';
+  beepCalistir(['off', 'this'], cfg, { CLAUDE_CODE_SESSION_ID: sid });
+  const r = beepCalistir(['this', 'sil'], cfg, { CLAUDE_CODE_SESSION_ID: sid });
+  esit(r.kod, 0, 'cikis kodu');
+  icerir(r.out, 'oturuma özel ses ayarı silindi');
+  esit(fs.existsSync(beepOturumYolu(cfg, sid)), false, 'kayit silinmeli');
+  esit(beepCoz(cfg, null, sid).toptan.deger, false, 'makine varsayilanina donmeli');
+});
+
+ol('beep this sil oturum kaydindaki profili korur', () => {
+  const cfg = beepCfg();
+  const sid = 'beep-profilli';
+  const yol = beepOturumYolu(cfg, sid);
+  fs.mkdirSync(path.dirname(yol), { recursive: true });
+  fs.writeFileSync(yol, JSON.stringify({ profil: 'eco', ts: Date.now() }));
+  beepCalistir(['off', 'this'], cfg, { CLAUDE_CODE_SESSION_ID: sid });
+  beepCalistir(['this', 'sil'], cfg, { CLAUDE_CODE_SESSION_ID: sid });
+  const k = JSON.parse(fs.readFileSync(yol, 'utf8'));
+  esit(k.profil, 'eco', 'profil anahtari korunmali');
+  esit(k.beep, undefined, 'beep anahtari silinmeli');
+});
+
+ol('beep this oturum kimligi yokken acikca durur', () => {
+  const r = beepCalistir(['off', 'this'], beepCfg());
+  esit(r.kod, 1, 'cikis kodu');
+  icerir(r.err, 'oturum kimliği');
+});
+
+ol('bozuk ayar dosyasi varsayilana duser, hata basmaz', () => {
+  const cfg = beepCfg();
+  fs.writeFileSync(path.join(cfg, 'teknesyum-beep.json'), '{bozuk');
+  const r = beepCalistir([], cfg);
+  esit(r.kod, 0, 'cikis kodu');
+  esit(r.err, '', 'stderr bos olmali');
+  icerir(r.out, 'ding.wav');
+  esit(beepKanca({ hook_event_name: 'Stop', cwd: '.' }, cfg).kod, 0, 'kanca cikis kodu');
+});
+
+ol('beep kancasi hicbir girdide sifirdan farkli donmez', () => {
+  const cfg = beepCfg();
+  for (const olay of ['Notification', 'Stop', 'StopFailure', 'PostToolUse', 'SessionEnd']) {
+    const r = beepKanca({ hook_event_name: olay, cwd: '.' }, cfg);
+    esit(r.kod, 0, olay + ' cikis kodu');
+    esit(r.out, '', olay + ' ekrana yazmamali');
+  }
+  esit(beepKanca('{}', cfg).kod, 0, 'bos nesne');
+  esit(beepKanca('bozuk json', cfg).kod, 0, 'bozuk girdi');
+  esit(beepKanca('', cfg).kod, 0, 'bos girdi');
+});
+
+ol('proje dosyasi oturum ve makinenin ustundedir', () => {
+  const cfg = beepCfg();
+  const proje = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-beep-proje-'));
+  fs.mkdirSync(path.join(proje, '.claude'), { recursive: true });
+  fs.writeFileSync(
+    path.join(proje, '.claude', 'teknesyum-beep.json'),
+    JSON.stringify({ olaylar: { bitti: { dosya: 'chord.wav' } } })
+  );
+  fs.writeFileSync(
+    path.join(cfg, 'teknesyum-beep.json'),
+    JSON.stringify({ olaylar: { bitti: { dosya: 'Windows Ringout.wav' } } })
+  );
+  const a = beepCoz(cfg, proje, null);
+  esit(a.olaylar.bitti.dosya, 'chord.wav');
+  esit(a.olaylar.bitti.kaynak, 'proje');
+});
+
+ol('bayat oturum kaydi ses ayarini tasimaz', () => {
+  const cfg = beepCfg();
+  const sid = 'beep-bayat';
+  const yol = beepOturumYolu(cfg, sid);
+  fs.mkdirSync(path.dirname(yol), { recursive: true });
+  fs.writeFileSync(
+    yol,
+    JSON.stringify({ beep: { kapali: true }, ts: Date.now() - 8 * 24 * 60 * 60 * 1000 })
+  );
+  esit(beepCoz(cfg, null, sid).toptan.deger, false, 'bayat kayit okunmamali');
+});
+
+ol('beep gocu elle eklenmis ses kancalarini siler, otekilere dokunmaz', () => {
+  const cfg = beepCfg();
+  const ayar = {
+    statusLine: { type: 'command', command: 'node kopru.js' },
+    hooks: {
+      Notification: [
+        {
+          matcher: '',
+          hooks: [
+            { type: 'command', command: 'powershell -NoProfile -Command "[console]::beep(880,200)"' },
+          ],
+        },
+      ],
+      Stop: [
+        {
+          matcher: '',
+          hooks: [
+            {
+              type: 'command',
+              command: "powershell -NoProfile -Command \"(New-Object Media.SoundPlayer 'x.wav').PlaySync()\"",
+            },
+            { type: 'command', command: 'node baska.js' },
+          ],
+        },
+      ],
+      PreToolUse: [{ hooks: [{ type: 'command', command: 'node koru.js' }] }],
+    },
+  };
+  fs.writeFileSync(path.join(cfg, 'settings.json'), JSON.stringify(ayar, null, 2));
+  const r = beepCalistir([], cfg);
+  icerir(r.out, 'settings.json temizlendi');
+  const s = JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8'));
+  esit(s.hooks.Notification, undefined, 'bos kalan olay silinmeli');
+  esit(s.hooks.Stop[0].hooks.length, 1, 'ilgisiz kanca kalmali');
+  esit(s.hooks.Stop[0].hooks[0].command, 'node baska.js');
+  esit(s.hooks.PreToolUse[0].hooks[0].command, 'node koru.js');
+  esit(s.statusLine.command, 'node kopru.js', 'kanca disi ayar korunmali');
+  icermez(beepCalistir([], cfg).out, 'settings.json temizlendi', 'goc bir kez calismali');
+});
+
+ol('beep gocu ilgisiz powershell kancasini silmez', () => {
+  const cfg = beepCfg();
+  fs.writeFileSync(
+    path.join(cfg, 'settings.json'),
+    JSON.stringify({
+      hooks: {
+        Stop: [{ hooks: [{ type: 'command', command: 'powershell -NoProfile -Command "git status"' }] }],
+      },
+    })
+  );
+  icermez(beepCalistir([], cfg).out, 'settings.json temizlendi');
+  const s = JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8'));
+  esit(s.hooks.Stop[0].hooks.length, 1, 'ilgisiz kanca durmali');
+});
+
+ol('hooks.json uc beep girisi de async ve ayri grupta', () => {
+  const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8')).hooks;
+  for (const olay of ['Notification', 'Stop', 'StopFailure']) {
+    const grup = h[olay].filter((g) => g.hooks.some((k) => k.command.includes('hooks/beep.js')));
+    esit(grup.length, 1, olay + ' icin tek beep grubu olmali');
+    esit(grup[0].hooks.length, 1, olay + ' beep grubu yalniz beep tasimali');
+    esit(grup[0].hooks[0].async, true, olay + ' async olmali');
+  }
+  const stop = h.Stop.find((g) => g.hooks.some((k) => k.command.includes('relay-watch.js')));
+  icermez(JSON.stringify(stop), 'beep.js', 'beep relay-watch grubuna karismamali');
+});
+
+ol('beep.md ve help.md komutu anlatir', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'beep.md'), 'utf8');
+  icerir(k, 'scripts/beep.js');
+  icerir(k, 'Media.SoundPlayer');
+  icerir(k, '/beep this sil');
+  icerir(k, '/beep dinle');
+  icerir(k, 'O üç satırı kısaltma');
+  icerir(k, 'PushNotification');
+  icerir(fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8'), '/beep');
+});
+
+ol('beep dinle uc sesi sirayla bildirir', () => {
+  const r = beepCalistir(['dinle'], beepCfg());
+  esit(r.kod, 0, 'cikis kodu');
+  icerir(r.out, 'ses sırayla çalındı');
+  icerir(r.out, 'bekleme · Windows Startup.wav');
+  icerir(r.out, 'bitti · ding.wav');
+  icerir(r.out, 'hata · Windows Default.wav');
+  icerir(beepCalistir(['test'], beepCfg()).out, 'ses sırayla çalındı');
+});
+
+// Tarafsizlik: depoyu indiren kisi eklentiyi yazan kisinin kurallarini ve zevkini
+// devralmaz. Sifir kural, sifir arayuz ayari ile karsilanir; neon standardi bir sablon
+// olarak sunulur, sessizce yururluge girmez.
+const KURULUM = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'post-install.js'), 'utf8');
+
+ol('kurulum kural defterini bos acar, hazir kural yazmaz', () => {
+  const m = KURULUM.match(/const RULES = `([\s\S]*?)`;/);
+  if (!m) throw new Error('RULES sablonu bulunamadi');
+  const govde = m[1];
+  icerir(govde, '# Rules');
+  icermez(govde, 'No comments in code');
+  icermez(govde, 'teknesyum-ui');
+  const madde = govde.split('\n').filter((s) => s.trim().startsWith('- '));
+  esit(madde.length, 0, 'sablonda hazir kural kalmamali');
+});
+
+ol('setup kural dosyasini bos acar ve gerekcesini soyler', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'setup.md'), 'utf8');
+  icermez(k, 'No comments in code');
+  icermez(k, "Don't ask for routine approval");
+  icerir(k, '**boş** oluştur');
+  icerir(k, '/rule');
+});
+
+ol('ui standardi ayar dosyasi olmadan yururlukte degildir', () => {
+  const k = fs.readFileSync(path.join(KOK, 'skills', 'teknesyum-ui', 'SKILL.md'), 'utf8');
+  icerir(k, 'kendiliğinden yürürlüğe girmez');
+  icerir(k, 'İkisi de yok');
+  icerir(k, '/uisetup');
+  icerir(k, 'Kendiliğinden yürürlüğe girmez', 'skill tanimi da soylemeli');
+});
+
+ol('uisetup sablonu sunar, kendiliginden dosya yazmaz', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'uisetup.md'), 'utf8');
+  icerir(k, '/uisetup sablon');
+  icerir(k, '/uisetup kendim');
+  icerir(k, 'Kullanıcı istemeden bu dosyayı oluşturma');
+  icerir(k, 'Arayüz standardı kurulu değil');
+});
+
+ol('ui-builder standart kapaliyken renk dayatmaz', () => {
+  const k = fs.readFileSync(path.join(KOK, 'agents', 'ui-builder.md'), 'utf8');
+  icerir(k, 'standart yürürlükte değildir');
+  icerir(k, 'tek renk dayatmazsın');
+  icerir(k, 'standart yürürlükteyken istisnasız');
+});
+
+ol('scan ui standart kurulu degilken bulgulari ihlal saymaz', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'scan.md'), 'utf8');
+  icerir(k, 'standart kurulu değil, bulgular ihlal değil öneri');
 });
 
 console.log(

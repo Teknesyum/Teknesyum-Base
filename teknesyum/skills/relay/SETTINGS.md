@@ -11,7 +11,7 @@ Sıralama üç katmandır: **oturum profili → proje `SETTINGS.md` → bu dosya
 ```
 ask_threshold      : critical       # never | critical | ambiguity | often
 approval_gate      : none           # none | plan | every-contract
-audit              : every-contract # off | critical | every-contract
+audit              : critical       # off | very-critical | critical | high | every-contract
 fix_ceiling        : 5              # kaç tur sonra karar sana gelir
 model_escalation   : on             # on | off
 parallel_width     : 2              # eşzamanlı ajan tavanı — eco 1 · normal 2 · premium 20
@@ -39,11 +39,25 @@ autocompact        : auto           # settings.json → autoCompactWindow — ec
 `none` planı yapar ve başlar · `plan` PLAN.md'yi onaylatır ·
 `every-contract` her sözleşmeyi dağıtmadan önce gösterir.
 
-**audit** — `auditor` ne zaman çalışır.
-`critical` = güvenlik, veri kaybı, mimari sınır veya 3+ dosya değiştiren sözleşmeler.
-Varsayılan `every-contract`: ilk gerçek testte bir ajan kabul kriterini eksik karşılayıp
-Çıktı'sında "temiz" raporladı ve `critical` ayarıyla hiç denetlenmeyecekti. Ajan raporu
-denetim yerine geçmez. `critical`'e ancak ölçüp güvendikten sonra düş.
+**audit** — `auditor` ne zaman çalışır. Değer bir **eşiktir**: sözleşmenin geri dönüş
+maliyeti bu seviyede ya da üstündeyse denetçi açılır.
+
+| Değer | Denetlenen sözleşme | Ne kadarı denetlenir |
+|---|---|---|
+| `off` | hiçbiri | — |
+| `very-critical` | geri dönüşü olmayan: veri kaybı, üretim verisi, güvenlik sınırı | en az |
+| `critical` | + mimari sınır, 3+ dosya, genel API değişikliği | |
+| `high` | + geri alması pahalı olan her şey: göç, şema, yayımlanmış arayüz | |
+| `every-contract` | hepsi | en çok |
+
+Ölçek risk sırasıdır, denetim sırası değil: `high` eşiği `critical` eşiğinden **daha çok**
+sözleşme denetler, çünkü daha alçak bir riskten itibaren açılır.
+
+Varsayılan `critical`. Premium bile `every-contract` değildir: basit ve geri dönüşü ucuz
+işte denetçi açmak tur ve token harcar, karşılığında hiçbir şey yakalamaz. Denetimin
+karşılığı geri dönüş maliyeti yüksekken doğar; premium orada `high` ile daha erken açılır
+ve daha titiz çalışır. Ajan raporu denetim yerine geçmez — eşiği aşan sözleşmede denetçi
+atlanamaz.
 
 **fix_ceiling** — kabul kriteri geçmezse: tur 1-3 aynı ajan devam ettirilir
 (`SendMessage`), tur 4-5 taze ajan atanır. Tavana gelince karar sana sorulur.
@@ -196,7 +210,7 @@ edilemez**; premium farkını `model` taşır, efor ikinci derece kaldıraçtır
 | `parallel_width` | 1 | 2 | 20 |
 | `worktree_isolation` | off | off | on |
 | `model_escalation` | on | on | off |
-| `audit` | critical | every-contract | every-contract |
+| `audit` | very-critical | critical | high |
 | `fix_ceiling` | 3 | 5 | 8 |
 | `report_length` | short | short | detailed |
 | `briefing` | quiet | milestone | every-step |

@@ -125,7 +125,7 @@ Teknesyum ▸ Etki
 ```
 
 Ajan açılmayan işte de yaz; satır kısalır, kaybolmaz:
-`Teknesyum ▸ Etki · tek dosya, kendim yaptım · kural: kod yorumu yazılmadı (RULES)`.
+`Teknesyum ▸ Etki · tek dosya, kendim yaptım · kural: git güvenlik noktası atıldı`.
 Arayüz işinde ayrıntılı biçim `teknesyum-ui` §9'da.
 
 Kararsızsan küçük tarafı seç. Röle kurmanın kendi maliyeti var; sonradan büyütmek,

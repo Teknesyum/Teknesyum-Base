@@ -650,15 +650,20 @@ function turBitir(j, root, kapanis) {
   turOzetiBas(ceviri('turOzeti', sureMetni(sn), tokenMetni(ana), tokenMetni(alt)));
 }
 
-// ÖLÇÜLDÜ (22.08.2026): `Stop` olayı `additionalContext` kabul ediyor — 2.1.237
-// ikilisindeki şema `ye({hookEventName:kt("Stop"),additionalContext:L().optional()})`,
-// açıklaması "non-error feedback delivered to the model; the conversation continues so
-// the model can act on it". Satır modele verilince `Stop says:` öneki hiç oluşmaz,
-// çünkü satırı kullanıcıya model basar. Damga dosyası ilk `Stop`'ta silindiğinden
-// yeniden sorgulanan tur ikinci bir özet üretmez.
-//   'model'     → satır `additionalContext` ile modele gider, önek yok
+// ÖLÇÜLDÜ (23.08.2026): `model` kanalı cevabın tamamını tekrarlatıyor. `Stop` olayı
+// `additionalContext` kabul ediyor ve önek oluşmuyor — o kısım doğru. Yanlış olan
+// varsayım şuydu: satırı modele vermek satırı cevabın altına koydurur. `Stop` cevap
+// yazıldıktan sonra çalışır; basılmış mesaj geri alınamaz, modelin elindeki tek yol
+// yeni bir mesaj yazmaktır. "Cevabının en altına yaz" talimatını doğru anlayan model
+// cevabı yeniden üretiyor. Üç turun üçünde de tekrarladı.
+//
+// Damga dosyası ikinci makbuzu engelliyor ama ikinci cevabı engellemiyor; eski not
+// yanlış şeyi güvenceye almıştı. Takas da yanlış tartılmıştı: `Stop says:` öneki tek
+// satırın başında altı karakter, tekrar ise ekranın tamamı.
 //   'kullanici' → satır `systemMessage` ile basılır, `Stop says:` öneki görünür
-const OZET_KANALI = 'model';
+//                 (`BILDIRIM_BICIMI = 'blok'` öneki kendi satırında bırakır)
+//   'model'     → satır `additionalContext` ile modele gider, önek yok, cevap tekrarlanır
+const OZET_KANALI = 'kullanici';
 
 function turOzetiBas(satir) {
   if (OZET_KANALI === 'kullanici') return duyur(satir, 1, true);

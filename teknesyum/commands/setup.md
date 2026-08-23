@@ -19,9 +19,9 @@ gerektireni sor — hepsini tek mesajda, numaralı.
 | Bayat kopya | `~/.claude/statusline.js` var mı | sil |
 | Dil (`en`/`tr`) | `~/.claude/teknesyum.json` → `dil` | sor, yaz |
 | Yönlendirme seviyesi | `~/.claude/teknesyum.json` → `steering` | sor, yaz |
-| Arayüz standardı | `~/.claude/teknesyum-ui.json` var mı, `kapali` ne | sor |
+| Arayüz standardı | `~/.claude/teknesyum-ui.json` var mı, `kapali` ne | yoksa **kapalı** — davet et, yazma |
 | Debug izi | `~/.claude/teknesyum.json` → `debug` | sorma, kapalı bırak |
-| Kural dosyası | `~/.claude/RULES.md` + `CLAUDE.md`'de `@RULES.md` | oluştur |
+| Kural dosyası | `~/.claude/RULES.md` + `CLAUDE.md`'de `@RULES.md` | **boş** oluştur |
 | Global profil | `~/.claude/teknesyum.json` → `profil` | sor, yaz |
 | Sıkıştırma penceresi | `settings.json` → `autoCompactWindow` | yoksa profilden türet |
 | Dil sunucusu | `typescript-language-server --version` | kurulum komutunu bildir |
@@ -41,8 +41,10 @@ gerektireni sor — hepsini tek mesajda, numaralı.
    güncellemede kırılır. Elle kopya da alma — güncellemeler kullanıcıya hiç ulaşmaz.
    `~/.claude/statusline.js` diye eski bir kopya varsa sil; o bayat bir sürümdür.
 
-2. **Kural dosyası.** `~/.claude/RULES.md` yoksa oluştur, `~/.claude/CLAUDE.md`'nin ilk
-   satırlarına `@RULES.md` ekle:
+2. **Kural dosyası.** `~/.claude/RULES.md` yoksa **boş** oluştur, `~/.claude/CLAUDE.md`'nin
+   ilk satırlarına `@RULES.md` ekle. Dosyanın içine örnek kural yazma — buraya yazılan her
+   satır bu makinedeki her projede yürürlüğe girer, ve eklentiyi kuran kişinin kuralları
+   eklentiyi yazan kişinin kuralları değildir. Kullanıcı ilk kuralını `/rule` ile ekler.
 
    ```markdown
    # Rules
@@ -50,11 +52,7 @@ gerektireni sor — hepsini tek mesajda, numaralı.
    Recurring preferences and things that have burned me before. **30-line ceiling** — when it
    is full, don't append; delete the weakest line or merge two. Added with `/rule`.
 
-   - No comments in code. Don't write them unless I explicitly ask.
-   - Don't ask for routine approval. Do anything reversible, then report the result.
-   - No long summaries, no walls of prose. What changed, where — that's it.
-   - Don't invent colors or measurements. Stay inside the `teknesyum-ui` tokens.
-   - Don't leave work half done and don't narrow the scope on your own.
+   <!-- boş — ilk kuralını /rule ile ekle -->
    ```
 
 3. **`autoCompactWindow`.** Kendi başına bir sayı seçme — değer **global profilden**
@@ -107,12 +105,14 @@ Karar kullanıcınındır, varsayma. Hepsini tek mesajda, numaralı sor:
 
   **Varsayılan `1`.** Cevabı `{"steering": 0|1|2}` olarak yaz. Alan varsa bir daha sorma;
   değiştirmek isteyen doğrudan dosyayı düzenler.
-- **Arayüz standardı.** `~/.claude/teknesyum-ui.json` yoksa sor: "Neon arayüz standardı
-  (renk paleti, tipografi, imza) devrede kalsın mı?" Üç cevap:
-  `devrede kalsın` → dosyaya dokunma, varsayılanlar geçerli ·
-  `özelleştireyim` → `/uisetup` alanlarını (palet, font, imza, ekNot) sırayla sor, yalnızca
-  değiştirileni yaz · `kapalı olsun` → `{"kapali": true}` yaz, skill hiçbir renk/ölçü
-  dayatmaz. Dosya varsa sorma, mevcut durumu bitiş özetinde tek satır göster.
+- **Arayüz standardı.** `~/.claude/teknesyum-ui.json` yoksa **standart kapalıdır** ve
+  kapalı kalması varsayılandır. Dayatma değil davet et: "Arayüz standardın olsun mu?
+  Elimizde hazır bir neon şablonu var — istersen olduğu gibi al, istersen birkaç soruya
+  cevap ver, standart senin olsun." Üç cevap:
+  `şablonu al` → `{"kapali": false}` yaz, neon varsayılanları yürürlüğe girer ·
+  `kendim kurayım` → `/uisetup` alanlarını (palet, font, imza, ekNot) sırayla sor, yalnızca
+  cevaplananı yaz · `gerek yok` → **hiçbir dosya yazma**, skill zaten sessiz kalır.
+  Dosya varsa sorma, mevcut durumu bitiş özetinde tek satır göster.
 - `statusLine` **başka bir şeye** işaret ediyorsa: üzerine yazayım mı?
 - `typescript-language-server` yoksa: `npm i -g typescript-language-server typescript@5`
   çalıştırayım mı? (Global paket kurulumu — kendi başına yapma.)

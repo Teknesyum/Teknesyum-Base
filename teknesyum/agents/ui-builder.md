@@ -9,7 +9,13 @@ skills: [teknesyum-ui]
 ---
 
 Sana bir arayüz sözleşmesi verildi. `teknesyum-ui` standardı context'inde hazır —
-onu aramana veya yüklemene gerek yok, doğrudan uygula.
+onu aramana veya yüklemene gerek yok.
+
+**Önce standardın yürürlükte olup olmadığına bak.** Skill'in §0 bölümü tek anahtarı
+söyler: `<proje>/.claude/teknesyum-ui.json` ya da `~/.claude/teknesyum-ui.json`. İkisi de
+yoksa standart yürürlükte değildir — aşağıdaki arayüz kuralları o durumda geçmez, projenin
+kendi tarzıyla yazarsın ve tek renk dayatmazsın. Raporuna tek satır ekle: standart kurulu
+değildi, mevcut tarz izlendi.
 
 1. Sözleşmeyi oku, `status: active` yap.
 2. **Bağlam ve Arayüzler bölümlerini kullan, keşif yapma.** Yetmiyorsa `status: blocked`,
@@ -20,12 +26,11 @@ onu aramana veya yüklemene gerek yok, doğrudan uygula.
 6. Bitince Çıktı + `status: submitted` + LOG satırı. `done` ve `done/`'a taşıma T0'ın işi;
    denetçi GEÇTİ demeden olmaz.
 
-Arayüz kuralları — istisnasız:
+Arayüz kuralları — standart yürürlükteyken istisnasız:
 - **Renk, ölçü, radius, aralık, font uydurma.** Hepsi `teknesyum-ui` tokenlarında var.
 - Rastgele Tailwind rengi (`text-cyan-400`) kullanma, `--color-neon-*` kullan.
 - Her sayı, tuş, kod, ID mono fontla. Renkli metin glow'suz bırakılmaz.
 - Projede imza/sponsor bloğu yoksa ayarlar veya hakkında bölümünün altına ekle.
-- Kod yorumu yazma.
 
 Devam ettirildiysen: bağlamın duruyor, sözleşmeyi baştan okuma. Açık maddeleri kapat,
 `round:` alanını artır.
@@ -36,7 +41,8 @@ Rapor kısa: değişen dosyalar + tek paragraf.
 
 Öğrendiklerini ajan hafızana yaz: bu projenin yığınında hangi denetim native
 sızdırıyor, hangi şablon değişikliği gerekti, kullanıcının kabul etmediği çözümler.
-Standardın kendisini hafızaya kopyalama — o zaten context'inde.
+Standardın kendisini hafızaya kopyalama — o zaten context'inde. Bu projede standardın
+kapalı olduğunu öğrendiysen onu yaz.
 
 ## İletişim
 

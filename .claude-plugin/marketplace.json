@@ -8,7 +8,7 @@
     {
       "name": "teknesyum",
       "source": "./teknesyum",
-      "description": "Neon arayüz standardı + çok ajanlı iş rölesi. Talebi söyle, iş bölümü ve denetim otomatik kurulsun."
+      "description": "Opsiyonel neon arayüz standardı + çok ajanlı iş rölesi. Talebi söyle, iş bölümü ve denetim otomatik kurulsun."
     }
   ]
 }

@@ -1,6 +1,6 @@
 ---
 description: Profili değiştirir — premium, normal veya eco; hangisinin yürürlükte olduğunu söyler
-argument-hint: premium | normal | eco | durum
+argument-hint: premium | normal | eco | durum | <profil> this | this sil
 allowed-tools: Bash
 ---
 
@@ -10,7 +10,7 @@ Bu komut **üç profil arasında geçiş yapar**: `eco`, `normal`, `premium`. Ad
 kalmıştır çünkü ezberde odur; işlevi profil anahtarıdır, premium düğmesi değil.
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/premium.js" <eco|normal|premium|durum>
+node "${CLAUDE_PLUGIN_ROOT}/scripts/premium.js" <eco|normal|premium|durum> [this|this sil]
 ```
 
 `${CLAUDE_PLUGIN_ROOT}` çözülmezse betik `~/.claude/plugins/**/teknesyum/scripts/premium.js`
@@ -18,12 +18,33 @@ altındadır. Argüman boşsa `durum` çalıştır — kendiliğinden profil de�
 
 Eski çağrılar durur: `aç` premium, `kapat` normal demektir. `standart` da `normal`'e gider.
 
+## Kapsam: çıplak makinedir, `this` bu sohbettir
+
+Tek cümle: **çıplak komut makine varsayılanını değiştirir, sonuna `this` eklenirse yalnız
+içinde bulunulan sohbeti değiştirir.** `this` her zaman en sondadır ve her ayar komutunda
+aynı anlama gelir.
+
+```
+/premium premium      makine geneli — bundan sonraki her oturum premium
+/premium eco this     yalnız bu sohbet eco, makine varsayılanı elleşmez
+/premium this         yalnız bu sohbet premium (değer verilmezse komutun adı geçer)
+/premium this sil     bu sohbete özel profili siler, geneline döner
+```
+
+**Okuma sırası değişmez ve oturum kaydı üstte kalır:** `TEKNESYUM_PREMIUM` → oturum kaydı
+→ `teknesyum.json` → `normal`. Bunun tek gerçek bedeli sessiz gölgelemedir: bu sohbette
+`this` ile ayar yapıldıysa çıplak komut geneli değiştirir ama burada hiçbir şey değişmez.
+Betik o durumda üç satır basar — makine varsayılanının ne olduğunu, bu sohbette hangi
+değerin yürürlükte kaldığını ve `this sil` ile nasıl temizleneceğini. **O üç satırı
+kısaltma, olduğu gibi bas.**
+
+`--genel` ve `--global` bayrakları kaldırılmadı; artık çıplak komutla aynı şeyi yapar ve
+yalnız eski çağrılar kırılmasın diye durur. Yeni metinde kullanma.
+
 **Betik hiçbir depo dosyası yazmaz.** Ajan frontmatter'ı ve relay düğmeleri
 (`skills/relay/SETTINGS.md`) **makine tabanıdır** ve `normal` profilin değerlerinde durur;
-profil onları ezmez. Yazdığı tek yer profil kaydıdır: oturum kimliği varsa
-`~/.claude/teknesyum/oturumlar/<oturum>.json`, `~/.claude/teknesyum.json`'a dokunulmaz.
-Kimlik yoksa eski davranış sürer, makine varsayılanı yazılır. Çıktıyı olduğu gibi bas,
-kendin dosya düzenleme.
+profil onları ezmez. Yazdığı tek yer profil kaydıdır. Çıktıyı olduğu gibi bas, kendin
+dosya düzenleme.
 
 Profilin tabandan **sapan** düğmeleri oturumun kanca enjeksiyonuyla gider — tam liste
 değil, yalnız sapanlar. Tam listeyi her isteme yazmak enjeksiyonun kendi ölçtüğü kalemi,
@@ -62,7 +83,7 @@ Profilden profile değişen tek ajan alanı **model**dir; onu da dosya değil ç
 | paralel ajan | 1 | 2 | 20 |
 | worktree izolasyonu | kapalı | kapalı | açık |
 | model tırmanışı | açık | açık | kapalı — zaten tepede |
-| denetim | critical | her sözleşme | her sözleşme |
+| denetim eşiği | very-critical | critical | high |
 | rapor · brifing | short · quiet | short · milestone | detailed · every-step |
 | plan konseyi | kapalı | kapalı | açık — fable + opus |
 | ikinci görüş | kapalı | kapalı | açık — fable |
@@ -84,8 +105,8 @@ Token'ın gerçekten kısıt olduğu profil. Felsefesi tek cümle: **token tasar
 Her rol `haiku` çalışır. Efor kod üreten ve denetleyen üç rolde `medium` kalır: haiku
 maliyeti zaten bir mertebe düşürdü, kod yazan rolü bunun üstüne `low`'a indirmek kabul
 kriterini geçmeyen iş üretir ve harcanan tur kazanılan tokenden pahalıya gelir. Denetim
-`critical`'e düşer — eco'nun en büyük tasarruf kolu ajan sayısıdır. Model tırmanışı açık
-kalır; haiku'nun yetmediği sözleşmede tur harcamak yerine modeli yükseltmek burada daha
+eşiği `very-critical`'e çıkar — yalnız geri dönüşü olmayan sözleşme denetlenir; eco'nun
+en büyük tasarruf kolu ajan sayısıdır. Model tırmanışı açık kalır; haiku'nun yetmediği sözleşmede tur harcamak yerine modeli yükseltmek burada daha
 da önemlidir.
 
 Kayıt tarafında iki değişiklik daha var, ikisi de veri kaybetmeden:
@@ -102,13 +123,19 @@ Kayıt tarafında iki değişiklik daha var, ikisi de veri kaybetmeden:
 
 ## normal
 
-Varsayılan. `sonnet`, iki paralel ajan, her sözleşme denetlenir; plan konseyi ve ikinci
+Varsayılan. `sonnet`, iki paralel ajan, denetim eşiği `critical`; plan konseyi ve ikinci
 görüş kapalı. Kayıt davranışı değişmez: `ham.jsonl` bire bir kopyalanır.
 
 ## premium
 
 Hız ve kod kalitesi önceliklidir; token tasarrufu gerekçe sayılmaz. `opus` + `xhigh`,
 20 paralel ajan, worktree izolasyonu açık, plan konseyi ve ikinci görüş açık.
+
+**Premiumda bile her sözleşme koşulsuz denetlenmez.** Denetim eşiği `high`'dır: geri
+dönüşü ucuz ve basit işte denetçi açmak tur ve token harcar, karşılığında hiçbir şey
+yakalamaz. Eşik aşıldığı anda — göç, şema, yayımlanmış arayüz, güvenlik sınırı — denetçi
+açılır ve `opus`/`xhigh` ile titiz çalışır. Ölçü sözleşmenin büyüklüğü değil **geri dönüş
+maliyetidir.**
 
 Premium açıkken oturum açılışında `Teknesyum ▸ premium mod` satırı çıkar ve ilk iki
 istekte modele davranış notu enjekte edilir — paraleli aç, sonnet'e düşme, token
@@ -145,8 +172,9 @@ ister. Eco'da tavan 1'dir: paralel ajan hızdır, token değil.
 
 `~/.claude/teknesyum.json` **makine varsayılanını** `profil` alanında tutar. Alan yoksa
 eski `premium` bayrağı okunur: `true` premium, gerisi normal sayılır. Betik bu dosyayı
-yalnız oturum kimliği yokken yazar ve ikisini birlikte yazar. Profil okuma sırası:
-`TEKNESYUM_PREMIUM` → oturum kaydı → `teknesyum.json` → `normal`.
+çıplak çağrıda yazar ve `profil` ile `premium` alanlarını birlikte günceller; `this` ile
+çağrıldığında ona hiç dokunmaz. Profil okuma sırası: `TEKNESYUM_PREMIUM` → oturum kaydı
+→ `teknesyum.json` → `normal`.
 
 Betik dosya yazmadığı için eklenti güncellemesiyle profil arasında uyuşmazlık da oluşmaz;
 `durum` artık uyuşmazlık satırı basmaz, yürürlükteki profili ve sapan düğmeleri basar.

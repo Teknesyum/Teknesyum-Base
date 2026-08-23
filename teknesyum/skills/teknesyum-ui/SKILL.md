@@ -1,21 +1,34 @@
 ---
 name: teknesyum-ui
-description: Neon arayüz standardı. Herhangi bir kullanıcı arayüzü, panel, pencere, sayfa, bileşen veya CSS/XAML yazarken ya da mevcut bir arayüzü değiştirirken kullan. Renk paleti, tipografi ölçeği, başlık hiyerarşisi, bileşen kalıpları ve imza/sponsor bloğunu içerir. Web, React, Electron ve WPF/WinForms projelerinin hepsini kapsar. Ayarları /uisetup komutuyla değiştirilir veya tamamen kapatılır.
+description: Neon arayüz standardı. Herhangi bir kullanıcı arayüzü, panel, pencere, sayfa, bileşen veya CSS/XAML yazarken ya da mevcut bir arayüzü değiştirirken kullan. Renk paleti, tipografi ölçeği, başlık hiyerarşisi, bileşen kalıpları ve imza/sponsor bloğunu içerir. Web, React, Electron ve WPF/WinForms projelerinin hepsini kapsar. Kendiliğinden yürürlüğe girmez: yalnız `teknesyum-ui.json` varken uygulanır, yoksa hiçbir renk ya da ölçü dayatılmaz. /uisetup ile kurulur, özelleştirilir veya kapatılır.
 ---
 
 # Neon UI standardı
 
 ## 0. ÖNCE KULLANICI AYARINI OKU
 
-`~/.claude/teknesyum-ui.json` varsa oku. Yoksa aşağıdaki varsayılanlar geçerlidir.
+**Bu standart kendiliğinden yürürlüğe girmez.** Ayar dosyası yoksa hiçbir renk, ölçü ya da
+imza dayatılmaz — bu bir tercih değil, sözleşmenin kendisidir. Aşağıdaki palet ve ölçüler
+bir kişinin zevkidir; onu depoyu indiren herkesin projesine sessizce yazmak,
+standartlaştırma değil dayatmadır.
 
-- `"kapali": true` → **bu skill'i uygulama.** Kullanıcının kendi tercihiyle veya projenin
-  mevcut tarzıyla devam et, hiçbir token dayatma. Burada dur.
+Şuraya bak: `<proje>/.claude/teknesyum-ui.json`, yoksa `~/.claude/teknesyum-ui.json`.
+Projeye özel olan kullanıcı geneline üstündür.
+
+| Durum | Ne yaparsın |
+|---|---|
+| İkisi de yok | **Bu skill'i uygulama.** Projenin mevcut tarzıyla devam et. Kullanıcı o turda arayüz yazdırıyorsa altına tek satır ekle: *"Arayüz standardı kurmak istersen `/uisetup` birkaç soruyla seninkini oluşturur — hazır bir neon şablonu da var."* Bu satırı oturumda bir kez söyle, ısrar etme. |
+| `"kapali": true` | Uygulama. Kullanıcı açıkça istemedi; şablonu da önerme. |
+| Dosya var, `kapali` değil | Standart yürürlüktedir. Aşağıdaki varsayılanlar geçerli, dosyadaki alanlar onları ezer. |
+
+Dosya yürürlükteyken:
+
 - `"palet"`, `"tipografi"`, `"imza"` alanları varsa aşağıdaki varsayılanları **ezer**.
 - `"ekNot"` alanı varsa kullanıcının kendi yazdığı kuraldır — varsayılanlarla çelişirse
   **kullanıcının notu kazanır**.
 
-Projeye özel ezme: `<proje>/.claude/teknesyum-ui.json`. O varsa kullanıcı geneline üstündür.
+`/uisetup` bir şablon sunar, bir kimlik dayatmaz: neon paleti hazır cevap olarak durur,
+kullanıcı kendi rengini, fontunu ve imzasını yazdığı anda standart onun olur.
 
 ## 1. Kurulum (yeni proje)
 

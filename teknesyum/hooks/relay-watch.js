@@ -27,6 +27,9 @@ if (require.main === module) {
   });
 }
 
+// Yürürlükteki kanca olayı. `duyur` kanalını buna göre seçiyor: tur içi olaylar modele,
+// `Stop`/`StopFailure` kullanıcıya. Üstte duruyor çünkü `run` ilk satırında yazıyor.
+let _olay = null;
 let _cikti = null;
 
 function ciktiEkle(alan) {
@@ -43,6 +46,7 @@ function ciktiBas() {
 }
 
 function run(j) {
+  _olay = j.hook_event_name;
   const root = findRelay(j.cwd || process.cwd());
   const kap = kapsayici.kok(j.cwd || process.cwd());
   const kapDurum = kap
@@ -816,11 +820,32 @@ const BILDIRIM_BICIMI = 'satir';
 
 const _duyuru = [];
 
+// Kanalın adı olayın adıdır ve render katmanı `<olay> says:` önekini oradan kuruyor —
+// `Stop says:`, `PreToolUse:Agent says:`. Önek hiçbir ayarla kaldırılamıyor (ölçüldü,
+// 23.08.2026) ve kullanıcı o metni istemiyor.
+//
+// Makbuz statusline'a taşındı ama yönlendirme satırları burada kalmıştı. Onların çözümü
+// ayrı: bu olayların **hepsi tur içinde** ateşleniyor — `PreToolUse`, `PostToolUse`,
+// `SubagentStart/Stop`, `SessionStart`. Yani satır modele **cevap yazılmadan önce**
+// ulaşıyor ve model onu kendi cevabının içine basabiliyor; önek doğmuyor.
+//
+// `Stop`'ta bu yol kapalıydı ve sebebi başkaydı: `Stop` cevap yazıldıktan sonra çalışır,
+// modelin elindeki tek yol yeni bir mesaj yazmaktır, o da cevabı tekrarlatır. Tur içi
+// olaylarda o risk yok.
 function duyur(mesaj, min, tam) {
   if (seviye() < (min || 1)) return;
   _duyuru.push(tam ? mesaj : 'Teknesyum ▸ ' + mesaj);
   const govde = _duyuru.join('\n');
-  ciktiEkle({ systemMessage: BILDIRIM_BICIMI === 'blok' ? '\n' + govde : govde });
+  if (_olay === 'Stop' || _olay === 'StopFailure') {
+    ciktiEkle({ systemMessage: BILDIRIM_BICIMI === 'blok' ? '\n' + govde : govde });
+    return;
+  }
+  ciktiEkle({
+    hookSpecificOutput: {
+      hookEventName: _olay || 'PostToolUse',
+      additionalContext: ceviri('yonlendirmeYonerge', govde),
+    },
+  });
 }
 
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını

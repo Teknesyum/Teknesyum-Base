@@ -75,6 +75,19 @@ const ort = (p) => ({ cwd: p, session_id: 'oturum-1', transcript_path: '/x/oturu
 
 // Açılış bildirimi kullanıcının ~/.claude'una bakar; test makineden bağımsız olsun diye
 // sahte bir config dizini kurup CLAUDE_CONFIG_DIR ile gösteriyoruz.
+
+// Yönlendirme satırları artık modele gidiyor: kanca `systemMessage` kullansa render
+// katmanı satırın başına `<olay> says:` öneki koyuyor ve o önek hiçbir ayarla
+// kaldırılamıyor (ölçüldü 23.08.2026). Tur içi olaylar `additionalContext`e geçti;
+// `Stop` ve `StopFailure` hâlâ kullanıcı kanalında çünkü orada model cevabı tekrarlıyor.
+// Testler iki kanalı da okumalı.
+function duyuruMetni(r) {
+  if (!r || !r.out) return '';
+  let o;
+  try { o = JSON.parse(r.out); } catch { return ''; }
+  return o.systemMessage || (o.hookSpecificOutput || {}).additionalContext || '';
+}
+
 function konfig(kurulu) {
   const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
   if (kurulu) {
@@ -213,7 +226,7 @@ console.log('\nBildirim');
 ol('SessionStart röle durumunu ve sözleşme sayacını bildirir', () => {
   const { p } = proje(2, 1);
   const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(true));
-  const m = JSON.parse(r.out).systemMessage;
+  const m = duyuruMetni(r);
   icerir(m, 'Teknesyum ▸');
   icerir(m, '1/3 bitti');
   icerir(m, '2 açık');
@@ -475,13 +488,13 @@ ol('statusline bağlı değilse açılışta kurulumu hatırlatır', () => {
   const m = JSON.parse(
     calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(false)).out
   );
-  icerir(m.systemMessage, 'kurulum eksik');
+  icerir(m.hookSpecificOutput.additionalContext, 'kurulum eksik');
 });
 
 ol('açılışta iki uyarı olsa da stdout tek JSON kalır', () => {
   const { p } = proje(1, 0);
   const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(false));
-  const m = JSON.parse(r.out).systemMessage;
+  const m = duyuruMetni(r);
   icerir(m, 'kurulum eksik');
   icerir(m, 'röle kurulu');
 });
@@ -498,7 +511,7 @@ ol('görev dağıtımı rol, model ve açıklamayı bildirir', () => {
       description: 'tab bileseni',
     },
   });
-  const m = JSON.parse(r.out).systemMessage;
+  const m = duyuruMetni(r);
   icerir(m, 'Görev ▸ ');
   icerir(m, 'builder');
   icerir(m, 'sonnet');
@@ -515,7 +528,7 @@ ol('ikinci ajanda kaç ajanın çalıştığı yazılır', () => {
     tool_input: { subagent_type: 'builder', description: 'a' },
   };
   calistir(IZLE, yuk);
-  icerir(JSON.parse(calistir(IZLE, yuk).out).systemMessage, ', 2 ajan çalışıyor');
+  icerir(duyuruMetni(calistir(IZLE, yuk)), ', 2 ajan çalışıyor');
 });
 
 ol('ajan bitişi süreyle bildirilir', () => {
@@ -533,7 +546,7 @@ ol('ajan bitişi süreyle bildirilir', () => {
     agent_type: 'builder',
     agent_transcript_path: '/x/a1.jsonl',
   });
-  const m = JSON.parse(r.out).systemMessage;
+  const m = duyuruMetni(r);
   icerir(m, 'bitti');
   icerir(m, 'builder');
   icerir(m, 'sn');
@@ -1117,7 +1130,7 @@ ol('aynı tipten iki ajanda süre uydurulmaz', () => {
     agent_type: 'builder',
     agent_transcript_path: '/x/a1.jsonl',
   });
-  icerir(JSON.parse(r.out).systemMessage, 'süre belirsiz');
+  icerir(duyuruMetni(r), 'süre belirsiz');
 });
 
 console.log('\nİz');
@@ -3808,7 +3821,7 @@ ol('acilis acik sozlesme varken onceki oturumu haber verir', () => {
     { ...ort(p), hook_event_name: 'SessionStart', session_id: 'YENI' },
     { ...k, USERPROFILE: bosEv, HOME: bosEv }
   );
-  icerir(JSON.parse(r.out).systemMessage, '/load son');
+  icerir(duyuruMetni(r), '/load son');
 });
 
 const KAPSAYICI = path.join(KOK, 'hooks', 'kapsayici.js');
@@ -3882,7 +3895,7 @@ ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () =
   const cfg = konfig(true);
   const oturum = { cwd: dip, session_id: 'kap-1', transcript_path: '/x/kap-1.jsonl' };
   const a = calistir(IZLE, { ...oturum, hook_event_name: 'SessionStart' }, cfg);
-  icerir(JSON.parse(a.out).systemMessage, 'üst klasör');
+  icerir(duyuruMetni(a), 'üst klasör');
   calistir(
     IZLE,
     {
@@ -4297,9 +4310,9 @@ ol('sessiz kalmis ajan bildirilir, tazesi bildirilmez', () => {
     steps: 4,
   });
   const r = calistir(IZLE, TETIK(eski.p));
-  icerir(JSON.parse(r.out).systemMessage, 'Sağlık ▸');
-  icerir(JSON.parse(r.out).systemMessage, 'dakikadır sessiz');
-  icerir(JSON.parse(r.out).systemMessage, 'TaskStop');
+  icerir(duyuruMetni(r), 'Sağlık ▸');
+  icerir(duyuruMetni(r), 'dakikadır sessiz');
+  icerir(duyuruMetni(r), 'TaskStop');
   icerir(fs.readFileSync(path.join(eski.live, '_sorun.log'), 'utf8'), 'sessiz');
 
   const taze = saglikProje({
@@ -4417,7 +4430,7 @@ ol('debug kapaliyken Debug satiri cikmaz, acikken cikar', () => {
   if (kapali.out.includes('Debug ▸')) throw new Error('debug kapaliyken satir cikti');
   const { p: p2, live } = proje(1, 0);
   const acik = calistir(IZLE, DEBUG_YUK(p2), { TEKNESYUM_DEBUG: '1' });
-  const m = JSON.parse(acik.out).systemMessage;
+  const m = duyuruMetni(acik);
   icerir(m, '`Teknesyum ▸ Debug ▸ ');
   icerir(m, 'Edit aracı hata verdi');
   icerir(m, 'builder ajanı · a1');
@@ -4430,7 +4443,7 @@ ol('debug kapaliyken Debug satiri cikmaz, acikken cikar', () => {
   delete yuk.agent_id;
   delete yuk.agent_type;
   delete yuk.agent_transcript_path;
-  const anaOturum = JSON.parse(calistir(IZLE, yuk, { TEKNESYUM_DEBUG: '1' }).out).systemMessage;
+  const anaOturum = duyuruMetni(calistir(IZLE, yuk, { TEKNESYUM_DEBUG: '1' }));
   icerir(anaOturum, 'ana oturum');
   if (/ajan[ıi] ajan|ajan ajan/.test(anaOturum))
     throw new Error('ana oturum rol adıyla yazıldı: ' + anaOturum);
@@ -4440,7 +4453,7 @@ ol('debug kapaliyken Debug satiri cikmaz, acikken cikar', () => {
 ol('kesilen arac cagrisi hata degil kesinti diye bildirilir', () => {
   const { p } = proje(1, 0);
   const r = calistir(IZLE, { ...DEBUG_YUK(p), is_interrupt: true }, { TEKNESYUM_DEBUG: '1' });
-  icerir(JSON.parse(r.out).systemMessage, 'Edit aracı kesildi');
+  icerir(duyuruMetni(r), 'Edit aracı kesildi');
 });
 
 ol('ajan kapanisi debug acikken bildirilir ve gunluge dusser', () => {
@@ -4456,7 +4469,7 @@ ol('ajan kapanisi debug acikken bildirilir ve gunluge dusser', () => {
     },
     { TEKNESYUM_DEBUG: '1' }
   );
-  const m = JSON.parse(r.out).systemMessage;
+  const m = duyuruMetni(r);
   icerir(m, 'Debug ▸ bir ajan durdu');
   icerir(m, 'builder ajanı · a1');
   icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'bir ajan durdu');
@@ -4465,7 +4478,7 @@ ol('ajan kapanisi debug acikken bildirilir ve gunluge dusser', () => {
 ol('debug bildirimi ingilizce kurulumda ingilizce konusur', () => {
   const { p } = proje(1, 0);
   const r = calistir(IZLE, DEBUG_YUK(p), { TEKNESYUM_DEBUG: '1', TEKNESYUM_DIL: 'en' });
-  icerir(JSON.parse(r.out).systemMessage, 'the Edit tool failed');
+  icerir(duyuruMetni(r), 'the Edit tool failed');
 });
 
 console.log('\nTur özeti');
@@ -4732,7 +4745,7 @@ const AJAN_YUK = (p) => ({
 
 ol('ajan bildirimi Görev kalibina cekildi', () => {
   const { p } = proje(1, 0);
-  const m = JSON.parse(calistir(IZLE, AJAN_YUK(p)).out).systemMessage;
+  const m = duyuruMetni(calistir(IZLE, AJAN_YUK(p)));
   icerir(m, 'Teknesyum ▸ Görev ▸ Opus-Ortak Katman — builder rolünde opus ile açıldı');
 });
 
@@ -4746,28 +4759,41 @@ ol('ajan bitisi de ayni kalibi kullanir', () => {
     agent_type: 'teknesyum:builder',
     agent_transcript_path: '/x/a1.jsonl',
   });
-  icerir(JSON.parse(r.out).systemMessage, 'Teknesyum ▸ Görev ▸ builder bitti — ');
+  icerir(duyuruMetni(r), 'Teknesyum ▸ Görev ▸ builder bitti — ');
 });
 
 ol('acilis satiri alan listesi olarak kalir', () => {
   const { p } = proje(1, 0);
-  const m = JSON.parse(
-    calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }).out
-  ).systemMessage;
+  const m = duyuruMetni(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }));
   icerir(m, 'röle kurulu · sözleşme 0/1 bitti · 1 açık');
   esit(m.split('▸').length, 2, 'durum satırına etiket oku girmiş');
 });
 
-ol('blok biciminde icerik yeni satirla baslar', () => {
+// Tur içi olaylar `systemMessage` kullanmıyor: o kanal render katmanında
+// `<olay> says:` öneki alıyor ve önek kaldırılamıyor. Yönlendirme satırları modele
+// gidiyor, model onları kendi cevabının içinde basıyor — önek doğmuyor.
+// `BILDIRIM_BICIMI` artık yalnız `Stop`/`StopFailure` kanalını yönetiyor.
+ol('tur ici olaylar kullanici kanalini hic kullanmaz', () => {
   const { p } = proje(1, 0);
-  const m = JSON.parse(calistir(bicimKopya('blok'), AJAN_YUK(p)).out).systemMessage;
-  esit(m[0], '\n', 'blok biçiminde satır başı yok');
+  for (const yuk of [
+    AJAN_YUK(p),
+    { ...ort(p), hook_event_name: 'SessionStart' },
+    { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'x' },
+  ]) {
+    const r = calistir(IZLE, yuk);
+    if (!r.out) continue;
+    const o = JSON.parse(r.out);
+    if (o.systemMessage)
+      throw new Error(yuk.hook_event_name + ' systemMessage kullanmis: ' + o.systemMessage);
+  }
+  const m = duyuruMetni(calistir(IZLE, AJAN_YUK(p)));
   icerir(m, 'Teknesyum ▸ Görev ▸ ');
+  icerir(m, 'olduğu gibi', 'satirin harfiyen basilmasi istenmeli');
 });
 
 ol('sabit satir yapilinca icerik onekle ayni satirda kalir', () => {
   const { p } = proje(1, 0);
-  const m = JSON.parse(calistir(bicimKopya('satir'), AJAN_YUK(p)).out).systemMessage;
+  const m = duyuruMetni(calistir(bicimKopya('satir'), AJAN_YUK(p)));
   if (m.startsWith('\n')) throw new Error('satır biçiminde satır başı kalmış: ' + m);
   icerir(m, 'Teknesyum ▸ Görev ▸ ');
 });
@@ -5100,7 +5126,7 @@ function surumAcilis(cfg) {
     { ...ort(p), hook_event_name: 'SessionStart' },
     { CLAUDE_CONFIG_DIR: cfg }
   );
-  return JSON.parse(r.out || '{}').systemMessage || '';
+  return duyuruMetni(r);
 }
 
 function surumCalistir(cfg, ek) {

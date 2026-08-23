@@ -133,6 +133,20 @@ const S = {
       '`',
   },
 
+  // Yönlendirme satırları modele veriliyor ki kullanıcıya öneksiz ulaşsın; kanca
+  // `systemMessage` kullansa render katmanı başına `<olay> says:` koyuyor ve o önek
+  // hiçbir ayarla kaldırılamıyor (ölçüldü 23.08.2026).
+  yonlendirmeYonerge: {
+    tr: (satir) =>
+      'Aşağıdaki satır(lar)ı cevabının en üstüne, olduğu gibi, her biri kendi satırında ve ' +
+      'ters tırnak içinde bas. Kendin yeniden yazma, kısaltma, birleştirme:\n' +
+      satir,
+    en: (satir) =>
+      'Print the line(s) below at the top of your answer, verbatim, each on its own line ' +
+      'and wrapped in backticks. Do not rewrite, shorten or merge them:\n' +
+      satir,
+  },
+
   acikGunluk: {
     tr: (n) =>
       n + ' açık hata günlüğü var — `/log` ile bak, çözüp `/log kapat` ya da `/log arsivle` de',

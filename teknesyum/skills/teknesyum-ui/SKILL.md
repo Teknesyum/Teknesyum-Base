@@ -226,9 +226,11 @@ bilgi kaybolmayan ayraçlar. Bir çerçeve "buraya kadar" diyorsa `/50`'dir.
 **Zincirin tek kaynağı burasıdır.** `theme.css`, `Theme.xaml` ve `Palette.cs` bu iki satırı
 taşır; üçünden biri ayrışıyorsa hata odur, burası değil. **Zincirin başı üçünde de aynıdır**
 — sans `Atkinson Hyperlegible Next` → `Segoe UI`, mono `Cascadia Mono` → `Consolas`.
-Kuyruğu WPF ve WinForms kısaltır: `system-ui`, `-apple-system`, `ui-monospace` ve
-`Courier New` CSS'e özgü ya da başka platformların adlarıdır, .NET font zincirinde
-karşılıkları yoktur. **Bu platform sınırıdır, ayrışma değil** — ayrışma sayılan tek şey
+Kuyruğu WPF ve WinForms kısaltır. İki ayrı sebep var ve karıştırılmamalı: `system-ui`,
+`-apple-system` ve `ui-monospace` CSS'e özgü genel adlardır, .NET font zincirinde
+**karşılıkları yoktur**. `Courier New` ise standart bir Windows ailesidir ve
+kullanılabilirdi — zincirden **tercihen** çıkarıldı, çünkü `Consolas` her Windows'ta
+bulunur ve ikinci bir daktilo yedeği okunurluk kazandırmıyor. **Bu platform sınırıdır, ayrışma değil** — ayrışma sayılan tek şey
 zincirin başındaki adların ya da sıralarının farklılaşmasıdır.
 
 ```

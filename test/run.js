@@ -7263,7 +7263,13 @@ ol('ui olculmemis sayilar etiketli, olculmus gibi sunulmuyor', () => {
   if (n < 5) throw new Error('SKILL icinde en az bes etiket bekleniyordu, bulunan: ' + n);
   for (const konu of ['en az 11', '≥ 40 s', '1.4 s', '%20-30', '42×30 DIP'])
     icerir(U2_SKILL, konu);
-  icerir(U2_LAYOUT, '240 DIP açık, 48 DIP kapalı**');
+  // Cümlenin yazımına değil, sayıların etiketli olmasına bakılır. Önceki hâl kapanış
+  // `**`'ına, virgülüne ve kelime sırasına bağlıydı; cümle yeniden yazılınca kural
+  // yerinde dururken test düşerdi (U2 tur 2 denetimi).
+  const kenarSatiri = U2_LAYOUT.split('\n').find((r) => /240\s*DIP/.test(r));
+  if (!kenarSatiri) throw new Error('layout.md icinde kenar cubugu olcusu bulunamadi');
+  for (const sayi of ['240', '48'])
+    if (!kenarSatiri.includes(sayi)) throw new Error('kenar cubugu olcusu eksik: ' + sayi);
   icerir(U2_LAYOUT, '(varsayılan, ölçülmedi)');
   // Pencere düğmesi 23.08.2026'da kullanıcı kararıyla 42×30'a sabitlendi; artık
   // "ölçülmedi" etiketi taşımıyor, kararın kendisi gerekçesiyle yazılı.
@@ -7277,9 +7283,17 @@ ol('ui pencere dugmesi celiskisi 42x30 lehine kapandi', () => {
   icerir(U2_DESKTOP, '42×30 DIP');
   icermez(U2_SKILL, 'Açık çelişki — karara bağlanmadı', 'celiski blogu kalkmali');
   icermez(U2_DESKTOP, 'Açık çelişki — karara bağlanmadı', 'celiski blogu kalkmali');
-  for (const d of [U2_SKILL, U2_DESKTOP])
-    if (/52×36/.test(d.replace(/^.*52×36px diyordu.*$/gm, '')))
-      throw new Error('52×36 hâlâ kural olarak duruyor');
+  // Eski değer yalnız **tarihçe cümlesinde** geçebilir. Önceki hâl o cümleyi düz yazı
+  // deseniyle siliyordu; cümle yeniden yazılınca silme tutmaz ve test kural bozulmadan
+  // düşerdi. Ölçülen şey artık şu: 52×36 geçen her satır bir tarihçe satırı mı?
+  const TARIHCE = /(diyordu|kapand[ıi]|eskiden|bir d[öo]nem|kullanıcı karar)/i;
+  for (const [ad, d] of [
+    ['SKILL.md', U2_SKILL],
+    ['desktop.md', U2_DESKTOP],
+  ])
+    for (const satir of d.split('\n').filter((r) => r.includes('52×36')))
+      if (!TARIHCE.test(satir))
+        throw new Error(ad + ': 52×36 kural gibi duruyor — ' + satir.trim().slice(0, 80));
 });
 
 ol('ui standardi yalniz karanliktir ve bunu §0 icinde soyler', () => {
@@ -7354,8 +7368,14 @@ ol('ui kopyalanabilir siniflar tipografi olceginin tokenlarini okur', () => {
   for (const eski of ['font-bold', 'tracking-widest', 'text-base', 'text-xl', 'text-sm'])
     icermez(kod, eski, 'components.md kod blogunda Tailwind varsayilani');
   // Govdeyle ayni boyutta baslik kalmadi: fs-2 yalniz mono degerde gecebilir.
-  for (const b of kod.split('\n').filter((r) => /^(h2|h3|lbl)\b/.test(r)))
-    icermez(b, '--tk-fs-2', 'baslik govde basamagina inmis: ' + b);
+  // Sıfır eşleşme "başlık yok" değil "desen bozuk" demektir; tur 1'in ölü testi tam bu
+  // sınıfta kaybolmuştu. Döngü boş geçerse iddia sessizce geçerdi.
+  const basliklar = kod.split('\n').filter((r) => /^(h2|h3|lbl)\b/.test(r));
+  if (basliklar.length < 3)
+    throw new Error(
+      'components.md kod blogunda uc baslik satiri bekleniyordu, bulunan: ' + basliklar.length
+    );
+  for (const b of basliklar) icermez(b, '--tk-fs-2', 'baslik govde basamagina inmis: ' + b);
 });
 
 ol('ui kopyalanabilir siniflarda yaricap tek deger, daire istisnasi duruyor', () => {

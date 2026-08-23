@@ -1,0 +1,329 @@
+/* Teknesyum Neon — giriş, doğrulama, modal, toast.
+   `theme.css`ten SONRA import edilir; kendi token tanımı yoktur, hepsini oradan okur.
+   Gerekçeler ve ölçümler: references/forms.md.
+
+   ŞERH: modal ve toast form değildir; U10 birleştirmesinde overlays.css'e ayrılmaya
+   adaydır. Dosya adı bilerek böyle bırakıldı (owns pazarlığı yapılmadı).
+
+   BU DOSYADA HAM SÜRE YOKTUR. Her geçiş `--tk-t-*` ve `--tk-e-*` tokenı yazar;
+   `0.3s` / `200ms` gibi bir değer görürsen o bir hatadır (test/u3-forms.js A3).
+   Azaltılmış hareket bloğu burada tekrarlanmaz — `theme.css` genel olarak uyguluyor. */
+
+/* ==========================================================================
+   1 · Metin girişi — beş durum
+   ========================================================================== */
+
+.tk-input {
+  /* 40px: 16px metin + 12px x 2 dikey dolgu. (varsayılan, ölçülmedi — oran tahmini)
+     SKILL §5.3'ün 24 DIP hedef tabanını aşar, yerini almaz. */
+  min-height: 40px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  font-family: var(--font-sans, 'Atkinson Hyperlegible Next', 'Segoe UI', system-ui, sans-serif);
+  font-size: var(--tk-fs-2);
+  line-height: var(--tk-lh-body);
+  color: var(--tk-text);
+  background: var(--tk-surface);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-r);
+  /* Yalnız renk geçer; boyut ve gölge geçmez (SKILL §5.4 M6). */
+  transition: border-color var(--tk-t-instant) var(--tk-e-out),
+              background-color var(--tk-t-instant) var(--tk-e-out);
+}
+
+/* Sayı, kod, ID, anahtar taşıyan giriş mono yazar (SKILL §3). */
+.tk-input.tk-mono-input {
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  line-height: var(--tk-lh-mono);
+}
+
+.tk-input:hover:not(:disabled):not([readonly]) {
+  border-color: var(--tk-border-strong);
+}
+
+/* Odak halkası `theme.css`teki genel `:focus-visible` kuralından gelir — çift katman,
+   geçişsiz. Burada yalnız çerçeve güçlenir; halka yeniden tanımlanmaz. */
+.tk-input:focus-visible {
+  border-color: var(--tk-border-strong);
+}
+
+/* Caret ve seçim: varsayılan tarayıcı renkleri bu palette okunmuyor. */
+.tk-input {
+  caret-color: var(--tk-blue);
+}
+.tk-input::selection {
+  background: rgba(0, 243, 255, 0.3);
+  color: var(--tk-text);
+}
+
+/* Hata: TAM `--tk-danger` hex'i. Pembe /50 çerçeve yüzey üstünde 2.17:1 verir ve
+   WCAG 1.4.11'in 3:1 eşiğini TAŞIMAZ; tam hex 6.11:1 verir. Ölçüm test/u3-forms.js
+   içinde her koşumda baştan yapılır. */
+.tk-input-hata,
+.tk-input[aria-invalid='true'] {
+  border-color: var(--tk-danger);
+}
+
+/* Devre dışı yalnız solmakla bitmez: `title` metni zorunludur (SKILL §2), imleç
+   `not-allowed` olur. Tek gri YALNIZ buradadır — placeholder'a, yardım metnine ya da
+   ikincil metne genişletilmez. */
+.tk-input:disabled {
+  color: var(--tk-disabled);
+  background: transparent;
+  border-color: var(--tk-disabled);
+  cursor: not-allowed;
+}
+
+/* Salt okunur devre dışı değildir: odaklanabilir kalır, metni beyaz kalır. */
+.tk-input[readonly] {
+  border-color: var(--tk-border-decorative);
+  color: var(--tk-text);
+}
+
+/* PLACEHOLDER KULLANILMIYOR.
+   Placeholder metindir ve §2'nin 7:1 eşiğine tabidir. `--tk-disabled` (#71717a) yüzey
+   üstünde 4.12:1 verir — taşımaz; o tokenı buraya vermek "tek gri yalnız devre dışı"
+   kuralını sessizce genişletir. Ara gri de icat edilmez.
+   YERİNE NE KONUR: örnek metin girişin ALTINDA `.tk-hint` ile yazılır ve alana
+   `aria-describedby` ile bağlanır (references/forms.md §1). Bir projede placeholder
+   yine de kullanılacaksa rengi düz `--tk-text` olur ve metin `Örn: ` önekiyle yazılır —
+   aşağıdaki kural tam olarak bunu zorlar, soluk placeholder'ı imkânsızlaştırır. */
+.tk-input::placeholder {
+  color: var(--tk-text);
+  opacity: 1;
+}
+
+/* Etiket her zaman görünür durur; placeholder etiketin yerini almaz. */
+.tk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   2 · Doğrulama hatası
+   ========================================================================== */
+
+/* Mesaj alanın ALTINDADIR. Üstte olsaydı belirdiğinde alanı aşağı iterdi ve odaklı alan
+   kayardı (SKILL §5.4 M12). Yer baştan ayrılmaz; metin opaklıkla belirir, yükseklik
+   animasyonlanmaz. */
+.tk-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--tk-fs-1);
+  line-height: var(--tk-lh-body);
+  /* Dolgu tokenı değil METİN tokenı: #ff00ea metinde 6.11:1, #ff54eb 7.33:1. */
+  color: var(--tk-danger-text);
+  /* Metne glow verilmez (SKILL §2); tek istisna hero sayıdır. */
+  text-shadow: none;
+  /* Geçiş tercih edilir, keyframe değil — geçiş yarıda iptal edilebilir (SKILL §5.4 M7).
+     Mesaj belirirken yalnız opaklık geçer; yükseklik animasyonlanmaz. */
+  transition: opacity var(--tk-t-fast) var(--tk-e-out);
+}
+.tk-error[data-tk-giriyor='1'] { opacity: 0; }
+
+/* RENK TEK BAŞINA ANLAM TAŞIMAZ (WCAG 1.4.1): mesaj ikon + metin taşır. İkon anlam
+   taşımaz, `aria-hidden="true"` yazar; anlamı metin verir. */
+.tk-error-ikon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+}
+
+/* ==========================================================================
+   3 · Modal / diyalog — desktop.md'nin MessageBox yasağının ikamesi
+   ========================================================================== */
+
+.tk-modal-perde {
+  position: fixed;
+  inset: 0;
+  /* (varsayılan, ölçülmedi) — ölçüt: arkadaki metin okunamaz ama panel sınırı seçilir.
+     `backdrop-filter` KULLANILMAZ: arkayı okunmaz yapmak karartmanın işi, bulanıklığın
+     değil. */
+  background: rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  transition: opacity var(--tk-t-base) var(--tk-e-out);
+}
+.tk-modal-perde[data-tk-kapaniyor='1'] {
+  opacity: 0;
+  transition: opacity var(--tk-t-fast) var(--tk-e-in);
+}
+
+.tk-modal {
+  /* 560 (varsayılan, ölçülmedi). */
+  width: min(560px, 90vw);
+  max-height: 85vh;
+  overflow: auto;
+  background: rgba(8, 9, 10, 0.95);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-r);
+  padding: 24px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+  /* Giriş: opaklık 0->1 + scale(0.98)->1 (SKILL §5.4 taban tablosu). Yalnız `opacity`
+     ve `transform` animasyonlanır. Odak beklemez: öğe ilk kareden itibaren odaklanabilir. */
+  transition: opacity var(--tk-t-base) var(--tk-e-out),
+              transform var(--tk-t-base) var(--tk-e-out);
+}
+.tk-modal[data-tk-giriyor='1'] {
+  opacity: 0;
+  transform: scale(0.98);
+}
+.tk-modal[data-tk-kapaniyor='1'] {
+  opacity: 0;
+  transform: scale(0.98);
+  /* Çıkış girişin tersi ve bir kademe kısa. */
+  transition: opacity var(--tk-t-fast) var(--tk-e-in),
+              transform var(--tk-t-fast) var(--tk-e-in);
+}
+
+/* Metin gövdesi ölçülü satır uzunluğunda kalır (SKILL §3.2). */
+.tk-modal-govde {
+  max-width: var(--tk-measure);
+  line-height: var(--tk-lh-body);
+  color: var(--tk-text);
+}
+
+.tk-modal-eylemler {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ARKA PLAN TIKLAMASI — iki tür, iki davranış. Öznitelik CSS'te bir şey çizmez; kalıbın
+   taşıyıcısıdır ve uygulama kodu bunu okur. Yazılı olmazsa her projede yeniden tartışılır.
+     data-tk-modal="onay"  -> yıkıcı/geri alınamaz iş. Perdeye tıklamak KAPATMAZ.
+                              (Yanlışlıkla dışarı tıklayan kullanıcı iptal ettiğini
+                              fark etmez.) `Esc` kapatır ve iptal sayılır.
+     data-tk-modal="bilgi" -> sonuç/ayrıntı. Perdeye tıklamak KAPATIR, `Esc` kapatır.
+   Her iki türde de: Tab sırası görsel sıra, kapanışta odak açan öğeye döner, tuzakta
+   odaklanabilir öğe kalmazsa modal kapanır (SKILL §5.3, dört madde). */
+.tk-modal-perde[data-tk-modal='onay'] {
+  cursor: default;
+}
+
+/* ==========================================================================
+   4 · Toast
+   ========================================================================== */
+
+/* Kap sayfa yüklenirken BOŞ olarak DOM'da durur — sonradan eklenen canlı bölge okunmaz.
+   `aria-live="polite"` kapta yazar. */
+.tk-toast-yigin {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.tk-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  /* (varsayılan, ölçülmedi) */
+  width: min(360px, calc(100vw - 48px));
+  padding: 12px;
+  background: rgba(8, 9, 10, 0.95);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-r);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+  /* Gövde metni her çeşitte beyaz kalır (19.93:1); renk çerçeve, ikon ve başlıkta. */
+  color: var(--tk-text);
+  font-size: var(--tk-fs-1);
+  line-height: var(--tk-lh-body);
+  /* Giriş, çıkış VE yığının kayması — SKILL §5.4 üçünü birden istiyor. */
+  transition: opacity var(--tk-t-fast) var(--tk-e-out),
+              transform var(--tk-t-fast) var(--tk-e-out);
+}
+.tk-toast[data-tk-giriyor='1'] {
+  opacity: 0;
+  transform: translateX(8px);
+}
+.tk-toast[data-tk-kapaniyor='1'] {
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity var(--tk-t-instant) var(--tk-e-in),
+              transform var(--tk-t-instant) var(--tk-e-in);
+}
+
+/* ÜÇ ÇEŞİT VAR, DÖRDÜNCÜ YOK.
+   INFO TOAST YOK, DÜZ METİN TOAST VAR — beyaz metin, mavi çerçeve yok.
+   Nötr bildirim çeşit sınıfı almaz: çerçevesi `--tk-border`, metni `--tk-text`, ikonu
+   yok — yani yukarıdaki `.tk-toast` temelinin kendisidir.
+   `--tk-info` diye bir token YOKTUR ve icat edilmeyecektir (U4 konseyi: kullanılmayan
+   token borçtur). Mavi çerçeveli "bilgi" toast'ı ayrıca birincil butonla aynı ekranda
+   karışır; ikisi de mavi olur, kullanıcı tıklanabilir olanı ayırt edemez. */
+.tk-toast-success { border-color: var(--tk-success); }
+.tk-toast-success .tk-toast-ikon,
+.tk-toast-success .tk-toast-baslik { color: var(--tk-success); }
+
+.tk-toast-warning { border-color: var(--tk-warning-border); }
+.tk-toast-warning .tk-toast-ikon,
+.tk-toast-warning .tk-toast-baslik { color: var(--tk-warning); }
+
+/* Çerçeve TAM `--tk-danger` hex'i (6.11:1); /50 pembe 2.17:1 ile 3:1'i taşımaz.
+   Başlık metni ise metin rolünü yazar (7.33:1). */
+.tk-toast-danger { border-color: var(--tk-danger); }
+.tk-toast-danger .tk-toast-ikon,
+.tk-toast-danger .tk-toast-baslik { color: var(--tk-danger-text); }
+
+/* RENK TEK BAŞINA ANLAM TAŞIMAZ: her çeşit toast ikon VE metin taşır. */
+.tk-toast-ikon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+.tk-toast-baslik {
+  font-weight: 600;
+  letter-spacing: var(--tk-tr-h2);
+}
+.tk-toast-govde {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Kapat çarpısı: hedef alan 24x24 (SKILL §5.3), simge 14px.
+   `aria-label="Bildirimi kapat"` zorunlu. */
+.tk-toast-kapat {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--tk-r);
+  color: var(--tk-text);
+  cursor: pointer;
+  transition: color var(--tk-t-instant) var(--tk-e-out);
+}
+.tk-toast-kapat:hover { color: var(--tk-blue); }
+.tk-toast-kapat svg { width: 14px; height: 14px; }
+
+/* SÜRE VE HOVER — davranış, CSS değeri değil.
+   Ömür: 6 sn (varsayılan, ölçülmedi) — kaynak yaygın pratik, ölçüm U5'e devredildi.
+   Uygulama sabiti `TK_TOAST_OMUR_MS = 6000`; burada süre tokenı olarak TANIMLANMAZ,
+   çünkü bir geçiş süresi değildir ve `--tk-t-*` merdiveninin tavanı 360'tır.
+   `danger` toast KALICIDIR: kendiliğinden kapanmaz, elle kapatılır.
+   HOVER'DA SAYAÇ DURUR, fare çıkınca kaldığı yerden devam eder. Klavye odağı toast'ın
+   içindeyken de durur — kapat düğmesine Tab'la ulaşan kullanıcının altından toast
+   kaçmamalı. Aşağıdaki iki seçici bu duruşun kancasıdır; uygulama kodu bunları okur. */
+.tk-toast:hover,
+.tk-toast:focus-within {
+  --tk-toast-sayac: durdu;
+}
+
+/* `role="alert"` YALNIZ kalıcı hata toast'ında kullanılır; her toast'a verilirse
+   kullanıcının okuduğu cümle sürekli kesilir. Form hata metninde de kullanılmaz. */

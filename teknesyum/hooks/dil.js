@@ -127,6 +127,28 @@ const S = {
       '`',
   },
 
+  aciktaKuyruk: {
+    tr: (n) => 'Açıkta ' + n + ' madde — listesi `/report` ile açılır.',
+    en: (n) => n + ' item(s) still open — list them with `/report`.',
+  },
+
+  yonlendirmeTavan: {
+    tr: (n) =>
+      'Yönlendirme ' +
+      n +
+      ' satır, tavan 5. Beş satıra sığmayan şey yönlendirme değildir: ' +
+      'değişikliği sözleşme dosyasına yaz, ajana tek satır gönder — ' +
+      '"DEĞİŞTİ — sözleşme güncellendi, ilgili bölümü yeniden oku." ' +
+      'Okunma anı sözleşmedir, mesaj değil.',
+    en: (n) =>
+      'Steering message is ' +
+      n +
+      ' lines, the ceiling is 5. Anything longer is not steering: ' +
+      'write the change into the contract file and send the agent one line — ' +
+      '"CHANGED — the contract was updated, re-read the relevant section." ' +
+      'The contract is what gets read, not the message.',
+  },
+
   // Yönlendirme satırları modele veriliyor ki kullanıcıya öneksiz ulaşsın; kanca
   // `systemMessage` kullansa render katmanı başına `<olay> says:` koyuyor ve o önek
   // hiçbir ayarla kaldırılamıyor (ölçüldü 23.08.2026).

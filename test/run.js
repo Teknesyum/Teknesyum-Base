@@ -7856,6 +7856,211 @@ ol('depo-surum.js require edilince CLI calismaz, sonuc nesne olarak okunur', () 
   icerir(depoSurum.metin(depoSurum.durum(depoKur('esit').w)), 'güncel');
 });
 
+console.log('\nKesinti kuyruğu');
+
+const RAPOR_KOMUT = path.join(KOK, 'commands', 'report.md');
+const RELAY_SKILL = path.join(KOK, 'skills', 'relay', 'SKILL.md');
+const COK_OTURUM = path.join(KOK, 'skills', 'relay', 'references', 'multi-session.md');
+
+function json(f) {
+  return JSON.parse(fs.readFileSync(f, 'utf8'));
+}
+
+function kuyrukKur(sozlesme, acik) {
+  const { p, live } = proje(sozlesme, 0);
+  fs.mkdirSync(live, { recursive: true });
+  const f = path.join(live, '_acik.json');
+  if (acik) fs.writeFileSync(f, JSON.stringify(acik));
+  return { p, live, f };
+}
+
+function durumSatiri(p, session) {
+  return calistir(DURUM, {
+    cwd: p,
+    session_id: session || 'oturum-1',
+    model: { display_name: 'Opus' },
+    workspace: { current_dir: p },
+  }).out;
+}
+
+ol('_acik.json uc alan tasir, on satiri gecmez', () => {
+  const { p, f } = kuyrukKur(1, {
+    simdi: 'T3 yurutuluyor\nikinci satir',
+    acikta: Array.from({ length: 15 }, (_, i) => 'madde ' + (i + 1)),
+    sirada: 'T4 acilacak',
+    fazladan: 'bu alan silinmeli',
+  });
+  calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'PostToolUse',
+    tool_name: 'Write',
+    tool_input: { file_path: f },
+  });
+  const govde = fs.readFileSync(f, 'utf8');
+  const d = JSON.parse(govde);
+  esit(Object.keys(d).join(','), 'simdi,acikta,sirada', 'uc alan disinda alan kalmis');
+  esit(d.acikta.length, 8, 'acikta tavani');
+  esit(d.simdi, 'T3 yurutuluyor ikinci satir', 'simdi tek satira inmeli');
+  esit(d.simdi.includes('\n'), false, 'simdi cok satirli');
+  esit(1 + d.acikta.length + 1 <= 10, true, 'icerik satiri 10u gecti');
+  esit(govde.trim().split('\n').length <= 10, true, 'dosya 10 satiri gecti: ' + govde);
+});
+
+ol('Stop kancasi acik madde varken tek satir basar, boska susar', () => {
+  const dolu = kuyrukKur(1, { simdi: '', acikta: ['ikon seti', 'README adimi'], sirada: '' });
+  const r = calistir(IZLE, { ...ort(dolu.p), hook_event_name: 'Stop' });
+  const o = JSON.parse(r.out);
+  icerir(o.systemMessage, 'Açıkta 2 madde');
+  esit(o.systemMessage.split('\n').length, 1, 'tek satir olmali: ' + o.systemMessage);
+  icermez(o.systemMessage, 'ikon seti', 'madde metni sohbete basiliyor');
+
+  const bos = kuyrukKur(1, { simdi: 'T3', acikta: [], sirada: 'T4' });
+  esit(calistir(IZLE, { ...ort(bos.p), hook_event_name: 'Stop' }).out, '', 'bos kuyrukta sustu');
+
+  const yok = proje(1, 0);
+  esit(calistir(IZLE, { ...ort(yok.p), hook_event_name: 'Stop' }).out, '', 'dosya yokken sustu');
+});
+
+ol('statusline acikta N · ajan X/Y gosterir', () => {
+  const { p, live } = kuyrukKur(1, { simdi: '', acikta: ['a', 'b'], sirada: '' });
+  const simdi = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  fs.writeFileSync(
+    path.join(live, '_running.json'),
+    JSON.stringify([{ type: 'builder', desc: 'T3', start: Date.now() }])
+  );
+  for (const ad of ['a1', 'a2', 'a3']) {
+    fs.writeFileSync(
+      path.join(live, ad + '.json'),
+      JSON.stringify({
+        agent_id: ad,
+        agent_type: 'builder',
+        stop_reason: 'end_turn',
+        ended: simdi,
+        last_seen: simdi,
+      })
+    );
+  }
+  icerir(durumSatiri(p), 'açıkta 2 · ajan 1/3');
+});
+
+ol('acik madde yokken statusline acikta yazmaz', () => {
+  const { p } = kuyrukKur(1, { simdi: 'T3', acikta: [], sirada: '' });
+  icermez(durumSatiri(p), 'açıkta');
+});
+
+ol('5 satiri gecen SendMessage engellenir, gerekce doner', () => {
+  const { p, live } = kuyrukKur(1, null);
+  fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify({ agent_id: 'a1' }));
+  const r = calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'PostToolUse',
+    tool_name: 'SendMessage',
+    tool_input: { agent_id: 'a1', message: 'DEĞİŞTİ\n1\n2\n3\n4\n5' },
+  });
+  const o = JSON.parse(r.out);
+  esit(o.decision, 'block');
+  icerir(o.reason, 'tavan 5');
+  icerir(o.reason, 'sözleşme dosyasına yaz');
+  esit(json(path.join(live, 'a1.json')).steered, undefined, 'engellenen mesaj kayda girdi');
+});
+
+ol('gecen yonlendirme steered[] e duser, kayitli sayi atilan sayiya esit', () => {
+  const { p, live } = kuyrukKur(1, null);
+  fs.writeFileSync(
+    path.join(live, 'a1.json'),
+    JSON.stringify({ agent_id: 'a1', agent_type: 'builder' })
+  );
+  const yolla = (m) =>
+    calistir(IZLE, {
+      ...ort(p),
+      hook_event_name: 'PostToolUse',
+      tool_name: 'SendMessage',
+      tool_input: { agent_id: 'a1', message: m },
+    }).out;
+
+  esit(yolla('DEVAM — D1 indi, yol açık.'), '', 'tek satir engellendi');
+  esit(yolla('DUR\nsözleşme değişti\n§3 yeniden'), '', 'uc satir engellendi');
+  const engel = JSON.parse(yolla('DEĞİŞTİ\n1\n2\n3\n4\n5\n6'));
+  esit(engel.decision, 'block');
+
+  const a = json(path.join(live, 'a1.json'));
+  esit(a.steered.length, 2, 'atilan iki, kayitli ' + (a.steered || []).length);
+  esit(a.steered[0].fiil, 'DEVAM');
+  esit(a.steered[0].satir, 1);
+  esit(a.steered[1].fiil, 'DUR');
+  esit(a.steered[1].satir, 3);
+  if (!a.steered[0].t) throw new Error('zaman damgasi yok');
+  icerir(a.steered[1].metin, '§3 yeniden', 'metin kayda girmemis');
+});
+
+ol('kaydi olmayan hedefin yonlendirmesi ajan sanilmaz', () => {
+  const { p, live } = kuyrukKur(1, null);
+  esit(
+    calistir(IZLE, {
+      ...ort(p),
+      hook_event_name: 'PostToolUse',
+      tool_name: 'SendMessage',
+      tool_input: { message: 'DEVAM — kayıtsız hedef' },
+    }).out,
+    ''
+  );
+  esit(fs.existsSync(path.join(live, '_steered.json')), true, 'yonlendirme kaybolmus');
+  icermez(durumSatiri(p), '⨯', 'hayalet olu ajan satiri dogdu');
+});
+
+ol('acik is listesi hicbir turda baglama enjekte edilmez', () => {
+  const { p } = kuyrukKur(1, {
+    simdi: 'T3 yürütülüyor',
+    acikta: ['ikon setini tema tokenlarına bağla', 'README kurulum adımı'],
+    sirada: 'T4',
+  });
+  const r = calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'UserPromptSubmit',
+    prompt: 'devam',
+  });
+  const ek = (JSON.parse(r.out || '{}').hookSpecificOutput || {}).additionalContext || '';
+  icermez(ek, 'ikon setini', 'kesinti maddesi baglama girdi');
+  icermez(ek, 'T3 yürütülüyor', 'yuruyen is baglama girdi');
+  icermez(ek, 'açıkta', 'durum blogu baglama girdi');
+  icermez(JSON.stringify(JSON.parse(r.out || '{}')), 'systemMessage', 'tur basi satir bastı');
+});
+
+ol('yonlendirme tavani ve kuyruk satiri dil.js ten gelir, tr ve en var', () => {
+  const kaynak = fs.readFileSync(DIL, 'utf8');
+  const blok = kaynak.slice(
+    kaynak.indexOf('aciktaKuyruk: {'),
+    kaynak.indexOf('yonlendirmeYonerge')
+  );
+  icerir(blok, 'aciktaKuyruk');
+  icerir(blok, 'yonlendirmeTavan');
+  esit((blok.match(/\btr:/g) || []).length, 2, 'tr karsiligi eksik');
+  esit((blok.match(/\ben:/g) || []).length, 2, 'en karsiligi eksik');
+  const { p, live } = kuyrukKur(1, { simdi: '', acikta: ['a'], sirada: '' });
+  fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify({ agent_id: 'a1' }));
+  const en = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, { TEKNESYUM_DIL: 'en' });
+  icerir(JSON.parse(en.out).systemMessage, '1 item(s) still open');
+});
+
+ol('/report acik maddeleri listeler', () => {
+  const g = fs.readFileSync(RAPOR_KOMUT, 'utf8');
+  icerir(g, 'live/_acik.json');
+  icerir(g, 'AÇIKTA');
+  icerir(g, '`acikta` boşalmadan kapanmaz');
+});
+
+ol('kesinti disiplini ve yonlendirme bicimi belgede', () => {
+  const s = fs.readFileSync(RELAY_SKILL, 'utf8');
+  icerir(s, '## 1.1.1 Kesinti');
+  icerir(s, 'live/_acik.json');
+  icerir(s, 'Durum bağlama basılmaz');
+  const m = fs.readFileSync(COK_OTURUM, 'utf8');
+  icerir(m, '## 5.3 Yönlendirme');
+  icerir(m, 'Tavan 5 satır');
+  icerir(m, 'steered[]');
+  for (const fiil of ['DUR', 'DEVAM', 'DEĞİŞTİ']) icerir(m, fiil);
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

@@ -172,6 +172,36 @@ olmanın tek faydasını iptal eder. Paket dosyası **okunmak** için yazılır;
 şey ona giden yoldur. Bu desen de hook'ta engellenir: kopyalama emrinin hemen ardından
 gelen ≥25 satırlık blok reddedilir.
 
+## 5.3 Yönlendirme — yürüyen ajana giden mesaj
+
+Dönüş tavanının aynası: gidiş yönünde de tavan vardır. `SendMessage` ile yürüyen bir
+ajana yazarken iki kural geçerlidir.
+
+- **İlk kelime fiildir:** `DUR` · `DEVAM` · `DEĞİŞTİ`. Ajan ne yapacağını ilk kelimeden
+  bilir; gerekçe okumadan önce yönünü belirler.
+- **Tavan 5 satır.** İşçinin dönüş tavanıyla simetriktir (§5.1) ve `PostToolUse` kancası
+  denetler: aşan mesaj **engellenir**, gerekçe döner. Kural mekanik denetlenmezse ölü
+  doğar.
+
+**Beş satıra sığmayan şey yönlendirme değildir.** Değişikliği sözleşme dosyasına yaz,
+ajana tek satır gönder:
+
+```
+DEĞİŞTİ — sözleşme güncellendi, §3'ü yeniden oku.
+```
+
+Okunma anı sözleşmedir, mesaj değil. Kırk satırlık düzeltme mesajı hem token'ı iki kez
+yakar hem ajanın dikkatini tam da onu odakta tutmak isterken dağıtır.
+
+**Ne zaman hemen gönderilir:** kullanıcının sözü yürüyen ajanın `owns` listesine ya da
+sözleşmesine dokunuyorsa **beklemeden** iletilir — boşa iş önlenir. Dokunmuyorsa mesaj
+hiç atılmaz: madde `live/_acik.json` → `acikta`'ya girer ve sonraki sözleşmeye işlenir
+(relay `SKILL.md` §1.1.1).
+
+Geçen her yönlendirme ajanın `live/<id>.json` kaydına `steered[]` olarak düşer: zaman,
+ilk kelime, satır sayısı, metin. Sürdürülen ajan kendi geçmişini oradan okur; engellenen
+mesaj kayda girmez, çünkü atılmamıştır.
+
 ## 6. Toplama
 
 Kullanıcı "bitti" diye döndüğünde ayrı bir komut bekleme, sen topla:

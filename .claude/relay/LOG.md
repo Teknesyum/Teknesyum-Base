@@ -66,3 +66,4 @@
 2026-08-23 · Renk körlüğü ertelendi — palet değişmiyor, renk körü teması ileriye
 2026-08-23 · Yeni ürün standardı: tema renkleri locale gibi ayrı dosyada · U11 açılacak
 2026-08-24 · D1 teslim: depo sürüm kapısı — açılışta ls-remote, 3 sn tavan, günde bir kez; 429/429
+2026-08-24 · D3 teslim: kesinti diskte durur — _acik.json (tavan 10 satır), Stop tek satırı, statusline açıkta N · ajan X/Y, SendMessage 5 satır tavanı block ile mekanik, steered[] izi; 440/440

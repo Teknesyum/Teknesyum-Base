@@ -148,6 +148,35 @@ Kullanıcı o sırada başka bir iş verirse yeni iş önceliklidir; açık söz
 Yeni kullanıcı işi, açık sözleşmelerden önce owns eşleştirmesiyle yönlendirilir. İstek açık sözleşmenin owns kümesine giriyorsa o sözleşmeye devam edilir; girmiyorsa eski sözleşme yeni işi kilitlemez, yeni iş için yeni sözleşme veya ajan rotası açılır. Aynı dosya iki aktif sözleşmeye atanmaz; çakışmada atama durur ve T0 kararı gerekir. Eşleştirme dosya sahipliğine bakar, başlık benzerliğine değil: konusu yakın görünen bir sözleşme, dosyası tutmuyorsa yeni işi üstlenmez.
 Ajan mesajı kısa, net ve saygılıdır; ilgisiz açık sözleşme nedeniyle kullanıcıdan kapsamı yeniden isteme.
 
+## 1.1.1 Kesinti — üçe ayır, kuyruğa yaz
+
+Kullanıcı tur ortasında bir şey söylediğinde **o anda okunur ve sınıflanır.** Ertelenmez,
+biriktirilip toplu okunmaz: geciken okuma yanlış yürüyen işi durdurmanın ilacı değil,
+ikizidir. Aciliyet kararı makineye verilmez.
+
+| Durum | Ne yapılır |
+|---|---|
+| Tek satırda cevaplanır | Cevapla, geç. Kayda hiç girmez. |
+| Yürüyen işi değiştirir | Dur, işi değiştir. |
+| İkisi de değil | `live/_acik.json` → `acikta`'ya yaz, kullanıcıya tek satır: kuyruğa alındı |
+
+Kuyruk dosyası **oturum içidir** ve üç alan taşır: `simdi` (yürüyen iş, tek satır),
+`acikta[]` (cevaplanmamış kesintiler, en çok 8 madde), `sirada` (sonraki adım, tek satır).
+Toplam tavan 10 satır — kanca dosyaya her yazıldığında aşanı kırpar.
+
+Kalıcı durum rotadadır (§3.2). `acikta` onun ikizi değildir: oturum kapanınca kuyruk
+düşer, rota kalır. Aynı maddeyi iki yere yazma; kuyruktan çıkan madde ya cevaplanmıştır
+ya bir sözleşmeye işlenmiştir.
+
+**Durum bağlama basılmaz.** Ne tur başında ne tur ortasında açık iş listesi enjekte edilir:
+bir oturumun maliyetinin **%89'u konuşma hacminden** gelir (`docs/OLCUM-TABAN.md`) ve her
+tura basılan liste o kalemi büyütür. Kuyruk diskte durur; `Stop` kancası tur biterken
+**tek satır** hatırlatır, statusline `açıkta N` gösterir, listeyi kullanıcı `/report` ile
+açar. Dalga sonu ve kapanış raporu `acikta` boşalmadan kapanmaz.
+
+Yürüyen ajana yönlendirme göndermek ayrı bir karardır — biçimi ve tetiği
+`references/multi-session.md` §5.3.
+
 ## 1.2 Proje düzeni — kök sade kalır
 
 **Kökte gereksiz dosya durmaz.** Kullanıcı klasörü açtığında ne yapacağını görmeli, neyi

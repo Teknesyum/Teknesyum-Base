@@ -102,6 +102,16 @@ function makbuz(live) {
   }
 }
 
+function aciktaSayisi(live) {
+  if (!live) return 0;
+  try {
+    const d = JSON.parse(fs.readFileSync(path.join(live, '_acik.json'), 'utf8'));
+    return Array.isArray(d && d.acikta) ? d.acikta.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
 function calisanSatiri(c) {
   const ad = (c.type || '?').replace(/^teknesyum:/, '');
   return (
@@ -276,6 +286,16 @@ process.stdin.on('end', () => {
   const t7 = limitTag('7g', sd);
   if (t7) l2.push(t7);
 
+  const live = izDizini(dir, j.session_id);
+  const cs = calisanlar(live);
+  const ags = ajanlar(live);
+  const n = aciktaSayisi(live);
+  const toplam = Math.max(ags.length, cs.length);
+  const kuyruk = [];
+  if (n) kuyruk.push('açıkta ' + n);
+  if (toplam) kuyruk.push('ajan ' + cs.length + '/' + toplam);
+  if (kuyruk.length) l2.push(C.pink + kuyruk.join(' · ') + C.r);
+
   const r = relay(dir);
   if (r) {
     const pct = Math.round((r.done / r.total) * 100);
@@ -299,8 +319,6 @@ process.stdin.on('end', () => {
 
   const satirlar = [l1.join(C.hint + '  ·  ' + C.r), l2.join(C.hint + '   ' + C.r)];
 
-  const live = izDizini(dir, j.session_id);
-  const cs = calisanlar(live);
   // Makbuz yalnız her şey bittiğinde anlamlıdır ve kanca zaten öyle yazıyor; ajan
   // çalışırken satır gösterilse eski turun sayısı yeni turun üstünde durur.
   const mk = cs.length ? '' : makbuz(live);
@@ -308,7 +326,6 @@ process.stdin.on('end', () => {
   for (const c of cs.slice(0, 3)) satirlar.push('  ' + calisanSatiri(c));
   if (cs.length > 3) satirlar.push('  ' + C.hint + '+' + (cs.length - 3) + ' ajan çalışıyor' + C.r);
 
-  const ags = ajanlar(live);
   const olenler = ags.filter(olu).slice(0, 2);
   for (const a of olenler) satirlar.push('  ' + ajanSatiri(a));
 

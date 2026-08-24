@@ -6,8 +6,8 @@ allowed-tools: Read, Glob, Bash
 `.claude/relay/` oku. Yoksa tek satır: "röle kurulu değil — iş verdiğinde kendiliğinden kurulur." Dur.
 
 Sadece şunları oku: `live/*.json`, `contracts/*.md` frontmatter'ları, `contracts/done/`
-dosya listesi, `LOG.md` son 10 satır, varsa `live/_kesinti.json`. Sözleşme gövdelerini açma — `active` olanın
-Kayıt noktası hariç.
+dosya listesi, `LOG.md` son 10 satır, varsa `live/_kesinti.json` ve `live/_acik.json`.
+Sözleşme gövdelerini açma — `active` olanın Kayıt noktası hariç.
 
 Bağımlılıkları çöz: `done/`'a bakarak hangi `open` sözleşmelerin başlayabileceğini
 hesapla, HAZIR işaretle.
@@ -35,10 +35,23 @@ AJANLAR
         son: "Tema tokenları yazıldı, panel entegrasyonu kaldı"
         dokundu: src/theme/tokens.ts, src/App.tsx
 
+AÇIKTA  2 madde
+  1. ikon setini de tema tokenlarına bağla
+  2. README'ye kurulum adımı
+
 SON     T3 failed · round 1, kabul 2
 KALAN   5 sözleşme · 2 paralel yürüyebilir
 RİSK    T6 engelli — kaynak görsel yok, senden gelmesi lazım
 ```
+
+`AÇIKTA` bölümü `live/_acik.json` → `acikta[]` dizisinden gelir: cevaplanmamış
+kesintilerin kuyruğu. Dizi boşsa bölümü hiç basma. Dosyadaki `simdi` ve `sirada`
+alanları tek satırdır; `simdi` boş değilse `SON` satırının üstüne
+`ŞİMDİ    <simdi>`, `sirada` boş değilse `KALAN`ın altına `SIRADA   <sirada>` yaz.
+
+**Dalga sonu ve kapanış raporu `acikta` boşalmadan kapanmaz.** Açık madde varken
+"bitti" deme: her maddeyi ya cevapla, ya bir sözleşmeye işle, ya kullanıcıya neden
+düştüğünü söyle — sonra `acikta`'dan çıkar.
 
 Ajan satırında `model` alanı varsa rolün yanına yaz — ajan tanımındaki `model:`/`effort:`
 ile uyuşmuyorsa **beyan ile gerçek ayrışmış** demektir, RİSK satırına al. `last_error`

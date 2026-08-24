@@ -57,6 +57,7 @@ function run(j) {
     if (kap) kapsayici.izle(kap, kapDurum, j);
     const bozuk = sozdizim(j);
     if (bozuk) ciktiEkle({ decision: 'block', reason: bozuk });
+    acikKirp(j);
   }
 
   if (j.hook_event_name === 'SessionStart') {
@@ -78,6 +79,7 @@ function run(j) {
   if (j.hook_event_name === 'Stop') {
     if (kap) kapsayiciTopla(kap, kapDurum);
     paketDenetle(j, root);
+    acikBildir(root);
     return turBitir(j, root);
   }
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
@@ -100,6 +102,10 @@ function run(j) {
   saglikTara(live, root);
 
   if (debugAcik()) iz(live, j);
+
+  if (j.hook_event_name === 'PostToolUse' && /^SendMessage$/.test(j.tool_name || '')) {
+    return yonlendirmeIzi(live, j);
+  }
 
   if (j.hook_event_name === 'PostToolUse' && /^Skill$/.test(j.tool_name || '')) {
     const ad = (j.tool_input && (j.tool_input.skill || j.tool_input.name)) || '?';
@@ -1640,6 +1646,98 @@ function kesintiYaz(root, j) {
     oturum: String(j.session_id || '').slice(0, 8),
   });
   yaz(f, l.slice(-20));
+}
+
+const ACIK = '_acik.json';
+const ACIK_TAVAN = 8;
+
+function tekSatir(v) {
+  return String(v === null || v === undefined ? '' : v)
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 200);
+}
+
+function acikNormal(d) {
+  const l = Array.isArray(d && d.acikta) ? d.acikta : [];
+  return {
+    simdi: tekSatir(d && d.simdi),
+    acikta: l.map(tekSatir).filter(Boolean).slice(0, ACIK_TAVAN),
+    sirada: tekSatir(d && d.sirada),
+  };
+}
+
+function acikGovde(g) {
+  return (
+    '{\n  "simdi": ' +
+    JSON.stringify(g.simdi) +
+    ',\n  "acikta": [' +
+    g.acikta.map((x) => JSON.stringify(x)).join(', ') +
+    '],\n  "sirada": ' +
+    JSON.stringify(g.sirada) +
+    '\n}\n'
+  );
+}
+
+function acikKirp(j) {
+  if (!/^(Write|Edit|NotebookEdit)$/.test(j.tool_name || '')) return;
+  const f = (j.tool_input && j.tool_input.file_path) || '';
+  if (!f || path.basename(norm(f)) !== ACIK) return;
+  const d = read(f);
+  if (!d) return;
+  try {
+    fs.writeFileSync(f, acikGovde(acikNormal(d)));
+  } catch {}
+}
+
+function acikOku(root) {
+  if (!root) return null;
+  const d = read(path.join(izKoku(root), ACIK));
+  return d ? acikNormal(d) : null;
+}
+
+function acikBildir(root) {
+  const d = acikOku(root);
+  if (!d || !d.acikta.length) return;
+  duyur(ceviri('aciktaKuyruk', d.acikta.length), 1);
+}
+
+const YONLENDIRME_TAVAN = 5;
+const STEERED_TAVAN = 20;
+
+function yonSatirlari(m) {
+  return String(m).replace(/\s+$/, '').split('\n');
+}
+
+function yonlendirmeIzi(live, j) {
+  const t = j.tool_input || {};
+  const govde = t.message || t.text || t.prompt || t.content || '';
+  if (!govde) return;
+  const l = yonSatirlari(govde);
+  if (l.length > YONLENDIRME_TAVAN) {
+    ciktiEkle({ decision: 'block', reason: ceviri('yonlendirmeTavan', l.length) });
+    return;
+  }
+  steeredYaz(live, String(t.agent_id || t.id || t.agent || t.name || '').trim(), {
+    t: new Date().toISOString().replace('T', ' ').slice(0, 19),
+    fiil: (l[0].trim().split(/\s+/)[0] || '').slice(0, 20),
+    satir: l.length,
+    metin: String(govde).slice(0, 600),
+  });
+}
+
+function steeredYaz(live, hedef, kayit) {
+  const f = hedef ? path.join(live, safe(hedef) + '.json') : null;
+  const s = f ? read(f) : null;
+  if (!s) {
+    const g = path.join(live, '_steered.json');
+    const l = read(g) || [];
+    l.push(Object.assign({ hedef: hedef || null }, kayit));
+    yaz(g, l.slice(-STEERED_TAVAN));
+    return;
+  }
+  s.steered = (s.steered || []).concat([kayit]).slice(-STEERED_TAVAN);
+  yaz(f, s);
 }
 
 function dosyalar(d) {

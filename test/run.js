@@ -7473,6 +7473,101 @@ ol('acik gunlukten dogan kurallar yerinde duruyor', () => {
   esit(m.kuruluEklentiKoku('yok@yok'), null, 'kurulu olmayan eklenti null donmeli');
 });
 
+
+ol('ikinci gorus tetikleyicisi kancada olculuyor', () => {
+  // HATA-ikinci-gorus-tetiklenmiyor · üç ölçü de burada kilitli.
+  const rw = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
+  icerir(rw, 'function gorusGerekenler', 'olcu 1: tur/denetim okuyan kapi');
+  icerir(rw, "if (rol === 'advisor') gorusKaydet(root, t);", 'olcu 3: gorus kaydi');
+  icerir(rw, "ceviri('gorusHatirlat'", 'hatirlatma hatirlat() icine baglanmali');
+  const dil = fs.readFileSync(path.join(KOK, 'hooks', 'dil.js'), 'utf8');
+  icerir(dil, 'gorusHatirlat: {');
+
+  // olcu 2: liste degil, bakma ani
+  const relay = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  const bes = relay.slice(relay.indexOf('## 1.5.1'), relay.indexOf('## 1.6'));
+  icerir(bes, 'Bakma anları', 'olcu 2: bakma ani yazili olmali');
+  icerir(bes, 'GORUS.md', 'olcu 3: kaydin yeri yazili olmali');
+
+  // Kapi gercekten calisiyor mu: dorduncu turda ve denetimsiz sozlesme secilmeli
+  const kv = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-gorus-'));
+  const cdir = path.join(kv, 'contracts');
+  fs.mkdirSync(cdir, { recursive: true });
+  const yaz = (ad, g) => fs.writeFileSync(path.join(cdir, ad), g);
+  yaz('A1.md', '---\nid: A1\nstatus: active\nround: 4\naudit: —\n---\n');
+  yaz('A2.md', '---\nid: A2\nstatus: active\nround: 2\naudit: —\n---\n');
+  yaz('A3.md', '---\nid: A3\nstatus: active\nround: 5\naudit: passed\n---\n');
+  yaz('A4.md', '---\nid: A4\nstatus: done\nround: 9\naudit: —\n---\n');
+  yaz('notlar.md', 'sozlesme degil');
+  const fn = rw.slice(rw.indexOf('function gorusGerekenler'), rw.indexOf('function acikSozlesmeler'));
+  const kur = new Function(
+    'fs',
+    'path',
+    'dosyalar',
+    'metin',
+    fn + '\nreturn gorusGerekenler;'
+  )(
+    fs,
+    path,
+    (d) => {
+      try {
+        return fs.readdirSync(d);
+      } catch {
+        return [];
+      }
+    },
+    (f) => {
+      try {
+        return fs.readFileSync(f, 'utf8');
+      } catch {
+        return null;
+      }
+    }
+  );
+  esit(
+    kur(kv)
+      .map((x) => x.id)
+      .join(','),
+    'A1',
+    'yalniz dorduncu tura girmis ve denetimi kalan sozlesme secilmeli'
+  );
+});
+
+
+ol('denetim turunun durdurma kurali yazili ve olculebilir', () => {
+  // HATA-denetim-turu-durdurma-kurali-yok · dort olcu.
+  const den = fs.readFileSync(path.join(KOK, 'agents', 'auditor.md'), 'utf8');
+  icerir(den, '**KRİTİK** — yalnız iki şeyden biri', 'kritik tanimi iki maddeyle sinirli');
+  icerir(den, '**BORÇ**', 'borc kovasi olmali');
+  icerir(den, '**KALDI yalnız şu üç halde yazılır:**', 'kaldi kosulu yazili olmali');
+  if (/⨯ ÖNEMLİ/.test(den)) throw new Error('ONEMLI kovasi hala tur aciyor gibi duruyor');
+
+  const pro = fs.readFileSync(
+    path.join(KOK, 'skills', 'relay', 'references', 'protocol.md'),
+    'utf8'
+  );
+  icerir(pro, '### Turun ne zaman biteceği', 'durdurma kurali basligi');
+  icerir(pro, 'Üçüncü turdan sonra `advisor` zorunlu');
+  icerir(pro, 'Beşinci turdan sonra durdurma kuralı');
+  icerir(pro, 'borc: []', 'sozlesme formatinda borc alani');
+
+  // Tabloya kaçmış satır geri kondu: tavan satiri tablonun icinde olmali.
+  const tab = pro.slice(pro.indexOf('| Tur | Ne yapılır |'));
+  const satirlar = tab.split('\n');
+  const tavan = satirlar.findIndex((x) => x.startsWith('| tavan |'));
+  esit(tavan, 4, 'tavan satiri tabloda kalmali (baslik, ayrac, 1-3, 4-5, tavan)');
+
+  const sab = fs.readFileSync(
+    path.join(KOK, 'skills', 'relay', 'assets', 'contract.template.md'),
+    'utf8'
+  );
+  const on = sab.slice(0, sab.indexOf('---', 4));
+  icerir(on, 'borc: []', 'sablon frontmatter borc tasimali');
+
+  const sk = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  icerir(sk, 'Denetim turunun durdurma kuralı `fix_ceiling`den ayrıdır');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

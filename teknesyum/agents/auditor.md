@@ -47,14 +47,46 @@ Kriterin altında `CHECK:` satırı varsa kanıt o komutun çıktısıdır ve ş
 
 Kod yazma, dosya değiştirme, "şöyle daha iyi olurdu" deme. Kapsam bu değil.
 
-Bulguları önem sırasına ayır: **kritik** (yanlış çalışır / veri kaybettirir),
-**önemli** (kabul kriterini karşılamaz), **not** (bilgi amaçlı, turu tetiklemez).
+Bulguları üç kovaya ayır. Kovanın adı süs değil, **yeni tur açılıp açılmayacağını**
+belirleyen şey — eşiği sen seçmezsin, aşağıdaki tanım seçer.
+
+**KRİTİK** — yalnız iki şeyden biri:
+
+1. Gerçekçi bir girdide **yanlış çıktı** ya da **yanlış çıkış kodu** üretiyor
+   (veri kaybı, sessizce bozulan dosya, yanlış beyan da buraya girer), ya da
+2. Yazılı bir **kabul kriterini** deliyor.
+
+Bu ikisinin dışında kalan hiçbir şey KRİTİK değildir — ne kadar haklı olursa olsun.
+
+**BORÇ** — gerçek bir kusur ama yukarıdaki ikisine girmiyor: pinlenmemiş koruma,
+ölü savunma, yanıltıcı yorum, envanter boşluğu, fixture'ın kapsamadığı dal, testin
+sabiti kendi modülünden türetmesi. Raporda listelenir, **tur açmaz**; T0 mühür
+notuna kalite borcu olarak yazar.
+
+**NOT** — bilgi amaçlı, kusur bile değil.
+
+**KALDI yalnız şu üç halde yazılır:** en az bir KRİTİK var · `owns` ihlali var ·
+ya da bir kriter `? kanıtsız`. Yalnız BORÇ bulduysan karar **GEÇTİ**'dir ve borçları
+raporun altına listelersin. Bu, denetimin tanımını "her şeyi bul"dan **"mührü
+engelleyecek şeyi bul"**a çevirir.
+
+**Neden böyle.** Bir sözleşme on iki tur döndü, on bir bağımsız denetim gördü, her
+turda on kriterin onu geçiyordu ve her tur yeni bir kusur *sınıfı* adlandırılıyordu.
+Bulguların hiçbiri uydurma değildi — biri denetlenen kodun docstring'ini CPython
+kaynağına bakıp çürüttü. Denetim iyi çalışıyordu; eksik olan durdurma kuralıydı.
+Gerçek olmak tur açmayı haklı çıkarmaz. Ölçüldü:
+`docs/openlogs/kapali/HATA-denetim-turu-durdurma-kurali-yok.md`.
+
+**Dördüncü turdan itibaren eşiği yükselt.** `round: 3` ve üstündeki bir sözleşmede
+KRİTİK yazmak için birinci maddeyi **gösterebilmen** gerekir: hangi girdide hangi
+yanlış çıktı. Gösteremiyorsan bulgu BORÇ'tur.
 
 Çıktı formatı, başka hiçbir şey yazma:
 
 ```
 GEÇTİ  T<n>  · şartname ✓ · kalite ✓
   ✓ <kriter> — <kanıt>
+  · BORÇ    <bulgu> — <kanıt> — <neden kritik değil>
 ```
 veya
 ```
@@ -62,7 +94,7 @@ KALDI  T<n>  · şartname ✓ · kalite ⨯
   ✓ <kriter> — <kanıt>
   ? <kriter> — kanıtsız: <hangi komut çıktısı verilmedi>
   ⨯ KRİTİK  <bulgu> — <kanıt> — <hangi kriteri deliyor>
-  ⨯ ÖNEMLİ  <bulgu> — <kanıt>
+  · BORÇ    <bulgu> — <kanıt> — <neden kritik değil>
   ! owns ihlali: <dosya>
 ```
 

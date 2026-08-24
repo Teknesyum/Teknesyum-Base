@@ -1,6 +1,7 @@
 # Hata: ikinci görüş tetikleyicileri ateşlenmiyor — T0 kendi kuralını okumuyor
 
-**Durum:** açık. Tetikleyici listesi `skills/relay/SKILL.md` §1.5.1'de yazılı, premium
+**Durum:** çözüldü 24.08.2026 — üç ölçü de kuruldu, `test/run.js` kilitliyor.
+**Önceki durum:** açık. Tetikleyici listesi `skills/relay/SKILL.md` §1.5.1'de yazılı, premium
 profilde `second_opinion: on`, `advisor` ajanı tanımlı ve çalışıyor — ama **kural
 model tarafından uygulanmıyor.**
 **Belirti:** Bir sözleşme beş bağımsız denetimde arka arkaya KALDI aldı ve altıncı tura
@@ -108,3 +109,50 @@ modelde kalmalı. Ama **hepsini** modele bırakmak, ölçülebilir olanı da kay
 
 Bu hatanın kapandığını gösteren tek şey: bir sözleşme dördüncü tura girdiğinde
 `advisor` **kullanıcı sormadan** açılmış olmalı ve `MODEL.md` bunu göstermeli.
+
+---
+
+## 7. Ne yapıldı — 24.08.2026
+
+Kök neden §3'te doğru teşhis edilmişti: tetikleyici bir kancanın değil **modelin
+dikkatinin** üstünde duruyordu. Üç ölçü de o dikkati mekanizmaya çevirmek için yazıldı,
+üçü de yapıldı.
+
+**Ölçü 1 — kanca tarafı.** `hooks/relay-watch.js` → `gorusGerekenler(root)`. Sözleşme
+frontmatter'ındaki `status`, `round` ve `audit` alanlarını okur; `round >= 3` ve
+`audit` hâlâ `passed` değilse sözleşmeyi listeye alır. Liste boş değilse `hatirlat()`
+`UserPromptSubmit` bağlamına tek cümle ekler (`dil.js` → `gorusHatirlat`, iki dilde).
+**Bloklamaz** — dikkat çeker, kararı modele bırakır. Açmamayı seçen gerekçesini
+sözleşmeye yazar.
+
+Öneride `audit ~ failed` yazıyordu; kod `audit !== passed` diye kuruldu. Depodaki
+sözleşmelerin çoğu denetim beklerken alanı `—` tutuyor, `failed` yazmıyor — `failed`
+aransaydı kapı hiç açılmazdı. Ölçüldü: bugünkü depoda kapı E1 (tur 4), S1, U1 ve U2
+(tur 3) için açılıyor.
+
+**Ölçü 2 — SKILL tarafı.** §1.5.1'e *bakma anı* yazıldı: her denetim raporu geldiğinde
+brifing yazmadan önce · bir sözleşme ikinci düzeltme turuna girerken · plan kullanıcıya
+verilmeden önce · geri alınması pahalı bir adımdan önce. Aynı turda §1.5.1'in tamamı
+"izin listesi"nden "hatırlatma listesi"ne çevrildi: **varsayılan açmaktır**, açmamanın
+üç gerekçesi vardır, dördüncüsü yoktur.
+
+**Ölçü 3 — kayıt.** `MODEL.md` diye bir dosya bu depoda hiç yoktu; öneri var olmayan
+bir dosyaya yazıyordu. Kayıt `.claude/relay/GORUS.md` olarak kuruldu ve satırı model
+değil kanca yazıyor (`gorusKaydet`, `PreToolUse:Agent` üzerinde, `rol === advisor`):
+
+```
+2026-08-24 00:29 | advisor | U3 kriter yapısı | bekleyen: E1,S1,U1,U2
+```
+
+`bekleyen` alanı ölçünün asıl taşıyıcısı: görüş açıldığı anda dördüncü turda bekleyen
+sözleşme **var mıydı**. Tur tur birikince "kullanıcı sorunca mı açılıyor" sorusu
+dosyadan cevaplanır — bugüne kadar cevaplanamıyordu.
+
+**Kilit.** `test/run.js` → `ikinci gorus tetikleyicisi kancada olculuyor`. Üç ölçüyü de
+kontrol eder ve `gorusGerekenler`'i dört sahte sözleşmeyle gerçekten koşturur (tur 4
+denetimsiz → seçilir; tur 2 → seçilmez; tur 5 ama `passed` → seçilmez; `done` →
+seçilmez). 417/417.
+
+**Açık kalan tek şey ölçüm değil gözlem:** ilk gerçek ateşlemenin `GORUS.md`'de
+görünmesi. Mekanizma artık modele bağlı olmadığı için bu bir zaman meselesi, kural
+meselesi değil.

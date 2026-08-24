@@ -144,6 +144,7 @@ function run(j) {
       const t = j.tool_input || {};
       const rol = String(t.subagent_type || '?').replace(/^teknesyum:/, '');
       const tanim = String(t.description || '').slice(0, 60);
+      if (rol === 'advisor') gorusKaydet(root, t);
       duyur(ceviri('gorev', rol, t.model, tanim, n));
     }
     return;
@@ -880,6 +881,12 @@ function hatirlat(j, root, etkinProje) {
   else if (eko) metin += ' ' + ceviri('ecoNotu');
   const sapma = sapmaSatiri(profil());
   if (sapma) metin += ' ' + ceviri('dugmeSapma', sapma);
+  // Dördüncü tura girmiş ve denetimi hâlâ geçmemiş sözleşme varsa görüş hatırlatılır.
+  // Bloklamaz; §1.5.1 madde 2'nin ölçülebilir yarısı budur.
+  if (root) {
+    const g = gorusGerekenler(root);
+    if (g.length) metin += ' ' + ceviri('gorusHatirlat', g.map((x) => x.id + ' (tur ' + x.tur + ')').join(', '));
+  }
   const rota = yeniIsRotasi(root, j.prompt);
   if (rota) metin += ' ' + rota;
   if (platformNotuYok(j.cwd)) metin += ' ' + ceviri('platformNotu');
@@ -1036,6 +1043,52 @@ function platformNotuYok(cwd) {
 
 function acikIs(root) {
   return acikSozlesmeler(root).some((s) => s.durum === 'active' || s.durum === 'submitted');
+}
+
+// §1.5.1 madde 2 — "bir hata üç turdur çözülmedi ve kök neden hâlâ belirsiz" — dokuz
+// tetikleyicinin **kancadan görülebilen** olanı. Liste yazılıydı ama kimse ölçmüyordu:
+// tetikleyici bir kancanın değil modelin dikkatinin üstünde duruyordu ve beş tur boyunca
+// hiç ateşlenmedi (docs/openlogs/HATA-ikinci-gorus-tetiklenmiyor.md).
+//
+// Sözleşme `round` ve `audit` alanlarını zaten taşıyor; okumak yeni bir mekanizma
+// gerektirmiyor. Uyarı **bloklamaz** — modelin dikkatini çeker, kararı ona bırakır.
+function gorusGerekenler(root) {
+  const dir = path.join(root, 'contracts');
+  const cikan = [];
+  for (const f of dosyalar(dir)) {
+    if (!/^[A-Z]+[0-9]+\.md$/i.test(f)) continue;
+    const g = (metin(path.join(dir, f)) || '').slice(0, 1500);
+    const durum = (g.match(/^status:[ \t]*(\w+)/im) || [])[1];
+    if (!durum || durum.toLowerCase() === 'done') continue;
+    const tur = parseInt((g.match(/^round:[ \t]*(\d+)/im) || [])[1] || '0', 10);
+    const denetim = ((g.match(/^audit:[ \t]*(.+)$/im) || [])[1] || '').trim().toLowerCase();
+    if (tur >= 3 && denetim !== 'passed') cikan.push({ id: f.slice(0, -3), tur });
+  }
+  return cikan;
+}
+
+// Ölçü 3 — "advisor her açıldığında kayda satır düşsün". Kayıt olmadan "kaç kez
+// ateşlendi" sorusu ölçülemez ve tetiklenmeyen tetikleyici bir daha görünmez
+// (docs/openlogs/HATA-ikinci-gorus-tetiklenmiyor.md §5.3).
+//
+// Satırın taşıdığı asıl bilgi `bekleyen` alanıdır: görüş açıldığı anda dördüncü turda
+// bekleyen sözleşme **var mıydı**. Varsa ve görüş o turda açıldıysa tetikleyici çalıştı;
+// tur tur birikince "kullanıcı sorunca mı açılıyor" sorusu dosyadan cevaplanır.
+function gorusKaydet(root, t) {
+  if (!root) return;
+  try {
+    const bekleyen = gorusGerekenler(root)
+      .map((x) => x.id)
+      .join(',');
+    const satir =
+      new Date().toISOString().slice(0, 16).replace('T', ' ') +
+      ' | advisor | ' +
+      (String(t.description || '—').slice(0, 60) || '—') +
+      ' | bekleyen: ' +
+      (bekleyen || '—') +
+      '\n';
+    fs.appendFileSync(path.join(root, 'GORUS.md'), satir);
+  } catch {}
 }
 
 function acikSozlesmeler(root) {

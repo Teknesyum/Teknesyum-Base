@@ -1,6 +1,7 @@
 # Hata: denetim turunun durdurma kuralı yok — bir sözleşme on iki tur döndü
 
-**Durum:** açık. Relay SKILL denetimi "her sözleşme denetlenir" diye tanımlıyor
+**Durum:** çözüldü 24.08.2026 — dört öneri de uygulandı, `test/run.js` kilitliyor.
+**Önceki durum:** açık. Relay SKILL denetimi "her sözleşme denetlenir" diye tanımlıyor
 ama **turun ne zaman biteceğini** tanımlamıyor. Sonuç: denetçi her turda yeni
 bir kusur *sınıfı* icat ediyor, T0 her sınıfa yeni bir tur açıyor ve döngü
 kendiliğinden durmuyor.
@@ -117,3 +118,59 @@ giriyor: hattın hiç render edememesi, `final.mp4`in tümden sessiz çıkması,
 Bu hatanın kapandığını gösteren şey: bir sözleşme dördüncü turuna girdiğinde
 `advisor` **kullanıcı sormadan** açılmış olmalı, ve beşinci turdan sonra
 denetim raporu ÖNEMLİ'yi tur gerekçesi olarak **kullanamamalı**.
+
+---
+
+## 7. Ne yapıldı — 24.08.2026
+
+**Öneri 1 — `agents/auditor.md`.** Denetçi bugüne kadar bulguyu *kritik / önemli / not*
+diye ayırıyordu ve eşiği kendi seçiyordu. Üç kova yeniden kesildi ve kovanın adı artık
+yeni tur açılıp açılmayacağını **belirliyor**:
+
+- **KRİTİK** — yalnız iki şey: gerçekçi girdide yanlış çıktı/çıkış kodu, ya da yazılı
+  bir kabul kriterinin delinmesi. Başka hiçbir şey KRİTİK değil.
+- **BORÇ** — gerçek kusur ama yukarıdakine girmiyor. Raporda listelenir, **tur açmaz**,
+  mühür notuna yazılır.
+- **NOT** — bilgi.
+
+KALDI kararı üç hale bağlandı: KRİTİK var · `owns` ihlali var · bir kriter `? kanıtsız`.
+Yalnız borç bulunduysa karar GEÇTİ'dir. Ayrıca dördüncü turdan itibaren eşik yükseliyor:
+`round >= 3` iken KRİTİK yazmak için hangi girdide hangi yanlış çıktının oluştuğunu
+**göstermek** gerekiyor; gösterilemeyen bulgu borç.
+
+Eski `⨯ ÖNEMLİ` satırı çıktı formatından kaldırıldı — orada durduğu sürece "kabul
+kriterini karşılamaz" ile "kusurlu ama kriter dışı" aynı kovada kalıyor ve ikincisi de
+tur açıyordu.
+
+**Öneri 2 — SKILL ve protokol.** `references/protocol.md` §4'e *Turun ne zaman biteceği*
+bölümü yazıldı; relay `SKILL.md` §3 aynı kuralı üç cümleyle özetleyip oraya işaret ediyor.
+Üç kural: tur yalnız KRİTİK'te açılır · üçüncü turdan sonra `advisor` zorunlu · beşinciden
+sonra borç tur gerekçesi olamaz. `fix_ceiling` ile karıştırılmaması için ayrımı da yazıldı:
+`fix_ceiling` düzeltme turlarını sayar, denetimin ne zaman biteceğini söylemez.
+
+Aynı bölümde tablodan kaçmış bir satır da yerine kondu: `| tavan | Dur. … |` satırı
+tablonun altındaki paragrafın içinde duruyordu, yani markdown'da tablo olarak hiç
+görünmüyordu — durdurma kuralının kendisi görünmez bir satırda yazılıydı.
+
+**Öneri 3 — kanca.** Bu, `HATA-ikinci-gorus-tetiklenmiyor.md` ile aynı öneriydi ve aynı
+turda yapıldı: `relay-watch.js` → `gorusGerekenler()` sözleşme frontmatter'ından `round`
+ve `audit` okur, `round >= 3` ve denetim geçmemişse `UserPromptSubmit` bağlamına tek cümle
+ekler. Bloklamaz. Her `advisor` açılışı `.claude/relay/GORUS.md`'ye düşer.
+
+Öneride `audit ~ failed` yazıyordu; kod `audit !== passed` diye kuruldu — depodaki
+sözleşmelerin çoğu denetim beklerken alanı `—` tutuyor, `failed` aransaydı kapı hiç
+açılmazdı.
+
+**Öneri 4 — borç için yer.** Sözleşme frontmatter'ına `borc: []` alanı eklendi
+(`assets/contract.template.md` ve protokoldeki format). Borçlar artık serbest metin
+değil; bir sonraki sözleşme onları `depends` gibi okuyabilir. Bu dalgada borçlar T11'e
+elle taşınmıştı.
+
+**Kilit.** `test/run.js` → `denetim turunun durdurma kurali yazili ve olculebilir`:
+KRİTİK tanımı iki maddeyle sınırlı mı · BORÇ kovası var mı · KALDI koşulu yazılı mı ·
+`⨯ ÖNEMLİ` geri gelmiş mi · protokolde durdurma bölümü ve iki tur eşiği duruyor mu ·
+`tavan` satırı tabloda mı · şablon `borc` taşıyor mu · SKILL özeti yerinde mi. 418/418.
+
+**Ölçünün ikinci yarısı gözlemdir:** beşinci turdan sonra bir denetim raporunun BORÇ'u
+tur gerekçesi yapmadığının görülmesi. Kural artık denetçinin kendi tanımında olduğu için
+bu modelin dikkatine değil ajan tanımına bağlı.

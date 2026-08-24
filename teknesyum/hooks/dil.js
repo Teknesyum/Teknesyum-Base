@@ -147,6 +147,21 @@ const S = {
       satir,
   },
 
+  // §1.5.1 madde 2'nin kancadan görülebilen yarısı. Liste vardı, bakma anı yoktu ve
+  // tetikleyici beş tur boyunca hiç ateşlenmedi.
+  gorusHatirlat: {
+    tr: (liste) =>
+      'Şu sözleşme(ler) dördüncü tura girdi ve denetimi hâlâ geçmedi: ' +
+      liste +
+      '. relay §1.5.1 madde 2 tetiklendi — brifing yazmadan önce `advisor` aç. ' +
+      'Açmamayı seçersen gerekçeni sözleşmeye yaz.',
+    en: (liste) =>
+      'These contracts entered a fourth round and still have not passed audit: ' +
+      liste +
+      '. relay §1.5.1 item 2 fired — open `advisor` before writing the briefing. ' +
+      'If you choose not to, write the reason into the contract.',
+  },
+
   acikGunluk: {
     tr: (n) =>
       n + ' açık hata günlüğü var — `/log` ile bak, çözüp `/log kapat` ya da `/log arsivle` de',

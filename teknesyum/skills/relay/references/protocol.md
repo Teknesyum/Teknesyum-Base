@@ -205,13 +205,41 @@ konuşma özeti koyma, sözleşmenin yolunu ver.
 |---|---|
 | 1-3 | **Aynı ajanı devam ettir** — `SendMessage` ile `agent_id`'ye. Bağlamı korur. |
 | 4-5 | **Taze ajan.** `model_escalation: acik` ise bir üst modele çık. |
+| tavan | Dur. Açık bulguları kullanıcıya özetle, kararı o versin. |
 
 Model tırmanışı **4. turda, taze ajanla** olur. Üçüncü turda mevcut ajanı modelini
 değiştirerek devam ettiremezsin; devam ettirme bağlamı korur, model değiştirmez.
-| tavan | Dur. Açık bulguları kullanıcıya özetle, kararı o versin. |
 
 Her turda `round:` artır. Tur 3'te hâlâ çözülmüyorsa sorun genelde ajanın değil
 **sözleşmenin**: kabul kriteri ölçülemez veya bağlam eksiktir.
+
+### Turun ne zaman biteceği — durdurma kuralı
+
+`fix_ceiling` **düzeltme** turlarının tavanı; **denetim** turunun ne zaman
+biteceğini söylemiyordu. Söylemeyince döngü kendiliğinden durmadı: bir sözleşme on
+iki tur döndü, on bir bağımsız denetim gördü, her turda on kriterin onu geçti ve her
+tur bir öncekinin taksonomisi dışından yeni bir kusur *sınıfı* adlandırıldı. Sınıfların
+hiçbiri uydurma değildi. Fark, kodun karmaşıklığından değil o sözleşmeye ayrılan
+sabırdan geliyordu ve sabrın sınırı hiçbir yerde yazılı değildi.
+
+Üç kural, üçü de otomatik:
+
+1. **Tur yalnızca KRİTİK bulunursa açılır.** KRİTİK'in tanımı `agents/auditor.md`
+   içindedir ve iki maddeyle sınırlıdır: gerçekçi girdide yanlış çıktı/çıkış kodu, ya
+   da yazılı bir kabul kriterinin delinmesi. Kalan her bulgu **borçtur**: mühür
+   notuna yazılır, sözleşme mühürlenir.
+2. **Üçüncü turdan sonra `advisor` zorunlu.** `round >= 3` ve denetim hâlâ
+   geçmemişse brifing yazmadan önce görüş alınır (relay §1.5.1 madde 2). Kanca
+   `UserPromptSubmit`'te hatırlatır ve her görüş `.claude/relay/GORUS.md`'ye düşer.
+   Açmamayı seçen gerekçesini sözleşmeye yazar.
+3. **Beşinci turdan sonra durdurma kuralı yürürlüktedir.** Denetim raporu BORÇ'u tur
+   gerekçesi olarak kullanamaz; KRİTİK gösterilemiyorsa sözleşme borçlarıyla
+   mühürlenir ve borçlar bir sonraki sözleşmeye taşınır.
+
+Borçlar frontmatter'daki `borc:` listesinde durur — serbest metin değil, çünkü bir
+sonraki sözleşme onları `depends` gibi okuyabilsin. Boşsa `borc: []`.
+
+Ölçüldü: `docs/openlogs/kapali/HATA-denetim-turu-durdurma-kurali-yok.md`.
 
 **Açık kritik bulgu varken bir sonraki göreve geçme.**
 

@@ -13,6 +13,7 @@ audit: —
 auditor_id: —
 diff: —
 verification: —
+borc: []
 ---
 ## Amaç
 <tek paragraf: ne yapılacak, neden gerekli>

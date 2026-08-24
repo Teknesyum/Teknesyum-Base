@@ -397,6 +397,8 @@ sorunca öğrenirsin; ikisini ayırt edemiyorsan sor.
 Çıktı üç başlıktır ve 20 satırı geçmez: görüş, gerekçe, kaçırdığın şey. Üçüncüsü bu işin
 asıl kazancıdır — soruyu soranın görmediği şey oradadır.
 
+**Her görüş kayda geçer.** `advisor` her açıldığında `relay-watch` `.claude/relay/GORUS.md`'ye tek satır düşer: tarih, soru ve o an dördüncü turda bekleyen sözleşmeler. Satırı model yazmaz, kanca yazar — "kaç kez ateşlendi" sorusu ancak böyle ölçülür. Dördüncü tura girmiş ve denetimi geçmemiş sözleşme varken `UserPromptSubmit` ayrıca hatırlatır; hatırlatma bloklamaz, açmamayı seçersen gerekçen sözleşmeye yazılır.
+
 **Görüş bağlayıcı değildir.** T0 katılmazsa gerekçesini yazar. Görüş alındığı kullanıcıya
 tek satırla bildirilir:
 
@@ -601,6 +603,15 @@ araç listesini tamamlamasına yol açıyordu. Ama `tools:` satırı harness iç
 değil taban: ölçümde denetçi ajanı `Write, Edit` de verilmiş halde açıldı. Taşıyan kat
 üçüncüsüdür — mühür kapısı `live/<auditor_id>.json` kaydına bakar ve `files` listesi
 doluysa mührü işlemez. Denetçi bir dosyaya yazarsa denetimi düşer.
+
+**Denetim turunun durdurma kuralı `fix_ceiling`den ayrıdır.** `fix_ceiling` düzeltme
+turlarını sayar; denetimin ne zaman biteceğini söylemez. Tur **yalnız KRİTİK**
+bulunursa açılır (tanım `agents/auditor.md`: gerçekçi girdide yanlış çıktı/çıkış
+kodu, ya da yazılı bir kabul kriterinin delinmesi). Kalan her bulgu borçtur, mühür
+notuna yazılır ve sözleşme mühürlenir. Üçüncü turdan sonra `advisor` zorunlu,
+beşinciden sonra borç tur gerekçesi olamaz. Ayrıntı: `references/protocol.md` §4.
+Kural yazılı olmadığında bir sözleşme on iki tur döndü — ölçüldü,
+`docs/openlogs/kapali/HATA-denetim-turu-durdurma-kurali-yok.md`.
 
 **Planlamayı asla delege etme.** Soğuk başlayan ajan daha kötü plan yapar. Tek istisna
 plan konseyidir (§1.5): üyeler öneri üretir, kararı ve kalemi T0 elinde tutar.

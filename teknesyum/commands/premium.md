@@ -148,20 +148,20 @@ aynı brifingle iki `planner` ajanı açılır — biri `fable`, biri `opus`. İ
 `planner` ajanının elinde yazma aracı yoktur. Ortak çıkan karar doğrulanmış sayılır,
 ayrıştıkları yer `PLAN.md` içinde **Konsey ayrışması** başlığına gerekçesiyle yazılır.
 Sentezi ve kalemi T0 tutar — delege edilen karar değil seçenek üretimidir. Ayrıntı relay
-SKILL §1.5.
+SKILL `references/plan-akisi.md` §1.5.
 
 **İkinci görüş** konseyin küçük kardeşidir ve o da premiumla açılır. T0 doğru kararın ne
 olduğunu bilmediği bir düğümde **`advisor` ajanını** açar; `fable` üç başlıkta en fazla 20
 satır cevap verir: görüş, gerekçe, kaçırdığın şey. Konsey planın tamamı içindir ve iki
 üyelidir; görüş tek bir karar içindir ve tek üyelidir. Bağlayıcı değil, kullanıcıya
-sormanın da yerine geçmez. **Dokuz** durumda tetiklenir — ayrıntı relay SKILL §1.5.1.
+sormanın da yerine geçmez. **Dokuz** durumda tetiklenir — ayrıntı relay SKILL `references/plan-akisi.md` §1.5.1.
 
 `advisor` ayrı bir ajandır, `planner`'ın kipi değil. Sebebi ölçülmüş bir kısıt: `Agent`
 aracının şemasında `model` var, `effort` yok; efor yalnızca ajan tanımından gelir. İki kip
 tek dosyada dururken aynı eforu paylaşıyordu. Ayrılınca `advisor` premiumda bile `low`
 eforda kalabiliyor — tetikleyici sayısı arttıkça danışmanın ucuz olması önem kazanır.
 
-**Ön araştırma tavanı** profille değişir: eco 1, normal 10, premium 50 depo (SKILL §1.4).
+**Ön araştırma tavanı** profille değişir: eco 1, normal 10, premium 50 depo (SKILL `references/plan-akisi.md` §1.4).
 Derinlik değişmez, kapsam değişir: elli depo dalgalar hâlinde okunur ve her dalga bir
 sonrakinin aday listesini eler.
 

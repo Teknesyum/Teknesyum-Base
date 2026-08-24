@@ -107,3 +107,44 @@ sozlesmesinde duzeltildi.
 Metinlerin `locale/` yerine XAML'e gomulu olmasi maddesi de gecerliligini koruyor.
 
 Nedeni ayri bir gunlukte: `HATA-surum-gomulu-yol-eski-standardi-okuyor.md`.
+
+---
+
+## Kapanış — 24.08.2026
+
+Üç ölçünün üçü de kapandı, ama üçüncüsü günlükte yazıldığı biçimiyle değil.
+
+**Ölçü 1 — kapandı.** `BtnGitHub` artık yalnız bir `TextBlock` taşıyor; `< >` kod ayracı
+çizen `Path` öğesi kalmamış. T16 sözleşmesi kapatmış, doğrulandı
+(`MainWindow.axaml:81-83`).
+
+**Ölçü 2 — kapandı.** `Buy Me a Coffee` iki yerde (`AutomationProperties.Name` ve görünen
+`Text`) `Buy me a coffee` biçimine indi.
+
+**Ölçü 3 — kapandı, ama `locale/` klasörü açılmadı.** Ölçü "metin XAML'den çıkar,
+`locale/` altındaki kaynaklardan okunur" diyordu. VidShrink'in yerelleştirmesi klasör
+tabanlı değil: `LanguageCatalog` sözlüğü artı `SetLanguage` içindeki `WalkText` gezgini,
+görsel ağaçtaki her `TextBlock`'un metnini çalışma anında değiştiriyor. Yani XAML'deki
+`Text=` **zaten çeviri katmanından geçiyor**; gömülü olması metni çeviri dışında
+bırakmıyor.
+
+Gerçek eksik başka yerdeydi ve ölçü onu adlandırmamıştı: **sponsor etiketinin sözlükte
+karşılığı yoktu.** `EnglishSource` içinde girdisi bulunmadığı için Türkçeye geçildiğinde
+komşu denetimlerin hepsi değişirken o etiket İngilizce kalıyordu. Girdi eklendi:
+
+```
+["Buy me a coffee"] = "Bana bir kahve ısmarla",
+```
+
+`Teknesyum` bilerek çevrilmiyor — özel ad, ve `Names` sözlüğü yazımını zaten sabitliyor
+(`["teknesyum"] = "Teknesyum"`).
+
+**Doğrulama.** Çalışma ağacındaki `Playback/` klasörü tümüyle izlenmeyen, yarım kalmış
+T38 işi ve derlemeyi kırıyor (`AVLN3000: ComparisonSurface`). Bu yüzden ölçüm o ağaçta
+değil, `HEAD`'den açılan temiz bir worktree'de yapıldı; oraya yalnız bu günlüğün iki
+dosyası kopyalandı. Sonuç: derleme temiz, **327 test geçti, 0 kaldı.**
+
+**Ders — ölçü mimariyi varsayıyordu.** "`locale/` klasörü bulunur" bir çözümü değil bir
+**uygulamayı** şart koşuyordu. Ölçü "iki dizge de dil değiştiğinde değişir" deseydi hem
+doğru hem taşınabilir olurdu; o hâliyle, sorunu zaten çözmüş bir mimariyi ihlal gibi
+gösteriyor ve asıl eksiği (sözlükte girdi yok) gizliyordu.

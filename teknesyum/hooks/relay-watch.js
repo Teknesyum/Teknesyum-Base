@@ -1101,7 +1101,7 @@ function acikIs(root) {
 // §1.5.1 madde 2 — "bir hata üç turdur çözülmedi ve kök neden hâlâ belirsiz" — dokuz
 // tetikleyicinin **kancadan görülebilen** olanı. Liste yazılıydı ama kimse ölçmüyordu:
 // tetikleyici bir kancanın değil modelin dikkatinin üstünde duruyordu ve beş tur boyunca
-// hiç ateşlenmedi (docs/openlogs/HATA-ikinci-gorus-tetiklenmiyor.md).
+// hiç ateşlenmedi (docs/openlogs/kapali/HATA-ikinci-gorus-tetiklenmiyor.md).
 //
 // Sözleşme `round` ve `audit` alanlarını zaten taşıyor; okumak yeni bir mekanizma
 // gerektirmiyor. Uyarı **bloklamaz** — modelin dikkatini çeker, kararı ona bırakır.
@@ -1122,7 +1122,7 @@ function gorusGerekenler(root) {
 
 // Ölçü 3 — "advisor her açıldığında kayda satır düşsün". Kayıt olmadan "kaç kez
 // ateşlendi" sorusu ölçülemez ve tetiklenmeyen tetikleyici bir daha görünmez
-// (docs/openlogs/HATA-ikinci-gorus-tetiklenmiyor.md §5.3).
+// (docs/openlogs/kapali/HATA-ikinci-gorus-tetiklenmiyor.md §5.3).
 //
 // Satırın taşıdığı asıl bilgi `bekleyen` alanıdır: görüş açıldığı anda dördüncü turda
 // bekleyen sözleşme **var mıydı**. Varsa ve görüş o turda açıldıysa tetikleyici çalıştı;

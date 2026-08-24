@@ -181,7 +181,7 @@ function projeMi(d, izler) {
 // kurulu olan olmak zorunda değil, kullanıcı bir sürüm geri almış olabilir.
 //
 // Tek doğru kaynak `installed_plugins.json` içindeki kayıttır.
-// Ölçüldü: docs/openlogs/HATA-surum-gomulu-yol-eski-standardi-okuyor.md
+// Ölçüldü: docs/openlogs/kapali/HATA-surum-gomulu-yol-eski-standardi-okuyor.md
 function kuruluEklentiKoku(eklenti) {
   const ad = eklenti || 'teknesyum@teknesyum';
   try {

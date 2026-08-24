@@ -168,7 +168,7 @@ function acYururlukNotu(degisti) {
 
 // `1000000` bir tavandır, garanti değil — fiili pencere modelin bağlam penceresi kadardır.
 //
-// DÜZELTME (23.08.2026, `docs/openlogs/HATA-200k-baglam-penceresi-iddiasi.md`): burada bir
+// DÜZELTME (23.08.2026, `docs/openlogs/kapali/HATA-200k-baglam-penceresi-iddiasi.md`): burada bir
 // dönem "Opus'ta ~200k" yazıyordu ve **yanlıştı**. Opus 4.7'nin ve Sonnet 5'in yerel
 // penceresi **1M**; 200k bugün varsayılan değil, **kapatılmış hâlin** sonucu. Üç yoldan
 // biriyle doğar: `CLAUDE_CODE_DISABLE_1M_CONTEXT` set edilmiştir,

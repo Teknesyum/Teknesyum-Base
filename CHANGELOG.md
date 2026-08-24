@@ -6,6 +6,35 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.56.0] - 2026-08-24
+
+### Changed
+
+- **The relay skill went on a diet: 66.8 kB to 30.4 kB, under its own ceiling.** §6 has
+  always said a `SKILL.md` enters context whole on every activation and must stay under
+  ~30 kB, and the file had grown to twice that — every addition individually justified,
+  which is exactly why it never stopped on its own. Everything conditional moved out:
+  `references/plan-akisi.md` (from-scratch work — clarification, prior art, the plan
+  council, second opinion, certification, repository naming and licence),
+  `references/rele-akisi.md` (task packets, route files, the watcher pattern, role ×
+  model) and `references/cikti.md` (debugging, project map, return block, diff lines).
+  Section numbers travelled with the text, so every `§1.5`-style cross-reference in the
+  commands, settings and hooks still resolves; the pointers now name the file too. §6
+  carries an index of which side file is opened when. A test holds the ceiling.
+
+### Fixed
+
+- **Untranslated support label in the signature block.** Handled in the VidShrink
+  repository: the label was embedded as Title Case and had no dictionary entry, so
+  switching to Turkish left it in English while every neighbouring control changed.
+- **DCO and CONTRIBUTING reached the other repositories.** They existed only here, so
+  copyright would have scattered the moment an outside contribution arrived. Eight public
+  repositories got both; the ninth is archived and read-only, which is the correct
+  exclusion rather than a gap.
+- **Agent problem log counts one problem per line.** A multi-line tool error was written
+  raw and every continuation line counted as its own problem — 71 of 653 lines were born
+  that way, so the opening notice claimed 634.
+
 ## [2.55.0] - 2026-08-24
 
 ### Fixed

@@ -30,7 +30,7 @@ sayı seçmez — `/teknesyum:setup` önce profili sorar, pencere ondan çıkar.
 
 **`1000000` bir garanti değil tavandır.** Fiili pencere modelin bağlam penceresiyle
 sınırlıdır. **Opus 4.7 ve Sonnet 5'in yerel penceresi 1M'dir**; bir dönem burada "Opus'ta
-~200k" yazıyordu ve yanlıştı (`docs/openlogs/HATA-200k-baglam-penceresi-iddiasi.md`). 200k
+~200k" yazıyordu ve yanlıştı (`docs/openlogs/kapali/HATA-200k-baglam-penceresi-iddiasi.md`). 200k
 bugün varsayılan değil, **kapatılmış hâlin** sonucudur: `CLAUDE_CODE_DISABLE_1M_CONTEXT`
 set edilmiştir, `CLAUDE_CODE_MAX_CONTEXT_TOKENS` elle kısılmıştır ya da model 1M
 taşımıyordur. Premium'da bu değer

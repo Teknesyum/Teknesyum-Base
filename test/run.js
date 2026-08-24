@@ -217,7 +217,7 @@ ol('kurulum komutu tarar, kararı belliyi yapar, kalanını sorar', () => {
 });
 
 ol('relay oturum açılışında sormadan sürdürür', () => {
-  const s = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  const s = relayMetin();
   icerir(s, 'Oturum açılışı');
   icerir(s, 'sürdür');
 });
@@ -2287,8 +2287,7 @@ ol('research_repos eco profilinde 1 depoya iner', () => {
 });
 
 ol('SKILL eco bolumunu ve tersine donen ilke sirasini anlatir', () => {
-  const s = fs
-    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+  const s = relayMetin()
     .replace(/\r/g, '');
   const duz = s.replace(/\s+/g, ' ');
   icerir(s, '## 0.1 Üç profil');
@@ -3277,8 +3276,7 @@ ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
 });
 
 ol('ajan adi kurali modeli one alir, ornek bicime uyar', () => {
-  const s = fs
-    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+  const s = relayMetin()
     .replace(/\r/g, '');
   const i = s.indexOf('**Ajan adı `<Model>-<İş Adı>` biçiminde yazılır.**');
   if (i < 0) throw new Error('ajan adlandırma kuralı SKILL.md içinde yok');
@@ -3304,8 +3302,7 @@ ol('ajan adi kurali modeli one alir, ornek bicime uyar', () => {
 });
 
 ol('plan uretimi ikinci gorus tetikleyicisidir ve konseyden ayrilir', () => {
-  const s = fs
-    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+  const s = relayMetin()
     .replace(/\r/g, '');
   const i = s.indexOf('## 1.5.1');
   const j = s.indexOf('## 1.6');
@@ -3323,8 +3320,7 @@ ol('plan uretimi ikinci gorus tetikleyicisidir ve konseyden ayrilir', () => {
 });
 
 ol('ikinci gorus tetikleyicileri dokuza cikti ve her biri olculebilir', () => {
-  const s = fs
-    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+  const s = relayMetin()
     .replace(/\r/g, '');
   const bolum = s.slice(s.indexOf('## 1.5.1'), s.indexOf('## 1.6'));
   const madde = bolum.split('\n').filter((r) => /^\d+\. /.test(r));
@@ -3344,8 +3340,7 @@ ol('ikinci gorus tetikleyicileri dokuza cikti ve her biri olculebilir', () => {
 });
 
 ol('premium paralel tavani yirmidir ve gerekcesi yazili', () => {
-  const s = fs
-    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+  const s = relayMetin()
     .replace(/\r/g, '');
   icerir(s, 'Paralel tavanı\n**yirmidir**');
   icerir(s, 'ölçüsü hızdır, token değil');
@@ -7755,7 +7750,7 @@ ol('ui odak stili depoda gercekten var olan adla anilir', () => {
 // Bu testler bir hata günlüğünün ölçü maddesini kilitler. Kural gevşerse günlük
 // yeniden açılmalı, sessizce geri gelmemeli.
 ol('acik gunlukten dogan kurallar yerinde duruyor', () => {
-  const relay = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  const relay = relayMetin();
 
   // HATA-sohbet-metni-duz-yazi-duvari · ölçü 1
   const yedi = relay.slice(relay.indexOf('## 7. Kullanıcıya'), relay.indexOf('## 7.1'));
@@ -7791,7 +7786,7 @@ ol('ikinci gorus tetikleyicisi kancada olculuyor', () => {
   icerir(dil, 'gorusHatirlat: {');
 
   // olcu 2: liste degil, bakma ani
-  const relay = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  const relay = relayMetin();
   const bes = relay.slice(relay.indexOf('## 1.5.1'), relay.indexOf('## 1.6'));
   icerir(bes, 'Bakma anları', 'olcu 2: bakma ani yazili olmali');
   icerir(bes, 'GORUS.md', 'olcu 3: kaydin yeri yazili olmali');
@@ -7867,7 +7862,7 @@ ol('denetim turunun durdurma kurali yazili ve olculebilir', () => {
   const on = sab.slice(0, sab.indexOf('---', 4));
   icerir(on, 'borc: []', 'sablon frontmatter borc tasimali');
 
-  const sk = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  const sk = relayMetin();
   icerir(sk, 'Denetim turunun durdurma kuralı `fix_ceiling`den ayrıdır');
 });
 
@@ -7934,8 +7929,14 @@ ol('lisans olcutu lisanssiz depoyu ve celisen beyani yakalar', () => {
 
 ol('uzun kosu kurallari yerinde: gozcu, olcum tekrari, kayit noktasi', () => {
   // HATA-olcum-beklemesi-kullaniciyi-bekletiyor · uc olcu.
-  const relay = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
-  const uc = relay.slice(relay.indexOf('## 3.3 Uzun dış koşu'), relay.indexOf('## 4. Kim yapacak'));
+  const relay = relayMetin();
+  // §3.3 ve §4 `rele-akisi.md` içinde; SKILL.md'de yalnız duraklari var. Dilim o dosyada
+  // alinir — birlesik metinde durak §4'u gercek §3.3'ten once getirir ve dilim boslanir.
+  const ra = fs.readFileSync(
+    path.join(KOK, 'skills', 'relay', 'references', 'rele-akisi.md'),
+    'utf8'
+  );
+  const uc = ra.slice(ra.indexOf('## 3.3 Uzun dış koşu'), ra.indexOf('## 4. Kim yapacak'));
   if (!uc) throw new Error('§3.3 yok');
   icerir(uc, '**uyandırılarak yoklanmaz.**', 'olcu 2: ajan yoklanmaz');
   icerir(uc, 'Gözcü arkasında süreç bırakmaz', 'olcu 3: artakalan surec');
@@ -8158,6 +8159,14 @@ ol('depo-surum.js require edilince CLI calismaz, sonuc nesne olarak okunur', () 
 console.log('\nKesinti kuyruğu');
 
 const RAPOR_KOMUT = path.join(KOK, 'commands', 'report.md');
+function relayMetin() {
+  const d = path.join(KOK, 'skills', 'relay');
+  let k = fs.readFileSync(path.join(d, 'SKILL.md'), 'utf8');
+  const ref = path.join(d, 'references');
+  for (const f of fs.readdirSync(ref).sort())
+    if (f.endsWith('.md')) k += '\n' + fs.readFileSync(path.join(ref, f), 'utf8');
+  return k;
+}
 const RELAY_SKILL = path.join(KOK, 'skills', 'relay', 'SKILL.md');
 const COK_OTURUM = path.join(KOK, 'skills', 'relay', 'references', 'multi-session.md');
 
@@ -8905,6 +8914,54 @@ ol('relay description ornek talep listesi duruyor', () => {
     icerir(d, ornek);
 });
 
+console.log('\nScout PR rozeti');
+
+// OLCULDU (Runly, 24.08.2026): 50 depo taramasindan sonra oturumda pembe PR rozeti cikti
+// ve kayitta depoyla ilgisiz yedi PR duruyordu. Rozet oturum kaydindan degil transkriptten
+// dogar — uygulama her acilista transkripti tarayip icinde gordugu tam PR adreslerini
+// yeniden topluyor. En ucuz kapi scout'un rapor yazma adimi: adres oraya hic tam bicimde
+// girmezse rozet hic olusmaz. Kural silinirse tarama yapan her proje yeniden kirlenir.
+ol('scout tam PR adresi yazmayi yasaklar ve kisa bicimi verir', () => {
+  const k = fs.readFileSync(path.join(KOK, 'agents', 'scout.md'), 'utf8');
+  icerir(k, 'PR adresini tam biçimde yazma');
+  icerir(k, '<sahip>/<depo>#<n>', 'kisa bicim verilmemis — yasak tek basina yetmez');
+  icerir(k, 'gh api repos/<sahip>/<depo>/pulls/<n>', 'icerik gerekince alternatif yol yok');
+  if (!/WebFetch` ile PR sayfası açma/.test(k))
+    throw new Error('WebFetch ile PR sayfasi acma yasagi dusmus');
+});
+
+console.log('\nSkill token disiplini');
+
+// §6 kendi tavanini yaziyor ama kendi tasiyicisinda tutmuyordu: dosya 66 822 bayta,
+// tavanin iki katina cikmisti. Her ekleme tek tek hakliydi — sisme dogru bir dusturun
+// biriken maliyetiydi ve kendiliginden durmuyordu. Kapi olmadan yine ayni yere yazilir.
+ol('relay SKILL.md kendi 30 kB tavanini asmaz', () => {
+  const yol = path.join(KOK, 'skills', 'relay', 'SKILL.md');
+  const b = fs.statSync(yol).size;
+  if (b > 30 * 1024)
+    throw new Error(
+      'SKILL.md ' + b + ' B — tavan ' + 30 * 1024 + ' B. Kosullu bolumu references/ altina tasi.'
+    );
+});
+
+// Tasima duraklarinin isaret ettigi dosya gercekten var mi, ve tasinan bolum numaralari
+// referans dosyalarinda yasiyor mu. Numara olmeden atif olurse dis dosyalardaki
+// "relay §1.5" satirlari sessizce bosluga bakar.
+ol('durak isaretcileri var olan dosyayi ve yasayan bolum numarasini gosterir', () => {
+  const ref = path.join(KOK, 'skills', 'relay', 'references');
+  const k = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  const isaret = [...k.matchAll(/`references\/([a-z-]+\.md)`/g)].map((m) => m[1]);
+  esit(isaret.length > 0, true, 'hic isaretci yok');
+  for (const f of new Set(isaret))
+    esit(fs.existsSync(path.join(ref, f)), true, 'isaret edilen dosya yok: ' + f);
+  const plan = fs.readFileSync(path.join(ref, 'plan-akisi.md'), 'utf8');
+  const rele = fs.readFileSync(path.join(ref, 'rele-akisi.md'), 'utf8');
+  const cikti = fs.readFileSync(path.join(ref, 'cikti.md'), 'utf8');
+  for (const n of ['1.4', '1.5', '1.5.1', '1.7']) icerir(plan, '## ' + n + ' ');
+  for (const n of ['3.1', '3.2', '3.3', '4.']) icerir(rele, '## ' + n + ' ');
+  for (const n of ['2.1', '7.1', '7.2']) icerir(cikti, '## ' + n + ' ');
+});
+
 console.log('\nKonsey defteri');
 
 // Kosu 3'te `lite` ayri bir kavram olmaktan cikti; `Tip` sutunu ve `--tip` bayragi dustu.
@@ -8955,10 +9012,9 @@ ol('konsey protokolu lite kavramini tasimaz, kimlik acik', () => {
 // eklentinin skillidir. Kosu 3 kapandiktan sonra SKILL.md bir sure eski simetrik
 // mekanigi anlatmaya devam etti — belge ile eklenti ayristi.
 ol('yeni konsey mekanigi eklentinin skilline yazildi', () => {
-  const yol = path.join(__dirname, '..', 'teknesyum', 'skills', 'relay', 'SKILL.md');
-  const k = fs.readFileSync(yol, 'utf8');
+  const k = relayMetin();
   if (/Konsey üyesi 1 \| `fable`/.test(k))
-    throw new Error('SKILL.md hâlâ eski simetrik konsey tablosunu tasiyor');
+    throw new Error('skill hâlâ eski simetrik konsey tablosunu tasiyor');
   icerir(k, 'Birinci koltuğun metni ikinciye verilir');
   icerir(k, 'Oturumlar kapatılmaz');
   icerir(k, 'Tavan 4');

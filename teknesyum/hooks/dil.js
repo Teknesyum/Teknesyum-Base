@@ -215,12 +215,12 @@ const S = {
     tr: (liste) =>
       'Şu sözleşme(ler) dördüncü tura girdi ve denetimi hâlâ geçmedi: ' +
       liste +
-      '. relay §1.5.1 madde 2 tetiklendi — brifing yazmadan önce `advisor` aç. ' +
+      '. relay `references/plan-akisi.md` §1.5.1 madde 2 tetiklendi — brifing yazmadan önce `advisor` aç. ' +
       'Açmamayı seçersen gerekçeni sözleşmeye yaz.',
     en: (liste) =>
       'These contracts entered a fourth round and still have not passed audit: ' +
       liste +
-      '. relay §1.5.1 item 2 fired — open `advisor` before writing the briefing. ' +
+      '. relay `references/plan-akisi.md` §1.5.1 item 2 fired — open `advisor` before writing the briefing. ' +
       'If you choose not to, write the reason into the contract.',
   },
 
@@ -669,19 +669,19 @@ const S = {
 
   onArastirmaHatirlatma: {
     tr: () =>
-      'Sıfırdan iş görünüyor. Plan yazmadan önce ön araştırma yapılır (relay §1.4): aynı ' +
+      'Sıfırdan iş görünüyor. Plan yazmadan önce ön araştırma yapılır (relay `references/plan-akisi.md` §1.4): aynı ' +
       'problemi çözmüş en az ' +
       depoSayisi() +
       ' depoyu `scout` ajanlarına dağıt, `docs/taramalar/` altına ' +
       'yazsınlar. Kullanıcı "sadece fikir/plan" dese de kapı bu — plan araştırmanın ' +
       'çıktısıdır. Atlanacaksa gerekçeyi `docs/taramalar/ATLANDI.md` dosyasına tek satır yaz.' +
       (premium()
-        ? ' Araştırma bitince plan konseyini aç (relay §1.5): aynı brifingle iki `planner` ' +
+        ? ' Araştırma bitince plan konseyini aç (relay `references/plan-akisi.md` §1.5): aynı brifingle iki `planner` ' +
           'ajanı, biri `fable` biri `opus`. İkisi de iş yapmaz, öneri döner; sentezi ve ' +
           '`PLAN.md` kalemini sen tutarsın.'
         : ''),
     en: () =>
-      'This looks like from-scratch work. Prior art comes before the plan (relay §1.4): split ' +
+      'This looks like from-scratch work. Prior art comes before the plan (relay `references/plan-akisi.md` §1.4): split ' +
       'at least ' +
       depoSayisi() +
       ' repositories solving the same problem across `scout` agents and have them ' +
@@ -689,7 +689,7 @@ const S = {
       'plan" — the plan is the output of the research. To skip it, write one line of reasoning ' +
       'into `docs/taramalar/ATLANDI.md`.' +
       (premium()
-        ? ' When the research is done, open the plan council (relay §1.5): two `planner` agents ' +
+        ? ' When the research is done, open the plan council (relay `references/plan-akisi.md` §1.5): two `planner` agents ' +
           'on the same briefing, one `fable` and one `opus`. Neither does the work, they return ' +
           'proposals; the synthesis and the `PLAN.md` pen stay with you.'
         : ''),

@@ -95,7 +95,7 @@ da ekler, uzun işte gürültü yapar · `quiet` yalnızca brifing, sapma ve kap
 **plan_council** — `on` ise plan tek modelin işi olmaktan çıkar. T0, `PLAN.md` yazmadan
 önce aynı brifingle **iki `planner` ajanı** açar: biri `fable`, biri `opus`. İkisi de iş
 yapmaz — kod, dosya, sözleşme yazmazlar; tek çıktıları öneridir. T0 iki öneriyi
-sentezler ve planı kendisi yazar. Ayrıntı relay SKILL §1.5.
+sentezler ve planı kendisi yazar. Ayrıntı relay `references/plan-akisi.md` §1.5.
 
 Bu, "planlamayı asla delege etme" kuralını delmez: delege edilen **karar** değil
 **seçenek üretimi**. Kararı hâlâ T0 verir ve gerekçesi `PLAN.md`'ye girer.
@@ -113,9 +113,9 @@ ancak ucuz olmasıyla mümkün.
 
 Görüş bağlayıcı değildir — T0 katılmazsa gerekçesini yazar. Kullanıcıya sormanın yerini
 de tutmaz: `ask_threshold` sormaya izin veriyorsa önce sorulur. eco ve normal profilde
-kapalıdır, premiumda açılır. Hangi dokuz durumda tetiklendiği relay SKILL §1.5.1.
+kapalıdır, premiumda açılır. Hangi dokuz durumda tetiklendiği relay `references/plan-akisi.md` §1.5.1.
 
-**research_repos** — ön araştırmada (SKILL §1.4) taranacak en az depo sayısı. eco
+**research_repos** — ön araştırmada (SKILL `references/plan-akisi.md` §1.4) taranacak en az depo sayısı. eco
 profilinde 1, normal profilde 10, premium profilde 50. Elli depo, on depoyla aynı
 derinlikte okunmaz: ilk tarama tabakası sığdır, konsey ve planlama derinleşeceği yeri
 kendi seçer.
@@ -123,7 +123,7 @@ kendi seçer.
 eco'da tavan **1**'dir çünkü ön araştırma bir oturumun en pahalı kalemidir: her depo bir
 `scout` ajanı payı demektir ve eco'nun tek gerçek kısıtı ajan sayısıdır. Tek depo bile
 "birileri bu problemi nasıl çözmüş" sorusuna cevap verir; beş depo eco felsefesiyle
-çelişir. Kapı da eco'da engellemez, uyarır — ayrıntısı SKILL §1.4'te. Atlamanın gerekçesi
+çelişir. Kapı da eco'da engellemez, uyarır — ayrıntısı SKILL `references/plan-akisi.md` §1.4'te. Atlamanın gerekçesi
 hâlâ `docs/taramalar/ATLANDI.md` dosyasına yazılır; eco'da kanca atlamayı ayrıca
 `live/_sorun.log` dosyasına kaydeder, çünkü ekrandan kayan uyarı kalıcı iz değildir.
 

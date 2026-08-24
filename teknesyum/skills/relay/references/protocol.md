@@ -199,7 +199,7 @@ talimatı — *her kabul kriterinden sonra `## Kayıt noktası`na tek satır dü
 commit at* — ki araç tavanına takılan ajan nerede kaldığını okunabilir bıraksın.
 Öteki, ölçüm istenen her maddede "öncesi" değerinin depoda belgeli olup olmadığı:
 belgeliyse sözleşme onu kaynağıyla alıntılar ve yeniden ölçtürmez. Koşunun bitişi
-ajan uyandırılarak değil gözcüyle beklenir (relay §3.3).
+ajan uyandırılarak değil gözcüyle beklenir (relay `rele-akisi.md` §3.3).
 **Bir görev tanımı tek görevi anlatır, oturumun geçmişini değil.** Dispatch prompt'una
 konuşma özeti koyma, sözleşmenin yolunu ver.
 
@@ -235,7 +235,7 @@ sabırdan geliyordu ve sabrın sınırı hiçbir yerde yazılı değildi.
    da yazılı bir kabul kriterinin delinmesi. Kalan her bulgu **borçtur**: mühür
    notuna yazılır, sözleşme mühürlenir.
 2. **Üçüncü turdan sonra `advisor` zorunlu.** `round >= 3` ve denetim hâlâ
-   geçmemişse brifing yazmadan önce görüş alınır (relay §1.5.1 madde 2). Kanca
+   geçmemişse brifing yazmadan önce görüş alınır (relay `plan-akisi.md` §1.5.1 madde 2). Kanca
    `UserPromptSubmit`'te hatırlatır ve her görüş `.claude/relay/GORUS.md`'ye düşer.
    Açmamayı seçen gerekçesini sözleşmeye yazar.
 3. **Beşinci turdan sonra durdurma kuralı yürürlüktedir.** Denetim raporu BORÇ'u tur
@@ -285,7 +285,7 @@ giremez; `critical` ve altında serbesttir. Küçük ve geri alması ucuz işte 
 komut yazdırmak tören olur, tören de atlanır.
 
 `CHECK` yazılamayan bir kriter varsa iki yol var: kriteri komutu yazılabilir hâle getir,
-ya da §1.5.1 madde 8'i uygula ve sözleşmeye koymadan önce sor. Gözle doğrulanan madde
+ya da `plan-akisi.md` §1.5.1 madde 8'i uygula ve sözleşmeye koymadan önce sor. Gözle doğrulanan madde
 `CHECK` satırı olmadan yazılır — uydurma komut, komutsuzluktan kötüdür.
 
 **Yapıştırma biçimi.** Denetim isteğine her kriter için tek blok:

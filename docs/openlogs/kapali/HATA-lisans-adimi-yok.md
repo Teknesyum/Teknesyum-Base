@@ -284,3 +284,28 @@ katkı geldiği gün başlar.
 Günlüğün sonundaki üç türetilmiş çelişki (Quizloop ADR, VidShrink README, VideoEdit
 README) da kendi depolarında duruyor ve karar gerektiriyor — Base tarafında yapılacak
 bir şey kalmadı.
+
+---
+
+## Kapanış — 24.08.2026
+
+Dördüncü madde kapandı. `DCO` (1.1 metni birebir) ve `CONTRIBUTING.md` sekiz depoya
+GitHub Contents API ile eklendi; Teknesyum-Base'de zaten vardı.
+
+| Depo | DCO | CONTRIBUTING |
+|---|---|---|
+| VidShrink · Runly · CodeXRay · Reclatch · Quizloop · ProcWitness · Gothic-1-Remake-Picklocker · Ghostlist | 1400 B | 1607 B |
+| Teknesyum-Base | 1366 B | 1588 B (depoya özgü iki madde taşır) |
+| Webband | — | — |
+
+**Webband dışarıda bırakıldı, eksik değil:** depo **arşivlenmiş** ve salt-okunur
+(`403 Repository was archived so is read-only`). Arşiv deposu katkı alamaz, dolayısıyla
+telifin dağılma riski de yoktur. Arşivi bu madde için açmak, kapatılmış bir depoyu
+yalnızca içine kural koymak için yeniden yazılabilir yapmak olurdu.
+
+`CONTRIBUTING.md` Base'inkinden iki maddede ayrılır: `npm test` ve "tr/en dizgeleri
+birlikte güncellenir" satırları bu depoya özgüydü, genel metinde "projenin test takımını
+koş, README bir komut belgeliyorsa onu kullan" biçimini aldı.
+
+On deponun onunda da lisans `AGPL-3.0` olarak doğrulandı; hiçbirinde lisans değişikliği
+yapılmadı — bu madde lisans dayatmıyor, beyanın tutarlılığını denetliyor.

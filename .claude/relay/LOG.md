@@ -72,3 +72,4 @@
 =======
 2026-08-24 · D3 tur 2: yönlendirme tavanı PreToolUse'a taşındı (hedef 'to', stderr+exit 2), hooks.json matcher SendMessage aldı; kök sebep düzeltildi — tool_input eksik değildi, kurulu eklenti 2.42.1 bu kodu hiç taşımıyor; 443/443
 >>>>>>> worktree-agent-a2075d3517fc89212
+2026-08-24 · D4 teslim: premium advisor effort medium, /update --guncelle kolu (bayraksız pano salt okur), sürüm-etiket denetimi ve güncelleme sonrası sürüm doğrulaması; 469/469

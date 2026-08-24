@@ -5467,10 +5467,10 @@ ol('tarama --json ayristirilabilir', () => {
   const r = taramaCalistir(p, 'eco', '--json');
   const j = JSON.parse(r.out);
   esit(j.profil, 'eco');
-  esit(j.maddeler.length, 4, 'dort madde');
+  esit(j.maddeler.length, 5, 'bes madde: dordu profille olculur, lisans her profilde ayni');
   esit(
     j.maddeler.map((m) => m.ad).join(','),
-    'Ön araştırma,Kapsam,Denetim,Belge tutarlılığı',
+    'Ön araştırma,Kapsam,Denetim,Belge tutarlılığı,Lisans',
     'madde adlari'
   );
   esit(Array.isArray(j.maddeler[1].incelenmemis), true, 'incelenmemis listesi');
@@ -6158,7 +6158,7 @@ ol('ui kipi uc profil kipini bozmaz', () => {
   const p = taramaProje(1);
   const j = JSON.parse(taramaCalistir(p, 'eco', '--json').out);
   esit(j.profil, 'eco', 'profil alani');
-  esit(j.maddeler.length, 4, 'dort madde');
+  esit(j.maddeler.length, 5, 'bes madde: dordu profille olculur, lisans her profilde ayni');
   esit(j.kip, undefined, 'profil ciktisinda kip alani olmamali');
   const t = taramaCalistir(p, 'premium', '--tamamla');
   icerir(t.out, '--tamamla · bu betik hiçbir dosyaya yazmadı');
@@ -7566,6 +7566,70 @@ ol('denetim turunun durdurma kurali yazili ve olculebilir', () => {
 
   const sk = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
   icerir(sk, 'Denetim turunun durdurma kuralı `fix_ceiling`den ayrıdır');
+});
+
+
+ol('lisans olcutu lisanssiz depoyu ve celisen beyani yakalar', () => {
+  // HATA-lisans-adimi-yok · kural yazildi, kapi yoktu. Kapi budur.
+  const AGPL = 'GNU AFFERO GENERAL PUBLIC LICENSE\nVersion 3, 19 November 2007\n';
+  const MIT = 'MIT License\n\nPermission is hereby granted, free of charge, to any person\n';
+  const kur = (dosyalar) => {
+    const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-lisans-'));
+    for (const [ad, govde] of Object.entries(dosyalar)) {
+      const y = path.join(p, ad);
+      fs.mkdirSync(path.dirname(y), { recursive: true });
+      fs.writeFileSync(y, govde);
+    }
+    return p;
+  };
+  const tara = (p) => {
+    const r = taramaCalistir(p, 'eco', '--json');
+    return JSON.parse(r.out).maddeler.find((m) => m.ad === 'Lisans');
+  };
+
+  const yok = tara(kur({ 'README.md': '# x\n' }));
+  esit(yok.gecti, false, 'lisanssiz depo kalmali');
+  icerir(yok.eksik.join(' '), 'LICENSE dosyası yok');
+
+  const temiz = tara(
+    kur({
+      'README.md': '# x\n',
+      LICENSE: AGPL,
+      'package.json': JSON.stringify({ name: 'x', license: 'AGPL-3.0-or-later' }),
+    })
+  );
+  esit(temiz.gecti, true, 'AGPL-3.0 ile AGPL-3.0-or-later ayni ailedir: ' + temiz.eksik);
+
+  const celiski = tara(
+    kur({
+      'README.md': '# x\n',
+      LICENSE: AGPL,
+      'package.json': JSON.stringify({ name: 'x', license: 'MIT' }),
+    })
+  );
+  esit(celiski.gecti, false, 'iki farkli lisans beyani kalmali');
+  icerir(celiski.eksik.join(' '), 'package.json "MIT" diyor');
+
+  const rozet = tara(
+    kur({
+      'README.md': '<img src="a.svg" alt="License MIT">\n',
+      LICENSE: AGPL,
+    })
+  );
+  esit(rozet.gecti, false, 'README rozeti de bir beyandir');
+
+  const mit = tara(
+    kur({ 'README.md': '# x\n', LICENSE: MIT, 'package.json': JSON.stringify({ license: 'MIT' }) })
+  );
+  esit(mit.gecti, true, 'MIT de gecerli bir cevaptir, olcut lisans dayatmaz');
+
+  const dcosuz = tara(
+    kur({ 'README.md': '# x\n', LICENSE: AGPL, 'CONTRIBUTING.md': 'katkı' })
+  );
+  esit(dcosuz.gecti, false, 'katki cagrisi varken DCO yoksa kalmali');
+
+  const sessiz = tara(kur({ 'README.md': '# x\n', LICENSE: AGPL }));
+  esit(sessiz.gecti, true, 'lisanstan hic soz etmeyen yuzey ihlal degildir');
 });
 
 console.log(

@@ -50,8 +50,12 @@ istemediği yerde başlamamalı. Argüman boşsa betiğin bastığı kullanımı
 | Kapsam | değişen dosyalar | değişen + komşuları | baştan sona, her kaynak dosya |
 | Denetim | kritik sözleşmeler | her sözleşme | her sözleşme |
 | Belge tutarlılığı | — | README | README + CHANGELOG + skill |
+| Lisans | LICENSE + beyanların hizası | aynı | aynı |
 
-Üçü de aynı dört maddeye bakar, eşikleri farklıdır. Eşikler `skills/relay/SETTINGS.md`
+Üçü de aynı beş maddeye bakar; ilk dördünün eşiği farklıdır. **Lisans maddesinin
+eşiği yoktur:** `LICENSE` yoksa ya da `package.json` / eklenti manifestosu / README
+rozeti gibi bir yüzey dosyadan başka bir lisans söylüyorsa üç profilde de kalır. Sessiz
+yüzey ihlal değildir — lisanstan hiç söz etmeyen dosya sorulmaz. Eşikler `skills/relay/SETTINGS.md`
 düğmeleriyle aynı kaynaktan (`scripts/premium.js` içindeki `DUGME`) okunur; komut
 dosyasına kopyalanmaz. Yukarıdaki tablo anlatım içindir, ölçüyü betik yapar.
 

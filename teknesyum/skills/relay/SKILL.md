@@ -444,7 +444,8 @@ Denetim modelsizdir: `node teknesyum/scripts/platform-denetim.js <kök>`.
 `/scan <eco|normal|premium>` projenin **şu anki halini** bir profile karşı denetler ve
 eksikleri madde madde sayar. Salt okurdur: dosya yazmaz, ajan açmaz, model çağırmaz.
 
-Dört madde ölçülür ve dördünün de eşiği profille değişir:
+Beş madde ölçülür; dördünün eşiği profille değişir, lisansınki değişmez — lisanssız
+ya da kendisiyle çelişen depo her profilde kalır.
 
 | Ölçüt | eco | normal | premium |
 |---|---|---|---|
@@ -453,6 +454,7 @@ Dört madde ölçülür ve dördünün de eşiği profille değişir:
 | Kapsam | değişen dosyalar | değişen + komşuları | baştan sona, her kaynak dosya |
 | Denetim | kritik sözleşmeler | her sözleşme | her sözleşme |
 | Belge tutarlılığı | — | README | README + CHANGELOG + skill |
+| Lisans | LICENSE + beyanların hizası | aynı | aynı |
 
 **Ayar verilmeden çalışmaz.** Profil argümanı yoksa betik kullanımı basıp çıkar; sen de
 varsayılana düşme. Elli depoluk bir tarama kullanıcının istemediği yerde başlamamalı.

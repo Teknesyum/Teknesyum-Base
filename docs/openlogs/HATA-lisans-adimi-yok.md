@@ -1,6 +1,9 @@
 # Hata: Lisans hiç sorulmuyor — depolar ya refleksle MIT ya da lisanssız çıkıyor
 
-**Durum:** açık — dört ölçü maddesinin üçü kapandı, dördüncüsü (DCO) kısmi. Kural yazıldı.
+**Durum:** açık — dört ölçü maddesinin üçü kapandı ve artık `/scan` ile ölçülüyor.
+Dördüncüsü (DCO) yalnız Teknesyum-Base'de duruyor; kalan on depoya taşımak dışarı
+dönük bir iş, kullanıcının onayını bekliyor.
+**Önceki durum:** açık — üçü kapandı, dördüncüsü kısmi, kural yazıldı ama kapısı yoktu.
 **Belirti:** Teknesyum'un açtığı on genel deponun altısı sorulmadan MIT, dördü hiç lisanssız. Sahibin açıkça ilan ettiği ilkelerle ikisi de çelişiyor.
 **Kaynak:** `teknesyum/skills/relay/SKILL.md` §2 madde 6 — "yeni depo" adımı yalnız adı düzenliyor, lisansa hiç değinmiyor
 **Görüldüğü proje:** Teknesyum-Base (bulgu bütün Teknesyum depolarını kapsıyor)
@@ -232,3 +235,52 @@ kural buldu:
 - `VideoEdit/README.md` — "Detectors must be Apache-2.0. This project is meant to be
   published, so AGPL tracking stacks are out." Proje kendisi AGPL olduğu için bu cümle
   kendi kendisiyle çelişiyor.
+
+---
+
+## 6. Kapı kuruldu — 24.08.2026
+
+Günlüğün 4. bölümündeki teşhis şuydu: *kuralın metni değil, ne zaman okunacağı
+belirleyici.* 23.08'de metin yazıldı (relay §2 madde 6) ama okunma anı hâlâ modelin
+dikkatindeydi — yani diğer günlüklerin düştüğü çukurun kenarında duruyordu. Şimdi
+ölçülüyor.
+
+`/scan` beşinci maddeyi kazandı: **Lisans.** Diğer dördünün eşiği profille değişir,
+bunun eşiği yoktur — lisanssız ya da kendisiyle çelişen depo `eco`'da da kalır.
+İki şey sorulur:
+
+1. **`LICENSE` var mı ve tanınan bir metin mi?** Yoksa madde kalır. Rapor "tüm hakları
+   saklıdır" durumunu adıyla söyler, çünkü lisanssızlığın açıklık sanılması bu hatanın
+   ta kendisiydi.
+2. **Depo lisansı hakkında tek bir şey mi söylüyor?** `LICENSE` metninden çıkan kimlik
+   ile `package.json`, `pyproject.toml`, `*.csproj`, eklenti manifestosu ve README
+   rozeti karşılaştırılır. Biri başka bir şey diyorsa madde kalır ve hangi yüzeyin ne
+   dediği raporda yazar. **Sessizlik ihlal değildir:** lisanstan hiç söz etmeyen dosya
+   sorulmaz — ölçüt beyanı denetler, beyan etmeye zorlamaz.
+
+Karşılaştırma aile düzeyinde: `AGPL-3.0`, `AGPL-3.0-or-later` ve `AGPL-3.0-only` aynı
+şeyi söyler, sürüm kuyruğu atılır. Yoksa doğru hizalanmış her depo yanlış alarm verirdi.
+
+Dördüncü madde de kısmen ölçülür oldu: `CONTRIBUTING` varken `DCO` yoksa (ya da tersi)
+madde kalır. Depo katkı çağırıyor ama katkının hangi şartla alındığını söylemiyor
+demektir. İkisi de yokken sorulmaz — her depo katkı almak zorunda değil.
+
+**Ölçüt lisans dayatmaz.** MIT de geçer, PolyForm da. Denetlenen şey seçim değil,
+seçimin **yapılmış ve tek sesle söylenmiş** olması. Teknesyum depolarının cevabı
+(`AGPL-3.0-or-later`) relay §2 madde 6'da duruyor; `/scan` onu bilmez, bilmemesi de
+doğrudur — sertifika başkasının deposunda da çalışır.
+
+**Kilit.** `test/run.js` → `lisans olcutu lisanssiz depoyu ve celisen beyani yakalar`:
+lisanssız depo kalır · `AGPL-3.0` ile `AGPL-3.0-or-later` aynı ailedir · `package.json`
+MIT derken `LICENSE` AGPL ise kalır · README rozeti de bir beyandır · MIT tek başına
+geçer · `CONTRIBUTING` varken `DCO` yoksa kalır · sessiz yüzey ihlal değildir. 419/419.
+
+### Kalan tek madde
+
+`DCO` + `CONTRIBUTING.md` on depoya taşınmalı. Bu depo dışına çıkan, geri alınabilir
+ama dışarı dönük bir iş; kullanıcı söylemeden yapılmıyor. Aciliyeti dışarıdan ilk
+katkı geldiği gün başlar.
+
+Günlüğün sonundaki üç türetilmiş çelişki (Quizloop ADR, VidShrink README, VideoEdit
+README) da kendi depolarında duruyor ve karar gerektiriyor — Base tarafında yapılacak
+bir şey kalmadı.

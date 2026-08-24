@@ -330,6 +330,134 @@ function denetim(relay, dugme) {
   };
 }
 
+// Lisans, adla aynı adımda kararlaşan bir alan (relay §2 madde 6) ama kuralın kapısı
+// yoktu: on Teknesyum deposunun altısı sorulmadan MIT, dördü hiç lisanssız açılmıştı.
+// Lisanssız depo "herkese açık" değil, telif hukukunda "tüm hakları saklıdır" demektir.
+// Ölçüldü: docs/openlogs/kapali/HATA-lisans-adimi-yok.md
+//
+// Ölçüt iki şey soruyor: lisans **var mı**, ve depo lisansı hakkında **tek bir şey mi**
+// söylüyor. İkincisi ilkinden daha sık kırılıyor — bir yüzey güncellenip öteki
+// unutulduğunda depo iki farklı lisans beyan ediyor ve hangisinin geçerli olduğu
+// mahkemede belirsizleşiyor.
+const LISANS_IZI = [
+  [/GNU AFFERO GENERAL PUBLIC LICENSE/i, 'AGPL-3.0'],
+  [/GNU GENERAL PUBLIC LICENSE[\s\S]{0,400}Version 3/i, 'GPL-3.0'],
+  [/GNU LESSER GENERAL PUBLIC LICENSE/i, 'LGPL-3.0'],
+  [/Mozilla Public License Version 2\.0/i, 'MPL-2.0'],
+  [/Apache License[\s\S]{0,200}Version 2\.0/i, 'Apache-2.0'],
+  [/PolyForm Noncommercial/i, 'PolyForm-Noncommercial'],
+  [/PolyForm Shield/i, 'PolyForm-Shield'],
+  [/Permission is hereby granted, free of charge/i, 'MIT'],
+  [/Redistribution and use in source and binary forms/i, 'BSD'],
+];
+
+// Aile karşılaştırması: `AGPL-3.0-or-later`, `AGPL-3.0-only` ve `AGPL-3.0` aynı şeyi
+// söylüyor. Sürüm ve `-or-later` kuyruğu atılır, kalan çekirdek karşılaştırılır.
+function lisansAilesi(x) {
+  return String(x || '')
+    .trim()
+    .replace(/-(or-later|only)$/i, '')
+    .replace(/[-_ ]?v?\d+(\.\d+)*$/, '')
+    .toUpperCase();
+}
+
+function lisansMetni(kok) {
+  for (const f of dosyalar(kok)) {
+    if (!/^(licen[cs]e|copying)(\.(md|txt))?$/i.test(f)) continue;
+    const g = oku(path.join(kok, f));
+    if (g && g.trim()) return { dosya: f, govde: g };
+  }
+  return null;
+}
+
+function lisansKimligi(govde) {
+  for (const [desen, ad] of LISANS_IZI) if (desen.test(govde)) return ad;
+  return null;
+}
+
+// Deponun lisans hakkında konuştuğu her yüzey. Her biri `{ nerede, ne }` döner;
+// `ne` null ise o yüzey lisanstan hiç söz etmiyor demektir ve sessizlik ihlal değildir.
+function lisansYuzeyleri(kok) {
+  const cikan = [];
+  const ekle = (nerede, ne) => {
+    if (ne) cikan.push({ nerede, ne: String(ne) });
+  };
+
+  const pj = jsonOku(path.join(kok, 'package.json'));
+  if (pj) ekle('package.json', pj.license);
+
+  for (const y of [
+    path.join(kok, '.claude-plugin', 'plugin.json'),
+    path.join(kok, 'teknesyum', '.claude-plugin', 'plugin.json'),
+  ]) {
+    const pl = jsonOku(y);
+    if (pl) ekle(gorece(kok, y), pl.license);
+  }
+
+  const py = oku(path.join(kok, 'pyproject.toml'));
+  if (py) ekle('pyproject.toml', (py.match(/^license[ \t]*=[ \t]*"([^"]+)"/im) || [])[1]);
+
+  for (const f of dosyalar(kok)) {
+    if (!/\.(csproj|fsproj|vbproj)$/i.test(f)) continue;
+    const g = oku(path.join(kok, f)) || '';
+    ekle(f, (g.match(/<PackageLicenseExpression>([^<]+)</i) || [])[1]);
+  }
+
+  // README rozeti ve "License: X" cümlesi. Rozet metni kullanıcının gördüğü beyandır;
+  // dosya doğru ama rozet yanlışsa depo yine iki şey söylüyor demektir.
+  const ry = belgeAra(kok, 'README');
+  const rg = ry ? oku(ry) || '' : '';
+  if (rg) {
+    const rozet =
+      (rg.match(/alt="License[ :]+([A-Za-z0-9.+-]+)"/i) || [])[1] ||
+      (rg.match(/shields\.io\/badge\/[Ll]icense-([A-Za-z0-9.%+-]+?)-/) || [])[1];
+    ekle('README rozeti', rozet && decodeURIComponent(rozet.replace(/%20/g, ' ')));
+  }
+  return cikan;
+}
+
+function lisans(kok) {
+  const dosya = lisansMetni(kok);
+  if (!dosya) {
+    return {
+      ad: 'Lisans',
+      gecti: false,
+      olcu: 'LICENSE yok — depo "tüm hakları saklıdır" durumunda',
+      eksik: ['LICENSE dosyası yok; lisanssız depo kullanılamaz, kopyalanamaz, dağıtılamaz'],
+    };
+  }
+  const kimlik = lisansKimligi(dosya.govde);
+  const yuzey = lisansYuzeyleri(kok);
+  const eksik = [];
+  const durum = [dosya.dosya + ' — ' + (kimlik || 'tanınmayan metin')];
+
+  if (!kimlik)
+    eksik.push(dosya.dosya + ' bilinen bir lisans metnine benzemiyor; metin birebir kopyalanmalı');
+
+  const aile = lisansAilesi(kimlik);
+  for (const y of yuzey) {
+    const uyar = kimlik && lisansAilesi(y.ne) !== aile;
+    durum.push(y.nerede + ' — ' + y.ne);
+    if (uyar) eksik.push(y.nerede + ' "' + y.ne + '" diyor, ' + dosya.dosya + ' "' + kimlik + '"');
+  }
+
+  // Katkı alan depoda telifin dağılmaması için DCO. İkisi birlikte girer: CONTRIBUTING
+  // katkı çağrısıdır, DCO o katkının hangi şartla alındığıdır. Biri varken öteki yoksa
+  // depo katkı istiyor ama şartını söylemiyor demektir.
+  const katki = dosyalar(kok).some((f) => /^contributing(\.(md|txt))?$/i.test(f));
+  const dco = dosyalar(kok).some((f) => /^dco(\.(md|txt))?$/i.test(f));
+  if (katki && !dco) eksik.push('CONTRIBUTING var, DCO yok — katkının şartı yazılı değil');
+  if (dco && !katki) eksik.push('DCO var, CONTRIBUTING yok — şart var, çağrı yok');
+  if (katki && dco) durum.push('DCO + CONTRIBUTING');
+
+  return {
+    ad: 'Lisans',
+    gecti: !eksik.length,
+    olcu: durum.join(' · '),
+    eksik,
+  };
+}
+
 function belge(kok, profil) {
   const istenen = OLCUT[profil].belge;
   const s = surum(kok);
@@ -394,6 +522,9 @@ const YAPILACAK = {
     ' sözleşmeyi `auditor` ajanına ver; GEÇTİ raporundan sonra `audit`, `auditor_id`, ' +
     '`diff`, `verification` alanlarını T0 doldurur, mührü ajan basmaz.',
   'Belge tutarlılığı': () => 'Eksik veya sürümle uyuşmayan belgeyi güncelle.',
+  Lisans: () =>
+    'LICENSE yaz ya da beyanları hizala; karar kullanıcınındır, varsayılan seçilmez ' +
+    '(relay §2 madde 6).',
 };
 
 // Standart tek projeye göre yazılmıştır: eşikler bir deponun ön araştırması, bir
@@ -1289,6 +1420,7 @@ function main() {
     kapsam(kok, relay, profil, dugme, notlar),
     denetim(relay, dugme),
     belge(kok, profil),
+    lisans(kok),
   ];
   const sonuc = {
     profil,

@@ -3180,15 +3180,18 @@ ol('advisor yazma araci ve memory alani tasimaz', () => {
   icerir(m, '_sorun.log');
 });
 
-ol('advisor ucuz kalir, uc profilde de dusuk efordadir', () => {
+ol('advisor ucuz kalir, premiumda medium otekilerde low', () => {
   const src = fs.readFileSync(PREMIUM, 'utf8');
   const govde = src.slice(src.indexOf('const PROFIL'), src.indexOf('const PROFILLER'));
   const satirlar = govde.split('\n').filter((r) => r.trim().startsWith('advisor:'));
   esit(satirlar.length, 3, 'advisor üç profilde de tanımlı olmalı');
-  for (const satir of satirlar)
+  for (const satir of satirlar.slice(0, 2))
     if (!/effort: 'low'/.test(satir))
       throw new Error('advisor düşük eforda değil: ' + satir.trim());
   icerir(satirlar[2], "model: 'fable'");
+  icerir(satirlar[2], "effort: 'medium'");
+  if (/effort: '(high|xhigh)'/.test(satirlar[2]))
+    throw new Error('premium advisor planner kopyasina donmus: ' + satirlar[2].trim());
 });
 
 ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
@@ -5191,7 +5194,7 @@ ol('bayraksiz calistirmada insan okur satir cikar', () => {
 ol('yeni surum varken acilis satiri cikar', () => {
   const { cfg } = surumKur('1.0.0', 'v9.9.9');
   const m = surumAcilis(cfg);
-  icerir(m, 'Teknesyum ▸ Güncelleme ▸ 9.9.9 çıktı, kurulu sürüm 1.0.0 — /update ile güncelle');
+  icerir(m, 'Teknesyum ▸ Güncelleme ▸ 9.9.9 çıktı, kurulu sürüm 1.0.0 — /update --guncelle');
 });
 
 ol('guncelken acilis satiri cikmaz', () => {
@@ -5240,6 +5243,162 @@ ol('/update komutu marketplace adli cagriyi verir', () => {
   icerir(k, '/premium');
   const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
   icerir(h, '| `/update` |');
+});
+
+function etiketDepo(paketSurum, etiketler) {
+  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-etiket-'));
+  git(['init', '-q'], c);
+  git(['config', 'user.email', 't@t'], c);
+  git(['config', 'user.name', 't'], c);
+  if (paketSurum)
+    fs.writeFileSync(path.join(c, 'package.json'), JSON.stringify({ version: paketSurum }));
+  fs.writeFileSync(path.join(c, 'a'), 'x');
+  git(['add', '-A'], c);
+  git(['commit', '-qm', 'x'], c);
+  for (const e of [].concat(etiketler || [])) git(['tag', e], c);
+  return c;
+}
+
+ol('etiket denetimi surum etiketten yeniyken uyarir', () => {
+  const d = etiketDepo('2.51.0', ['v2.42.0', 'v2.43.0']);
+  const e = surum.etiketDurumu(d);
+  esit(e.surum, '2.51.0', 'paket surumu okunur');
+  esit(e.etiket, '2.43.0', 'en yuksek etiket secilir');
+  esit(e.etiketsiz, true, 'surum etiketten yeni');
+  const m = surum.etiketMetni(e);
+  icerir(m, 'Etiket');
+  icerir(m, '2.51.0');
+  icerir(m, '2.43.0');
+});
+
+ol('etiket denetimi surum ile etiket tutunca hic satir uretmez', () => {
+  const d = etiketDepo('2.52.0', ['v2.51.0', 'v2.52.0']);
+  const e = surum.etiketDurumu(d);
+  esit(e.etiketsiz, false, 'tutuyor');
+  esit(surum.etiketMetni(e), null, 'tutuyorken uyari satiri cikmamali');
+  esit(surum.etiketMetni(null), null, 'etiket bilinmiyorken de cikmamali');
+});
+
+ol('etiket denetimi hic etiket yokken uyarir, etiket surumden yeniyken susar', () => {
+  esit(surum.etiketDurumu(etiketDepo('1.0.0', [])).etiketsiz, true, 'hic etiket yok');
+  icerir(surum.etiketMetni(surum.etiketDurumu(etiketDepo('1.0.0', []))), 'Etiket');
+  esit(
+    surum.etiketDurumu(etiketDepo('1.0.0', ['v1.2.0'])).etiketsiz,
+    false,
+    'etiket ileride ise uyarilmaz'
+  );
+});
+
+ol('etiket denetimi paket ya da depo yokken null doner, cokmez', () => {
+  esit(surum.etiketDurumu(etiketDepo(null, ['v1.0.0'])), null, 'package.json yok');
+  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-etiket-'));
+  fs.writeFileSync(path.join(c, 'package.json'), JSON.stringify({ version: '1.0.0' }));
+  esit(surum.etiketDurumu(c), null, 'git deposu degil');
+  esit(surum.etiketDurumu(path.join(c, 'yok')), null, 'dizin yok');
+});
+
+ol('etiket denetimi zaman asimiyla sinirli — pano askida kalmaz', () => {
+  const src = fs.readFileSync(SURUM, 'utf8');
+  icerir(src, 'timeout: ETIKET_ZAMAN_ASIMI');
+  const m = src.match(/ETIKET_ZAMAN_ASIMI\s*=\s*(\d+)/);
+  if (!m) throw new Error('ETIKET_ZAMAN_ASIMI sabiti yok');
+  if (Number(m[1]) > 3000) throw new Error('zaman asimi cok uzun: ' + m[1]);
+});
+
+ol('durum ciktisi etiket alanini tasir, pano ikinci kontrol yazmaz', () => {
+  const { cfg } = surumKur('1.0.0', 'v9.9.9');
+  const r = surumCalistir(cfg, ['--json']);
+  const j = JSON.parse(r.out);
+  if (!('etiket' in j)) throw new Error('durum ciktisinda etiket alani yok');
+});
+
+ol('guncelle komut bulunamayinca sebebi doner, cokmez', () => {
+  const { cfg } = surumKur('1.0.0', 'v9.9.9');
+  const r = spawnSync(process.execPath, [SURUM, 'guncelle'], {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, PATH: path.join(cfg, 'bos-dizin') },
+  });
+  esit(r.status, 0, 'cikis kodu sifir kalmali, pano devam etsin');
+  const out = (r.stdout || '').trim();
+  icerir(out, 'claude plugin update teknesyum@teknesyum');
+});
+
+function sahteClaude(cfg) {
+  const d = path.join(cfg, 'sahte-yol');
+  fs.mkdirSync(d, { recursive: true });
+  if (process.platform === 'win32')
+    fs.writeFileSync(
+      path.join(d, 'claude.cmd'),
+      '@echo Updated plugin teknesyum@teknesyum' + String.fromCharCode(13, 10)
+    );
+  else
+    fs.writeFileSync(
+      path.join(d, 'claude'),
+      ['#!/bin/sh', 'echo Updated', ''].join(String.fromCharCode(10)),
+      { mode: 0o755 }
+    );
+  return d + path.delimiter + process.env.PATH;
+}
+
+ol('guncelle komut basariyla donse bile kurulu surum hedefe ulasmadiysa tutmadi der', () => {
+  const { cfg } = surumKur('1.0.0', 'v9.9.9');
+  const r = spawnSync(process.execPath, [SURUM, 'guncelle', '--json'], {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, PATH: sahteClaude(cfg) },
+  });
+  const j = JSON.parse((r.stdout || '').trim());
+  esit(j.calisti, true, 'komut calisti');
+  esit(j.hedef, '9.9.9', 'hedef surum uzaktan gelir');
+  esit(j.sonra, '1.0.0', 'kurulu surum guncelleme sonrasi tekrar okunur');
+  esit(j.tuttu, false, 'kurulu surum hedefe ulasmadi, tutmus sayilamaz');
+});
+
+ol('guncelle sonucu json olarak da okunur ve dogrulama alanlari tasir', () => {
+  const { cfg } = surumKur('1.0.0', 'v9.9.9');
+  const r = spawnSync(process.execPath, [SURUM, 'guncelle', '--json'], {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, PATH: path.join(cfg, 'bos-dizin') },
+  });
+  const j = JSON.parse((r.stdout || '').trim());
+  esit(j.calisti, false, 'komut yokken calismadi');
+  esit(j.tuttu, false, 'calismayan guncelleme tutmus sayilmaz');
+  esit(j.sonra, '1.0.0', 'kurulu surum guncelleme sonrasi tekrar okunur');
+  if (!('hedef' in j)) throw new Error('hedef alani yok');
+  if (!j.sebep) throw new Error('sebep bos');
+});
+
+ol('guncelleme hedefe ulasmadiysa metin bunu acikca soyler', () => {
+  const tutmadi = surum.guncelleMetni({
+    calisti: true,
+    tuttu: false,
+    once: '2.42.1',
+    sonra: '2.43.0',
+    hedef: '2.51.0',
+    komut: surum.GUNCELLEME_KOMUTU,
+  });
+  icerir(tutmadi, '2.43.0');
+  icerir(tutmadi, '2.51.0');
+  const tuttu = surum.guncelleMetni({
+    calisti: true,
+    tuttu: true,
+    once: '2.42.1',
+    sonra: '2.52.0',
+    hedef: '2.52.0',
+    komut: surum.GUNCELLEME_KOMUTU,
+  });
+  icerir(tuttu, '2.52.0');
+  icermez(tuttu, 'tutmad', 'tutan guncelleme uyari basmamali');
+});
+
+ol('/update bayraksiz salt okur, guncellemeyi yalniz --guncelle tetikler', () => {
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'update.md'), 'utf8');
+  icerir(k, '--guncelle');
+  icerir(k, 'scripts/surum.js" guncelle');
+  icerir(k, 'etiketsiz');
+  const bas = k.slice(0, k.indexOf('## `--guncelle` verildiyse'));
+  icerir(bas, 'Pano salt okurdur');
+  const d = fs.readFileSync(path.join(KOK, 'hooks', 'dil.js'), 'utf8');
+  icerir(d, '/update --guncelle', 'acilis satiri dogru bayragi gostermeli');
 });
 
 const TARAMA = path.join(KOK, 'scripts', 'tarama.js');

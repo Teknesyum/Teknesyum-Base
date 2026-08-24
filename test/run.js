@@ -887,6 +887,27 @@ ol('sorun gunlugu debug kapaliyken de tutulur', () => {
   icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'npm test');
 });
 
+// OLCULDU (24.08.2026): 653 satirlik `_sorun.log`'un 71'i cok satirli arac hatasinin
+// devam satiriydi. Sayac satir saydigi icin acilis "634 ajan sorunu" diyordu; gercek
+// sayi cok daha kucuktu. Kayit satir basina bir sorundur.
+ol('cok satirli arac hatasi tek satira dusurulur, sayaci sismez', () => {
+  const { p, live } = proje(1, 0);
+  calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'PostToolUseFailure',
+    agent_id: 'a1',
+    tool_name: 'Bash',
+    tool_input: { command: 'node x.js' },
+    error: 'Traceback:\n  line 1\n  line 2\nError: bozuk',
+  });
+  const g = fs.readFileSync(path.join(live, '_sorun.log'), 'utf8');
+  const satir = g.split('\n').filter((s) => s.trim());
+  esit(satir.length, 1, 'cok satirli hata birden fazla kayit acmis');
+  icerir(g, 'Error: bozuk', 'metin duzlestirilirken kaybolmamali');
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' });
+  icerir(r.out, '1 ajan sorunu');
+});
+
 ol('birikmis sorun acilista bildirilir', () => {
   const { p, live } = proje(1, 0);
   fs.mkdirSync(live, { recursive: true });

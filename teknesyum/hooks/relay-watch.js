@@ -1432,12 +1432,22 @@ function sorunSayisi(live) {
   }
 }
 
+// Kayıt satır başına bir sorundur ve sayaç satır sayar. Araç hatası çok satırlı
+// gelebiliyor — komut çıktısı, yığın izi, tablo — ve ham yazıldığında her satırı ayrı
+// bir sorun gibi sayılıyordu. Ölçüldü (24.08.2026): 653 satırın 71'i böyle doğmuş
+// devam satırıydı, açılış "634 ajan sorunu" diyordu. Boşluk düzleştirilir, uzun metin
+// kesilir: sayı gerçeği söylesin, dosya okunabilir kalsın.
+const SORUN_TAVANI = 300;
+
 function sorunYaz(live, satir) {
   try {
     fs.mkdirSync(live, { recursive: true });
+    const tek = String(satir).replace(/\s+/g, ' ').trim();
+    const k = tek.length > SORUN_TAVANI ? tek.slice(0, SORUN_TAVANI - 1) + '…' : tek;
+    if (!k) return;
     fs.appendFileSync(
       path.join(live, '_sorun.log'),
-      new Date().toISOString().replace('T', ' ').slice(0, 19) + ' | ' + satir + '\n'
+      new Date().toISOString().replace('T', ' ').slice(0, 19) + ' | ' + k + '\n'
     );
   } catch {}
 }

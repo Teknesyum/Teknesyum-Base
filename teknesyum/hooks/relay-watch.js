@@ -824,25 +824,35 @@ function seviye() {
 const BILDIRIM_BICIMI = 'satir';
 
 const _duyuru = [];
+let _ekMesaj = '';
 
 // Kanalın adı olayın adıdır ve render katmanı `<olay> says:` önekini oradan kuruyor —
 // `Stop says:`, `PreToolUse:Agent says:`. Önek hiçbir ayarla kaldırılamıyor (ölçüldü,
 // 23.08.2026) ve kullanıcı o metni istemiyor.
 //
 // Makbuz statusline'a taşındı ama yönlendirme satırları burada kalmıştı. Onların çözümü
-// ayrı: bu olayların **hepsi tur içinde** ateşleniyor — `PreToolUse`, `PostToolUse`,
-// `SubagentStart/Stop`, `SessionStart`. Yani satır modele **cevap yazılmadan önce**
-// ulaşıyor ve model onu kendi cevabının içine basabiliyor; önek doğmuyor.
+// ayrı: `PreToolUse`, `PostToolUse`, `SubagentStart` ve `SessionStart` **tur içinde**
+// ateşleniyor. Yani satır modele **cevap yazılmadan önce** ulaşıyor ve model onu kendi
+// cevabının içine basabiliyor; önek doğmuyor.
 //
 // `Stop`'ta bu yol kapalıydı ve sebebi başkaydı: `Stop` cevap yazıldıktan sonra çalışır,
-// modelin elindeki tek yol yeni bir mesaj yazmaktır, o da cevabı tekrarlatır. Tur içi
-// olaylarda o risk yok.
+// modelin elindeki tek yol yeni bir mesaj yazmaktır, o da cevabı tekrarlatır.
+//
+// ÖLÇÜLDÜ (24.08.2026): `SubagentStop` yanlışlıkla tur içi sayılmıştı. O da cevap
+// yazıldıktan sonra çalışır; `additionalContext` alt ajanın turunu yeniden açar, ajan
+// yeni bir kapanış mesajı yazar ve ana oturuma yalnız **son** asistan mesajı gittiği
+// için gövde düşer. Dört vakanın üçünde advisor/planner raporu böyle kayboldu
+// (docs/HATA-ajan-gövdesiz-dönüyor.md). Kapanış olaylarında duyuru bağlama değil
+// ekrana yazılır.
+const KAPANIS_OLAYI = { Stop: 1, StopFailure: 1, SubagentStop: 1 };
+
 function duyur(mesaj, min, tam) {
   if (seviye() < (min || 1)) return;
   _duyuru.push(tam ? mesaj : 'Teknesyum ▸ ' + mesaj);
   const govde = _duyuru.join('\n');
-  if (_olay === 'Stop' || _olay === 'StopFailure') {
-    ciktiEkle({ systemMessage: BILDIRIM_BICIMI === 'blok' ? '\n' + govde : govde });
+  if (KAPANIS_OLAYI[_olay]) {
+    const bas = BILDIRIM_BICIMI === 'blok' ? '\n' : '';
+    ciktiEkle({ systemMessage: bas + govde + (_ekMesaj ? '\n' + _ekMesaj : '') });
     return;
   }
   ciktiEkle({
@@ -932,6 +942,14 @@ function puslaHatirlat(j) {
 // için birleştirilerek yazılır.
 function baglamEkle(metin) {
   if (!metin) return;
+  // Kapanış olayında bağlama yazmak turu yeniden açar; alt ajanda bu gövdeyi düşürür.
+  // `duyur()` ile aynı `systemMessage` alanını paylaşıyoruz — ikisi de birikir.
+  if (KAPANIS_OLAYI[_olay]) {
+    _ekMesaj = _ekMesaj ? _ekMesaj + '\n' + metin : metin;
+    const bas = BILDIRIM_BICIMI === 'blok' ? '\n' : '';
+    const duy = _duyuru.length ? _duyuru.join('\n') + '\n' : '';
+    return ciktiEkle({ systemMessage: bas + duy + _ekMesaj });
+  }
   const o = (_cikti && _cikti.hookSpecificOutput) || {};
   const onceki = o.hookEventName === 'UserPromptSubmit' ? o.additionalContext || '' : '';
   ciktiEkle({

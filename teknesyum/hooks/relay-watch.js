@@ -4,6 +4,12 @@ const { execFileSync } = require('child_process');
 const { s: ceviri, premium, profil } = require('./dil.js');
 const { PROFIL, sapmalar, sapmaSatiri } = require('../scripts/premium.js');
 const kapsayici = require('./kapsayici.js');
+// Ayna betiği kancanın yolunda değilse açılış yine de basılmalı; eksik dosya bildirimi
+// düşürmez, yalnız ayna satırını susturur.
+let aynaDurumu = () => null;
+try {
+  ({ aynaDurumu } = require('../scripts/ozel.js'));
+} catch {}
 const {
   konfigKok,
   transkriptDizini,
@@ -1325,6 +1331,8 @@ function acilis(root, kapNotu, oturumId, cwd, kaynak) {
     const n = sorunSayisi(izYolu(root));
     if (n) parca.push(ceviri('sorunBirikim', n));
   }
+  const ayna = aynaDurumu(cwd);
+  if (ayna && !ayna.sayi) parca.push(ceviri('aynaBos', ayna.ad));
   const gunluk = acikGunlukSayisi(cwd);
   if (gunluk) parca.push(ceviri('acikGunluk', gunluk));
   // Bildirme yordamı oturum başına bir kez ve her projede yazılır. İstek başına yazılsaydı
@@ -1341,7 +1349,13 @@ function acilis(root, kapNotu, oturumId, cwd, kaynak) {
           ceviri('gunlukProseduru') + (gunluk ? ' ' + ceviri('acikGunluk', gunluk) : ''),
       },
     });
-  if (parca.length) duyur(parca.join('   ·   '));
+  // Parçalar tek satırda birleştirilmiyor. `duyur` çağrı başına bir satır biriktirir ve
+  // gövdeyi `\n` ile kurar; yönergenin "her biri kendi satırında" cümlesi ancak o zaman
+  // karşılığını bulur. Beş uyarı ' · ' ile birleşince satır taşıyordu ve içindeki komut
+  // adları düz metne dönüyordu (ölçüldü: VidShrink açılışı, beş uyarı tek satır).
+  // Marka öneki yalnız ilk satırda. Her satıra konsaydı beş kez tekrarlanırdı; hiç
+  // konmasaydı blok kimsenin değil gibi dururdu.
+  parca.forEach((p, i) => duyur(p, 1, i > 0));
   const g = guncellemeBak();
   if (g) duyur(ceviri('guncellemeVar', g.uzak, g.kurulu));
   if (depoBak(cwd, kaynak)) duyur(ceviri('depoGeride'));

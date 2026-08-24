@@ -758,6 +758,17 @@ const S = {
     en: (n) => n + ' agent problems recorded · open `live/_sorun.log`, read why, do not skip it',
   },
 
+  aynaBos: {
+    tr: (ad) =>
+      'özel ayna kurulu (`' +
+      ad +
+      '`) ama kayıtlı dosya yok · dokunulmaz dosyalar yedeksiz — `/ozel ekle <yol>`',
+    en: (ad) =>
+      'private mirror is set up (`' +
+      ad +
+      '`) but holds no files · untouchable files are unbacked — `/ozel ekle <path>`',
+  },
+
   dakikaOnce: { tr: (n) => n + ' dakika önce', en: (n) => n + ' minutes ago' },
   saatOnce: { tr: (n) => n + ' saat önce', en: (n) => n + ' hours ago' },
   oncekiOturumVar: {

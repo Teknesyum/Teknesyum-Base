@@ -6,6 +6,37 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.55.0] - 2026-08-24
+
+### Fixed
+
+- **The test suite played the real bell.** Running it fired twenty closing sounds on the
+  machine. `beep.js` has always had a `TEKNESYUM_BEEP_SESSIZ` gate, but the helper every
+  hook test goes through never set it — only two individual tests did. The sound is
+  spawned as a separate process that inherits the hook's environment, and the debounce
+  stamp could not help either, because each test gets a fresh config directory. The gate
+  is now part of the shared environment; tests that measure the sound re-open it locally.
+- **The repository-behind check asked the wrong question.** It asked whether the remote
+  commit exists locally. A clone that has fetched once holds that object even when it is
+  a hundred commits behind — the object is on disk, `HEAD` simply cannot reach it. So
+  `/update` printed "level with the remote" while `git status -sb` said `behind 107`.
+  The question is now reachability: is the remote tip an ancestor of `HEAD`?
+- **The opening notice no longer collapses into one line.** Five separate warnings were
+  joined with a separator, the line overflowed, and the command and file names inside it
+  read as flat text. Each warning is now its own line; the brand prefix stays on the
+  first one instead of repeating five times.
+- **`/ozel ekle` accepted directories that `/ozel pusla` then skipped.** The existence
+  check is true for a directory, so the folder was recorded; copying failed later with
+  "source file not found" and the user believed the folder was backed up. Directories are
+  now refused at the door with the reason. Expanding a folder into its files was rejected
+  as a fix: the list would freeze and anything added later would silently stay out.
+
+### Added
+
+- **The opening line reports an empty private mirror.** A mirror that is installed and
+  bound to the project but holds no files said nothing at all, so a session assumed the
+  untouchable files were backed up.
+
 ## [2.54.0] - 2026-08-24
 
 ### Changed

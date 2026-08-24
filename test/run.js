@@ -50,6 +50,12 @@ function calistir(script, yuk, ek) {
       ...process.env,
       TEKNESYUM_SESSIZ: '',
       TEKNESYUM_DEBUG: '',
+      // OLCULDU (24.08.2026, kullanici bildirdi): "az once 20 tane kapanma sesi duydum".
+      // `bitisSesi` beep.js'i ayri surec olarak doguruyor ve ortami kancadan miras
+      // aliyor; kapi burada kurulmadigi icin takim her kostugunda makine ses patlatiyordu.
+      // Susturma damgasi da tutmuyordu: her test taze bir CLAUDE_CONFIG_DIR aliyor.
+      // Sesi olcen testler bunu kendi `ek` ortamlarinda geri acar.
+      TEKNESYUM_BEEP_SESSIZ: '1',
       TEKNESYUM_DIL: 'tr',
       CLAUDE_CONFIG_DIR: BOS_CFG,
       CLAUDE_CODE_SESSION_ID: '',
@@ -4804,6 +4810,26 @@ ol('acilis satiri alan listesi olarak kalir', () => {
   esit(m.split('▸').length, 2, 'durum satırına etiket oku girmiş');
 });
 
+// OLCULDU (24.08.2026, Vidshrink): bes ayri uyari '   ·   ' ile tek satirda birlesiyor,
+// satir tasiyor ve icindeki komut adlari duz metne donuyordu. Uyarilar artik ayri
+// satirlar; marka oneki yalniz ilk satirda kalir, bes kez tekrarlanmaz.
+ol('acilis uyarilari ayri satirlara duser, marka oneki bir kez yazilir', () => {
+  const { p } = proje(1, 0);
+  const m = duyuruMetni(
+    calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, { TEKNESYUM_PREMIUM: '1' })
+  );
+  const satir = m.split('\n').filter((s) => s.trim());
+  esit(satir.length > 1, true, 'birden fazla uyari tek satirda birlestirilmis');
+  esit(
+    satir.filter((s) => s.includes('Teknesyum ▸')).length,
+    1,
+    'marka oneki her satirda tekrarlanmis'
+  );
+  for (const s of satir) {
+    if (/ {3}· {3}/.test(s)) throw new Error("uyarilar hâlâ '   ·   ' ile birlestiriliyor: " + s);
+  }
+});
+
 // Tur içi olaylar `systemMessage` kullanmıyor: o kanal render katmanında
 // `<olay> says:` öneki alıyor ve önek kaldırılamıyor. Yönlendirme satırları modele
 // gidiyor, model onları kendi cevabının içinde basıyor — önek doğmuyor.
@@ -6935,6 +6961,47 @@ ol('ozel ekle-pusla-cek dongusu dosyayi tasir', () => {
   );
 });
 
+// OLCULDU (24.08.2026, CodeXray): `/ozel ekle` klasoru kabul edip kayitli sayiyordu,
+// `/ozel pusla` ise kopyalama aninda "kaynak dosya bulunamadi" deyip atliyordu. Kullanici
+// klasoru yedeklenmis saniyordu. Klasoru dosyalarina acmak da cozum degil — liste donar.
+ol('ozel ekle klasoru kabul etmez, gerekcesini soyler', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.mkdirSync(path.join(s.proje, 'kutu'), { recursive: true });
+  fs.writeFileSync(path.join(s.proje, 'kutu', 'ic.txt'), 'veri');
+  const e = ozelCalistir(['ekle', './kutu'], s.cfg, s.proje);
+  icerir(e.out, 'klasör');
+  icerir(e.out, 'Kayıtlı dosya sayısı: 0');
+  const p = ozelCalistir(['pusla'], s.cfg, s.proje);
+  icermez(p.out, 'kaynak dosya bulunamadı', 'reddedilen klasor pusla asamasina sizmis');
+  const e2 = ozelCalistir(['ekle', './kutu/ic.txt'], s.cfg, s.proje);
+  icerir(e2.out, 'Kayıtlı dosya sayısı: 1', 'klasor icindeki dosya tek tek eklenebilmeli');
+});
+
+// OLCULDU (24.08.2026, CodeXray): ayna kurulu ve projeye bagli ama kayitli dosya yokken
+// acilis satiri bundan hic soz etmiyordu; oturum dokunulmaz dosyalari yedekli saniyordu.
+ol('ayna kurulu ama bosken acilis bunu soyler, doluyken susar', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  const sor = () => {
+    const r = spawnSync(
+      process.execPath,
+      ['-e', 'process.stdout.write(JSON.stringify(require(process.argv[1]).aynaDurumu(process.cwd())))', OZEL],
+      { encoding: 'utf8', cwd: s.proje, env: { ...process.env, CLAUDE_CONFIG_DIR: s.cfg } }
+    );
+    return JSON.parse(r.stdout || 'null');
+  };
+  const bos = sor();
+  esit(bos && bos.sayi, 0, 'kurulum sonrasi ayna bos olmali');
+  esit(bos.ad, 'alfa');
+  fs.writeFileSync(path.join(s.proje, 'gizli.txt'), 'veri');
+  ozelCalistir(['ekle', './gizli.txt'], s.cfg, s.proje);
+  esit(sor().sayi, 1, 'dosya eklenince sayi artmali');
+  const k = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
+  icerir(k, "ayna && !ayna.sayi");
+  icerir(k, "ceviri('aynaBos'");
+});
+
 ol('ozel kaynak dosya silinince aynadaki kopyayi dusurmez', () => {
   const s = ozelSahne();
   ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
@@ -7893,7 +7960,7 @@ function depoKur(kip) {
     git(['add', '.'], w);
     git(['commit', '-qm', 'iki'], w);
   }
-  if (kip === 'geride') {
+  if (kip === 'geride' || kip === 'geride-fetchli') {
     const w2 = path.join(c, 'w2');
     git(['clone', '-q', bare, w2], c);
     git(['config', 'user.email', 't@t'], w2);
@@ -7902,6 +7969,9 @@ function depoKur(kip) {
     git(['add', '.'], w2);
     git(['commit', '-qm', 'uzak'], w2);
     git(['push', '-q', 'origin', 'HEAD'], w2);
+    // Fetch edilmis geride kalma: nesne yerelde durur ama HEAD ona ulasmaz. Eski kod
+    // "yerelde var mi" diye sordugu icin bu hali `guncel` sayiyordu.
+    if (kip === 'geride-fetchli') git(['fetch', '-q', 'origin'], w);
   }
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-cfg-'));
   return { c, w, bare, cfg, kayit: path.join(cfg, 'teknesyum', 'live', 'depo-surum.json') };
@@ -7945,6 +8015,22 @@ ol('uzakta yerelde olmayan is varsa tek satir uyari basilir', () => {
   const m = depoAcilis(d);
   icerir(m, DEPO_SATIR);
   icermez(m, 'commit geride', 'sayi uydurulmus');
+});
+
+// OLCULDU (24.08.2026, Vidshrink): `/update` 'Depo · main, uzakla esit' bastı, ayni anda
+// `git status -sb` 'behind 107' diyordu. Sebep sorunun kendisiydi: "uzaktaki commit
+// yerelde var mi" diye soruluyordu. Bir kez fetch etmis klonda nesne yereldedir — HEAD
+// ona ulasmaz ama disktedir. Dogru soru ulasilabilirlik: uzak uc HEAD'in atasi mi?
+ol('fetch edilmis ama birlestirilmemis is geride sayilir', () => {
+  const d = depoKur('geride-fetchli');
+  const u = spawnSync('git', ['-C', d.w, 'rev-parse', 'FETCH_HEAD'], { encoding: 'utf8' });
+  const sha = (u.stdout || '').trim();
+  esit(/^[0-9a-f]{40}$/.test(sha), true, 'fetch sonrasi uzak uc cozulebilmeli');
+  // Eski yuklem tam olarak burada yaniliyordu: nesne yerelde var, dolayisiyla `guncel`.
+  const yereldeVar = spawnSync('git', ['-C', d.w, 'cat-file', '-e', sha + '^{commit}']);
+  esit(yereldeVar.status, 0, 'fetch edilmis commit yerelde bulunmali — hatanin kaynagi bu');
+  esit(depoSurum.durum(d.w).geride, true, 'fetch edilmis geride depo geride sayilmali');
+  icerir(depoAcilis(d), DEPO_SATIR);
 });
 
 ol('yerel ileridiyse uyari basilmaz — push edilmemis is yalan uyari uretmez', () => {

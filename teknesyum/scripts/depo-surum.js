@@ -46,6 +46,15 @@ function yereldeVar(depo, sha) {
   return git(depo, ['cat-file', '-e', sha + '^{commit}']) !== null;
 }
 
+// "Uzaktaki commit yerelde var mı" yanlış sorudur. 107 commit geride kalan bir klon
+// uzağı bir kez fetch etmişse o commit **yereldedir** — nesne diskte durur, sadece
+// HEAD ona ulaşmaz. Soru bu yüzden ulaşılabilirliktir: uzak uç HEAD'in atası mı?
+// Atasıysa yerel onu içeriyordur, değilse geridedir. (Ölçüldü: `/update` 'uzakla eşit'
+// derken `git status -sb` 'behind 107' diyordu.)
+function ataMi(depo, sha) {
+  return git(depo, ['merge-base', '--is-ancestor', sha, 'HEAD']) !== null;
+}
+
 function durum(dizin) {
   const depo = kok(dizin);
   if (!depo) return null;
@@ -61,7 +70,8 @@ function geride(depo) {
   const u = uzakSha(depo, d);
   if (!u) return null;
   if (u === y) return { depo, dal: d, geride: false };
-  return { depo, dal: d, geride: !yereldeVar(depo, u) };
+  if (!yereldeVar(depo, u)) return { depo, dal: d, geride: true };
+  return { depo, dal: d, geride: !ataMi(depo, u) };
 }
 
 function metin(s) {

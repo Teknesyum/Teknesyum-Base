@@ -288,8 +288,18 @@ function ekle(argv) {
       atlanan.push(kaynak + ' — zaten kayıtlı');
       continue;
     }
-    if (!fs.existsSync(coz(kaynak, kok))) {
+    const tam = coz(kaynak, kok);
+    if (!fs.existsSync(tam)) {
       atlanan.push(kaynak + ' — dosya yok');
+      continue;
+    }
+    // Klasör kapıda reddedilir. `existsSync` klasör için de doğru döndüğü için kayıt
+    // kabul ediliyor, `/ozel pusla` ise kopyalama anında "kaynak dosya bulunamadı" deyip
+    // atlıyordu: kullanıcı klasörü yedeklenmiş sanıyordu (CodeXray, 24.08.2026).
+    // Klasörü dosyalarına açmak da çözüm değil — liste donar, sonradan eklenen dosya
+    // sessizce dışarıda kalır. Reddetmek tek dürüst davranıştır.
+    if (fs.statSync(tam).isDirectory()) {
+      atlanan.push(kaynak + ' — klasör; ayna dosya tutar, içindeki dosyaları tek tek ekle');
       continue;
     }
     m.dosyalar.push({ kaynak, ad: hedefAdi(kaynak) });
@@ -481,6 +491,33 @@ function main() {
   dur('Bilinmeyen alt komut: ' + k + '  —  /ozel yardim');
 }
 
-module.exports = { coz, kisalt, hedefAdi, slug, fark, manifest, manifestYaz, ayarYolu, klonYolu };
+// Açılış bildirimi için tek soruluk durum. Ayna kurulu ve projeye bağlıyken kayıtlı
+// dosya yoksa oturum "dokunulmaz dosyalar yedekli" sanıyordu; kimse bunu sormadığı için
+// de sessizce öyle kalıyordu (CodeXray, 24.08.2026). Kanca içinden çağrılır: disk
+// erişimi iki okumayla sınırlı, hata yutulur — açılış bildirimini hiçbir koşulda düşürmez.
+function aynaDurumu(kok) {
+  try {
+    const a = ayar();
+    if (!kuruluMu(a) || !kok) return null;
+    const ad = projeAdi(a, kok);
+    const m = manifest(a, ad);
+    return { ad, sayi: ((m && m.dosyalar) || []).length };
+  } catch {
+    return null;
+  }
+}
+
+module.exports = {
+  coz,
+  kisalt,
+  hedefAdi,
+  slug,
+  fark,
+  manifest,
+  manifestYaz,
+  ayarYolu,
+  klonYolu,
+  aynaDurumu,
+};
 
 if (require.main === module) main();

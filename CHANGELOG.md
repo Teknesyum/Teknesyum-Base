@@ -6,6 +6,22 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.56.1] - 2026-08-24
+
+### Fixed
+
+- **The agent problem log counted things that were not problems.** Of 678 records, 90 were
+  subagents finishing normally — a `SubagentStop` with `end_turn` was written to the log
+  and counted, so the opening notice reported hundreds of "agent problems" that were
+  simply agents doing their job. Debug mode still announces the event; only an abnormal
+  stop reason reaches the log now.
+- **The identity guard did not know the plan council has two seats.** It assumed one model
+  per role and compared against it, so the council's deliberately-`fable` second seat
+  tripped a mismatch every time it ran — 28 of those 678 records. A profile can now name
+  additional acceptable models for a role, and expected effort is read from the active
+  profile before falling back to the agent definition, since the profile overrides effort
+  on purpose and an intended override is not a deviation.
+
 ## [2.56.0] - 2026-08-24
 
 ### Changed

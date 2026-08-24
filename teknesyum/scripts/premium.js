@@ -28,7 +28,7 @@ const PROFIL = {
     advisor: { model: 'fable', effort: 'medium', maxTurns: 20 },
     auditor: { model: 'opus', effort: 'xhigh', maxTurns: 40 },
     builder: { model: 'opus', effort: 'xhigh', maxTurns: 80 },
-    planner: { model: 'opus', effort: 'medium', maxTurns: 40 },
+    planner: { model: 'opus', kabul: ['fable'], effort: 'medium', maxTurns: 40 },
     scout: { model: 'opus', effort: 'high', maxTurns: 60 },
     scribe: { model: 'opus', effort: 'low', maxTurns: 40 },
     'ui-builder': { model: 'opus', effort: 'xhigh', maxTurns: 80 },

@@ -372,25 +372,36 @@ function tanimOku(type) {
   return { effort: al('effort') };
 }
 
-function beklenenModel(rol) {
+function profilRol(rol) {
   const p = PROFIL[profil()];
-  return (p && p[rol] && p[rol].model) || '';
+  return (p && p[rol]) || {};
 }
 
+// Bir rolün tek modeli olduğu varsayımı plan konseyiyle bozuldu: ikinci koltuk bilerek
+// `fable`. Ölçüldü (24.08.2026), 678 kaydın 28'i bu yüzden doğmuş yanlış alarmdı.
+// Profil bir rol için `kabul` listesi verirse o modeller de doğru sayılır. Efor da aynı
+// mantıkla önce profilin sözüne bakar; profil sessizse tanım dosyasına düşer, çünkü
+// profil eforu bilerek eziyor — ezmeyi sapma saymak sayacı şişirir.
 function kimlikDenetle(live, type, s, c) {
   const t = tanimOku(type);
   if (!t) return;
   const rol = String(type || '?').replace(/^teknesyum:/, '');
-  const bekle = String((c && c.model) || beklenenModel(rol));
+  const p = profilRol(rol);
+  const bekle = String((c && c.model) || p.model || '');
+  const kabul = [bekle]
+    .concat(p.kabul || [])
+    .filter(Boolean)
+    .map((x) => String(x).toLowerCase());
   const model = String(s.model || '');
+  const beklenenEfor = String(p.effort || t.effort || '');
   const efor = String(s.effort || '');
   const uyar = (alan, beyan, gercek) =>
     sorunYaz(live, [rol, alan, 'beyan: ' + beyan, 'gerçek: ' + gercek].join(' | '));
-  if (bekle && model && !model.toLowerCase().includes(bekle.toLowerCase())) {
-    uyar('model', bekle, model);
+  if (kabul.length && model && !kabul.some((x) => model.toLowerCase().includes(x))) {
+    uyar('model', kabul.join(' ya da '), model);
   }
-  if (t.effort && efor && efor.toLowerCase() !== t.effort.toLowerCase()) {
-    uyar('efor', t.effort, efor);
+  if (beklenenEfor && efor && efor.toLowerCase() !== beklenenEfor.toLowerCase()) {
+    uyar('efor', beklenenEfor, efor);
   }
 }
 
@@ -574,10 +585,15 @@ function aksama(j) {
     };
   }
   if (j.hook_event_name === 'SubagentStop') {
+    // `end_turn` bir ajanın işini bitirmesidir, aksaması değil. Debug modunda olayı
+    // görmek istenir ama `_sorun.log`'a düşmemeli: ölçüldü (24.08.2026), 678 kaydın
+    // 90'ı normal bitişti ve açılış bunları "ajan sorunu" diye sayıyordu.
+    const neden = String(j.stop_reason || 'end_turn');
     return {
       ne: ceviri('debugAjanDurdu'),
       nerede: ceviri('debugNerede', rol, kim),
-      ayrinti: String(j.stop_reason || 'end_turn').slice(0, 80),
+      ayrinti: neden.slice(0, 80),
+      sorun: neden !== 'end_turn',
     };
   }
   return null;
@@ -586,7 +602,8 @@ function aksama(j) {
 function debugBildir(live, a, gunluk) {
   if (!a || !debugAcik()) return;
   duyur(ceviri('debugOlay', a.ne, a.nerede), 1, true);
-  if (gunluk) sorunYaz(live, ['debug', a.ne, a.nerede, a.ayrinti].filter(Boolean).join(' | '));
+  if (gunluk && a.sorun !== false)
+    sorunYaz(live, ['debug', a.ne, a.nerede, a.ayrinti].filter(Boolean).join(' | '));
 }
 
 const TUR_EK = '.tur';

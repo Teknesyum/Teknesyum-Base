@@ -4211,6 +4211,48 @@ ol('cagri modeli profil beklentisini ezer', () => {
     throw new Error('cagrida gecilen model profil yuzunden uyari acti');
 });
 
+ol('konseyin ikinci koltugu fable ile acilinca sapma sayilmaz', () => {
+  const { p, live } = proje(1, 0);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-konsey-'));
+  fs.writeFileSync(
+    path.join(cfg, 'teknesyum.json'),
+    JSON.stringify({ dil: 'tr', profil: 'premium' })
+  );
+  ajanBitir(
+    p,
+    { CLAUDE_CONFIG_DIR: cfg },
+    { id: 'k1', rol: 'planner', gercek: 'claude-fable-5', efor: 'medium' }
+  );
+  if (sorunGunlugu(live).includes('planner | model'))
+    throw new Error('konseyin fable koltugu yanlis alarm acti');
+  ajanBitir(
+    p,
+    { CLAUDE_CONFIG_DIR: cfg },
+    { id: 'k2', rol: 'planner', gercek: 'claude-sonnet-4-5', efor: 'medium' }
+  );
+  icerir(
+    sorunGunlugu(live),
+    'planner | model | beyan: opus ya da fable | gerçek: claude-sonnet-4-5',
+    'kabul listesinde olmayan model hala yakalanmali'
+  );
+});
+
+ol('normal biten ajan sorun gunlugune yazilmaz', () => {
+  const { p, live } = proje(1, 0);
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bitis-'));
+  fs.writeFileSync(
+    path.join(cfg, 'teknesyum.json'),
+    JSON.stringify({ dil: 'tr', profil: 'premium', debug: true })
+  );
+  ajanBitir(
+    p,
+    { CLAUDE_CONFIG_DIR: cfg },
+    { id: 'k3', rol: 'planner', gercek: 'claude-opus-4-5', efor: 'medium' }
+  );
+  if (sorunGunlugu(live).includes('bir ajan durdu'))
+    throw new Error('end_turn ile biten ajan sorun sayilmis');
+});
+
 ol('beyanla uyusan ajan sorun gunlugu acmaz', () => {
   const { p, live } = proje(1, 0);
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
@@ -4513,23 +4555,29 @@ ol('kesilen arac cagrisi hata degil kesinti diye bildirilir', () => {
   icerir(duyuruMetni(r), 'Edit aracı kesildi');
 });
 
-ol('ajan kapanisi debug acikken bildirilir ve gunluge dusser', () => {
+ol('ajan kapanisi debug acikken bildirilir, gunluge yalniz anormal bitis duser', () => {
   const { p, live } = proje(1, 0);
-  const r = calistir(
-    IZLE,
-    {
-      ...ort(p),
-      hook_event_name: 'SubagentStop',
-      agent_id: 'a1',
-      agent_type: 'teknesyum:builder',
-      agent_transcript_path: '/x/a1.jsonl',
-    },
-    { TEKNESYUM_DEBUG: '1' }
-  );
-  const m = duyuruMetni(r);
+  const kapat = (id, neden) =>
+    calistir(
+      IZLE,
+      {
+        ...ort(p),
+        hook_event_name: 'SubagentStop',
+        agent_id: id,
+        agent_type: 'teknesyum:builder',
+        agent_transcript_path: '/x/' + id + '.jsonl',
+        ...(neden ? { stop_reason: neden } : {}),
+      },
+      { TEKNESYUM_DEBUG: '1' }
+    );
+  const m = duyuruMetni(kapat('a1'));
   icerir(m, 'Debug ▸ bir ajan durdu');
   icerir(m, 'builder ajanı · a1');
-  icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'bir ajan durdu');
+  const yol = path.join(live, '_sorun.log');
+  if (fs.existsSync(yol) && fs.readFileSync(yol, 'utf8').includes('bir ajan durdu'))
+    throw new Error('end_turn sorun gunlugune yazilmis');
+  kapat('a2', 'max_turns');
+  icerir(fs.readFileSync(yol, 'utf8'), 'bir ajan durdu');
 });
 
 ol('debug bildirimi ingilizce kurulumda ingilizce konusur', () => {

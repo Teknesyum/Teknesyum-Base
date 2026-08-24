@@ -7874,6 +7874,21 @@ function kuyrukKur(sozlesme, acik) {
   return { p, live, f };
 }
 
+function sendMessageYuku(p, to, message) {
+  return {
+    cwd: p,
+    effort: 'high',
+    hook_event_name: 'PreToolUse',
+    permission_mode: 'bypassPermissions',
+    prompt_id: 'p-1',
+    session_id: 'oturum-1',
+    tool_input: { to, message },
+    tool_name: 'SendMessage',
+    tool_use_id: 'toolu_01',
+    transcript_path: '/x/oturum-1.jsonl',
+  };
+}
+
 function durumSatiri(p, session) {
   return calistir(DURUM, {
     cwd: p,
@@ -7948,19 +7963,22 @@ ol('acik madde yokken statusline acikta yazmaz', () => {
   icermez(durumSatiri(p), 'açıkta');
 });
 
-ol('5 satiri gecen SendMessage engellenir, gerekce doner', () => {
+ol('hooks.json PreToolUse matcher SendMessage tasir', () => {
+  const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8'));
+  const hepsi = h.hooks.PreToolUse.map((x) => x.matcher || '');
+  const pre = h.hooks.PreToolUse.find((x) => (x.matcher || '').includes('SendMessage'));
+  if (!pre) throw new Error('SendMessage PreToolUse matcher inde yok: ' + hepsi.join(' / '));
+  icerir(pre.hooks[0].command, 'relay-watch.js');
+});
+
+ol('5 satiri gecen SendMessage PreToolUse ta engellenir, cikis kodu 2', () => {
   const { p, live } = kuyrukKur(1, null);
   fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify({ agent_id: 'a1' }));
-  const r = calistir(IZLE, {
-    ...ort(p),
-    hook_event_name: 'PostToolUse',
-    tool_name: 'SendMessage',
-    tool_input: { agent_id: 'a1', message: 'DEĞİŞTİ\n1\n2\n3\n4\n5' },
-  });
-  const o = JSON.parse(r.out);
-  esit(o.decision, 'block');
-  icerir(o.reason, 'tavan 5');
-  icerir(o.reason, 'sözleşme dosyasına yaz');
+  const r = calistir(IZLE, sendMessageYuku(p, 'a1', 'DEGISTI\n1\n2\n3\n4\n5'));
+  esit(r.kod, 2, 'engelleme cikis kodu 2 olmali (stdout: ' + r.out + ')');
+  icerir(r.err, 'ENGELLEND');
+  icerir(r.err, 'tavan 5');
+  icerir(r.err, 's\u00f6zle\u015fme dosyas\u0131na yaz');
   esit(json(path.join(live, 'a1.json')).steered, undefined, 'engellenen mesaj kayda girdi');
 });
 
@@ -7970,18 +7988,11 @@ ol('gecen yonlendirme steered[] e duser, kayitli sayi atilan sayiya esit', () =>
     path.join(live, 'a1.json'),
     JSON.stringify({ agent_id: 'a1', agent_type: 'builder' })
   );
-  const yolla = (m) =>
-    calistir(IZLE, {
-      ...ort(p),
-      hook_event_name: 'PostToolUse',
-      tool_name: 'SendMessage',
-      tool_input: { agent_id: 'a1', message: m },
-    }).out;
+  const yolla = (m) => calistir(IZLE, sendMessageYuku(p, 'a1', m));
 
-  esit(yolla('DEVAM — D1 indi, yol açık.'), '', 'tek satir engellendi');
-  esit(yolla('DUR\nsözleşme değişti\n§3 yeniden'), '', 'uc satir engellendi');
-  const engel = JSON.parse(yolla('DEĞİŞTİ\n1\n2\n3\n4\n5\n6'));
-  esit(engel.decision, 'block');
+  esit(yolla('DEVAM - D1 indi, yol acik.').kod, 0, 'tek satir engellendi');
+  esit(yolla('DUR\nsozlesme degisti\nbolum 3 yeniden').kod, 0, 'uc satir engellendi');
+  esit(yolla('DEGISTI\n1\n2\n3\n4\n5\n6').kod, 2, 'alti satir gecti');
 
   const a = json(path.join(live, 'a1.json'));
   esit(a.steered.length, 2, 'atilan iki, kayitli ' + (a.steered || []).length);
@@ -7990,22 +8001,36 @@ ol('gecen yonlendirme steered[] e duser, kayitli sayi atilan sayiya esit', () =>
   esit(a.steered[1].fiil, 'DUR');
   esit(a.steered[1].satir, 3);
   if (!a.steered[0].t) throw new Error('zaman damgasi yok');
-  icerir(a.steered[1].metin, '§3 yeniden', 'metin kayda girmemis');
+  icerir(a.steered[1].metin, 'bolum 3 yeniden', 'metin kayda girmemis');
 });
 
 ol('kaydi olmayan hedefin yonlendirmesi ajan sanilmaz', () => {
   const { p, live } = kuyrukKur(1, null);
-  esit(
-    calistir(IZLE, {
-      ...ort(p),
-      hook_event_name: 'PostToolUse',
-      tool_name: 'SendMessage',
-      tool_input: { message: 'DEVAM — kayıtsız hedef' },
-    }).out,
-    ''
-  );
+  esit(calistir(IZLE, sendMessageYuku(p, 'kimse', 'DEVAM - kayitsiz hedef')).kod, 0);
+  esit(fs.existsSync(path.join(live, 'kimse.json')), false, 'hayalet ajan kaydi acildi');
   esit(fs.existsSync(path.join(live, '_steered.json')), true, 'yonlendirme kaybolmus');
-  icermez(durumSatiri(p), '⨯', 'hayalet olu ajan satiri dogdu');
+  esit(json(path.join(live, '_steered.json'))[0].hedef, 'kimse');
+  icermez(durumSatiri(p), '\u2a2f', 'hayalet olu ajan satiri dogdu');
+});
+
+ol('hedef [ref] ekiyle ve agent_id uzerinden cozulur', () => {
+  const { p, live } = kuyrukKur(1, null);
+  fs.writeFileSync(
+    path.join(live, 'agent-7.json'),
+    JSON.stringify({ agent_id: 'agent-7', agent_type: 'builder' })
+  );
+  esit(calistir(IZLE, sendMessageYuku(p, 'agent-7 [3fa9c1]', 'DEVAM - ref ekli')).kod, 0);
+  esit(calistir(IZLE, sendMessageYuku(p, 'agent-7', 'DUR - duz ad')).kod, 0);
+  const a = json(path.join(live, 'agent-7.json'));
+  esit(a.steered.length, 2, 'ref ekli hedef cozulmedi');
+  esit(fs.existsSync(path.join(live, '_steered.json')), false, 'cozulen hedef yedege dustu');
+});
+
+ol('debug izi tool_input anahtarlarini da kaydeder', () => {
+  const { p, live } = kuyrukKur(1, null);
+  calistir(IZLE, sendMessageYuku(p, 'kimse', 'DEVAM - tek satir'), { TEKNESYUM_DEBUG: '1' });
+  const d = json(path.join(live, '_hook-debug.json'));
+  esit(d.girdi['SendMessage:PreToolUse'], 'message,to', 'tool_input anahtarlari kaydedilmedi');
 });
 
 ol('acik is listesi hicbir turda baglama enjekte edilmez', () => {

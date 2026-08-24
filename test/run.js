@@ -8118,8 +8118,70 @@ ol('statusline acikta N · ajan X/Y gosterir', () => {
 });
 
 ol('acik madde yokken statusline acikta yazmaz', () => {
-  const { p } = kuyrukKur(1, { simdi: 'T3', acikta: [], sirada: '' });
+  const { p } = kuyrukKur(1, { simdi: '', acikta: [], sirada: '' });
   icermez(durumSatiri(p), 'açıkta');
+});
+
+function sozlesmeYaz(p, ad, govde) {
+  const f = path.join(p, '.claude', 'relay', 'contracts', ad);
+  fs.writeFileSync(f, govde);
+  return f;
+}
+
+function sozlesmeYuku(p, f, arac) {
+  return {
+    ...ort(p),
+    hook_event_name: 'PostToolUse',
+    tool_name: arac || 'Write',
+    tool_input: { file_path: f },
+  };
+}
+
+ol('sozlesme yazimi simdi alanini kendiliginden doldurur', () => {
+  const { p, live } = kuyrukKur(0, null);
+  const f = sozlesmeYaz(p, 'F9.md', '---\nid: F9\nstatus: active\n---\n\n# F9 · Kuyruk kancaya\n');
+  calistir(IZLE, sozlesmeYuku(p, f));
+  const d = json(path.join(live, '_acik.json'));
+  esit(d.simdi, 'F9 · Kuyruk kancaya', 'simdi kendiliginden yazilmadi');
+  esit(Object.keys(d).join(','), 'simdi,acikta,sirada', 'uc alan disinda alan var');
+});
+
+ol('open sozlesme Edit ile active olunca simdi guncellenir', () => {
+  const { p, live } = kuyrukKur(0, null);
+  const f = sozlesmeYaz(p, 'F8.md', '---\nid: F8\nstatus: open\n---\n\n# F8 · Ikinci is\n');
+  calistir(IZLE, sozlesmeYuku(p, f, 'Edit'));
+  esit(fs.existsSync(path.join(live, '_acik.json')), false, 'open Edit te simdi yazdi');
+  fs.writeFileSync(f, '---\nid: F8\nstatus: active\n---\n\n# F8 · Ikinci is\n');
+  calistir(IZLE, sozlesmeYuku(p, f, 'Edit'));
+  esit(json(path.join(live, '_acik.json')).simdi, 'F8 · Ikinci is');
+});
+
+ol('sirada bagimliligi biten ilk open sozlesmeden turetilir', () => {
+  const { p, live } = kuyrukKur(0, null);
+  sozlesmeYaz(p, 'F5.md', '---\nid: F5\nstatus: open\ndepends: [F4]\n---\n\n# F5 · Bagli is\n');
+  sozlesmeYaz(p, 'F6.md', '---\nid: F6\nstatus: open\n---\n\n# F6 · Serbest is\n');
+  sozlesmeYaz(p, 'F4.md', '---\nid: F4\nstatus: open\n---\n\n# F4 · Onculu is\n');
+  const f = sozlesmeYaz(p, 'F7.md', '---\nid: F7\nstatus: active\n---\n\n# F7 · Yuruyen\n');
+  calistir(IZLE, sozlesmeYuku(p, f));
+  esit(json(path.join(live, '_acik.json')).sirada, 'F4 · Onculu is', 'bagli olan one gecti');
+});
+
+ol('sozlesme submitted olunca simdi temizlenir', () => {
+  const { p, live } = kuyrukKur(0, { simdi: 'F9 · Kuyruk kancaya', acikta: [], sirada: '' });
+  const f = sozlesmeYaz(
+    p,
+    'F9.md',
+    '---\nid: F9\nstatus: submitted\n---\n\n# F9 · Kuyruk kancaya\n'
+  );
+  calistir(IZLE, sozlesmeYuku(p, f, 'Edit'));
+  esit(json(path.join(live, '_acik.json')).simdi, '', 'simdi temizlenmedi');
+});
+
+ol('statusline simdi doluyken su an gosterir, bosken hic yazmaz', () => {
+  const dolu = kuyrukKur(1, { simdi: 'F2 · Kuyruk kancaya', acikta: ['a'], sirada: 'F3' });
+  icerir(durumSatiri(dolu.p), 'şu an: F2 · Kuyruk kancaya');
+  const bos = kuyrukKur(1, { simdi: '', acikta: ['a'], sirada: '' });
+  icermez(durumSatiri(bos.p), 'şu an');
 });
 
 ol('hooks.json PreToolUse matcher SendMessage tasir', () => {
@@ -8192,22 +8254,34 @@ ol('debug izi tool_input anahtarlarini da kaydeder', () => {
   esit(d.girdi['SendMessage:PreToolUse'], 'message,to', 'tool_input anahtarlari kaydedilmedi');
 });
 
-ol('acik is listesi hicbir turda baglama enjekte edilmez', () => {
+function turBasiEk(p) {
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'devam' });
+  return (JSON.parse(r.out || '{}').hookSpecificOutput || {}).additionalContext || '';
+}
+
+ol('kuyruk doluyken tur basina tek satir girer, madde metni girmez', () => {
   const { p } = kuyrukKur(1, {
-    simdi: 'T3 yürütülüyor',
+    simdi: 'T3 · Tema tokenlari',
     acikta: ['ikon setini tema tokenlarına bağla', 'README kurulum adımı'],
-    sirada: 'T4',
+    sirada: 'T4 · Panel',
   });
-  const r = calistir(IZLE, {
-    ...ort(p),
-    hook_event_name: 'UserPromptSubmit',
-    prompt: 'devam',
-  });
-  const ek = (JSON.parse(r.out || '{}').hookSpecificOutput || {}).additionalContext || '';
+  const ek = turBasiEk(p);
+  icerir(ek, 'Şu an: T3 · Tema tokenlari');
+  icerir(ek, 'Sırada: T4 · Panel');
+  icerir(ek, 'Açıkta 2 madde');
   icermez(ek, 'ikon setini', 'kesinti maddesi baglama girdi');
-  icermez(ek, 'T3 yürütülüyor', 'yuruyen is baglama girdi');
-  icermez(ek, 'açıkta', 'durum blogu baglama girdi');
-  icermez(JSON.stringify(JSON.parse(r.out || '{}')), 'systemMessage', 'tur basi satir bastı');
+  icermez(ek, 'README kurulum', 'kesinti maddesi baglama girdi');
+  const satir = ek.split('\n').filter((x) => x.includes('Şu an:'));
+  esit(satir.length, 1, 'tek satir olmali: ' + ek);
+});
+
+ol('kuyruk bosken tur basina hicbir durum satiri girmez', () => {
+  const bos = kuyrukKur(1, { simdi: 'T3 · Tema tokenlari', acikta: [], sirada: 'T4' });
+  const ek = turBasiEk(bos.p);
+  icermez(ek, 'Şu an:', 'bos kuyrukta durum satiri basildi');
+  icermez(ek, 'Açıkta', 'bos kuyrukta durum satiri basildi');
+  const yok = proje(1, 0);
+  icermez(turBasiEk(yok.p), 'Şu an:', 'dosya yokken durum satiri basildi');
 });
 
 ol('yonlendirme tavani ve kuyruk satiri dil.js ten gelir, tr ve en var', () => {
@@ -8217,9 +8291,11 @@ ol('yonlendirme tavani ve kuyruk satiri dil.js ten gelir, tr ve en var', () => {
     kaynak.indexOf('yonlendirmeYonerge')
   );
   icerir(blok, 'aciktaKuyruk');
+  icerir(blok, 'planTazele');
+  icerir(blok, 'acikDurum');
   icerir(blok, 'yonlendirmeTavan');
-  esit((blok.match(/\btr:/g) || []).length, 2, 'tr karsiligi eksik');
-  esit((blok.match(/\ben:/g) || []).length, 2, 'en karsiligi eksik');
+  esit((blok.match(/\btr:/g) || []).length, 4, 'tr karsiligi eksik');
+  esit((blok.match(/\ben:/g) || []).length, 4, 'en karsiligi eksik');
   const { p, live } = kuyrukKur(1, { simdi: '', acikta: ['a'], sirada: '' });
   fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify({ agent_id: 'a1' }));
   const en = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, { TEKNESYUM_DIL: 'en' });
@@ -8237,7 +8313,10 @@ ol('kesinti disiplini ve yonlendirme bicimi belgede', () => {
   const s = fs.readFileSync(RELAY_SKILL, 'utf8');
   icerir(s, '## 1.1.1 Kesinti');
   icerir(s, 'live/_acik.json');
-  icerir(s, 'Durum bağlama basılmaz');
+  icerir(s, 'Durum bloğu bağlama basılmaz');
+  icerir(s, 'daraldı, kalkmadı');
+  icerir(s, 'Kesinti anında dosyaya yazma');
+  icermez(s, "`acikta`'ya yaz", 'kesinti aninda yazma kurali duruyor');
   const m = fs.readFileSync(COK_OTURUM, 'utf8');
   icerir(m, '## 5.3 Yönlendirme');
   icerir(m, 'Tavan 5 satır');

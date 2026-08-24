@@ -102,13 +102,21 @@ function makbuz(live) {
   }
 }
 
-function aciktaSayisi(live) {
-  if (!live) return 0;
+// Kuyruğun asıl tüketicisi T0 değil kullanıcı: `açıkta N` tek başına "araya girmeli
+// miyim" sorusunu cevaplamıyordu. `şu an` ekranda durunca karar körlemesine verilmiyor.
+function acikDurum(live) {
+  const bos = { n: 0, simdi: '' };
+  if (!live) return bos;
   try {
     const d = JSON.parse(fs.readFileSync(path.join(live, '_acik.json'), 'utf8'));
-    return Array.isArray(d && d.acikta) ? d.acikta.length : 0;
+    return {
+      n: Array.isArray(d && d.acikta) ? d.acikta.length : 0,
+      simdi: String((d && d.simdi) || '')
+        .replace(/\s+/g, ' ')
+        .trim(),
+    };
   } catch {
-    return 0;
+    return bos;
   }
 }
 
@@ -289,10 +297,11 @@ process.stdin.on('end', () => {
   const live = izDizini(dir, j.session_id);
   const cs = calisanlar(live);
   const ags = ajanlar(live);
-  const n = aciktaSayisi(live);
+  const acik = acikDurum(live);
   const toplam = Math.max(ags.length, cs.length);
   const kuyruk = [];
-  if (n) kuyruk.push('açıkta ' + n);
+  if (acik.simdi) kuyruk.push('şu an: ' + kisalt(acik.simdi, 34));
+  if (acik.n) kuyruk.push('açıkta ' + acik.n);
   if (toplam) kuyruk.push('ajan ' + cs.length + '/' + toplam);
   if (kuyruk.length) l2.push(C.pink + kuyruk.join(' · ') + C.r);
 

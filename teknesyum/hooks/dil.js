@@ -139,6 +139,18 @@ const S = {
     en: (n) => n + ' item(s) still open — list them with `/report`.',
   },
 
+  planTazele: {
+    tr: () => 'Yürüyen iş bitti — yol planını tazele, sıradakini kuyruktan seç.',
+    en: () => 'The running task is done — refresh the roadmap and pick the next queued item.',
+  },
+
+  acikDurum: {
+    tr: (simdi, sirada, n) =>
+      'Teknesyum ▸ Şu an: ' + simdi + ' · Sırada: ' + sirada + ' · Açıkta ' + n + ' madde',
+    en: (simdi, sirada, n) =>
+      'Teknesyum ▸ Now: ' + simdi + ' · Next: ' + sirada + ' · ' + n + ' item(s) open',
+  },
+
   yonlendirmeTavan: {
     tr: (n) =>
       'Yönlendirme ' +

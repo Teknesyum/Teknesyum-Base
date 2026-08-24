@@ -58,6 +58,7 @@ function run(j) {
     const bozuk = sozdizim(j);
     if (bozuk) ciktiEkle({ decision: 'block', reason: bozuk });
     acikKirp(j);
+    simdiYaz(root, j);
   }
 
   if (j.hook_event_name === 'SessionStart') {
@@ -74,6 +75,7 @@ function run(j) {
     if (k) kullanimSay('komut:' + k[1].toLowerCase());
     turBasla(j, root);
     puslaHatirlat(j);
+    acikSatiri(root);
     return hatirlat(j, root, kap && kapsayici.etkin(kapDurum));
   }
   if (j.hook_event_name === 'Stop') {
@@ -1697,10 +1699,99 @@ function acikOku(root) {
   return d ? acikNormal(d) : null;
 }
 
+// Kuyrukta madde varken `simdi` boşsa iki şey birden doğrudur: kesinti kayda girmiş ve
+// onu bekleten iş bitmiş (`simdiYaz` sözleşme `submitted`/`done` olunca alanı temizler).
+// Yol planı tam o anda tazelenir — tetik `Stop`'ta, yani kancalı bir anda durur.
 function acikBildir(root) {
   const d = acikOku(root);
   if (!d || !d.acikta.length) return;
-  duyur(ceviri('aciktaKuyruk', d.acikta.length), 1);
+  const m = ceviri('aciktaKuyruk', d.acikta.length);
+  duyur(d.simdi ? m : m + ' ' + ceviri('planTazele'), 1);
+}
+
+// `simdi` alanı T0'ın hatırlamasına bağlıydı ve kurulduğu gün hiç yazılmadı (F2).
+// Bu evde kancasız kural ölüyor: yazma anı kancalı bir ana taşındı. Sözleşme dosyası
+// yazımı `PostToolUse`ta zaten görülüyor — kurulum zaten yapılan bir şey, T0 dokunmaz.
+const SOZLESME_ADI = /^[A-Z]+[0-9]+\.md$/i;
+
+function sozlesmeBasligi(govde, id) {
+  const t = (govde.match(/^title:[ \t]*(.+)$/im) || [])[1];
+  if (t) return tekSatir(t);
+  const h = (govde.match(/^#[ \t]+(.+)$/m) || [])[1] || '';
+  return tekSatir(h.replace(new RegExp('^' + id + '\\s*[·:-]\\s*', 'i'), ''));
+}
+
+function sozlesmeOku(dir, ad) {
+  const govde = (metin(path.join(dir, ad)) || '').slice(0, 1500);
+  const id = ad.slice(0, -3);
+  return {
+    id,
+    durum: ((govde.match(/^status:[ \t]*(\w+)/im) || [])[1] || '').toLowerCase(),
+    bagli: ((govde.match(/^depends:[ \t]*\[([^\]]*)\]/im) || [])[1] || '')
+      .split(',')
+      .map((v) => v.trim().replace(/^['"]|['"]$/g, ''))
+      .filter(Boolean),
+    baslik: sozlesmeBasligi(govde, id),
+  };
+}
+
+function sozlesmeEtiketi(s) {
+  return s.baslik ? s.id + ' · ' + s.baslik : s.id;
+}
+
+// `sirada` da mekanik türetilir: bağımlılığı biten ilk `open` sözleşme. T0'a bırakılırsa
+// `simdi`'yi öldüren disiplin sorunu geri gelir; `depends:` alanı sözleşmelerde zaten var.
+function siradaTuret(root, haric) {
+  const dir = path.join(root, 'contracts');
+  const l = dosyalar(dir)
+    .filter((f) => SOZLESME_ADI.test(f))
+    .map((f) => sozlesmeOku(dir, f))
+    .filter((s) => s.durum);
+  const bitmeyen = new Set(l.filter((s) => s.durum !== 'done').map((s) => s.id));
+  const hazir = l
+    .filter((s) => s.durum === 'open' && s.id !== haric)
+    .filter((s) => s.bagli.every((d) => !bitmeyen.has(d)))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  return hazir.length ? sozlesmeEtiketi(hazir[0]) : '';
+}
+
+function acikGuncelle(root, degis) {
+  const f = path.join(izKoku(root), ACIK);
+  const g = acikNormal(read(f) || {});
+  const y = acikNormal(Object.assign({}, g, degis));
+  if (g.simdi === y.simdi && g.sirada === y.sirada) return;
+  try {
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, acikGovde(y));
+  } catch {}
+}
+
+function simdiYaz(root, j) {
+  if (!root) return;
+  if (!/^(Write|Edit)$/.test(j.tool_name || '')) return;
+  const hedef = norm((j.tool_input && j.tool_input.file_path) || '');
+  if (!hedef) return;
+  const dir = path.join(root, 'contracts');
+  if (norm(path.dirname(hedef)) !== norm(dir)) return;
+  const ad = path.basename(hedef);
+  if (!SOZLESME_ADI.test(ad)) return;
+  const s = sozlesmeOku(dir, ad);
+  if (!s.durum) return;
+  if (s.durum === 'active' || (s.durum === 'open' && j.tool_name === 'Write')) {
+    acikGuncelle(root, { simdi: sozlesmeEtiketi(s), sirada: siradaTuret(root, s.id) });
+    return;
+  }
+  const g = acikOku(root);
+  if (g && g.simdi && g.simdi.split(' · ')[0] === s.id)
+    acikGuncelle(root, { simdi: '', sirada: siradaTuret(root, '') });
+}
+
+// Koşullu enjeksiyon: kuyruk boşken bağlama hiçbir şey basılmaz, doluyken tek satır.
+// `docs/OLCUM-TABAN.md`'nin %89 bulgusuyla çelişmez — her tura değil, kuyruk doluyken.
+function acikSatiri(root) {
+  const d = acikOku(root);
+  if (!d || !d.acikta.length) return;
+  baglamEkle(ceviri('acikDurum', d.simdi || '—', d.sirada || '—', d.acikta.length));
 }
 
 const YONLENDIRME_TAVAN = 5;

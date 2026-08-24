@@ -56,6 +56,11 @@ Soruyu soranın görmediği bir şey varsa. Yoksa "yok" yaz — uydurma.
 doğrulayabilir; üçüncüsü düşünmediği şeyi getirir. Ama boş yere doldurma — görmediği bir
 şey yoksa "yok" yazmak, uydurulmuş bir uyarıdan iyidir.
 
+## Relay skill'i
+
+`teknesyum:relay` skill'ini **açma**. Protokol T0 içindir; senin işin sözleşmende
+yazılı. Sözleşmede geçen `§` numaralarını okuman gerekiyorsa T0'dan iste, skill'i
+yükleme.
 ## İletişim
 
 **Yalın yaz.** Görüş düz cümledir: ne yapılacak, nerede, neden. Benzetme, süsleme,

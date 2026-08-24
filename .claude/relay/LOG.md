@@ -73,3 +73,6 @@
 2026-08-24 · D3 tur 2: yönlendirme tavanı PreToolUse'a taşındı (hedef 'to', stderr+exit 2), hooks.json matcher SendMessage aldı; kök sebep düzeltildi — tool_input eksik değildi, kurulu eklenti 2.42.1 bu kodu hiç taşımıyor; 443/443
 >>>>>>> worktree-agent-a2075d3517fc89212
 2026-08-24 · D4 teslim: premium advisor effort medium, /update --guncelle kolu (bayraksız pano salt okur), sürüm-etiket denetimi ve güncelleme sonrası sürüm doğrulaması; 469/469
+2026-08-24 · F1 teslim: yedi ajan tanımına relay skill yasağı (kaçışsız), relay description kapsam ibaresi aldı ve 367→356 karaktere indi, örnek talep listesi korundu, 5 yeni test; worktree 463/463 (taban 458, main tabanı 469 — worktree D4 öncesi)
+2026-08-24 · F3 teslim: pencere ölçümü bench yerine transkript replay — scripts/olcum/pencere.js salt okur ve 72 MB'ı akıtır, 25 gerçek compact_boundary ölçüldü (sonrası ilk tur cache_creation normalin 22,5 katı), cache bayatlaması %2,0 ölçülüp modele katıldı; sonuç 500k (1M, 500k'nın 1,45 katı), alt ajan atıfı ölçülemedi; 458/458
+2026-08-24 · F2 teslim: simdi/sirada sözleşme yazımında kancayla yazılır (kesinti anına yazma kuralı kalktı), kuyruk doluyken tur başına koşullu tek satır — boşken hiçbir şey, statusline 'şu an: <simdi>' gösterir, Stop'ta plan tazeleme tetiği; 6 yeni test, 480/480 (taban 474)

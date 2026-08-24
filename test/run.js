@@ -8655,6 +8655,59 @@ ol('kayit komutlari devir notunu, ayna satirini ve panoyu anlatir', () => {
   icerir(u, '3 saniye');
 });
 
+console.log('\nAlt ajan relay protokolünü yüklemesin');
+
+const AJANLAR = path.join(KOK, 'agents');
+const ajanDosyalari = () => fs.readdirSync(AJANLAR).filter((f) => f.endsWith('.md'));
+const ajanOku = (f) => fs.readFileSync(path.join(AJANLAR, f), 'utf8');
+const relayDesc = () =>
+  fs
+    .readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8')
+    .match(/^description: (.*)$/m)[1];
+
+ol('yedi ajan tanimi da relay skillini acmayi yasaklar', () => {
+  const a = ajanDosyalari();
+  esit(a.length, 7, 'ajan sayisi');
+  for (const f of a) {
+    const g = ajanOku(f);
+    icerir(g, 'teknesyum:relay', f);
+    icerir(g, '**açma**', f);
+  }
+});
+
+ol('yasakta kacis ifadesi yok', () => {
+  for (const f of ajanDosyalari()) {
+    const g = ajanOku(f).split("## Relay skill'i")[1].split('##')[0];
+    for (const kacis of ['gerekmedikçe', 'gerekirse', 'genelde', 'çoğunlukla'])
+      icermez(g, kacis, f);
+  }
+});
+
+ol('relay description kapsam ibaresi tasir', () => {
+  const d = relayDesc();
+  icerir(d, 'ana oturumda');
+  icerir(d, 'oturumda bir kez');
+  icerir(d, 'alt ajan açmaz');
+});
+
+ol('relay description uzamamis', () => {
+  if (relayDesc().length > 367) throw new Error('description uzadi: ' + relayDesc().length);
+});
+
+ol('relay description ornek talep listesi duruyor', () => {
+  const d = relayDesc();
+  icerir(d, 'İLK BURAYA BAK');
+  for (const ornek of [
+    'özellik ekleme',
+    'uygulama yazma',
+    'hata düzeltme',
+    'refactor',
+    'yeni proje',
+    'şunu yapalım',
+  ])
+    icerir(d, ornek);
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

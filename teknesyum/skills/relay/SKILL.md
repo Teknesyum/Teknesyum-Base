@@ -1,6 +1,6 @@
 ---
 name: relay
-description: Teknesyum iş yönetimi. Kullanıcı bir şey yapılmasını istediğinde İLK BURAYA BAK - özellik ekleme, uygulama yazma, hata düzeltme, refactor, yeni proje, "şunu yapalım" tipi her talep. İşin büyüklüğünü ölçer, hazırlığı (git, indeks) yapar, gerekiyorsa ajanlara dağıtır, gerekmiyorsa doğrudan yaptırır. Ayrıca ilerleme sorulduğunda ve kesilen oturum sürdürülürken kullan.
+description: Teknesyum iş yönetimi. Yalnız ana oturumda ve oturumda bir kez açılır; alt ajan açmaz. Kullanıcı bir şey yapılmasını istediğinde İLK BURAYA BAK - özellik ekleme, uygulama yazma, hata düzeltme, refactor, yeni proje, "şunu yapalım" tipi her talep. İşi ölçer, hazırlığı yapar, gerekiyorsa ajanlara dağıtır. İlerleme sorulduğunda ve kesilen oturumda da kullan.
 ---
 
 # Relay — giriş kapısı

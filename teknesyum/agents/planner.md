@@ -77,6 +77,11 @@ Düşünüp elediğin yaklaşımlar ve eleme gerekçesi. Kısa tut, ama boş bı
 alternatif elememişsen yeterince düşünmemişsindir.
 ```
 
+## Relay skill'i
+
+`teknesyum:relay` skill'ini **açma**. Protokol T0 içindir; senin işin sözleşmende
+yazılı. Sözleşmede geçen `§` numaralarını okuman gerekiyorsa T0'dan iste, skill'i
+yükleme.
 ## İletişim
 
 **Yalın yaz.** Öneri düz cümledir: ne yapılacak, nerede, neden. Benzetme, süsleme,

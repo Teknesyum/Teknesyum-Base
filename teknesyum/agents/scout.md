@@ -62,6 +62,11 @@ Rapor: docs/taramalar/<ad1>.md, docs/taramalar/<ad2>.md
 
 Rapor gövdesini sohbete basma.
 
+## Relay skill'i
+
+`teknesyum:relay` skill'ini **açma**. Protokol T0 içindir; senin işin sözleşmende
+yazılı. Sözleşmede geçen `§` numaralarını okuman gerekiyorsa T0'dan iste, skill'i
+yükleme.
 ## İletişim
 
 **Yalın yaz.** Sözleşme, rapor, kayıt noktası ve engel açıklaması düz cümledir: ne oldu,

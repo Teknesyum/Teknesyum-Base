@@ -194,6 +194,12 @@ veya değişikliği geri al.
 **T0 kapısı:** `git diff --name-only` ve sözleşmenin doğrulama komutunu çalıştır → çıktıyı
 denetçiye ver → GEÇTİ ise mührü işle → `status: done` → dosyayı `contracts/done/`'a taşı.
 
+**Uzun koşu içeren sözleşmede iki satır baştan yazılır.** Biri kayıt noktası
+talimatı — *her kabul kriterinden sonra `## Kayıt noktası`na tek satır düş ve ara ara
+commit at* — ki araç tavanına takılan ajan nerede kaldığını okunabilir bıraksın.
+Öteki, ölçüm istenen her maddede "öncesi" değerinin depoda belgeli olup olmadığı:
+belgeliyse sözleşme onu kaynağıyla alıntılar ve yeniden ölçtürmez. Koşunun bitişi
+ajan uyandırılarak değil gözcüyle beklenir (relay §3.3).
 **Bir görev tanımı tek görevi anlatır, oturumun geçmişini değil.** Dispatch prompt'una
 konuşma özeti koyma, sözleşmenin yolunu ver.
 

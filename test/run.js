@@ -7632,6 +7632,27 @@ ol('lisans olcutu lisanssiz depoyu ve celisen beyani yakalar', () => {
   esit(sessiz.gecti, true, 'lisanstan hic soz etmeyen yuzey ihlal degildir');
 });
 
+
+ol('uzun kosu kurallari yerinde: gozcu, olcum tekrari, kayit noktasi', () => {
+  // HATA-olcum-beklemesi-kullaniciyi-bekletiyor · uc olcu.
+  const relay = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+  const uc = relay.slice(relay.indexOf('## 3.3 Uzun dış koşu'), relay.indexOf('## 4. Kim yapacak'));
+  if (!uc) throw new Error('§3.3 yok');
+  icerir(uc, '**uyandırılarak yoklanmaz.**', 'olcu 2: ajan yoklanmaz');
+  icerir(uc, 'Gözcü arkasında süreç bırakmaz', 'olcu 3: artakalan surec');
+  icerir(uc, 'kayıt noktası talimatı baştan verilir', 'olcu 2: kayit noktasi');
+
+  icerir(relay, '**Ölçüm tekrarı kapısı.**', 'olcu 1: olcum tekrari kapisi §6 da');
+  const alti = relay.slice(relay.indexOf('## 6. Token disiplini'), relay.indexOf('## 7. Kullanıcıya'));
+  icerir(alti, 'kaynağıyla alıntılar', 'olcu 1: belgeliyse alintilanir');
+
+  const pro = fs.readFileSync(
+    path.join(KOK, 'skills', 'relay', 'references', 'protocol.md'),
+    'utf8'
+  );
+  icerir(pro, 'Uzun koşu içeren sözleşmede', 'olcu 1-2: sozlesme yazimina baglandi');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

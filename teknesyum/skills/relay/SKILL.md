@@ -723,6 +723,34 @@ sözleşme dalgası olabilir.
 İş bittiğinde rota silinmez; son hâli `docs/` altında kalır — altı ay sonra neyin neden
 incelendiğini o anlatır.
 
+## 3.3 Uzun dış koşu — gözcü kalıbı
+
+Dakikalar süren bir dış koşu (kodlama, derleme, CI, büyük test paketi) bekleyen ajan
+**uyandırılarak yoklanmaz.** Yoklama tur harcar, koşuyu hızlandırmaz ve kullanıcı her
+turu ekranda görür. Ölçüldü: bir oturumda aynı döngü üç kez tekrarlandı ve üçünde de
+cevap "hâlâ sürüyor" oldu.
+
+Kalıp üç adımdır:
+
+1. **Koşu arka planda başlatılır.** Ön planda bekleyen komut oturumu kilitler.
+2. **Ajan bırakılır.** Bekleyen bir ajan boşta bekleyen bir bağlamdır; kapat, koşu
+   bitince yenisini aç ya da tek seferde sürdür.
+3. **Bitişi bir gözcü haber verir** — koşulan komutun kendi bitişine bağlı bir bekleme,
+   `sleep` ile yoklayan bir döngü değil. Ajan **bir kez** sürdürülür.
+
+**Gözcü arkasında süreç bırakmaz.** "Bitti" dedikten sonra listede duran bir `sleep`,
+iş yapmasa da "hâlâ bir şey çalışıyor" izlenimi verir ve kullanıcı onu sorar. Gözcü
+kurduğun turda bittiğini gördüğün anda süreç listesini kontrol et; artakalan varsa
+kapat. Bunu bir sonraki tura bırakma — o tur gelmeyebilir.
+
+**Uzun sözleşmede kayıt noktası talimatı baştan verilir.** Ajanlar araç tavanına
+takılır; bu istisna değil, uzun işte kuraldır. Brifingin standart parçası: *her kabul
+kriterinden sonra `## Kayıt noktası`na tek satır düş ve ara ara commit at.* Talimatı
+sonradan hatırlayan, kesilen ajanın nerede kaldığını okuyamaz — ölçüldü, aynı oturumda
+sekiz kez elle sürdürme gerekti ve talimatı alan iki sözleşme okunabilir, almayan
+dördü okunamaz kaldı.
+
+Ölçüldü: `docs/openlogs/kapali/HATA-olcum-beklemesi-kullaniciyi-bekletiyor.md`.
 ## 4. Kim yapacak: rol × model
 
 Rol işin türünü, model ağırlığını belirler. Ajanı çağırırken `model` parametresiyle yaz.
@@ -856,6 +884,14 @@ Sözleşme boyutu: **3-8 dosya, tek tutarlı yetenek.** Gerçek projede 5-9 söz
   listesi, fonksiyon imzası, bağımlılık sürümü — `grep` bir saniyede bulur, yazılmaz.
   Yazılacak olan yalnızca türetilemeyen şeydir: karar ve gerekçesi, dışarıdan gelen
   kısıt, tekrar eden tercih.
+- **Ölçüm tekrarı kapısı.** Getirme maliyeti ölçütünün kardeşi, ölçüm tarafında.
+  Sözleşmeye bir ölçüm yazmadan önce sor: **bu sayı zaten ölçülmüş ve bir yere
+  yazılmış mı?** `CHANGELOG`, röle `LOG.md`, `docs/olcumler/`, önceki sözleşmenin
+  `## Çıktı`sı — yazılıysa sözleşme onu **kaynağıyla alıntılar**, yeniden ölçmez.
+  "Öncesi/sonrası ölçüm" kalıbı düşünmeden uygulanınca "öncesi" boşa koşuluyor:
+  bir sözleşmede dakikalar süren dört ffmpeg koşusu, `CHANGELOG`'da zaten yazılı bir
+  sayıyı yeniden ölçmek için harcandı ve iptal edildi. Kalıp doğru; belgelenmiş
+  tarafını yeniden ölçmek ölçüm değil tekrar.
 - **Bilgi tekrar ediyorsa hafızaya yazılır, oturuma değil.** Üçüncü kez açıklanan şey
   kalıcı hafızaya gider; ilgili notlar birbirine `[[ad]]` ile bağlanır. Ayrı bir not
   uygulaması (Obsidian vb.) kurulmaz — hafıza zaten markdown, bağlar zaten çalışıyor.

@@ -1,6 +1,8 @@
 # Hata: Uzun ölçüm koşuları kullanıcıyı dakikalarca bekletiyor, çoğu gereksiz
 
-**Durum:** açık.
+**Durum:** çözüldü 24.08.2026 — üç ölçü de relay skill'ine yazıldı, `test/run.js`
+kilitliyor.
+**Önceki durum:** açık.
 **Belirti:** Ajanlar gerçek kodlama koşusu beklerken oturum ilerlemiyor; kullanıcı ekranda saatlerce "sürüyor" görüyor.
 **Kaynak:** `teknesyum/skills/relay/SKILL.md` — sözleşme yazımı ve uzun iş yönetimi
 **Görüldüğü proje:** VidShrink
@@ -90,3 +92,37 @@ hatırlanan bir şey değil.
 Bu günlük, aynı hafta açılan diğerleriyle aynı deseni gösteriyor: kural biliniyor ama
 üretim anında hatırlatan bir yer yok. Kardeşleri `HATA-turkce-karakter-ps1-kodlama.md`,
 `HATA-sohbet-metni-duz-yazi-duvari.md` ve `HATA-imza-teknesyum-simgesi.md`.
+
+---
+
+## 4. Ne yapıldı — 24.08.2026
+
+Üç öneri de kabul edildi ve üçü de relay skill'ine girdi. Günlüğün kendi teşhisi
+("kural biliniyor ama üretim anında hatırlatan bir yer yok") burada bir adım
+öteye taşındı: kurallar **sözleşme yazılırken** okunan yerlere kondu, sonradan
+hatırlanacak yerlere değil.
+
+**Ölçü 1 — ölçüm tekrarı kapısı.** relay §6'ya, "getirme maliyeti ölçütü"nün hemen
+yanına yazıldı; ikisi kardeş sorudur, biri bilgi biri ölçüm için. Soru: *bu sayı
+zaten ölçülmüş ve bir yere yazılmış mı?* `CHANGELOG`, röle `LOG.md`,
+`docs/olcumler/`, önceki sözleşmenin `## Çıktı`sı. Yazılıysa sözleşme kaynağıyla
+alıntılar. Kalıbın kendisi ("öncesi/sonrası") doğru kaldı — düzeltilen, belgelenmiş
+tarafı yeniden ölçmek.
+
+**Ölçü 2 — gözcü kalıbı.** relay §3.3 açıldı. Üç adım: koşu arka planda başlar ·
+ajan bırakılır · bitişi gözcü haber verir, ajan bir kez sürdürülür. Yoklama tur
+harcar, koşuyu hızlandırmaz. Aynı bölümde kayıt noktası talimatının uzun
+sözleşmelerde brifingin standart parçası olduğu yazıldı — bu oturumda talimatı alan
+iki sözleşme kesildiğinde okunabildi, almayan dördü okunamadı.
+
+**Ölçü 3 — artakalan süreç.** Aynı bölümde: gözcü "bitti" dedikten sonra süreç
+listesi **o turda** kontrol edilir, artakalan varsa kapatılır. Sonraki tura
+bırakılmaz; o tur gelmeyebilir. İş yapmayan bir `sleep` bile "hâlâ bir şey
+çalışıyor" izlenimi veriyor ve kullanıcı onu soruyor.
+
+**Sözleşme tarafı.** `references/protocol.md` §3'e iki satır: uzun koşu içeren
+sözleşmede kayıt noktası talimatı ve "öncesi" değerinin belgeli olup olmadığı
+kontrolü baştan yazılır. Sözleşme yazılırken okunan yer burasıdır.
+
+**Kilit.** `test/run.js` → `uzun kosu kurallari yerinde: gozcu, olcum tekrari,
+kayit noktasi`. 420/420.

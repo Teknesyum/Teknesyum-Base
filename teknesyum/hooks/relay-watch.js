@@ -103,10 +103,6 @@ function run(j) {
 
   if (debugAcik()) iz(live, j);
 
-  if (j.hook_event_name === 'PostToolUse' && /^SendMessage$/.test(j.tool_name || '')) {
-    return yonlendirmeIzi(live, j);
-  }
-
   if (j.hook_event_name === 'PostToolUse' && /^Skill$/.test(j.tool_name || '')) {
     const ad = (j.tool_input && (j.tool_input.skill || j.tool_input.name)) || '?';
     kullanimSay('skill:' + String(ad).toLowerCase());
@@ -146,6 +142,7 @@ function run(j) {
   }
 
   if (j.hook_event_name === 'PreToolUse') {
+    if (/^SendMessage$/.test(j.tool_name || '')) return yonlendirmeIzi(live, j);
     if (/^(Agent|Task)$/.test(j.tool_name || '')) {
       const n = calisanEkle(live, j);
       const t = j.tool_input || {};
@@ -1480,6 +1477,10 @@ function iz(live, j) {
   d.ornek_alanlar = d.ornek_alanlar || Object.keys(j).sort();
   d.alanlar = d.alanlar || {};
   d.alanlar[ev] = Object.keys(j).sort().join(',');
+  if (j.tool_input && typeof j.tool_input === 'object') {
+    d.girdi = d.girdi || {};
+    d.girdi[(j.tool_name || '?') + ':' + ev] = Object.keys(j.tool_input).sort().join(',');
+  }
   if (ev === 'PostToolUse') {
     d.ptu_ajanli = (d.ptu_ajanli || 0) + (j.agent_id || j.agent_transcript_path ? 1 : 0);
   }
@@ -1711,14 +1712,16 @@ function yonSatirlari(m) {
 
 function yonlendirmeIzi(live, j) {
   const t = j.tool_input || {};
-  const govde = t.message || t.text || t.prompt || t.content || '';
+  const govde = t.message || '';
   if (!govde) return;
   const l = yonSatirlari(govde);
   if (l.length > YONLENDIRME_TAVAN) {
-    ciktiEkle({ decision: 'block', reason: ceviri('yonlendirmeTavan', l.length) });
-    return;
+    try {
+      process.stderr.write('ENGELLENDİ: ' + ceviri('yonlendirmeTavan', l.length));
+    } catch {}
+    process.exit(2);
   }
-  steeredYaz(live, String(t.agent_id || t.id || t.agent || t.name || '').trim(), {
+  steeredYaz(live, String(t.to || '').trim(), {
     t: new Date().toISOString().replace('T', ' ').slice(0, 19),
     fiil: (l[0].trim().split(/\s+/)[0] || '').slice(0, 20),
     satir: l.length,
@@ -1726,16 +1729,33 @@ function yonlendirmeIzi(live, j) {
   });
 }
 
+function steeredKayit(live, hedef) {
+  if (!hedef) return null;
+  const ad = hedef.replace(/\s*\[[^\]]*\]\s*$/, '').trim();
+  for (const aday of [hedef, ad]) {
+    if (!aday) continue;
+    const f = path.join(live, safe(aday) + '.json');
+    if (read(f)) return f;
+  }
+  for (const d of dosyalar(live)) {
+    if (!d.endsWith('.json') || d.startsWith('_')) continue;
+    const f = path.join(live, d);
+    const k = read(f);
+    if (k && (k.agent_id === hedef || k.agent_id === ad || k.ad === ad)) return f;
+  }
+  return null;
+}
+
 function steeredYaz(live, hedef, kayit) {
-  const f = hedef ? path.join(live, safe(hedef) + '.json') : null;
-  const s = f ? read(f) : null;
-  if (!s) {
+  const f = steeredKayit(live, hedef);
+  if (!f) {
     const g = path.join(live, '_steered.json');
     const l = read(g) || [];
     l.push(Object.assign({ hedef: hedef || null }, kayit));
     yaz(g, l.slice(-STEERED_TAVAN));
     return;
   }
+  const s = read(f);
   s.steered = (s.steered || []).concat([kayit]).slice(-STEERED_TAVAN);
   yaz(f, s);
 }

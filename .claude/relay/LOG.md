@@ -67,4 +67,8 @@
 2026-08-23 · Yeni ürün standardı: tema renkleri locale gibi ayrı dosyada · U11 açılacak
 2026-08-24 · D1 teslim: depo sürüm kapısı — açılışta ls-remote, 3 sn tavan, günde bir kez; 429/429
 2026-08-24 · D3 teslim: kesinti diskte durur — _acik.json (tavan 10 satır), Stop tek satırı, statusline açıkta N · ajan X/Y, SendMessage 5 satır tavanı block ile mekanik, steered[] izi; 440/440
+<<<<<<< HEAD
 2026-08-24 · D2 teslim: devir.md son mesajı kırpmadan taşıyor, kayıt özel aynaya push ediliyor (ham.jsonl hariç), /load önce çekiyor, /update durum panosu oldu; 444/444
+=======
+2026-08-24 · D3 tur 2: yönlendirme tavanı PreToolUse'a taşındı (hedef 'to', stderr+exit 2), hooks.json matcher SendMessage aldı; kök sebep düzeltildi — tool_input eksik değildi, kurulu eklenti 2.42.1 bu kodu hiç taşımıyor; 443/443
+>>>>>>> worktree-agent-a2075d3517fc89212

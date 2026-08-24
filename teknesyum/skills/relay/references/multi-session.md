@@ -179,9 +179,10 @@ ajana yazarken iki kural geçerlidir.
 
 - **İlk kelime fiildir:** `DUR` · `DEVAM` · `DEĞİŞTİ`. Ajan ne yapacağını ilk kelimeden
   bilir; gerekçe okumadan önce yönünü belirler.
-- **Tavan 5 satır.** İşçinin dönüş tavanıyla simetriktir (§5.1) ve `PostToolUse` kancası
-  denetler: aşan mesaj **engellenir**, gerekçe döner. Kural mekanik denetlenmezse ölü
-  doğar.
+- **Tavan 5 satır.** İşçinin dönüş tavanıyla simetriktir (§5.1) ve `PreToolUse` kancası
+  denetler: aşan mesaj **gönderilmeden** engellenir, gerekçe döner. Kural mekanik
+  denetlenmezse ölü doğar — ve denetim `PostToolUse`'a bağlanırsa da ölü doğar, çünkü
+  orada mesaj çoktan gitmiştir.
 
 **Beş satıra sığmayan şey yönlendirme değildir.** Değişikliği sözleşme dosyasına yaz,
 ajana tek satır gönder:

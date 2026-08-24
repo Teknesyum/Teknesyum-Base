@@ -29,7 +29,11 @@ istemiştir, 1M'lik pencere o kararı sessizce iptal eder. Bu yüzden kurulum ke
 sayı seçmez — `/teknesyum:setup` önce profili sorar, pencere ondan çıkar.
 
 **`1000000` bir garanti değil tavandır.** Fiili pencere modelin bağlam penceresiyle
-sınırlıdır: Opus'ta ~200k, 1M bağlam açık Sonnet'te gerçekten 1M. Premium'da bu değer
+sınırlıdır. **Opus 4.7 ve Sonnet 5'in yerel penceresi 1M'dir**; bir dönem burada "Opus'ta
+~200k" yazıyordu ve yanlıştı (`docs/openlogs/HATA-200k-baglam-penceresi-iddiasi.md`). 200k
+bugün varsayılan değil, **kapatılmış hâlin** sonucudur: `CLAUDE_CODE_DISABLE_1M_CONTEXT`
+set edilmiştir, `CLAUDE_CODE_MAX_CONTEXT_TOKENS` elle kısılmıştır ya da model 1M
+taşımıyordur. Premium'da bu değer
 "modelin verdiği en genişi kullan" demektir.
 
 **Max 20x'te kısıt token faturası değil oturum limitleridir.** Geniş pencere limitleri daha

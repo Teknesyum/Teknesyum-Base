@@ -6780,6 +6780,29 @@ ol('ozel projeler listesi icerik indirmeden okunur', () => {
 
 // "Premium dedim, autocontext degismedi" iki ayri sebepten olur: deger oturum acilisinda
 // okunur ve `1000000` bir tavandir. Ikisi de soylenmezse komut calismamis gorunur.
+// Bir donem burada "Opus ~200k" yaziliyordu ve yanlisti: Opus 4.7 ve Sonnet 5 yerel 1M
+// tasiyor, 200k kapatilmis halin sonucu. Gunluk bunu soyluyordu ve okunmamisti
+// (docs/openlogs/HATA-200k-baglam-penceresi-iddiasi.md). Not artik sabit sayi soylemiyor,
+// kisitlayan degiskeni olcuyor.
+ol('tavan notu 200k iddiasi tasimaz, kisitlayan degiskeni olcer', () => {
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tavan-'));
+  const c = (ek) =>
+    spawnSync(process.execPath, [path.join(KOK, 'scripts', 'premium.js'), 'autocompact', '900000'], {
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, ...ek },
+      timeout: 60000,
+    }).stdout;
+  const temiz = c({ CLAUDE_CODE_DISABLE_1M_CONTEXT: '', CLAUDE_CODE_MAX_CONTEXT_TOKENS: '' });
+  icermez(temiz, '200k', 'sabit 200k iddiasi kalmamali');
+  icermez(temiz, 'Opus', 'modele ozgu sayi soylenmemeli');
+  icerir(temiz, 'tavan, garanti değil');
+  const kisitli = c({
+    CLAUDE_CODE_DISABLE_1M_CONTEXT: '1',
+    CLAUDE_CODE_MAX_CONTEXT_TOKENS: '',
+  });
+  icerir(kisitli, 'CLAUDE_CODE_DISABLE_1M_CONTEXT', 'kisit varsa adiyla soylenmeli');
+});
+
 ol('autoCompactWindow yazilinca yeniden baslatma ve tavan notu basilir', () => {
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ac-'));
   const c = (a) =>

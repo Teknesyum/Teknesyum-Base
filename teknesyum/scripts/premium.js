@@ -166,13 +166,26 @@ function acYururlukNotu(degisti) {
   ];
 }
 
-// `1000000` bir tavandır, garanti değil. Fiili pencere modelin bağlam penceresiyle
-// sınırlı: Opus'ta ~200k, 1M bağlam açık Sonnet'te gerçekten 1M. Premium'da bu değer
-// "modelin verdiği en genişi kullan" demektir; ekranda 1M görünmemesi arıza değildir.
+// `1000000` bir tavandır, garanti değil — fiili pencere modelin bağlam penceresi kadardır.
+//
+// DÜZELTME (23.08.2026, `docs/openlogs/HATA-200k-baglam-penceresi-iddiasi.md`): burada bir
+// dönem "Opus'ta ~200k" yazıyordu ve **yanlıştı**. Opus 4.7'nin ve Sonnet 5'in yerel
+// penceresi **1M**; 200k bugün varsayılan değil, **kapatılmış hâlin** sonucu. Üç yoldan
+// biriyle doğar: `CLAUDE_CODE_DISABLE_1M_CONTEXT` set edilmiştir,
+// `CLAUDE_CODE_MAX_CONTEXT_TOKENS` elle kısılmıştır, ya da model 1M taşımıyordur.
+//
+// Bu yüzden not artık sabit bir sayı söylemiyor — **ölçüyor**: kısıtlayan bir değişken
+// varsa onu adıyla söyler, yoksa yalnız "tavan, garanti değil" der.
+const KISITLAYAN = ['CLAUDE_CODE_DISABLE_1M_CONTEXT', 'CLAUDE_CODE_MAX_CONTEXT_TOKENS'];
+
 function acTavanNotu(deger) {
-  return typeof deger === 'number' && deger > 200000
-    ? ' · tavan, garanti değil — fiili pencere modelin bağlamı kadar (Opus ~200k)'
-    : '';
+  if (typeof deger !== 'number' || deger <= 200000) return '';
+  const kisit = KISITLAYAN.filter((k) => process.env[k]);
+  if (kisit.length)
+    return (
+      ' · tavan, garanti değil — pencere ' + kisit.join(' ve ') + ' ile kısılmış, o kadar açılır'
+    );
+  return ' · tavan, garanti değil — fiili pencere modelin bağlam penceresi kadar';
 }
 
 function acYaz(yol, deger) {

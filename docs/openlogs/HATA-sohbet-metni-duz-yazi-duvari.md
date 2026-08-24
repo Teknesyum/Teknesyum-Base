@@ -88,3 +88,21 @@ kullanıyor; kapsamını sohbete genişletmek o taramanın anlamını bulandır�
 Bu madde, aynı hafta açılan `HATA-turkce-karakter-ps1-kodlama.md` §3'teki "standart
 üretim modülü" önerisiyle aynı boşluğu gösteriyor: kural biliniyor, kuralı hatırlatacak
 ve ölçecek yer yok.
+
+---
+
+## İlerleme — 23.08.2026, Teknesyum Base
+
+Ölçü maddesi 1 karşılandı ve testle kilitlendi (`test/run.js` → `acik gunlukten dogan
+kurallar yerinde duruyor`). Kural gevşerse test düşer; sessizce geri gelemez.
+
+Kural `relay/SKILL.md` §7.0 oldu — günlüğün kendi önerisi buydu: ölçüyü `teknesyum-ui`
+§3.2'den taşımak yerine `relay`e kopyalamak, çünkü §3.2 arayüz taramasının parçası ve
+kapsamını sohbete genişletmek o taramanın anlamını bulandırırdı.
+
+Ek bir cümle yazıldı: **kural arayüz standardı kapalıyken de geçerlidir.** `teknesyum-ui`
+opsiyonel, sohbet çıktısı değil.
+
+**Ölçü maddesi 2 açık:** bir oturum çıktısı kurala karşı okunup beş satırı geçen paragraf
+kalmadığı görülmeli. Bu, yazan oturumun kendi kendini denetlemesi demek — bir sonraki
+turda ölçülecek.

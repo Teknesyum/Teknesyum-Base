@@ -174,8 +174,35 @@ function projeMi(d, izler) {
   return sonuc;
 }
 
+
+// Kurulu eklentinin diskteki kökü. Sürümü yola **elle yazmak yasak** — önbellek eski
+// sürümleri yan yana tutuyor ve on klasörün arasından "dosyayı okudum" cümlesi hangi
+// dosyayı okuduğunu söylemiyor. `ls | tail -1` de olmaz: en yüksek numaralı klasör
+// kurulu olan olmak zorunda değil, kullanıcı bir sürüm geri almış olabilir.
+//
+// Tek doğru kaynak `installed_plugins.json` içindeki kayıttır.
+// Ölçüldü: docs/openlogs/HATA-surum-gomulu-yol-eski-standardi-okuyor.md
+function kuruluEklentiKoku(eklenti) {
+  const ad = eklenti || 'teknesyum@teknesyum';
+  try {
+    const j = JSON.parse(
+      fs.readFileSync(path.join(konfigKok(), 'plugins', 'installed_plugins.json'), 'utf8')
+    );
+    const k = j.plugins && j.plugins[ad] && j.plugins[ad][0];
+    if (!k) return null;
+    if (k.installPath && fs.existsSync(k.installPath)) return k.installPath;
+    if (!k.version) return null;
+    const [pazar, paket] = ad.split('@').reverse();
+    const y = path.join(konfigKok(), 'plugins', 'cache', pazar, paket, k.version);
+    return fs.existsSync(y) ? y : null;
+  } catch {
+    return null;
+  }
+}
+
 module.exports = {
   ev,
+  kuruluEklentiKoku,
   konfigKok,
   transkriptKok,
   transkriptDizini,

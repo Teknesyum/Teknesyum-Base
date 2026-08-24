@@ -97,3 +97,23 @@ Ayrıca 2.50.1'in kendi içinde bir çelişki var ve bu ayrı bir iş: §3 tam c
 kurala uyduğunu söylerken, aynı dosyanın **684. satırındaki denetim listesi** hâlâ
 `Etiketi UPPERCASE veya Title Case yazmak → ilki büyük gerisi küçük (§3)` diyor. Denetim
 listesi §3 güncellenirken güncellenmemiş.
+
+---
+
+## İlerleme — 23.08.2026, Teknesyum Base
+
+Ölçü maddesi 1 karşılandı ve testle kilitlendi (`test/run.js` → `acik gunlukten dogan
+kurallar yerinde duruyor`). Kural gevşerse test düşer; sessizce geri gelemez.
+
+`hooks/ortak.js` → `kuruluEklentiKoku()` eklendi: kurulu sürümü `installed_plugins.json`
+kaydından çözüyor, `installPath` varsa onu kullanıyor, yoksa sürümü kayıttan alıp yolu
+kuruyor. Sürüm hiçbir yerde elle yazılmıyor ve test bunu regexle kilitliyor.
+
+Kural `relay/SKILL.md` §7.0.1 oldu, üç maddeyle: sürümü yola yazma · kural taşıyan kararda
+standardı o anda oku · alıntı yaparken sürümü yaz.
+
+Çalışan doğrulama: `kuruluEklentiKoku()` bu makinede `…/teknesyum/2.51.0` döndürdü ve
+kurulu sürüm gerçekten 2.51.0.
+
+**Ölçü maddesi 2 açık:** eklenti güncellendikten sonra yapılan ilk okumanın yeni metni
+verdiği, eski klasör diskte dururken ölçülmeli. Bir sonraki güncellemede ölçülebilir.

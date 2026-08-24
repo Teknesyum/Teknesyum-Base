@@ -862,10 +862,49 @@ ama körlemede bırakma. Zorunlu anlar (tam biçimi `references/protocol.md` §8
 
 Tek sözleşmelik işte tablo kurma; aynı bilgiyi iki satırda ver.
 
+### 7.0 Düz yazı duvarı yasak — sohbet çıktısı da ölçülür
+
+Kullanıcıya yazılan her açıklama bloklara ayrılır:
+
+- **Paragraf 2-4 satır.** Beş satırı geçen paragraf ikiye bölünür ya da listeye çevrilir.
+- **Üç maddeden fazla art arda bilgi** cümleye değil **listeye** yazılır.
+- Bir paragrafta **tek fikir** bulunur; "ayrıca", "bunun yanında" ile eklenen ikinci fikir
+  yeni paragraftır.
+
+Ölçü `teknesyum-ui` §3.2 ile **aynıdır**, kapsamı **sohbet çıktısıdır.** İki yerde
+durmasının sebebi ölçünün kopyalanması değil kapsamın ayrılmasıdır: §3.2 arayüz
+standardının parçası ve `uicheckup` onu **arayüz taramasında** kullanıyor; kapsamını
+sohbete genişletmek o taramanın anlamını bulandırırdı
+(`docs/openlogs/HATA-sohbet-metni-duz-yazi-duvari.md` §3).
+
+Bu kural arayüz standardı kapalıyken de geçerlidir — sohbet çıktısı kullanıcının
+arayüzüdür ve `teknesyum-ui` opsiyoneldir, bu değildir.
+
 **Sayı verirken ölçüsünü de ver.** "%40 hızlandı", "yarı yarıya küçüldü" gibi rakamlar
 neyle, nerede, hangi girdide ölçüldüğü yazılmadan söylenmez. Ölçmediysen "ölçmedim" de.
 Ölçünün kapsamadığı maliyet varsa (başka bir modele giden çağrı, ek disk, ek gecikme)
 onu da yaz — kapsamı söylenmemiş kazanç rakamı yanıltıcıdır.
+
+### 7.0.1 Standardı okurken sürümü yola yazma
+
+Eklenti önbelleği **sürümlüdür** ve eski sürümleri diskte tutar. Bir standart dosyasını
+`plugins/cache/teknesyum/teknesyum/<sürüm>/...` gibi sürümü elle yazılmış bir yoldan
+okumak, güncelleme sonrası **eski metni** okumak demektir — üstelik sessizce, çünkü dosya
+gerçekten oradadır.
+
+Üç kural:
+
+1. **Sürümü yola yazma.** Kurulu sürümün tek doğru kaynağı
+   `~/.claude/plugins/installed_plugins.json`. `hooks/ortak.js` → `kuruluEklentiKoku()`
+   onu çözer. `ls | tail -1` de olmaz: en yüksek numaralı klasör kurulu olan olmak
+   zorunda değil, kullanıcı bir sürüm geri almış olabilir.
+2. **Kural taşıyan kararda standardı o anda oku.** Bir kuralı hatırlayarak karar vermek,
+   kuralın değişmediğini varsaymaktır. Kural gün içinde değişebilir — bu depoda değişti.
+   Oturumun başında okunmuş bir bölüm, oturumun sonunda kanıt değildir.
+3. **Alıntı yaparken sürümü yaz.** On sürümün yan yana durduğu bir klasörde "dosyayı
+   okudum" cümlesi hangi dosyayı okuduğunu söylemiyor.
+
+Ölçüldü: `docs/openlogs/HATA-surum-gomulu-yol-eski-standardi-okuyor.md`.
 
 ## 7.1 Dönüş bloğu — işçi oturumun son sözü
 

@@ -7442,6 +7442,37 @@ ol('ui odak stili depoda gercekten var olan adla anilir', () => {
   icerir(U2_XAML, 'SystemParameters.FocusVisualStyleKey');
 });
 
+
+// ── Açık hata günlüklerinden doğan kurallar ────────────────────────────────────
+// Bu testler bir hata günlüğünün ölçü maddesini kilitler. Kural gevşerse günlük
+// yeniden açılmalı, sessizce geri gelmemeli.
+ol('acik gunlukten dogan kurallar yerinde duruyor', () => {
+  const relay = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
+
+  // HATA-sohbet-metni-duz-yazi-duvari · ölçü 1
+  const yedi = relay.slice(relay.indexOf('## 7. Kullanıcıya'), relay.indexOf('## 7.1'));
+  icerir(yedi, 'Düz yazı duvarı yasak');
+  icerir(yedi, '2-4 satır');
+  icerir(yedi, 'Üç maddeden fazla');
+  icerir(yedi, 'kapsamı **sohbet çıktısıdır.**', 'kapsam ayrimi yazili olmali');
+  icerir(yedi, 'Sürümü yola yazma');
+  icerir(yedi, 'kuruluEklentiKoku()');
+
+  // HATA-surum-gomulu-yol · ölçü 1 — sürüm yola gömülmüyor, kayıttan çözülüyor
+  const ortak = fs.readFileSync(path.join(KOK, 'hooks', 'ortak.js'), 'utf8');
+  icerir(ortak, 'function kuruluEklentiKoku');
+  icerir(ortak, 'installed_plugins.json');
+  const govde = ortak.slice(
+    ortak.indexOf('function kuruluEklentiKoku'),
+    ortak.indexOf('module.exports')
+  );
+  if (/cache[\\/][^'"`]*[0-9]+\.[0-9]+\.[0-9]+/.test(govde))
+    throw new Error('kuruluEklentiKoku icinde gomulu surum var');
+  const m = require(path.join(KOK, 'hooks', 'ortak.js'));
+  esit(typeof m.kuruluEklentiKoku, 'function', 'yardimci disa aktarilmali');
+  esit(m.kuruluEklentiKoku('yok@yok'), null, 'kurulu olmayan eklenti null donmeli');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

@@ -6,6 +6,51 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.52.0] - 2026-08-24
+
+### Added
+
+- **The repo now checks itself against its remote once per app start.** A desktop
+  session opened 39 commits behind and never noticed: the laptop had developed up to
+  2.51.0 while the desktop kept working on 2.43.0. `scripts/depo-surum.js` asks one
+  question with a single `ls-remote` — no fetch — and warns only when the remote holds
+  work the local clone does not. It never guesses a commit count, because without a
+  fetch that number is unknowable. The `source` values it runs on were chosen by
+  counting 371 real `SessionStart` events, not by assumption; `compact` and `clear`
+  are excluded because they fire mid-work. Three-second timeout, measured: 187 ms when
+  the remote answers, 84 ms on the day's second start, 3.129 ms when the remote never
+  answers at all.
+- **Session records travel on their own.** `/save` writes `devir.md` — the last
+  assistant message in full, uncropped — and pushes four files to the private mirror:
+  the summary, the status, the working diff and that handover note. `ham.jsonl` stays
+  local; at 8.6 MB per record and no delta compression, pushing it would bloat the
+  repository irreversibly. `/load` pulls the mirror before reading. Save on one
+  machine, load on another, carry nothing by hand.
+- **`/update` became a status panel.** Five lines: plugin version and whether it is
+  current, repository state, active profile and where it came from, open contracts and
+  logs, last save and whether it left the machine. It closes with a single readiness
+  line. No third version comparison was written — the repo line calls `depo-surum.js`,
+  the plugin line calls `surum.js`.
+- **Interrupts no longer get lost, and steering no longer scatters the agent.**
+  A session-scoped queue (`live/_acik.json`, capped at ten lines) holds what the user
+  raised but the turn could not answer; the `Stop` hook prints one line when it is not
+  empty, and the statusline shows the count at zero context cost. Nothing is injected
+  per turn — a measurement found 89% of a session's cost is conversation volume, so a
+  status block on every turn would grow exactly the item we had just shrunk. Messages
+  to a running agent now start with a verb and cap at five lines; anything longer is
+  not steering but a contract change, and belongs in the contract file. The cap is
+  enforced in `PreToolUse`, where the tool can still be stopped.
+
+### Fixed
+
+- Everything built in a session stays inert until the plugin is reinstalled — hooks run
+  from the installed cache, not the working repository. Three features were verified
+  green by their tests and by direct script invocation, yet the hook paths were still
+  running the previous release. Versions 2.44 through 2.51 were also never tagged, so
+  `claude plugin update` could not reach past 2.43.0 regardless. This release tags the
+  gap closed.
+
+
 ### Added
 
 - **Ikinci gorus artik kancadan olculuyor.** `relay` §1.5.1 dokuz tetikleyici

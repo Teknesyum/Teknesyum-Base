@@ -144,7 +144,12 @@ function ajanlar(live) {
   }
   // Ölü ajan `/report` çağırır; dünkü ölü ajan için çağırmaz. Bir günü geçen izi gösterme,
   // yoksa kapanmış bir işin kalıntısı statusline'da kalıcı olur.
-  out = out.filter((a) => !olu(a) || taze(a.last_seen));
+  //
+  // ÖLÇÜLDÜ (24.08.2026): tazelik yalnız ölülere uygulanıyordu. `stop_reason: 'end_turn'`
+  // ile biten kayıt hiçbir zaman `olu` sayılmadığı için süzgeçten muaftı ve klasörde
+  // birikiyordu — sayaç `ajan 0/202` diyordu, son satır da günler önce bitmiş bir ajanın
+  // metnini basıyordu. Tazelik artık uçuştaki ajan dışında herkese uygulanır.
+  out = out.filter((a) => (a.stop_reason === null && !olu(a)) || taze(a.last_seen));
   const rank = (a) => (olu(a) ? 1 : a.stop_reason === null ? 0 : 2);
   return out.sort(
     (a, b) => rank(a) - rank(b) || (b.last_seen || '').localeCompare(a.last_seen || '')
@@ -206,8 +211,12 @@ function ajanSatiri(a) {
   return s;
 }
 
+// Statusline tek satırdır. `last_word` transkriptten geliyor ve içinde satır sonu,
+// etiket ve girinti taşıyabiliyor; ham kesilirse satır sayısını şişirir ve makbuzu
+// aşağı iter. Önce boşluk düzleştirilir, sonra kesilir.
 function kisalt(s, n) {
-  return s.length > n ? s.slice(0, n - 1) + '…' : s;
+  const t = String(s).replace(/\s+/g, ' ').trim();
+  return t.length > n ? t.slice(0, n - 1) + '…' : t;
 }
 
 function relay(dir) {
@@ -322,7 +331,9 @@ process.stdin.on('end', () => {
   // Makbuz yalnız her şey bittiğinde anlamlıdır ve kanca zaten öyle yazıyor; ajan
   // çalışırken satır gösterilse eski turun sayısı yeni turun üstünde durur.
   const mk = cs.length ? '' : makbuz(live);
-  if (mk) satirlar.push('  ' + C.hint + mk + C.r);
+  // `hint` ayraç rengidir; makbuz onunla basılınca satır ayraç gibi okunuyor ve
+  // "makbuz yok" diye rapor ediliyordu. Bir kademe yukarı, `dim`e alındı.
+  if (mk) satirlar.push('  ' + C.dim + mk + C.r);
   for (const c of cs.slice(0, 3)) satirlar.push('  ' + calisanSatiri(c));
   if (cs.length > 3) satirlar.push('  ' + C.hint + '+' + (cs.length - 3) + ' ajan çalışıyor' + C.r);
 

@@ -8844,6 +8844,37 @@ ol('konsey protokolu lite kavramini tasimaz, kimlik acik', () => {
   icerir(k, 'Mekanik donduruldu');
 });
 
+// Protokol belgede yazili olmasi mekanigi yururluge koymaz: davranisi suruklien dosya
+// eklentinin skillidir. Kosu 3 kapandiktan sonra SKILL.md bir sure eski simetrik
+// mekanigi anlatmaya devam etti — belge ile eklenti ayristi.
+ol('yeni konsey mekanigi eklentinin skilline yazildi', () => {
+  const yol = path.join(__dirname, '..', 'teknesyum', 'skills', 'relay', 'SKILL.md');
+  const k = fs.readFileSync(yol, 'utf8');
+  if (/Konsey üyesi 1 \| `fable`/.test(k))
+    throw new Error('SKILL.md hâlâ eski simetrik konsey tablosunu tasiyor');
+  icerir(k, 'Birinci koltuğun metni ikinciye verilir');
+  icerir(k, 'Oturumlar kapatılmaz');
+  icerir(k, 'Tavan 4');
+  icerir(k, 'docs/konsey/PROTOKOL.md');
+  if (/konsey lite|konsey `lite`/i.test(k))
+    throw new Error('SKILL.md lite kavramini geri getirmis');
+});
+
+// OLCULDU (24.08.2026, kullanici bildirdi): "makbuz hâlâ yok". Makbuz yaziliyordu ve
+// basiliyordu; iki sey gizliyordu. (1) `C.hint` ayrac rengidir, satir ayrac gibi
+// okunuyordu. (2) Biten ajan kaydi tazelik suzgecinden muafti, klasorde 202 kayit
+// birikmisti ve son satir gunler once bitmis bir ajanin cok satirli metnini basiyordu.
+ol('makbuz ayrac renginde basilmaz, bitmis ajan kaydi da tazelik suzgecinden gecer', () => {
+  const yol = path.join(__dirname, '..', 'teknesyum', 'scripts', 'statusline.js');
+  const k = fs.readFileSync(yol, 'utf8');
+  if (/C\.hint \+ mk/.test(k)) throw new Error('makbuz hâlâ ayrac renginde basiliyor');
+  icerir(k, 'C.dim + mk');
+  if (/out = out\.filter\(\(a\) => !olu\(a\) \|\| taze\(a\.last_seen\)\)/.test(k))
+    throw new Error('tazelik suzgeci hâlâ yalniz olu ajanlara uygulaniyor');
+  icerir(k, "a.stop_reason === null && !olu(a)) || taze(a.last_seen)");
+  icerir(k, "replace(/\\s+/g, ' ')");
+});
+
 console.log('\nZil tekrari');
 
 // OLCULDU (24.08.2026, kullanici bildirdi): zil arka arkaya 5-10 kez caliyordu.

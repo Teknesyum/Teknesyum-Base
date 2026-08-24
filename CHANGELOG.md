@@ -6,6 +6,28 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.54.0] - 2026-08-24
+
+### Changed
+
+- **The council mechanic reached the plugin.** It had been settled and written into
+  `docs/konsey/PROTOKOL.md`, but the file that actually drives behaviour — the relay
+  skill — still described the old symmetric council: two independent members, no
+  rounds, no extension. The skill now carries the seat table, the asymmetric flow, the
+  divergence rule, the mandatory valves and the ceiling. A document is not a mechanic
+  until the skill says so.
+
+### Fixed
+
+- **The turn receipt was written, rendered, and still invisible.** Two things hid it.
+  It printed in the separator colour, so the line read as a separator rather than as
+  content. And the freshness filter applied only to dead agent records: a record that
+  finished cleanly was exempt, so 202 of them had accumulated, the counter read
+  `agent 0/202`, and the last status line printed the raw multi-line transcript of an
+  agent that had finished days earlier — pushing the receipt out of sight. Freshness
+  now applies to every record except one still in flight, and truncation flattens
+  whitespace before cutting.
+
 ## [2.53.0] - 2026-08-24
 
 ### Fixed

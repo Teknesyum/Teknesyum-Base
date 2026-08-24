@@ -313,20 +313,50 @@ neyi atladığını kaydeder, **neden** atladığını yalnızca sen yazabilirsi
 tek modelin kalemiyle yazılmaz. Ön araştırma bitince T0 **aynı brifingle iki `planner`
 ajanı** açar:
 
-| Üye | Model | Ne yapar |
+| Koltuk | Model | Ne yapar |
 |---|---|---|
-| Konsey üyesi 1 | `fable` | bağımsız plan önerisi |
-| Konsey üyesi 2 | `opus` | bağımsız plan önerisi |
+| Birinci koltuk | `opus` | bağımsız plan önerisi |
+| İkinci koltuk | `fable` | bağımsız önerisini yazar, sonra birincinin metnini okur |
 
 **İkisi de iş yapmaz.** Kod, dosya, sözleşme yazmazlar; `planner` ajanının elinde yazma
 aracı yoktur. Tek çıktıları mesajla dönen öneridir — beş başlık: kavrayış, plan, riskler,
 ayrım noktaları, reddettikleri.
 
+**Üyeler adlarıyla anılır**, gizlenmez. `lite`, `hard`, `eski`, `yeni` diye bir konsey
+ayrımı yoktur — uzatılmamış koşu da konseydir.
+
+### Akış
+
+1. **İki üye de bağımsız yazar.** Aynı soru, aynı anda, birbirini görmeden; paralel açılır.
+2. **Birinci koltuğun metni ikinciye verilir.** Ters yön yoktur.
+3. **Uzatma kararı ikinci üye ile T0'ındır.** Ayrı düşerlerse: biri uzat biri kapat ise
+   **uzatma geçer**; uzatma nesne taşımıyorsa sayılmaz; ikisi de uzatıyorsa kapsamlar
+   **birleşir** — kesişim almak sessiz bir kapatmadır.
+4. **Oturumlar kapatılmaz.** Üye yeniden çağrılmaz, `SendMessage` ile sürdürülür —
+   brifing tekrarlanmaz, bağlam durur.
+5. **Tavan 4**, durak değil arka-durdurucu. Bağlarsa `kapanis_nedeni = tavan` yazılır ve
+   bu kendi başına bir sinyaldir. Efor **medium** — ajan tanımından gelir, çağrıdan değil.
+
+### Zorunlu valfler
+
+| Valf | Ne zaman | Sonuç |
+|---|---|---|
+| **Emin değilim** | Birinci üye taşıyıcı bir maddede "emin değilim" yazdıysa | İkinci üye o maddede kapatamaz |
+| **Kategori** | Şema · veri silme · dış API sözleşmesi · dosya biçimi · migration | Tek turda kapanmaz |
+
+Kapanışta koşu `docs/stats/konsey.md` defterine yazılır; satırı
+`scripts/olcum/konsey-maliyet.js` üretir, elle doldurulmaz. **Yazma zamanı kapanışı ilan
+eden aynı işlemdir.**
+
+Tam metin: `docs/konsey/PROTOKOL.md` — geri çekme tiplemesi, cırcır emniyeti, devir kuralı
+ve mekanik dondurma sınırı oradadır. **Mekanik dondurulmuştur:** kalibrasyon koşusu artı
+gerçek işte iki koşu loglanmadan protokol değişmez.
+
 Bildirim — açmadan önce ve bitince tek satır:
 
 ```
-Teknesyum ▸ plan konseyi açıldı · <konu> · fable + opus
-Teknesyum ▸ plan konseyi bitti · <n> ortak karar · <m> ayrışma · docs/PLAN.md
+Teknesyum ▸ plan konseyi açıldı · <konu> · opus + fable
+Teknesyum ▸ plan konseyi bitti · <n> tur · <m> ayrışma · docs/PLAN.md
 ```
 
 **Sentez T0'ın işidir** ve şu sırayla yapılır:

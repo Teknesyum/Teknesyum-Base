@@ -2,7 +2,7 @@
 name: planner
 description: Relay plan konseyi üyesi. İş tanımını okuyup bağımsız bir plan önerisi döner. Kod, sözleşme veya dosya yazmaz; tek çıktısı mesajla dönen öneridir. Tek başına çağrılmaz, iki üye birlikte açılır. Tek bir karar düğümü için kısa ikinci görüş isteniyorsa bu ajan değil advisor kullanılır.
 tools: Read, Grep, Glob, LSP, WebSearch, WebFetch
-effort: high
+effort: medium
 maxTurns: 40
 color: yellow
 ---

@@ -3197,18 +3197,29 @@ ol('advisor yazma araci ve memory alani tasimaz', () => {
   icerir(m, '_sorun.log');
 });
 
-ol('advisor ucuz kalir, premiumda medium otekilerde low', () => {
+ol('advisor ucuz kalir, ecoda low otekilerde medium', () => {
   const src = fs.readFileSync(PREMIUM, 'utf8');
   const govde = src.slice(src.indexOf('const PROFIL'), src.indexOf('const PROFILLER'));
   const satirlar = govde.split('\n').filter((r) => r.trim().startsWith('advisor:'));
   esit(satirlar.length, 3, 'advisor üç profilde de tanımlı olmalı');
-  for (const satir of satirlar.slice(0, 2))
-    if (!/effort: 'low'/.test(satir))
-      throw new Error('advisor düşük eforda değil: ' + satir.trim());
+  if (!/effort: 'low'/.test(satirlar[0]))
+    throw new Error('eco advisor düşük eforda değil: ' + satirlar[0].trim());
+  for (const satir of satirlar.slice(1))
+    if (!/effort: 'medium'/.test(satir))
+      throw new Error('advisor medium eforda değil: ' + satir.trim());
   icerir(satirlar[2], "model: 'fable'");
-  icerir(satirlar[2], "effort: 'medium'");
   if (/effort: '(high|xhigh)'/.test(satirlar[2]))
     throw new Error('premium advisor planner kopyasina donmus: ' + satirlar[2].trim());
+});
+
+ol('konsey uyeleri medium eforda cagrilir', () => {
+  const src = fs.readFileSync(PREMIUM, 'utf8');
+  const govde = src.slice(src.indexOf('const PROFIL'), src.indexOf('const PROFILLER'));
+  const satirlar = govde.split('\n').filter((r) => r.trim().startsWith('planner:'));
+  esit(satirlar.length, 3, 'planner üç profilde de tanımlı olmalı');
+  for (const satir of satirlar.slice(1))
+    if (/effort: '(high|xhigh)'/.test(satir))
+      throw new Error('konsey üyesi yüksek eforda, cevap süresi uzuyor: ' + satir.trim());
 });
 
 ol('on arastirma kapisi depo sayisini profile gore soyler', () => {

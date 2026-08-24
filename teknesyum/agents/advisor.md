@@ -2,7 +2,7 @@
 name: advisor
 description: Relay ikinci görüşü. T0'ın doğru kararı bilmediği tek bir düğümde kısa bir görüş verir - hangi yolu seçerdim, neden, ve soranın kaçırdığı şey. Plan yazmaz, kod yazmaz, dosya oluşturmaz; tek çıktısı üç başlıklı ve en fazla 20 satırlık mesajdır. Tek soru için tek üye - planın tamamı için planner konseyini kullan.
 tools: Read, Grep, Glob, LSP, WebSearch, WebFetch
-effort: low
+effort: medium
 maxTurns: 15
 color: yellow
 ---

@@ -76,7 +76,7 @@ is full, don't append; delete the weakest line or merge two. Added with \`/rule\
     }
   }
 
-  const AUTOCOMPACT = { eco: 100000, normal: 'auto', premium: 1000000 };
+  const AUTOCOMPACT = { eco: 150000, normal: 'auto', premium: 500000 };
   let profil = '';
   try {
     const tk = JSON.parse(fs.readFileSync(path.join(HOME, 'teknesyum.json'), 'utf8'));

@@ -49,7 +49,7 @@ const GORUS = 'fable';
 
 const DUGME = {
   eco: {
-    autocompact: '100000',
+    autocompact: '150000',
     ask_threshold: 'critical',
     approval_gate: 'none',
     audit: 'very-critical',
@@ -85,7 +85,7 @@ const DUGME = {
     agent_loop: '5',
   },
   premium: {
-    autocompact: '1000000',
+    autocompact: '500000',
     ask_threshold: 'critical',
     approval_gate: 'none',
     audit: 'high',

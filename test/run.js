@@ -2731,7 +2731,7 @@ ol('autocompact tablosu premium.js ile post-install.js arasinda ayni', () => {
 });
 
 ol('autocompact modele hic yazilmaz, sapma satirinda gorunmez', () => {
-  esit(premiumTablo.sapmalar('eco').autocompact, '100000', 'sapma tablosunda olmali');
+  esit(premiumTablo.sapmalar('eco').autocompact, '150000', 'sapma tablosunda olmali');
   esit(premiumTablo.DUGME.normal.autocompact, 'auto', 'taban Claude Code varsayilanini kullanmali');
   if (/autocompact/.test(premiumTablo.sapmaSatiri('eco')))
     throw new Error('kanca dugmesi modele enjekte ediliyor: ' + premiumTablo.sapmaSatiri('eco'));
@@ -2744,12 +2744,12 @@ ol('--genel makine varsayilanini ve pencereyi birlikte yazar', () => {
   const r = premiumCalistir(['eco', '--genel'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'oturum-9' });
   esit(r.kod, 0, r.err);
   icerir(r.out, 'kayıt: makine');
-  icerir(r.out, 'autoCompactWindow: 100000');
+  icerir(r.out, 'autoCompactWindow: 150000');
   const k = JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8'));
   esit(k.profil, 'eco');
   esit(
     JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
-    100000
+    150000
   );
 });
 
@@ -2758,7 +2758,7 @@ ol('oturum profili pencereyi tasimaz, durum bunu soyler', () => {
   premiumCalistir(['premium', '--genel'], p, cfg);
   esit(
     JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
-    1000000
+    500000
   );
   const ek = { CLAUDE_CODE_SESSION_ID: 'oturum-7' };
   const r = premiumCalistir(['eco', 'this'], p, cfg, ek);
@@ -2766,19 +2766,19 @@ ol('oturum profili pencereyi tasimaz, durum bunu soyler', () => {
   icerir(r.out, 'oturum profili makine ayarını taşımaz');
   esit(
     JSON.parse(fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8')).autoCompactWindow,
-    1000000,
+    500000,
     'oturum profili makine penceresini ezmis'
   );
   const d = premiumCalistir('durum', p, cfg, ek);
   icerir(d.out, 'yürürlükteki profil: eco (kaynak: oturum)');
-  icerir(d.out, 'sıkıştırma penceresi: 1000000 · eco profili 100000 ister');
+  icerir(d.out, 'sıkıştırma penceresi: 500000 · eco profili 150000 ister');
 });
 
 ol('autocompact komutu profilden turetir, sayi verilince elle yazar', () => {
   const { p, cfg } = premiumKopya();
   premiumCalistir(['premium', '--genel'], p, cfg);
   const t = premiumCalistir('autocompact', p, cfg);
-  icerir(t.out, 'autoCompactWindow: 1000000');
+  icerir(t.out, 'autoCompactWindow: 500000');
   const e = premiumCalistir(['autocompact', '432000'], p, cfg);
   esit(e.kod, 0, e.err);
   icerir(e.out, 'yazıldı (elle)');

@@ -1137,6 +1137,23 @@ ol('aynı tipten iki ajanda süre uydurulmaz', () => {
   icerir(duyuruMetni(r), 'süre belirsiz');
 });
 
+// ÖLÇÜLDÜ (24.08.2026): `SubagentStop` duyurusu `additionalContext` ile dönüyordu.
+// O alan alt ajanın turunu yeniden açar; ajan yeni bir kapanış mesajı yazar ve ana
+// oturuma yalnız son asistan mesajı gittiği için rapor gövdesi düşer. Dört vakanın
+// üçünde advisor/planner raporu böyle kayboldu.
+ol('SubagentStop duyurusu bağlama değil ekrana yazılır', () => {
+  const { p } = proje(1, 0);
+  const r = calistir(IZLE, {
+    ...ort(p),
+    hook_event_name: 'SubagentStop',
+    agent_id: 'a9',
+    agent_type: 'teknesyum:advisor',
+    agent_transcript_path: '/x/a9.jsonl',
+  });
+  icermez(r.out, 'additionalContext', 'kapanışta bağlam enjeksiyonu turu yeniden açar');
+  if (r.out) icerir(r.out, 'systemMessage');
+});
+
 console.log('\nİz');
 
 ol('genel iz temizliği az sayıda klasörde de çalışır', () => {

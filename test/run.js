@@ -84,7 +84,11 @@ const ort = (p) => ({ cwd: p, session_id: 'oturum-1', transcript_path: '/x/oturu
 function duyuruMetni(r) {
   if (!r || !r.out) return '';
   let o;
-  try { o = JSON.parse(r.out); } catch { return ''; }
+  try {
+    o = JSON.parse(r.out);
+  } catch {
+    return '';
+  }
   return o.systemMessage || (o.hookSpecificOutput || {}).additionalContext || '';
 }
 
@@ -6787,11 +6791,15 @@ ol('ozel projeler listesi icerik indirmeden okunur', () => {
 ol('tavan notu 200k iddiasi tasimaz, kisitlayan degiskeni olcer', () => {
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tavan-'));
   const c = (ek) =>
-    spawnSync(process.execPath, [path.join(KOK, 'scripts', 'premium.js'), 'autocompact', '900000'], {
-      encoding: 'utf8',
-      env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, ...ek },
-      timeout: 60000,
-    }).stdout;
+    spawnSync(
+      process.execPath,
+      [path.join(KOK, 'scripts', 'premium.js'), 'autocompact', '900000'],
+      {
+        encoding: 'utf8',
+        env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, ...ek },
+        timeout: 60000,
+      }
+    ).stdout;
   const temiz = c({ CLAUDE_CODE_DISABLE_1M_CONTEXT: '', CLAUDE_CODE_MAX_CONTEXT_TOKENS: '' });
   icermez(temiz, '200k', 'sabit 200k iddiasi kalmamali');
   icermez(temiz, 'Opus', 'modele ozgu sayi soylenmemeli');
@@ -7171,9 +7179,7 @@ ol('ui harf araligi boyutla ters orantili, WPF telafisi sessiz birakilmadi', () 
     .sort((a, b) => a.boyut - b.boyut);
   for (let i = 1; i < em.length; i++)
     if (em[i].tracking >= em[i - 1].tracking)
-      throw new Error(
-        'tracking boyutla artiyor: ' + em[i - 1].rol + ' → ' + em[i].rol
-      );
+      throw new Error('tracking boyutla artiyor: ' + em[i - 1].rol + ' → ' + em[i].rol);
   if (em.length < 3) throw new Error('tracking tasiyan rol sayisi az: ' + em.length);
   // WPF/WinForms telafisi sessiz birakilmadi. Isaretler kod tarafinda duruyor,
   // §3 ise telafinin hangi platformlarda gerektigini teknik adlariyla soyluyor.
@@ -7294,8 +7300,14 @@ ol('ui renk tek basina anlam tasimaz, durum noktasi sekille de ayrisir', () => {
   icerir(U2_SKILL, 'WCAG 1.4.1');
   // Sekil farki CSS'te gercekten uygulanmis mi: biri dolu (dolgu var, cerceve yok),
   // oteki halka (dolgu seffaf, cerceve var). Iki sinif ayni gorunuyorsa test duser.
-  const on = U2_CSS.slice(U2_CSS.indexOf('.tk-dot-on'), U2_CSS.indexOf('}', U2_CSS.indexOf('.tk-dot-on')));
-  const off = U2_CSS.slice(U2_CSS.indexOf('.tk-dot-off'), U2_CSS.indexOf('}', U2_CSS.indexOf('.tk-dot-off')));
+  const on = U2_CSS.slice(
+    U2_CSS.indexOf('.tk-dot-on'),
+    U2_CSS.indexOf('}', U2_CSS.indexOf('.tk-dot-on'))
+  );
+  const off = U2_CSS.slice(
+    U2_CSS.indexOf('.tk-dot-off'),
+    U2_CSS.indexOf('}', U2_CSS.indexOf('.tk-dot-off'))
+  );
   if (!on || !off) throw new Error('durum noktasi siniflari bulunamadi');
   icerir(on, 'border: 0', 'dolu daire cerceve tasimaz');
   icerir(off, 'background: transparent', 'halkanin ici bos');
@@ -7310,8 +7322,7 @@ ol('ui renk tek basina anlam tasimaz, durum noktasi sekille de ayrisir', () => {
 ol('ui olculmemis sayilar etiketli, olculmus gibi sunulmuyor', () => {
   const n = (U2_SKILL.match(/\(varsayılan, ölçülmedi\)/g) || []).length;
   if (n < 5) throw new Error('SKILL icinde en az bes etiket bekleniyordu, bulunan: ' + n);
-  for (const konu of ['en az 11', '≥ 40 s', '1.4 s', '%20-30', '42×30 DIP'])
-    icerir(U2_SKILL, konu);
+  for (const konu of ['en az 11', '≥ 40 s', '1.4 s', '%20-30', '42×30 DIP']) icerir(U2_SKILL, konu);
   // Cümlenin yazımına değil, sayıların etiketli olmasına bakılır. Önceki hâl kapanış
   // `**`'ına, virgülüne ve kelime sırasına bağlıydı; cümle yeniden yazılınca kural
   // yerinde dururken test düşerdi (U2 tur 2 denetimi).
@@ -7370,8 +7381,22 @@ ol('ui hareket gerekceleri motion.md icine tasindi ve gozden kacmiyor', () => {
     .filter((r) => r.startsWith('| ') && !r.startsWith('| Olay') && !r.startsWith('| Durum'));
   if (satir.length < 15) throw new Error('tablo satirlari eksik: ' + satir.length);
   for (const r of satir) if (!/M\d+/.test(r)) throw new Error('atifsiz tablo satiri: ' + r);
-  for (const b of ['## M1 ', '## M2 ', '## M3 ', '## M4 ', '## M5 ', '## M6 ', '## M7 ',
-    '## M8 ', '## M9 ', '## M10 ', '## M11 ', '## M12 ', '## M13 ', '## M14 '])
+  for (const b of [
+    '## M1 ',
+    '## M2 ',
+    '## M3 ',
+    '## M4 ',
+    '## M5 ',
+    '## M6 ',
+    '## M7 ',
+    '## M8 ',
+    '## M9 ',
+    '## M10 ',
+    '## M11 ',
+    '## M12 ',
+    '## M13 ',
+    '## M14 ',
+  ])
     icerir(U2_MOTION, b);
   // Tasinan gerekce SKILL'de tekrar edilmez; iki kopya kalirsa ayrisirlar.
   icermez(U2_SKILL, 'Kütüphane varsayılanı token değildir');
@@ -7390,14 +7415,18 @@ function yorumlar(ad, k) {
 ol('ui XAML yorumlari cift tire tasimaz, dosya ayristirilabilir kalir', () => {
   // XML yorumunun icinde '--' gecmesi dosyayi ayristirilamaz yapar; CSS token
   // adlarini (--tk-*) yoruma yazarken tam olarak bu oldu. Test o hatayi tutar.
-  for (const [ad, k] of [['Theme.xaml', U2_XAML], ['Signature.xaml', U2_SXAML]])
-    // ÖLÇÜLDÜ (23.08.2026, U2 denetimi): burada `[\s\S]` yerine `[sS]` yazılıydı — ters
-    // bölüler kabuk katmanında yenmişti. Sınıf yalnız 's'/'S' harfini eşliyordu, hiçbir
-    // yorum tutmuyordu, `|| []` sessizce yutuyordu ve döngü gövdesi hiç çalışmıyordu.
-    // Testin kendisi ölüydü ve 412/412 yeşil kalıyordu. Aşağıdaki `bosMu` kontrolü aynı
-    // hatanın tekrarını yakalar: eşleşme sıfırsa test artık düşer.
+  // ÖLÇÜLDÜ (23.08.2026, U2 denetimi): burada `[\s\S]` yerine `[sS]` yazılıydı — ters
+  // bölüler kabuk katmanında yenmişti. Sınıf yalnız 's'/'S' harfini eşliyordu, hiçbir
+  // yorum tutmuyordu, `|| []` sessizce yutuyordu ve döngü gövdesi hiç çalışmıyordu.
+  // Testin kendisi ölüydü ve 412/412 yeşil kalıyordu. Aşağıdaki `bosMu` kontrolü aynı
+  // hatanın tekrarını yakalar: eşleşme sıfırsa test artık düşer.
+  for (const [ad, k] of [
+    ['Theme.xaml', U2_XAML],
+    ['Signature.xaml', U2_SXAML],
+  ])
     for (const y of yorumlar(ad, k))
-      if (y.slice(4, -3).includes('--')) throw new Error(ad + ' yorumunda cift tire: ' + y.slice(0, 60));
+      if (y.slice(4, -3).includes('--'))
+        throw new Error(ad + ' yorumunda cift tire: ' + y.slice(0, 60));
 });
 
 // BESINCI KOPYA. components.md `SKILL.md` §5'in "kopyalanabilir siniflar" kaynagidir;
@@ -7442,7 +7471,6 @@ ol('ui odak stili depoda gercekten var olan adla anilir', () => {
   icerir(U2_XAML, 'SystemParameters.FocusVisualStyleKey');
 });
 
-
 // ── Açık hata günlüklerinden doğan kurallar ────────────────────────────────────
 // Bu testler bir hata günlüğünün ölçü maddesini kilitler. Kural gevşerse günlük
 // yeniden açılmalı, sessizce geri gelmemeli.
@@ -7473,7 +7501,6 @@ ol('acik gunlukten dogan kurallar yerinde duruyor', () => {
   esit(m.kuruluEklentiKoku('yok@yok'), null, 'kurulu olmayan eklenti null donmeli');
 });
 
-
 ol('ikinci gorus tetikleyicisi kancada olculuyor', () => {
   // HATA-ikinci-gorus-tetiklenmiyor · üç ölçü de burada kilitli.
   const rw = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
@@ -7499,14 +7526,11 @@ ol('ikinci gorus tetikleyicisi kancada olculuyor', () => {
   yaz('A3.md', '---\nid: A3\nstatus: active\nround: 5\naudit: passed\n---\n');
   yaz('A4.md', '---\nid: A4\nstatus: done\nround: 9\naudit: —\n---\n');
   yaz('notlar.md', 'sozlesme degil');
-  const fn = rw.slice(rw.indexOf('function gorusGerekenler'), rw.indexOf('function acikSozlesmeler'));
-  const kur = new Function(
-    'fs',
-    'path',
-    'dosyalar',
-    'metin',
-    fn + '\nreturn gorusGerekenler;'
-  )(
+  const fn = rw.slice(
+    rw.indexOf('function gorusGerekenler'),
+    rw.indexOf('function acikSozlesmeler')
+  );
+  const kur = new Function('fs', 'path', 'dosyalar', 'metin', fn + '\nreturn gorusGerekenler;')(
     fs,
     path,
     (d) => {
@@ -7532,7 +7556,6 @@ ol('ikinci gorus tetikleyicisi kancada olculuyor', () => {
     'yalniz dorduncu tura girmis ve denetimi kalan sozlesme secilmeli'
   );
 });
-
 
 ol('denetim turunun durdurma kurali yazili ve olculebilir', () => {
   // HATA-denetim-turu-durdurma-kurali-yok · dort olcu.
@@ -7567,7 +7590,6 @@ ol('denetim turunun durdurma kurali yazili ve olculebilir', () => {
   const sk = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8');
   icerir(sk, 'Denetim turunun durdurma kuralı `fix_ceiling`den ayrıdır');
 });
-
 
 ol('lisans olcutu lisanssiz depoyu ve celisen beyani yakalar', () => {
   // HATA-lisans-adimi-yok · kural yazildi, kapi yoktu. Kapi budur.
@@ -7623,15 +7645,12 @@ ol('lisans olcutu lisanssiz depoyu ve celisen beyani yakalar', () => {
   );
   esit(mit.gecti, true, 'MIT de gecerli bir cevaptir, olcut lisans dayatmaz');
 
-  const dcosuz = tara(
-    kur({ 'README.md': '# x\n', LICENSE: AGPL, 'CONTRIBUTING.md': 'katkı' })
-  );
+  const dcosuz = tara(kur({ 'README.md': '# x\n', LICENSE: AGPL, 'CONTRIBUTING.md': 'katkı' }));
   esit(dcosuz.gecti, false, 'katki cagrisi varken DCO yoksa kalmali');
 
   const sessiz = tara(kur({ 'README.md': '# x\n', LICENSE: AGPL }));
   esit(sessiz.gecti, true, 'lisanstan hic soz etmeyen yuzey ihlal degildir');
 });
-
 
 ol('uzun kosu kurallari yerinde: gozcu, olcum tekrari, kayit noktasi', () => {
   // HATA-olcum-beklemesi-kullaniciyi-bekletiyor · uc olcu.
@@ -7643,7 +7662,10 @@ ol('uzun kosu kurallari yerinde: gozcu, olcum tekrari, kayit noktasi', () => {
   icerir(uc, 'kayıt noktası talimatı baştan verilir', 'olcu 2: kayit noktasi');
 
   icerir(relay, '**Ölçüm tekrarı kapısı.**', 'olcu 1: olcum tekrari kapisi §6 da');
-  const alti = relay.slice(relay.indexOf('## 6. Token disiplini'), relay.indexOf('## 7. Kullanıcıya'));
+  const alti = relay.slice(
+    relay.indexOf('## 6. Token disiplini'),
+    relay.indexOf('## 7. Kullanıcıya')
+  );
   icerir(alti, 'kaynağıyla alıntılar', 'olcu 1: belgeliyse alintilanir');
 
   const pro = fs.readFileSync(
@@ -7651,6 +7673,187 @@ ol('uzun kosu kurallari yerinde: gozcu, olcum tekrari, kayit noktasi', () => {
     'utf8'
   );
   icerir(pro, 'Uzun koşu içeren sözleşmede', 'olcu 1-2: sozlesme yazimina baglandi');
+});
+
+console.log('\nDepo sürüm kapısı');
+
+const DEPO = path.join(KOK, 'scripts', 'depo-surum.js');
+const depoSurum = require(DEPO);
+const DEPO_SATIR = 'Teknesyum ▸ depo uzaktan geride — önce `git pull`, sonra iş';
+
+function depoKur(kip) {
+  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-'));
+  const bare = path.join(c, 'bare');
+  fs.mkdirSync(bare);
+  git(['init', '-q', '--bare'], bare);
+  const w = path.join(c, 'w');
+  fs.mkdirSync(w);
+  git(['init', '-q'], w);
+  git(['config', 'user.email', 't@t'], w);
+  git(['config', 'user.name', 't'], w);
+  fs.writeFileSync(path.join(w, 'a'), 'bir');
+  git(['add', '.'], w);
+  git(['commit', '-qm', 'bir'], w);
+  git(['remote', 'add', 'origin', bare], w);
+  git(['push', '-q', 'origin', 'HEAD'], w);
+  if (kip === 'ileride') {
+    fs.writeFileSync(path.join(w, 'a'), 'iki');
+    git(['add', '.'], w);
+    git(['commit', '-qm', 'iki'], w);
+  }
+  if (kip === 'geride') {
+    const w2 = path.join(c, 'w2');
+    git(['clone', '-q', bare, w2], c);
+    git(['config', 'user.email', 't@t'], w2);
+    git(['config', 'user.name', 't'], w2);
+    fs.writeFileSync(path.join(w2, 'a'), 'uzak');
+    git(['add', '.'], w2);
+    git(['commit', '-qm', 'uzak'], w2);
+    git(['push', '-q', 'origin', 'HEAD'], w2);
+  }
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-cfg-'));
+  return { c, w, bare, cfg, kayit: path.join(cfg, 'teknesyum', 'live', 'depo-surum.json') };
+}
+
+function depoAstir(d) {
+  git(['remote', 'set-url', 'origin', 'ssh://x@127.0.0.1/r'], d.w);
+  git(['config', 'core.sshCommand', 'node -e "setTimeout(function(){},8000)"'], d.w);
+}
+
+function depoCoz(d) {
+  git(['remote', 'set-url', 'origin', d.bare], d.w);
+  git(['config', '--unset', 'core.sshCommand'], d.w);
+}
+
+function depoAcilis(d, kaynak, ort) {
+  const r = calistir(
+    IZLE,
+    {
+      cwd: d.w,
+      session_id: 'oturum-1',
+      transcript_path: '/x/oturum-1.jsonl',
+      hook_event_name: 'SessionStart',
+      source: kaynak || 'startup',
+    },
+    { CLAUDE_CONFIG_DIR: d.cfg, ...(ort || {}) }
+  );
+  return duyuruMetni(r);
+}
+
+ol('uzak ile yerel ayniysa geride degil ve acilis susar', () => {
+  const d = depoKur('esit');
+  const s = depoSurum.durum(d.w);
+  esit(s.geride, false, 'esit depo geride degil');
+  icermez(depoAcilis(d), 'depo uzaktan geride', 'esitken satir cikti');
+});
+
+ol('uzakta yerelde olmayan is varsa tek satir uyari basilir', () => {
+  const d = depoKur('geride');
+  esit(depoSurum.durum(d.w).geride, true, 'geride depo geride sayilmali');
+  const m = depoAcilis(d);
+  icerir(m, DEPO_SATIR);
+  icermez(m, 'commit geride', 'sayi uydurulmus');
+});
+
+ol('yerel ileridiyse uyari basilmaz — push edilmemis is yalan uyari uretmez', () => {
+  const d = depoKur('ileride');
+  const s = depoSurum.durum(d.w);
+  esit(s.geride, false, 'yerel ileride, geride degil');
+  icermez(depoAcilis(d), 'depo uzaktan geride', 'yerel ileriyken satir cikti');
+});
+
+ol('git deposu degilse, origin yoksa, uzak erisilemezse sessiz kalinir', () => {
+  const bos = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-yok-'));
+  esit(depoSurum.kok(bos), null, 'git deposu olmayan dizinde kok null');
+  esit(depoSurum.durum(bos), null, 'git deposu olmayan dizinde durum null');
+
+  const d = depoKur('esit');
+  git(['remote', 'remove', 'origin'], d.w);
+  esit(depoSurum.durum(d.w), null, 'origin yokken null');
+  icermez(depoAcilis(d), 'depo uzaktan geride', 'origin yokken satir cikti');
+
+  const y = depoKur('esit');
+  git(['remote', 'set-url', 'origin', path.join(y.c, 'boyle-bir-depo-yok')], y.w);
+  esit(depoSurum.durum(y.w), null, 'uzak erisilemezken null');
+  icermez(depoAcilis(y), 'depo uzaktan geride', 'uzak erisilemezken satir cikti');
+});
+
+ol('ls-remote 3 saniyede donmezse vazgecilir, acilis askida kalmaz', () => {
+  const d = depoKur('esit');
+  depoAstir(d);
+  const t = Date.now();
+  const s = depoSurum.geride(d.w);
+  const gecen = Date.now() - t;
+  esit(s, null, 'uzak cevap vermeyince null');
+  if (gecen < 2000) throw new Error('uzak hic asilmamis, olcum bos: ' + gecen + 'ms');
+  if (gecen > 5000) throw new Error('zaman asimi tutmadi: ' + gecen + 'ms');
+
+  const src = fs.readFileSync(DEPO, 'utf8');
+  icerir(src, 'timeout: zamanAsimi', 'her git cagrisi zaman asimi tasimali');
+  const sabit = src.match(/UZAK_ZAMAN_ASIMI\s*=\s*(\d+)/);
+  if (!sabit) throw new Error('UZAK_ZAMAN_ASIMI sabiti yok');
+  if (Number(sabit[1]) > 3000) throw new Error('zaman asimi cok uzun: ' + sabit[1]);
+});
+
+ol('ayni gun ikinci oturumda ag yeniden yoklanmaz', () => {
+  const d = depoKur('geride');
+  icerir(depoAcilis(d), DEPO_SATIR, 'ilk acilis uyarmali');
+  const kayit = JSON.parse(fs.readFileSync(d.kayit, 'utf8'));
+  const anahtar = Object.keys(kayit)[0];
+  esit(kayit[anahtar].gun, new Date().toISOString().slice(0, 10), 'kayitta bugunun gunu');
+  esit(kayit[anahtar].geride, true, 'kayitta sonuc');
+
+  depoAstir(d);
+  const t = Date.now();
+  const m = depoAcilis(d);
+  const gecen = Date.now() - t;
+  icermez(m, 'depo uzaktan geride', 'ayni gun tekrar uyardi');
+  if (gecen > 2500) throw new Error('ayni gun ag yeniden yoklandi: ' + gecen + 'ms');
+
+  kayit[anahtar].gun = '2000-01-01';
+  fs.writeFileSync(d.kayit, JSON.stringify(kayit));
+  depoCoz(d);
+  icerir(depoAcilis(d), DEPO_SATIR, 'gun degisince yeniden bakilmali');
+});
+
+ol('compact ve clear kaynaginda depo sorulmaz', () => {
+  for (const kaynak of ['compact', 'clear']) {
+    const d = depoKur('geride');
+    icermez(depoAcilis(d, kaynak), 'depo uzaktan geride', kaynak + ' uyardi');
+    if (fs.existsSync(d.kayit)) throw new Error(kaynak + ' kaydi yazdi — ag yoklanmis');
+  }
+});
+
+ol('depo uyarisi dil.js ten gelir, tr ve en var', () => {
+  const kaynak = fs.readFileSync(DIL, 'utf8');
+  const blok = kaynak.slice(kaynak.indexOf('depoGeride: {'), kaynak.indexOf('olcu: {'));
+  if (!blok) throw new Error('dil.js icinde depoGeride yok');
+  icerir(blok, 'tr:', 'tr karsiligi yok');
+  icerir(blok, 'en:', 'en karsiligi yok');
+  const d = depoKur('geride');
+  icerir(depoAcilis(d), 'önce `git pull`, sonra iş');
+  const e = depoKur('geride');
+  icerir(depoAcilis(e, null, { TEKNESYUM_DIL: 'en' }), '`git pull` first, then work');
+});
+
+ol('depo-surum.js require edilince CLI calismaz, sonuc nesne olarak okunur', () => {
+  const r = spawnSync(
+    process.execPath,
+    ['-e', 'require(process.argv[1]);process.stdout.write("SESSIZ")', DEPO],
+    { encoding: 'utf8' }
+  );
+  esit((r.stdout || '').trim(), 'SESSIZ', 'require CLI ciktisi bastı: ' + r.stdout);
+  esit(r.status, 0, 'require cikis kodu');
+  for (const ad of ['kok', 'dal', 'geride', 'durum', 'metin'])
+    esit(typeof depoSurum[ad], 'function', ad + ' disa vurulmamis');
+
+  const d = depoKur('geride');
+  const s = depoSurum.durum(d.w);
+  esit(s.geride, true, 'durum nesnesi sonucu tasir');
+  esit(s.depo, depoSurum.kok(d.w), 'durum nesnesi depo yolunu tasir');
+  if (!s.dal) throw new Error('durum nesnesi dal tasimali');
+  icerir(depoSurum.metin(s), 'git pull', 'metin insan okur satir uretir');
+  icerir(depoSurum.metin(depoSurum.durum(depoKur('esit').w)), 'güncel');
 });
 
 console.log(

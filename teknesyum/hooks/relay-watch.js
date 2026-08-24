@@ -64,7 +64,8 @@ function run(j) {
       root,
       kap ? ceviri('kapsayiciAcilis', path.basename(kap)) : '',
       j.session_id,
-      j.cwd
+      j.cwd,
+      j.source
     );
   }
   if (j.hook_event_name === 'UserPromptSubmit') {
@@ -885,7 +886,9 @@ function hatirlat(j, root, etkinProje) {
   // Bloklamaz; §1.5.1 madde 2'nin ölçülebilir yarısı budur.
   if (root) {
     const g = gorusGerekenler(root);
-    if (g.length) metin += ' ' + ceviri('gorusHatirlat', g.map((x) => x.id + ' (tur ' + x.tur + ')').join(', '));
+    if (g.length)
+      metin +=
+        ' ' + ceviri('gorusHatirlat', g.map((x) => x.id + ' (tur ' + x.tur + ')').join(', '));
   }
   const rota = yeniIsRotasi(root, j.prompt);
   if (rota) metin += ' ' + rota;
@@ -1259,7 +1262,7 @@ function acikGunlukSayisi(cwd) {
   return n;
 }
 
-function acilis(root, kapNotu, oturumId, cwd) {
+function acilis(root, kapNotu, oturumId, cwd, kaynak) {
   const parca = [];
   if (kapNotu) parca.push(kapNotu);
   if (kurulumEksik()) parca.push(ceviri('kurulumEksik'));
@@ -1297,6 +1300,37 @@ function acilis(root, kapNotu, oturumId, cwd) {
   if (parca.length) duyur(parca.join('   ·   '));
   const g = guncellemeBak();
   if (g) duyur(ceviri('guncellemeVar', g.uzak, g.kurulu));
+  if (depoBak(cwd, kaynak)) duyur(ceviri('depoGeride'));
+}
+
+const DEPO_KAYIT = 'depo-surum.json';
+const DEPO_ATLA = { compact: 1, clear: 1 };
+
+function depoBak(cwd, kaynak) {
+  if (DEPO_ATLA[kaynak]) return false;
+  let ds;
+  try {
+    ds = require('../scripts/depo-surum.js');
+  } catch {
+    return false;
+  }
+  const depo = ds.kok(cwd || process.cwd());
+  if (!depo) return false;
+  const f = path.join(genelKok(), DEPO_KAYIT);
+  const kayit = read(f) || {};
+  const anahtar = norm(depo);
+  const gun = new Date().toISOString().slice(0, 10);
+  if (kayit[anahtar] && kayit[anahtar].gun === gun) return false;
+  kayit[anahtar] = { gun, bakildi: new Date().toISOString(), geride: null };
+  try {
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+  } catch {}
+  yaz(f, kayit);
+  const s = ds.geride(depo);
+  if (!s) return false;
+  kayit[anahtar].geride = s.geride;
+  yaz(f, kayit);
+  return s.geride;
 }
 
 // Eklenti kendi güncellemesini haber vermiyordu: kullanıcı yeni sürüm çıktığını ancak

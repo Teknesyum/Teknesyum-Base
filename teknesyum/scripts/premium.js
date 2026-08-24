@@ -25,7 +25,7 @@ const PROFIL = {
     'ui-builder': { model: 'sonnet', effort: 'medium', maxTurns: 60 },
   },
   premium: {
-    advisor: { model: 'fable', effort: 'low', maxTurns: 20 },
+    advisor: { model: 'fable', effort: 'medium', maxTurns: 20 },
     auditor: { model: 'opus', effort: 'xhigh', maxTurns: 40 },
     builder: { model: 'opus', effort: 'xhigh', maxTurns: 80 },
     planner: { model: 'opus', effort: 'xhigh', maxTurns: 40 },

@@ -312,9 +312,9 @@ const S = {
   },
   guncellemeVar: {
     tr: (yeni, simdi) =>
-      'Güncelleme ▸ ' + yeni + ' çıktı, kurulu sürüm ' + simdi + ' — /update ile güncelle',
+      'Güncelleme ▸ ' + yeni + ' çıktı, kurulu sürüm ' + simdi + ' — /update --guncelle',
     en: (yeni, simdi) =>
-      'Update ▸ ' + yeni + ' is out, installed version is ' + simdi + ' — update with /update',
+      'Update ▸ ' + yeni + ' is out, installed version is ' + simdi + ' — /update --guncelle',
   },
   depoGeride: {
     tr: () => 'depo uzaktan geride — önce `git pull`, sonra iş',

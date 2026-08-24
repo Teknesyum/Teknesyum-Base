@@ -47,6 +47,11 @@ seviye klasör yapısı ve giriş dosyası yeter.
   etiketiyle yazılır. Kaynaksız cümle yazma.
 - **Kapatılmış/arşivlenmiş depo dışlanmaz.** "Terk edilmiş" etiketi bağımlılık kurma
   uyarısıdır, okuma yasağı değil — tasarımı hâlâ öğreticidir.
+- **PR adresini tam biçimde yazma.** İncelediğin deponun pull request bağlantısı ne rapora
+  ne de mesaja `github.com/<sahip>/<depo>/pull/<n>` biçiminde girer. Masaüstü uygulamasının
+  PR izleyicisi transkriptte gördüğü her adresi "bu oturumun PR'ı" sayıyor ve kullanıcıya
+  ilgisiz depoların rozeti çıkıyor. Kısa biçimde yaz: `<sahip>/<depo>#<n>`. PR içeriği
+  gerekiyorsa `gh api repos/<sahip>/<depo>/pulls/<n>` ile çek — `WebFetch` ile PR sayfası açma.
 - **Kod kopyalamak yok.** Alınan şey desen, sınır ve hata; satır değil.
 - Dosya **Türkçe** yazılır (iç belge). Depo adları ve teknik terimler olduğu gibi kalır.
 

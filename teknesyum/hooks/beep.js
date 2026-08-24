@@ -187,6 +187,34 @@ function cal(alan, olay) {
   }
 }
 
+// ÖLÇÜLDÜ (24.08.2026, kullanıcı bildirdi): zil arka arkaya 5-10 kez çalıyordu.
+// `Notification` tek bir bekleyişte tekrar tekrar geliyor — izin istemi, boşta kalma,
+// arka plan görevi hepsi aynı olayı üretiyor. Her biri ayrı ses demek, bildirimi
+// gürültüye çeviriyor: art arda çalan zil bilgi taşımaz, yalnız rahatsız eder.
+//
+// Pencere olay başına ayrı: bekleyiş uzun sürer, aynı bekleyiş içinde ikinci zile gerek
+// yok. Bitiş ve hata kısa pencerede tutulur — arka arkaya gerçekten iki iş bitebilir.
+const PENCERE = { bekleme: 60000, bitti: 10000, hata: 10000 };
+
+function damgaDosyasi() {
+  return path.join(konfigKok(), 'teknesyum-beep-son.json');
+}
+
+// Yazma başarısızsa ses **çalar**. Damga bir bastırma mekanizması; kendi hatası sesi
+// yutmamalı — susan bildirim, fazla çalan bildirimden kötüdür.
+function yakindaCaldi(olay, simdi) {
+  const f = damgaDosyasi();
+  const d = read(f) || {};
+  const son = Number(d[olay]) || 0;
+  if (son && simdi - son < (PENCERE[olay] || 0)) return true;
+  d[olay] = simdi;
+  try {
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, JSON.stringify(d));
+  } catch {}
+  return false;
+}
+
 function run(j) {
   const olay = KANCA_OLAY[j.hook_event_name];
   if (!olay) return;
@@ -194,6 +222,7 @@ function run(j) {
   if (ayar.toptan.deger) return;
   const alan = ayar.olaylar[olay];
   if (!alan || alan.kapali) return;
+  if (yakindaCaldi(olay, Date.now())) return;
   cal(alan, olay);
 }
 
@@ -209,6 +238,9 @@ module.exports = {
   coz,
   cal,
   sesYolu,
+  PENCERE,
+  damgaDosyasi,
+  yakindaCaldi,
 };
 
 if (require.main === module) {

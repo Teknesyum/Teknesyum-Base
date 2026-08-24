@@ -7058,10 +7058,15 @@ ol('alt ajan bitisi ses vermez, ses yalniz tur makbuzuyla cikar', () => {
     icermez(r.out, 'beep', olay + ' ses tetiklememeli');
   }
   const k = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
-  const cagri = k.split('\n').filter((s) => /^\s*bitisSesi\(j\);/.test(s));
+  const cagri = k.split('\n').filter((s) => /(^|\W)bitisSesi\(j\);/.test(s));
   esit(cagri.length, 1, 'bitisSesi tek yerden cagrilmali');
-  const t = k.split('\n').filter((s) => /return turBitir\(/.test(s));
+  // Ses makbuzdan ayri karar: engelli kapanista klavye kullaniciya gecmez, zil calmaz.
+  icerir(cagri[0], '!engelli', 'ses engelli kapanista da caliyor');
+  icerir(cagri[0], 'acikIsVar', 'ajan calisirken zil calmamali');
+  const t = k.split('\n').filter((s) => /=\s*turBitir\(j, root\)/.test(s));
   esit(t.length, 1, 'turBitir tek yerden cagrilmali');
+  if (/\n\s*bitisSesi\(j\);/.test(k.slice(k.indexOf('function turBitir'))))
+    throw new Error('bitisSesi hâlâ turBitir icinde, makbuzla ayni karara bagli');
   const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8')).hooks;
   for (const olay of ['SubagentStop', 'SubagentStart', 'Stop', 'PostToolUse'])
     icermez(JSON.stringify(h[olay] || []), 'beep.js', olay + ' kancasinda beep olmamali');
@@ -8791,6 +8796,44 @@ ol('relay description ornek talep listesi duruyor', () => {
     'şunu yapalım',
   ])
     icerir(d, ornek);
+});
+
+console.log('\nZil tekrari');
+
+// OLCULDU (24.08.2026, kullanici bildirdi): zil arka arkaya 5-10 kez caliyordu.
+// `Notification` tek bir bekleyiste tekrar tekrar gelir; her biri ayri ses demek,
+// bildirimi gurultuye cevirir. Pencere olay basina ayri tutulur.
+ol('zil ayni olayda pencere dolmadan ikinci kez calmaz', () => {
+  const cfg = beepCfg();
+  const eski = process.env.CLAUDE_CONFIG_DIR;
+  process.env.CLAUDE_CONFIG_DIR = cfg;
+  try {
+    const b = require(BEEP_KANCA);
+    const t = 1000000;
+    esit(b.yakindaCaldi('bekleme', t), false, 'ilk zil calmali');
+    esit(b.yakindaCaldi('bekleme', t + 1000), true, 'pencere icinde ikinci zil bastirilmali');
+    esit(b.yakindaCaldi('bekleme', t + b.PENCERE.bekleme + 1), false, 'pencere dolunca calmali');
+    esit(b.yakindaCaldi('bitti', t + 1000), false, 'ayri olay ayri pencere');
+    if (!(b.PENCERE.bitti < b.PENCERE.bekleme))
+      throw new Error('bitis penceresi bekleme kadar genis, art arda biten iki is yutulur');
+  } finally {
+    if (eski === undefined) delete process.env.CLAUDE_CONFIG_DIR;
+    else process.env.CLAUDE_CONFIG_DIR = eski;
+  }
+});
+
+ol('zil damgasi yazilamazsa ses yine calar', () => {
+  const cfg = beepCfg();
+  const eski = process.env.CLAUDE_CONFIG_DIR;
+  process.env.CLAUDE_CONFIG_DIR = cfg;
+  try {
+    const b = require(BEEP_KANCA);
+    fs.mkdirSync(b.damgaDosyasi(), { recursive: true });
+    esit(b.yakindaCaldi('hata', 2000000), false, 'damga hatasi sesi yutmamali');
+  } finally {
+    if (eski === undefined) delete process.env.CLAUDE_CONFIG_DIR;
+    else process.env.CLAUDE_CONFIG_DIR = eski;
+  }
 });
 
 console.log(

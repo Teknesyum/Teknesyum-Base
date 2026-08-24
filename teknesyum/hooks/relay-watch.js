@@ -36,6 +36,18 @@ function ciktiEkle(alan) {
   _cikti = Object.assign(_cikti || {}, alan);
 }
 
+// ÖLÇÜLDÜ (24.08.2026, kullanıcı bildirdi): engellenmiş kapanış tur sonu sayılıyordu.
+// `Stop` bir turda birden çok gelir; ilki `sendenEksik` ya da `açıkta` kapısına takılıp
+// `decision: block` döndürdüğünde model yazmaya devam ediyor — ama `turBitir` yine
+// koşuyor, zili çalıyor, makbuzu basıyor ve damga dosyasını siliyordu. Gerçek kapanışta
+// damga bulunmadığı için hiç ses çıkmıyordu. Kullanıcının gördüğü tam olarak buydu:
+// alakasız yerde çalan zil, sessiz geçen gerçek bitiş.
+//
+// Kural: kapı bloklamışsa tur bitmemiştir. Damga korunur, makbuz basılmaz, ses çalmaz.
+function engelliKapanis() {
+  return !!(_cikti && _cikti.decision === 'block');
+}
+
 function ciktiBas() {
   if (!_cikti) return;
   const o = _cikti;
@@ -81,7 +93,14 @@ function run(j) {
     paketDenetle(j, root);
     acikBildir(root);
     acikEngelle(root);
-    return turBitir(j, root);
+    const engelli = engelliKapanis();
+    const sonuc = turBitir(j, root);
+    // Ses makbuzdan ayrıldı. Makbuz "o ana kadarki maliyet"tir ve engellenen turda da
+    // basılır (kullanıcı kararı, 23.08.2026). Ses ise "klavye sende" demektir; engelli
+    // kapanışta klavye kullanıcıya geçmez, model yazmaya devam eder. İkisi tek karara
+    // bağlıyken zil ortada çalıyor, gerçek bitişte damga kalmadığı için hiç çalmıyordu.
+    if (!engelli && !acikIsVar(turIzi(j, root))) bitisSesi(j);
+    return sonuc;
   }
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
   if (j.hook_event_name === 'SessionEnd') {
@@ -687,14 +706,17 @@ function turBitir(j, root) {
   try {
     fs.unlinkSync(f);
   } catch {}
-  bitisSesi(j);
   turOzetiBas(ceviri('turOzeti', sureMetni(sn), tokenMetni(ana), tokenMetni(alt)), iz);
 }
 
-// Bitiş sesi `Stop` olayına değil, makbuzun basıldığı yere bağlıdır. `Stop` bir turda
-// birden çok kez gelir — model soru sorup durduğunda, engelli kapanışta, alt ajan
-// dönüşünde. Makbuz o ara duraklarda bilerek basılmaz (yukarıdaki erken dönüş); ses de
-// basılmamalı. İkisi tek karardan beslenince "işin gerçekten bitti" sinyali tek olur.
+// Bitiş sesi ne `Stop` olayına ne makbuza bağlıdır — **klavyenin kullanıcıya geçtiği
+// ana** bağlıdır. `Stop` bir turda birden çok kez gelir: model soru sorup durduğunda,
+// engelli kapanışta, alt ajan dönüşünde. Bunların yalnız biri gerçek bitiştir.
+//
+// ÖLÇÜLDÜ (24.08.2026, kullanıcı bildirdi): ses makbuzla aynı karara bağlıydı. Engellenen
+// kapanışta makbuz basılıyor (kullanıcı kararı, 23.08.2026) ve damga siliniyor; ses de o
+// anda çalıyordu. Model yazmaya devam ettiği için zil ortada çalmış oluyor, ikinci ve
+// gerçek `Stop`'ta damga bulunmadığı için hiç çalmıyordu. İki karar ayrıldı.
 //
 // Ayrı süreç: `Media.SoundPlayer.PlaySync()` çalma boyunca (0,4 s) bloklar, kanca o
 // kadar bekleyemez. Süreç `detached` doğar, `unref` ile bırakılır, turu tutmaz.

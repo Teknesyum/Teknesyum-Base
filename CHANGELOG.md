@@ -6,6 +6,29 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.53.0] - 2026-08-24
+
+### Fixed
+
+- The completion sound was tied to the same decision as the turn receipt. A blocked
+  closure prints its receipt and clears the turn stamp; the bell rang there, in the
+  middle of the work, and the real closing `Stop` found no stamp and stayed silent.
+  Sound and receipt are now separate decisions: the receipt still prints on every
+  closure, the bell only rings when the keyboard actually returns to the user.
+- The bell repeated five to ten times in a single wait. `Notification` fires repeatedly
+  for one pause, and every one of them played a sound. A per-event window now suppresses
+  repeats: 60s for waiting, 10s for completion and failure. A stamp that cannot be
+  written never swallows the sound.
+
+### Changed
+
+- Council members are called at medium effort. `planner` dropped from `xhigh` (premium)
+  and `high` (normal) to `medium`; `advisor` rose from `low` to `medium` outside eco.
+  High effort made a single council round take six to seven minutes.
+- The council mechanic is asymmetric: both members write independently, the first
+  member's text goes to the second, and the extension decision belongs to the second
+  member. `lite` is no longer a separate concept.
+
 ## [2.52.0] - 2026-08-24
 
 ### Added

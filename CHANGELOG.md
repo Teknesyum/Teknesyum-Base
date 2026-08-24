@@ -8,6 +8,45 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Added
 
+- **Ikinci gorus artik kancadan olculuyor.** `relay` §1.5.1 dokuz tetikleyici
+  sayiyordu ama hicbirini kimse olcmuyordu; ikinci madde ("bir hata uc turdur
+  cozulmedi") on iki turluk bir sozlesmede bile ates almadi. `relay-watch` artik
+  sozlesme frontmatter'indaki `round` ve `audit` alanlarini okuyor: dorduncu tura
+  girmis ve denetimi hala gecmemis sozlesme varsa `UserPromptSubmit` baglamina tek
+  cumle dusuyor. Uyari bloklamaz, karari modele birakir. Her `advisor` acilisi
+  `.claude/relay/GORUS.md`'ye satir dusuyor — satiri model degil kanca yaziyor, yani
+  "kac kez ateslendi" sorusu ilk kez dosyadan cevaplanabiliyor.
+- **Denetim turunun durdurma kurali yazildi.** `fix_ceiling` duzeltme turlarini
+  sayiyordu; denetimin ne zaman bitecegini soylemiyordu ve sonucu bir sozlesmenin on
+  iki tur donmesi oldu — her turda on kriterin onu geciyor, her tur bir oncekinin
+  taksonomisi disindan yeni bir kusur *sinifi* adlandiriliyordu. Denetci artik
+  bulguyu uc kovaya ayiriyor ve kova adi yeni tur acilip acilmayacagini belirliyor:
+  **KRITIK** yalniz iki sey (gercekci girdide yanlis cikti/cikis kodu, ya da yazili
+  bir kabul kriterinin delinmesi), kalan her kusur **BORC**'tur ve tur acmaz.
+  Ucuncu turdan sonra `advisor` zorunlu, besinciden sonra borc tur gerekcesi olamaz.
+  Sozlesme frontmatter'i `borc: []` alani kazandi.
+- **Uzun dis kosu icin gozcu kalibi** (`relay` §3.3): kosu arka planda baslar, ajan
+  birakilir, bitisi gozcu haber verir ve ajan bir kez surdurulur. Bekleyen ajani
+  uyandirarak yoklamak tur harciyor, kosuyu hizlandirmiyor ve kullanici her turu
+  ekranda goruyor. Gozcu arkasinda surec birakmaz; kontrol ayni turda yapilir. Uzun
+  sozlesmede kayit noktasi talimati artik brifingin standart parcasi.
+- **Olcum tekrari kapisi** (`relay` §6): sozlesmeye olcum yazmadan once o sayinin
+  depoda zaten belgeli olup olmadigina bakilir; belgeliyse kaynagiyla alintilanir,
+  yeniden olculmez. "Oncesi/sonrasi" kalibi dusunmeden uygulanınca dakikalarca suren
+  bir kosu, `CHANGELOG`'da zaten yazili bir sayiyi yeniden olcmek icin harcandi.
+- **`/scan` besinci maddeyi kazandi: Lisans.** Diger dordunun esigi profille degisir,
+  bunun esigi yoktur — lisanssiz ya da kendisiyle celisen depo `eco`'da da kalir.
+  Iki sey sorulur: `LICENSE` var mi ve taninan bir metin mi, ve depo lisansi
+  hakkinda tek bir sey mi soyluyor (`package.json`, `pyproject.toml`, `*.csproj`,
+  eklenti manifestosu, README rozeti). Karsilastirma aile duzeyinde:
+  `AGPL-3.0` ile `AGPL-3.0-or-later` ayni seydir. Sessiz yuzey ihlal degildir.
+  `CONTRIBUTING` varken `DCO` yoksa (ya da tersi) madde kalir. Olcut lisans
+  dayatmaz; secimin yapilmis ve tek sesle soylenmis olmasini denetler.
+- **Sohbet ciktisinda duz yazi duvari yasagi** (`relay` §7.0) ve **standardi okurken
+  surumu yola yazmama kurali** (§7.0.1). Ikincisinin altinda `hooks/ortak.js` →
+  `kuruluEklentiKoku()` var: kurulu surum `installed_plugins.json`'dan cozulur,
+  yola elle yazilmaz. Onbellek eski surumleri diskte tuttugu icin surumu yola gomen
+  bir okuma, guncelleme sonrasi sessizce **eski metni** okur.
 - **Lisans, yeni depo adiminda kararlasan bir alan oldu.** `relay` §2 madde 6 simdiye
   kadar yalnizca depo adinin buyuk-kucuk harf duzenini baglıyordu; lisans hic
   sorulmuyordu. Sonucu on genel deponun altisinin refleksle MIT, dordunun ise tamamen

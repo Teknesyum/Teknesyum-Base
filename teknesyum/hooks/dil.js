@@ -104,13 +104,7 @@ const S = {
   // Model kanalına dönülürse tırnakları `turOzetiYonerge` ekler.
   turOzeti: {
     tr: (sure, ana, alt) =>
-      'Total Süre: ' +
-      sure +
-      ' <> Ana Oturum: ' +
-      ana +
-      ' Token <> Alt Ajanlar: ' +
-      alt +
-      ' Token',
+      'Total Süre: ' + sure + ' <> Ana Oturum: ' + ana + ' Token <> Alt Ajanlar: ' + alt + ' Token',
     en: (sure, ana, alt) =>
       'Total Time: ' +
       sure +
@@ -292,6 +286,10 @@ const S = {
       'Güncelleme ▸ ' + yeni + ' çıktı, kurulu sürüm ' + simdi + ' — /update ile güncelle',
     en: (yeni, simdi) =>
       'Update ▸ ' + yeni + ' is out, installed version is ' + simdi + ' — update with /update',
+  },
+  depoGeride: {
+    tr: () => 'depo uzaktan geride — önce `git pull`, sonra iş',
+    en: () => 'repo is behind the remote — `git pull` first, then work',
   },
 
   olcu: {

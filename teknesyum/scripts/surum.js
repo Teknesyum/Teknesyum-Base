@@ -95,7 +95,7 @@ function metin(d) {
   return 'güncel · kurulu ' + d.kurulu + ' · uzakta en yeni ' + d.uzak;
 }
 
-module.exports = { kurulu, uzak, karsilastir, ayikla, durum, GUNCELLEME_KOMUTU };
+module.exports = { kurulu, uzak, karsilastir, ayikla, durum, metin, GUNCELLEME_KOMUTU };
 
 if (require.main === module) {
   const d = durum();

@@ -62,6 +62,13 @@ function premium(sid) {
   return profil(sid) === 'premium';
 }
 
+function profilKaynak(sid) {
+  const e = process.env.TEKNESYUM_PREMIUM;
+  if (e === '0' || e === 'off' || e === '1' || e === 'on') return 'ortam';
+  const kimlik = sid === undefined ? oturumKimligi() : sid || null;
+  return oturumProfili(kimlik) ? 'oturum' : 'makine';
+}
+
 function depoSayisi(sid) {
   return { eco: 1, normal: 10, premium: 50 }[profil(sid)];
 }
@@ -983,6 +990,7 @@ module.exports = {
   s,
   profil,
   premium,
+  profilKaynak,
   depoSayisi,
   oturumProfili,
   PROFILLER,

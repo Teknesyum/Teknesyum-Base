@@ -28,6 +28,25 @@ Kaydın içinde ne var:
 | `ozet.md` | `/load` ile geri okunan özet: her tur, araç çağrıları, son 10 tur uzun |
 | `durum.json` | Oturum kimliği, model, bağlam kullanımı, git, relay, taslak, kuyruk |
 | `calisma.diff` | Kaydetme anındaki kirli çalışma alanının yaması |
+| `devir.md` | **Son asistan mesajının tam metni, kırpılmadan** |
+
+`devir.md` özetin kısaltabildiği tek şeyi korur: son mesajın gövdesi. "Senden istediklerim"
+gibi bölümler orada kelimesi kelimesine durur. `ozet.md` kırpar, `devir.md` kırpmaz; araç
+çağrıları girmez, kullanıcıya görünen metin girer.
+
+**Kayıt özel aynaya da gider.** Ayna kuruluysa (`/ozel kur`) betik şu dördünü push eder:
+`ozet.md`, `durum.json`, `calisma.diff`, `devir.md`. **`ham.jsonl` gönderilmez** — bu
+dosya megabaytlarca olur ve git'te delta'lanmaz; yerelde kalır. Böylece bir makinede
+`/save`, başka makinede `/load` yeter, elle veri taşımak gerekmez.
+
+Çıktının son satırı `özel ayna:` ile başlar ve üç şeyden birini söyler. **Bu satırı yut,
+kısalt ya da yumuşat.** Kullanıcı kayıt aldığını sanıp öteki makinede bulamamalı:
+
+| Satır | Anlamı |
+|---|---|
+| `gönderildi · …` | Dört dosya aynada, başka makineden `/load` ile açılır |
+| `kurulu değil, push edilmedi` | Kayıt tam ama yalnız bu makinede — hata değil |
+| `push edilemedi: <sebep>` | Kayıt tam ama yalnız bu makinede — sebebi aynen aktar |
 
 **eco profilinde ham transkript sıkıştırılarak yazılır.** Ölçüm: medyan transkript
 aslının %29'una iniyor, 3,28 MB'lık bir oturum dosyası 0,98 MB'a. İçerik aynıdır,

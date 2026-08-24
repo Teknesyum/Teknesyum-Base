@@ -48,8 +48,7 @@ dosya düzeni, değerlendirdiğin şeyin ta kendisi.
 
 ## Sınır
 
-En fazla 25 satır masaya. Uzun yazma — masa özet kalmalı, sen bunu turu 3'te kendin
-söyledin.
+Satır sınırı **kaldırıldı** — kullanıcı kararı. Yine de özet yaz.
 
 Kişisel notların bu dosyada, masada değil.
 

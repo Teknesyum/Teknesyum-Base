@@ -8061,6 +8061,416 @@ ol('kesinti disiplini ve yonlendirme bicimi belgede', () => {
   for (const fiil of ['DUR', 'DEVAM', 'DEĞİŞTİ']) icerir(m, fiil);
 });
 
+console.log('\nKayıt taşınabilirliği ve durum panosu');
+
+function devirProjesi(blokA, blokB) {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-devir-'));
+  const sat = [
+    {
+      type: 'user',
+      sessionId: 'D1',
+      timestamp: '2026-01-01T10:00:00.000Z',
+      cwd: p,
+      version: '2.1.0',
+      message: { role: 'user', content: 'isi bitir' },
+    },
+    {
+      type: 'assistant',
+      sessionId: 'D1',
+      timestamp: '2026-01-01T10:00:05.000Z',
+      message: {
+        role: 'assistant',
+        content: [
+          { type: 'text', text: 'ara cevap' },
+          { type: 'tool_use', name: 'Edit', input: { file_path: path.join(p, 'a.js') } },
+        ],
+      },
+    },
+    {
+      type: 'assistant',
+      sessionId: 'D1',
+      timestamp: '2026-01-01T10:00:09.000Z',
+      message: {
+        role: 'assistant',
+        content: [
+          { type: 'thinking', thinking: 'gizli dusunce' },
+          { type: 'text', text: blokA },
+          { type: 'tool_use', name: 'Bash', input: { command: 'npm test' } },
+          { type: 'text', text: blokB },
+        ],
+      },
+    },
+  ];
+  fs.writeFileSync(
+    path.join(p, 'kaynak.jsonl'),
+    sat.map((x) => JSON.stringify(x)).join('\n') + '\n'
+  );
+  return p;
+}
+
+ol('devir.md son asistan mesajini kirpmadan tasir, ozet kirpar', () => {
+  const blokA = 'Senden istediklerim\n\n1. ' + 'a'.repeat(2600);
+  const blokB = 'Ikinci blok da devirde durmali.';
+  const p = devirProjesi(blokA, blokB);
+  const r = oturumCalistir(
+    'kaydet',
+    'devirli',
+    '--proje',
+    p,
+    '--transkript',
+    path.join(p, 'kaynak.jsonl')
+  );
+  esit(r.kod, 0, 'kaydet cikis kodu: ' + r.err);
+  const dip = path.join(p, '.claude', 'oturumlar', 'devirli');
+  const devir = fs.readFileSync(path.join(dip, 'devir.md'), 'utf8');
+  icerir(devir, blokA, 'ilk metin blogu tam gelmeli');
+  icerir(devir, blokB, 'ikinci metin blogu da gelmeli');
+  icermez(devir, 'kırpıldı', 'devir notu kirpilmaz');
+  icermez(devir, 'ara cevap', 'onceki asistan mesaji devire girmez');
+  icermez(devir, 'npm test', 'arac cagrilari devire girmez');
+  icermez(devir, 'gizli dusunce', 'dusunce blogu devire girmez');
+  const ozet = fs.readFileSync(path.join(dip, 'ozet.md'), 'utf8');
+  icerir(ozet, 'karakter kırpıldı', 'ozet kirpiyor olmali ki karsilastirma anlamli olsun');
+  icerir(ozet, 'devir.md', 'ozet devir notuna isaret etmeli');
+  icerir(r.out, 'devir notu: devir.md');
+  esit(JSON.parse(fs.readFileSync(path.join(dip, 'durum.json'), 'utf8')).devir, 'devir.md');
+});
+
+ol('yukle devir notunu ayri blok olarak geri verir', () => {
+  const p = devirProjesi('Senden istediklerim: A maddesi', 'B maddesi');
+  oturumCalistir('kaydet', 'geri', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl'));
+  const y = oturumCalistir('yukle', 'geri', '--proje', p);
+  esit(y.kod, 0, 'yukle cikis kodu: ' + y.err);
+  icerir(y.out, '<<<DEVİR NOTU');
+  icerir(y.out, 'Senden istediklerim: A maddesi');
+  icerir(y.out, 'B maddesi');
+});
+
+ol('kayit yokken transkriptten devralinca da devir notu basilir', () => {
+  const p = devirProjesi('Senden istediklerim: kaldigin yerden devam', 'son satir');
+  const { ev: evDizin, ort: evOrt } = oturumEvi();
+  const t = path.join(evDizin, '.claude', 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
+  fs.mkdirSync(t, { recursive: true });
+  fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(t, 'D1.jsonl'));
+  const r = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
+    encoding: 'utf8',
+    env: { ...process.env, ...evOrt },
+  });
+  esit(r.status, 0, 'devralma cikis kodu');
+  icerir(r.stdout, 'ÖNCEKİ OTURUM');
+  icerir(r.stdout, '<<<DEVİR NOTU');
+  icerir(r.stdout, 'Senden istediklerim: kaldigin yerden devam');
+});
+
+function aynaKur(bare) {
+  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ayna-'));
+  let dip = bare;
+  if (!dip) {
+    dip = path.join(c, 'bare');
+    fs.mkdirSync(dip);
+    git(['init', '-q', '--bare'], dip);
+  }
+  const klon = path.join(c, 'klon');
+  git(['clone', '-q', dip, klon], c);
+  git(['config', 'user.email', 't@t'], klon);
+  git(['config', 'user.name', 't'], klon);
+  if (!bare) {
+    fs.writeFileSync(path.join(klon, 'README'), 'ayna\n');
+    git(['add', '.'], klon);
+    git(['commit', '-qm', 'ilk'], klon);
+    git(['push', '-q', '-u', 'origin', 'HEAD'], klon);
+  }
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-aynacfg-'));
+  return { c, bare: dip, klon, cfg };
+}
+
+function aynaBagla(a, projeler, ad) {
+  const kayit = {};
+  for (const p of [].concat(projeler)) kayit[p] = ad;
+  fs.writeFileSync(
+    path.join(a.cfg, 'teknesyum-ozel.json'),
+    JSON.stringify({ surum: '1.0.0', depo: a.bare, klon: a.klon, projeler: kayit })
+  );
+}
+
+function aynaKir(a) {
+  git(['remote', 'set-url', 'origin', path.join(a.c, 'boyle-bir-depo-yok')], a.klon);
+}
+
+function aynaOturum(a, ...ek) {
+  const r = spawnSync(process.execPath, [OTURUM, ...ek], {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: a.cfg },
+  });
+  return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
+}
+
+function aynaAgaci(a) {
+  return (
+    spawnSync('git', ['-C', a.bare, 'ls-tree', '-r', '--name-only', 'HEAD'], { encoding: 'utf8' })
+      .stdout || ''
+  );
+}
+
+function kirliProje() {
+  const p = oturumProjesi();
+  git(['init', '-q'], p);
+  git(['config', 'user.email', 't@t'], p);
+  git(['config', 'user.name', 't'], p);
+  fs.writeFileSync(path.join(p, 'a.js'), 'bir\n');
+  git(['add', 'a.js'], p);
+  git(['commit', '-qm', 'bir'], p);
+  fs.writeFileSync(path.join(p, 'a.js'), 'iki\n');
+  return p;
+}
+
+ol('save ayna kuruluyken dort dosyayi push eder, ham transkripti etmez', () => {
+  const p = kirliProje();
+  const a = aynaKur();
+  aynaBagla(a, p, 'sinavproje');
+  const r = aynaOturum(
+    a,
+    'kaydet',
+    'sinav',
+    '--proje',
+    p,
+    '--transkript',
+    path.join(p, 'kaynak.jsonl')
+  );
+  esit(r.kod, 0, 'kaydet cikis kodu: ' + r.err);
+  icerir(r.out, 'özel ayna: gönderildi');
+  const agac = aynaAgaci(a);
+  for (const f of ['ozet.md', 'durum.json', 'calisma.diff', 'devir.md'])
+    icerir(agac, 'sinavproje/oturumlar/sinav/' + f, 'aynaya gitmeliydi');
+  icermez(agac, 'ham.jsonl', 'ham transkript aynaya gitmemeli');
+  esit(
+    fs.existsSync(path.join(p, '.claude', 'oturumlar', 'sinav', 'ham.jsonl')),
+    true,
+    'ham transkript yerelde durmali'
+  );
+});
+
+ol('ayna kurulu degilse kayit yerele yazilir, sebep soylenir, hata verilmez', () => {
+  const p = oturumProjesi();
+  const r = oturumCalistir(
+    'kaydet',
+    'yalnizyerel',
+    '--proje',
+    p,
+    '--transkript',
+    path.join(p, 'kaynak.jsonl')
+  );
+  esit(r.kod, 0, 'kurulu olmayan ayna hata degildir');
+  icerir(r.out, 'özel ayna: kayıt yerelde; özel ayna kurulu değil, push edilmedi');
+  const dip = path.join(p, '.claude', 'oturumlar', 'yalnizyerel');
+  for (const f of ['ozet.md', 'durum.json', 'devir.md', 'ham.jsonl'])
+    esit(fs.existsSync(path.join(dip, f)), true, 'yerel kayit tam olmali: ' + f);
+});
+
+ol('push basarisizsa kayit yerelde kalir ve sebep basilir, yutulmaz', () => {
+  const p = oturumProjesi();
+  const a = aynaKur();
+  aynaBagla(a, p, 'kirikproje');
+  aynaKir(a);
+  const r = aynaOturum(
+    a,
+    'kaydet',
+    'kirik',
+    '--proje',
+    p,
+    '--transkript',
+    path.join(p, 'kaynak.jsonl')
+  );
+  esit(r.kod, 0, 'push hatasi kaydi dusurmemeli');
+  const onek = 'özel ayna: kayıt yerelde, push edilemedi: ';
+  const satir = r.out.split('\n').find((l) => l.startsWith('özel ayna:')) || '';
+  icerir(satir, onek);
+  if (satir.replace(onek, '').trim().length < 3) throw new Error('sebep bos basildi: ' + satir);
+  const dip = path.join(p, '.claude', 'oturumlar', 'kirik');
+  for (const f of ['ozet.md', 'durum.json', 'devir.md', 'ham.jsonl'])
+    esit(fs.existsSync(path.join(dip, f)), true, 'yerel kayit tam olmali: ' + f);
+});
+
+ol('bir makinede save, otekinde load — veri elle tasinmadan gelir', () => {
+  const pA = devirProjesi('Senden istediklerim: A maddesi kalsin', 'ikinci blok');
+  const pB = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-otekimakine-'));
+  const A = aynaKur();
+  aynaBagla(A, pA, 'ortakproje');
+  const k = aynaOturum(
+    A,
+    'kaydet',
+    'tasima',
+    '--proje',
+    pA,
+    '--transkript',
+    path.join(pA, 'kaynak.jsonl')
+  );
+  esit(k.kod, 0, 'ilk makinede kaydet: ' + k.err);
+  icerir(k.out, 'özel ayna: gönderildi');
+
+  const B = aynaKur(A.bare);
+  aynaBagla(B, pB, 'ortakproje');
+  const y = aynaOturum(B, 'yukle', '--proje', pB);
+  esit(y.kod, 0, 'oteki makinede yukle: ' + y.err);
+  icerir(y.out, 'özel ayna: çekildi');
+  icerir(y.out, 'yerele inen: tasima');
+  icerir(y.out, '<<<DEVİR NOTU');
+  icerir(y.out, 'Senden istediklerim: A maddesi kalsin');
+  const dip = path.join(pB, '.claude', 'oturumlar', 'tasima');
+  for (const f of ['ozet.md', 'durum.json', 'devir.md'])
+    esit(fs.existsSync(path.join(dip, f)), true, 'oteki makineye inmeliydi: ' + f);
+  esit(fs.existsSync(path.join(dip, 'ham.jsonl')), false, 'ham transkript tasinmaz');
+});
+
+ol('ayna cekilemezse yereldeki kayitla devam edilir ve soylenir', () => {
+  const p = oturumProjesi();
+  const A = aynaKur();
+  aynaBagla(A, p, 'cekilemez');
+  const k = aynaOturum(
+    A,
+    'kaydet',
+    'yereldeduran',
+    '--proje',
+    p,
+    '--transkript',
+    path.join(p, 'kaynak.jsonl')
+  );
+  icerir(k.out, 'özel ayna: gönderildi');
+  aynaKir(A);
+  const y = aynaOturum(A, 'yukle', '--proje', p);
+  esit(y.kod, 0, 'cekilemeyen ayna yuklemeyi dusurmemeli');
+  icerir(y.out, 'özel ayna: çekilemedi, yereldeki kayıt okunuyor');
+  icerir(y.out, '<<<KAYIT DİZİNİ');
+  icerir(y.out, 'yereldeduran');
+});
+
+ol('TEKNESYUM_AYNA=0 aynayi tumden kapatir', () => {
+  const p = oturumProjesi();
+  const a = aynaKur();
+  aynaBagla(a, p, 'kapaliproje');
+  const r = spawnSync(
+    process.execPath,
+    [OTURUM, 'kaydet', 'kapali', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl')],
+    { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: a.cfg, TEKNESYUM_AYNA: '0' } }
+  );
+  esit(r.status, 0, 'kapali ayna cikis kodu');
+  icerir(r.stdout, 'özel ayna: kayıt yerelde; özel ayna kurulu değil, push edilmedi');
+  icermez(aynaAgaci(a), 'kapaliproje');
+});
+
+function panoCalistir(cfgKok, proje, ek) {
+  return spawnSync(process.execPath, [OTURUM, 'pano', '--proje', proje].concat(ek || []), {
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: cfgKok, TEKNESYUM_PREMIUM: '' },
+  });
+}
+
+ol('pano bes satiri da basar ve sonunda hazir olup olmadigini soyler', () => {
+  const s = surumKur('1.0.0', 'v1.2.0');
+  const d = depoKur('geride');
+  const r = panoCalistir(s.cfg, d.w);
+  esit(r.status, 0, 'pano cikis kodu: ' + r.stderr);
+  for (const b of ['Eklenti', 'Depo', 'Profil', 'Açık iş', 'Son kayıt']) icerir(r.stdout, b);
+  icerir(r.stdout, '1.2.0 çıktı');
+  icerir(r.stdout, 'git pull');
+  icerir(r.stdout, 'Hazır değil · önce:');
+  const t = panoCalistir(surumKur('1.0.0', 'v1.0.0').cfg, depoKur('esit').w);
+  icerir(t.stdout, 'Hazır — kod yazmaya geçebiliriz.');
+});
+
+ol('pano sayilari surum.js ve depo-surum.js ten alir, ucuncu karsilastirma yazmaz', () => {
+  const s = surumKur('1.0.0', 'v1.2.0');
+  const d = depoKur('geride');
+  const j = JSON.parse(panoCalistir(s.cfg, d.w, ['--json']).stdout);
+  esit(j.eklenti.kurulu, '1.0.0', 'eklenti satiri surum.js ten gelir');
+  esit(j.eklenti.uzak, '1.2.0', 'uzak surum surum.js ten gelir');
+  esit(j.eklenti.yeni, true, 'yeni bayragi surum.js ten gelir');
+  esit(j.depo.geride, true, 'depo satiri depo-surum.js ten gelir');
+  esit(j.depo.dal, depoSurum.dal(depoSurum.kok(d.w)), 'dal depo-surum.js ten gelir');
+  esit(j.kayit, null, 'kayit yokken bos gelir');
+  const kaynak = fs.readFileSync(OTURUM, 'utf8');
+  icermez(kaynak, 'ls-remote', 'oturum.js kendi surum sorgusunu yazmamali');
+  icerir(kaynak, "'surum.js'", 'eklenti satiri surum.js i cagirmali');
+  icerir(kaynak, "'depo-surum.js'", 'depo satiri depo-surum.js i cagirmali');
+});
+
+ol('pano ag yokken 3 saniyede doner, askida kalmaz', () => {
+  const s = surumKur('1.0.0', 'v1.0.0');
+  const d = depoKur('esit');
+  depoAstir(d);
+  const bas = Date.now();
+  const r = panoCalistir(s.cfg, d.w, ['--json']);
+  const sure = Date.now() - bas;
+  esit(r.status, 0, 'pano askida kalmamali: ' + r.stderr);
+  esit(JSON.parse(r.stdout).depo, null, 'donmeyen depo sorgusu bakilamadi olmali');
+  if (sure > 4000) throw new Error('pano ' + sure + ' ms surdu, 3 saniyelik butce asildi');
+  icerir(panoCalistir(s.cfg, d.w).stdout, 'Depo     · bakılamadı');
+});
+
+ol('pano son kaydi ve push durumunu soyler', () => {
+  const p = oturumProjesi();
+  const a = aynaKur();
+  aynaBagla(a, p, 'panoproje');
+  aynaOturum(a, 'kaydet', 'panokayit', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl'));
+  const j = JSON.parse(panoCalistir(a.cfg, p, ['--json']).stdout);
+  esit(j.kayit.ad, 'panokayit', 'son kayit adi');
+  esit(j.kayit.ayna, 'gonderildi', 'push durumu kayitli olmali');
+  icerir(panoCalistir(a.cfg, p).stdout, 'aynaya gönderildi');
+
+  const q = oturumProjesi();
+  oturumCalistir(
+    'kaydet',
+    'yerelkayit',
+    '--proje',
+    q,
+    '--transkript',
+    path.join(q, 'kaynak.jsonl')
+  );
+  const k = JSON.parse(panoCalistir(BOS_CFG, q, ['--json']).stdout);
+  esit(k.kayit.ayna, 'yok', 'aynasiz kayit yalniz yerelde');
+  icerir(panoCalistir(BOS_CFG, q).stdout, 'yalnız yerelde');
+});
+
+ol('profil satiri modu ve kaynagini soyler', () => {
+  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-profilkaynak-'));
+  const sor = (ek) =>
+    (
+      spawnSync(
+        process.execPath,
+        ['-e', 'process.stdout.write(require(process.argv[1]).profilKaynak("S9"))', DIL],
+        { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, ...(ek || {}) } }
+      ).stdout || ''
+    ).trim();
+  esit(sor({ TEKNESYUM_PREMIUM: '' }), 'makine', 'oturum kaydi yokken makine');
+  fs.mkdirSync(path.join(cfg, 'teknesyum', 'oturumlar'), { recursive: true });
+  fs.writeFileSync(
+    path.join(cfg, 'teknesyum', 'oturumlar', 'S9.json'),
+    JSON.stringify({ profil: 'premium', ts: Date.now() })
+  );
+  esit(sor({ TEKNESYUM_PREMIUM: '' }), 'oturum', 'oturum kaydi varsa oturum');
+  esit(sor({ TEKNESYUM_PREMIUM: '1' }), 'ortam', 'ortam degiskeni her ikisini de ezer');
+});
+
+ol('kayit komutlari devir notunu, ayna satirini ve panoyu anlatir', () => {
+  const oku = (f) => fs.readFileSync(path.join(KOK, 'commands', f), 'utf8');
+  const s = oku('save.md');
+  icerir(s, 'devir.md');
+  icerir(s, 'gönderilmez');
+  icerir(s, 'push edilemedi');
+  icerir(s, 'kurulu değil, push edilmedi');
+  icerir(oku('saveall.md'), 'devir.md');
+  icerir(oku('saveall.md'), 'özel ayna:');
+  const l = oku('load.md');
+  icerir(l, 'özel ayna:');
+  icerir(l, 'DEVİR NOTU');
+  icerir(oku('loadall.md'), 'özel ayna:');
+  const u = oku('update.md');
+  icerir(u, 'oturum.js" pano');
+  icermez(u, 'surum.js" --json', 'pano artik tek kaynak');
+  for (const b of ['Eklenti', 'Depo', 'Profil', 'Açık iş', 'Son kayıt']) icerir(u, b);
+  icerir(u, '3 saniye');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

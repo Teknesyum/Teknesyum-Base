@@ -3,13 +3,20 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
-const { spawnSync } = require('child_process');
-const { transkriptKok, transkriptDizini } = require('../hooks/ortak.js');
-const { profil } = require('../hooks/dil.js');
+const { spawn, spawnSync } = require('child_process');
+const { transkriptKok, transkriptDizini, read } = require('../hooks/ortak.js');
+const { profil, profilKaynak } = require('../hooks/dil.js');
+const ozel = require('./ozel.js');
+const surumu = require('./surum.js');
+const depoSurumu = require('./depo-surum.js');
 
 const KLASOR = 'oturumlar';
 const YAKIN_TUR = 10;
 const CAP = { yakinKullanici: 4000, yakinClaude: 2500, eskiKullanici: 400, eskiClaude: 300 };
+const DEVIR = 'devir.md';
+const AYNA_DOSYALAR = ['ozet.md', 'durum.json', 'calisma.diff', DEVIR];
+const AYNA_ZAMAN_ASIMI = 120000;
+const PANO_ZAMAN_ASIMI = 3000;
 
 function arg(ad, varsayilan) {
   const i = process.argv.indexOf('--' + ad);
@@ -184,6 +191,7 @@ function ayiklaIcerik(metin) {
   let sonZaman = null;
   let altAjan = 0;
   let aracSayisi = 0;
+  let sonAsistan = null;
 
   for (const satir of satirlar) {
     if (!satir.trim()) continue;
@@ -248,9 +256,13 @@ function ayiklaIcerik(metin) {
         });
       }
       const tur = turlar[turlar.length - 1];
+      const gorunen = [];
       for (const blok of j.message.content || []) {
         if (!blok) continue;
-        if (blok.type === 'text' && temizle(blok.text)) tur.claude.push(temizle(blok.text));
+        if (blok.type === 'text' && temizle(blok.text)) {
+          tur.claude.push(temizle(blok.text));
+          gorunen.push(temizle(blok.text));
+        }
         if (blok.type === 'tool_use') {
           aracSayisi++;
           tur.araclar.push(aracOzeti(blok));
@@ -259,11 +271,13 @@ function ayiklaIcerik(metin) {
           if (dosya && /^(Edit|Write|NotebookEdit)$/.test(blok.name)) dokunulan.add(dosya);
         }
       }
+      if (gorunen.length) sonAsistan = { zaman: j.timestamp, metin: gorunen.join('\n\n') };
     }
   }
 
   return {
     turlar,
+    sonAsistan,
     kuyruk,
     taslak,
     kullanim,
@@ -400,6 +414,178 @@ function relayDurum(kok) {
   };
 }
 
+function gercekYol(p) {
+  try {
+    return fs.realpathSync.native(p);
+  } catch {
+    return path.resolve(p);
+  }
+}
+
+function aynaAyar() {
+  if (process.env.TEKNESYUM_AYNA === '0') return null;
+  const a = read(ozel.ayarYolu());
+  return a && typeof a === 'object' && a.depo ? a : null;
+}
+
+function aynaKurulu(a) {
+  try {
+    return !!a && fs.existsSync(path.join(ozel.klonYolu(a), '.git'));
+  } catch {
+    return false;
+  }
+}
+
+function aynaProje(a, kok) {
+  const kayit = (a && a.projeler) || {};
+  const hedef = gercekYol(kok).toLowerCase();
+  for (const k of Object.keys(kayit)) if (gercekYol(k).toLowerCase() === hedef) return kayit[k];
+  return ozel.slug(path.basename(kok));
+}
+
+function aynaGit(klon, parca) {
+  const r = spawnSync('git', ['-C', klon].concat(parca), {
+    encoding: 'utf8',
+    timeout: AYNA_ZAMAN_ASIMI,
+    windowsHide: true,
+  });
+  if (r.error) return { ok: false, hata: r.error.message };
+  const satir = ((r.stderr || '') + '\n' + (r.stdout || ''))
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return { ok: r.status === 0, hata: kirp(satir[satir.length - 1] || '', 160) };
+}
+
+function aynaKapisi(dip) {
+  try {
+    const kapi = path.join(dip, '.gitignore');
+    if (!fs.existsSync(kapi)) fs.writeFileSync(kapi, '*\n', 'utf8');
+  } catch {}
+}
+
+function aynaGonder(kok, kayitYolu, ad) {
+  const a = aynaAyar();
+  if (!aynaKurulu(a)) return { durum: 'yok' };
+  const klon = ozel.klonYolu(a);
+  const proje = aynaProje(a, kok);
+  const bagil = proje + '/' + KLASOR + '/' + ad;
+  const hedef = path.join(klon, proje, KLASOR, ad);
+  const cekildi = aynaGit(klon, ['pull', '--ff-only']);
+  const dosyalar = [];
+  try {
+    fs.mkdirSync(hedef, { recursive: true });
+    for (const f of AYNA_DOSYALAR) {
+      const kaynak = path.join(kayitYolu, f);
+      if (!fs.existsSync(kaynak)) continue;
+      fs.copyFileSync(kaynak, path.join(hedef, f));
+      dosyalar.push(f);
+    }
+  } catch (e) {
+    return { durum: 'hata', sebep: e.message, proje, bagil, dosyalar };
+  }
+  aynaGit(klon, ['add', '--', bagil]);
+  aynaGit(klon, ['commit', '-m', bagil + ' · oturum kaydı']);
+  let itildi = aynaGit(klon, ['push']);
+  if (!itildi.ok) {
+    const yeniden = aynaGit(klon, ['pull', '--rebase']);
+    if (yeniden.ok) itildi = aynaGit(klon, ['push']);
+    else itildi = { ok: false, hata: yeniden.hata || itildi.hata };
+  }
+  if (!itildi.ok) {
+    return {
+      durum: 'hata',
+      sebep: itildi.hata || cekildi.hata || 'push reddedildi',
+      proje,
+      bagil,
+      dosyalar,
+    };
+  }
+  return { durum: 'gonderildi', proje, bagil, dosyalar };
+}
+
+let _aynaCekildi = null;
+
+function aynaCekDepo() {
+  if (_aynaCekildi) return _aynaCekildi;
+  const a = aynaAyar();
+  if (!aynaKurulu(a)) return (_aynaCekildi = { durum: 'yok' });
+  const r = aynaGit(ozel.klonYolu(a), ['pull', '--ff-only']);
+  return (_aynaCekildi = r.ok ? { durum: 'cekildi' } : { durum: 'hata', sebep: r.hata });
+}
+
+function aynaYerellestir(kok) {
+  const a = aynaAyar();
+  if (!aynaKurulu(a)) return [];
+  const dip = path.join(ozel.klonYolu(a), aynaProje(a, kok), KLASOR);
+  let liste = [];
+  try {
+    liste = fs.readdirSync(dip);
+  } catch {
+    return [];
+  }
+  const yerel = kayitKok(kok);
+  const inen = [];
+  for (const ad of liste) {
+    const kaynak = path.join(dip, ad);
+    try {
+      if (!fs.statSync(kaynak).isDirectory()) continue;
+    } catch {
+      continue;
+    }
+    const uzak = read(path.join(kaynak, 'durum.json'));
+    if (!uzak) continue;
+    const hedef = path.join(yerel, ad);
+    const bende = read(path.join(hedef, 'durum.json'));
+    if (bende && String(bende.kaydedildi || '') >= String(uzak.kaydedildi || '')) continue;
+    fs.mkdirSync(hedef, { recursive: true });
+    aynaKapisi(yerel);
+    for (const f of AYNA_DOSYALAR) {
+      const s = path.join(kaynak, f);
+      if (fs.existsSync(s)) fs.copyFileSync(s, path.join(hedef, f));
+    }
+    const mevcut = sonOku(yerel).son;
+    if (!nesneMi(mevcut) || String(mevcut.kaydedildi || '') < String(uzak.kaydedildi || '')) {
+      sonYaz(yerel, {
+        ad,
+        kaydedildi: uzak.kaydedildi,
+        oturumId: uzak.oturumId,
+        ayna: 'gonderildi',
+      });
+    }
+    inen.push(ad);
+  }
+  return inen;
+}
+
+function aynaCek(kok) {
+  const d = aynaCekDepo();
+  if (d.durum !== 'cekildi') return d;
+  return { durum: 'cekildi', inen: aynaYerellestir(kok) };
+}
+
+function aynaSatiri(r, yon) {
+  if (!r) return null;
+  if (yon === 'cek') {
+    if (r.durum === 'yok') return 'özel ayna: kurulu değil, yereldeki kayıt okunuyor';
+    if (r.durum === 'hata')
+      return 'özel ayna: çekilemedi, yereldeki kayıt okunuyor — ' + (r.sebep || 'sebep okunamadı');
+    return (
+      'özel ayna: çekildi' + (r.inen && r.inen.length ? ' · yerele inen: ' + r.inen.join(', ') : '')
+    );
+  }
+  if (r.durum === 'yok') return 'özel ayna: kayıt yerelde; özel ayna kurulu değil, push edilmedi';
+  if (r.durum === 'hata')
+    return 'özel ayna: kayıt yerelde, push edilemedi: ' + (r.sebep || 'sebep okunamadı');
+  return (
+    'özel ayna: gönderildi · ' +
+    r.bagil +
+    ' · ' +
+    (r.dosyalar || []).join(', ') +
+    ' · ham transkript gönderilmedi'
+  );
+}
+
 function baglamSatiri(kullanim) {
   if (!kullanim) return 'bilinmiyor';
   const girdi =
@@ -414,6 +600,22 @@ function baglamSatiri(kullanim) {
     ', 200k varsayımı) · çıktı ' +
     (kullanim.output_tokens || 0)
   );
+}
+
+function devirUret(veri, ek) {
+  const s = ['# Devir notu — ' + ek.ad, ''];
+  s.push('Son asistan mesajının tam metni. Bu dosya kırpılmaz; `ozet.md` kırpar.');
+  s.push(
+    'Kaynak oturum: `' +
+      (veri.oturumId || '?') +
+      '`' +
+      (veri.sonAsistan && veri.sonAsistan.zaman ? ' · ' + saat(veri.sonAsistan.zaman) : '')
+  );
+  s.push('');
+  s.push('---');
+  s.push('');
+  s.push(veri.sonAsistan ? veri.sonAsistan.metin : 'Bu oturumda asistan metni yok.');
+  return s.join('\n') + '\n';
 }
 
 function ozetUret(veri, ek, tam) {
@@ -528,6 +730,15 @@ function ozetUret(veri, ek, tam) {
       s.push('');
     }
   }
+  if (ek.devir) {
+    s.push('---');
+    s.push('');
+    s.push(
+      'Son asistan mesajının tam metni `' +
+        DEVIR +
+        '` dosyasında — orası kırpılmaz, bu özet kırpar.'
+    );
+  }
   return s.join('\n') + '\n';
 }
 
@@ -593,8 +804,10 @@ function kaydet() {
     git: g,
     diff: diffYazildi,
     relay: relayDurum(kok),
+    devir: true,
   };
 
+  fs.writeFileSync(path.join(hedef, DEVIR), devirUret(veri, ek), 'utf8');
   fs.writeFileSync(path.join(hedef, 'ozet.md'), ozetUret(veri, ek, bayrak('tam')), 'utf8');
   fs.writeFileSync(
     path.join(hedef, 'durum.json'),
@@ -617,6 +830,7 @@ function kaydet() {
         git: g,
         diff: diffYazildi ? 'calisma.diff' : null,
         relay: ek.relay,
+        devir: DEVIR,
         taslak: veri.taslak,
         kuyruk: veri.kuyruk,
         dokunulan: veri.dokunulan,
@@ -626,7 +840,9 @@ function kaydet() {
     ),
     'utf8'
   );
-  sonYaz(dip, { ad, kaydedildi: ek.kaydedildi, oturumId: veri.oturumId });
+
+  const ayna = aynaGonder(kok, hedef, ad);
+  sonYaz(dip, { ad, kaydedildi: ek.kaydedildi, oturumId: veri.oturumId, ayna: ayna.durum });
 
   const bagil = path.relative(kok, hedef).split(path.sep).join('/');
   process.stdout.write(
@@ -648,7 +864,9 @@ function kaydet() {
           ? ' · ' + mb(fs.statSync(yol).size) + ' → ' + mb(hamBoyut)
           : ' · ' + mb(hamBoyut)),
       'çalışma yaması: ' + (diffYazildi ? 'calisma.diff' : 'yok'),
+      'devir notu: ' + DEVIR + (veri.sonAsistan ? '' : ' · asistan metni yok'),
       'oturum kimliği: ' + (veri.oturumId || '?'),
+      aynaSatiri(ayna, 'gonder'),
     ].join('\n') + '\n'
   );
 }
@@ -672,7 +890,7 @@ function sonOku(dip) {
 
 function sonYaz(dip, kayit) {
   const c = sonOku(dip);
-  c.son = { ad: kayit.ad, kaydedildi: kayit.kaydedildi };
+  c.son = { ad: kayit.ad, kaydedildi: kayit.kaydedildi, ayna: kayit.ayna || null };
   if (kayit.oturumId) c.oturumlar[kayit.oturumId] = { ad: kayit.ad, kaydedildi: kayit.kaydedildi };
   const gecici = path.join(dip, 'SON.json.' + process.pid);
   fs.writeFileSync(gecici, JSON.stringify(c, null, 2) + '\n', 'utf8');
@@ -764,6 +982,7 @@ function ozetOku(kok, kayit) {
         git: d.git,
         diff: !!d.diff,
         relay: d.relay,
+        devir: fs.existsSync(path.join(kayit.yol, DEVIR)),
       },
       true
     );
@@ -792,7 +1011,17 @@ function ozetOku(kok, kayit) {
 
   const bas = ['<<<KAYIT ' + (d.ad || kayit.ad) + '>>>'];
   if (uyari.length) bas.push('UYARI: ' + uyari.join(' · '));
-  return [...bas, '', ozet, '<<<KAYIT SONU>>>'].join('\n');
+  const devirYol = path.join(kayit.yol, DEVIR);
+  const devir = fs.existsSync(devirYol)
+    ? [
+        '',
+        '<<<DEVİR NOTU · son asistan mesajı, kırpılmadan>>>',
+        '',
+        fs.readFileSync(devirYol, 'utf8').trim(),
+        '<<<DEVİR SONU>>>',
+      ]
+    : [];
+  return [...bas, '', ozet, ...devir, '<<<KAYIT SONU>>>'].join('\n');
 }
 
 // Uzak denetim penceresi kapandığında ya da oturum çökünce `/save` çalışmaz; kayıt
@@ -827,23 +1056,24 @@ function son() {
   const t = sonTranskript(kok);
   if (!t) dur('bu projede devralınacak önceki oturum yok');
   const veri = ayikla(t.yol);
-  const ozet = ozetUret(
-    veri,
-    {
-      ad: 'önceki oturum · ' + t.ad.slice(0, 8),
-      kok,
-      kaydedildi: new Date(t.zaman).toISOString(),
-      git: gitDurum(kok),
-      diff: false,
-      relay: relayDurum(kok),
-    },
-    bayrak('tam')
-  );
+  const ek = {
+    ad: 'önceki oturum · ' + t.ad.slice(0, 8),
+    kok,
+    kaydedildi: new Date(t.zaman).toISOString(),
+    git: gitDurum(kok),
+    diff: false,
+    relay: relayDurum(kok),
+  };
+  const ozet = ozetUret(veri, ek, bayrak('tam'));
   process.stdout.write(
     [
       '<<<ÖNCEKİ OTURUM · kayıt yok, transkriptten devralındı>>>',
       '',
       ozet,
+      '<<<DEVİR NOTU · son asistan mesajı, kırpılmadan>>>',
+      '',
+      devirUret(veri, ek).trim(),
+      '<<<DEVİR SONU>>>',
       '<<<KAYIT SONU>>>',
     ].join('\n') + '\n'
   );
@@ -851,6 +1081,7 @@ function son() {
 
 function yukle() {
   const kok = projeKok();
+  process.stdout.write(aynaSatiri(aynaCek(kok), 'cek') + '\n\n');
   const hepsi = kayitlar(kok);
   const istek = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
   if (istek === 'son' || istek === 'onceki' || istek === 'önceki') return son();
@@ -1072,7 +1303,10 @@ function topluYukle() {
   const dip = filoKok();
   const { alinan, elenen } = filoTara(dip);
   if (!alinan.length) dur('bu klasörde proje bulunamadı: ' + dip);
+  const cekildi = aynaCekDepo();
+  if (cekildi.durum === 'cekildi') for (const p of alinan) aynaYerellestir(p.yol);
   const s = ['<<<FİLO DURUMU · ' + alinan.length + ' proje · `' + dip + '`>>>', ''];
+  s.push(aynaSatiri(cekildi, 'cek'), '');
   for (const p of alinan) s.push(...filoSatirlari(p));
   if (elenen.length) s.push('Dışarıda kalan klasörler: ' + elenen.join(' · '), '');
   s.push(
@@ -1083,11 +1317,19 @@ function topluYukle() {
   process.stdout.write(s.join('\n') + '\n');
 }
 
+function aynaOzeti(sayac, sonSatir) {
+  if (sayac.hata) return sonSatir || 'özel ayna: ' + sayac.hata + ' proje push edilemedi';
+  if (!sayac.gonderildi) return sonSatir || 'özel ayna: kurulu değil, kayıtlar yerelde';
+  return 'özel ayna: ' + sayac.gonderildi + ' proje gönderildi · ham transkript gönderilmedi';
+}
+
 function topluKaydet() {
   const dip = filoKok();
   const { alinan, elenen } = filoTara(dip);
   if (!alinan.length) dur('bu klasörde proje bulunamadı: ' + dip);
   const satir = [];
+  const aynaSayac = { gonderildi: 0, yok: 0, hata: 0 };
+  let sonAynaSatiri = null;
   let n = 0;
   for (const p of alinan) {
     const t = sonTranskript(p.yol);
@@ -1101,6 +1343,16 @@ function topluKaydet() {
       { encoding: 'utf8' }
     );
     const m = String(r.stdout || '').match(/^kay[ıi]t:[ \t]*(.+)$/m);
+    const a = String(r.stdout || '').match(/^özel ayna: (.+)$/m);
+    if (a) {
+      const anahtar = /gönderildi/.test(a[1])
+        ? 'gonderildi'
+        : /kurulu değil/.test(a[1])
+          ? 'yok'
+          : 'hata';
+      aynaSayac[anahtar]++;
+      if (anahtar !== 'gonderildi') sonAynaSatiri = a[0];
+    }
     if (r.status === 0 && m) {
       n++;
       satir.push('- ' + p.ad + ' · `' + m[1].trim() + '`');
@@ -1110,9 +1362,129 @@ function topluKaydet() {
   }
   const s = [n + '/' + alinan.length + ' proje kaydedildi · `' + dip + '`', '', ...satir];
   if (elenen.length) s.push('', 'Dışarıda kalan klasörler: ' + elenen.join(' · '));
+  s.push('', aynaOzeti(aynaSayac, sonAynaSatiri));
   s.push('', 'Kayıtlar her projenin kendi `.claude/oturumlar/` klasöründe duruyor.');
   s.push('Genel bakış için `/loadall`, tek projenin ayrıntısı için o projede `/load`.');
   process.stdout.write(s.join('\n') + '\n');
+}
+
+function panoAlt(betik, kok) {
+  return new Promise((cozum) => {
+    let bitti = false;
+    let c = '';
+    const bir = (v) => {
+      if (bitti) return;
+      bitti = true;
+      clearTimeout(zaman);
+      cozum(v);
+    };
+    let ch;
+    try {
+      ch = spawn(process.execPath, [path.join(__dirname, betik), '--json'], {
+        cwd: kok,
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch {
+      return cozum(null);
+    }
+    const zaman = setTimeout(() => {
+      try {
+        ch.stdout.destroy();
+        ch.unref();
+        ch.kill();
+      } catch {}
+      bir(null);
+    }, PANO_ZAMAN_ASIMI);
+    ch.stdout.on('data', (d) => {
+      c += d;
+    });
+    ch.on('error', () => bir(null));
+    ch.on('close', () => {
+      try {
+        bir(JSON.parse(c.trim()));
+      } catch {
+        bir(null);
+      }
+    });
+  });
+}
+
+function acikIs(kok) {
+  const r = relayDurum(kok);
+  let gunluk = 0;
+  try {
+    gunluk = fs
+      .readdirSync(path.join(kok, 'docs', 'openlogs'))
+      .filter((f) => f.endsWith('.md') && f !== 'README.md').length;
+  } catch {}
+  return { sozlesme: r ? r.acik.length : 0, biten: r ? r.biten.length : 0, gunluk };
+}
+
+function sonKayit(kok) {
+  const s = sonOku(kayitKok(kok)).son;
+  if (!nesneMi(s) || !s.ad) return null;
+  return { ad: s.ad, kaydedildi: s.kaydedildi || null, ayna: s.ayna || null };
+}
+
+const AYNA_ETIKET = {
+  gonderildi: 'aynaya gönderildi',
+  yok: 'yalnız yerelde · ayna kurulu değil',
+  hata: 'yalnız yerelde · push edilemedi',
+};
+
+function panoMetni(d) {
+  const s = [];
+  s.push('Eklenti  · ' + (d.eklenti ? surumu.metin(d.eklenti) : 'bakılamadı'));
+  s.push('Depo     · ' + (d.depo ? depoSurumu.metin(d.depo) : 'bakılamadı'));
+  s.push('Profil   · ' + d.profil.mod + ' · kaynak ' + d.profil.kaynak);
+  s.push(
+    'Açık iş  · ' +
+      d.is.sozlesme +
+      ' sözleşme · ' +
+      d.is.gunluk +
+      ' günlük · ' +
+      d.is.biten +
+      ' biten'
+  );
+  s.push(
+    'Son kayıt · ' +
+      (d.kayit
+        ? d.kayit.ad +
+          ' · ' +
+          (saat(d.kayit.kaydedildi) || 'zamansız') +
+          ' · ' +
+          (AYNA_ETIKET[d.kayit.ayna] || 'push durumu bilinmiyor')
+        : 'yok — /save ile al')
+  );
+  s.push('');
+  s.push(panoSon(d));
+  return s.join('\n');
+}
+
+function panoSon(d) {
+  const eksik = [];
+  if (d.eklenti && d.eklenti.yeni) eksik.push(d.eklenti.komut);
+  if (d.depo && d.depo.geride) eksik.push('git pull');
+  if (!eksik.length) return 'Hazır — kod yazmaya geçebiliriz.';
+  return 'Hazır değil · önce: ' + eksik.join(' · ');
+}
+
+function pano() {
+  const kok = projeKok();
+  return Promise.all([panoAlt('surum.js', kok), panoAlt('depo-surum.js', kok)]).then(
+    ([eklenti, depo]) => {
+      const d = {
+        kok,
+        eklenti,
+        depo,
+        profil: { mod: profil(), kaynak: profilKaynak() },
+        is: acikIs(kok),
+        kayit: sonKayit(kok),
+      };
+      process.stdout.write((bayrak('json') ? JSON.stringify(d) : panoMetni(d)) + '\n');
+    }
+  );
 }
 
 function yardim() {
@@ -1127,6 +1499,8 @@ function yardim() {
       '  node oturum.js liste       [--proje <yol>]',
       '  node oturum.js toplu-kaydet [--kok <üst klasör>]   bütün projeleri kaydeder',
       '  node oturum.js toplu-yukle  [--kok <üst klasör>]   bütün projelerin durumu',
+      '  node oturum.js pano   [--proje <yol>] [--json]     durum panosu: eklenti, depo,',
+      '                            profil, açık iş, son kayıt',
       '',
       'Kayıt yeri: <proje>/.claude/oturumlar/<ad>/',
       '  ham.jsonl     transkriptin bire bir kopyası',
@@ -1134,6 +1508,11 @@ function yardim() {
       '  ozet.md       yeniden yüklenebilir özet',
       '  durum.json    git, relay, bağlam, taslak, kuyruk',
       '  calisma.diff  kaydetme anındaki kirli çalışma alanı',
+      '  devir.md      son asistan mesajının kırpılmamış tam metni',
+      '',
+      'Özel ayna kuruluysa (`/ozel kur`) kayıt dörtlüsü — ozet.md, durum.json,',
+      'calisma.diff, devir.md — oraya da push edilir. Ham transkript yerelde kalır.',
+      '`/load` önce aynayı çeker. TEKNESYUM_AYNA=0 aynayı tümden kapatır.',
     ].join('\n') + '\n'
   );
 }
@@ -1145,4 +1524,5 @@ else if (komut === 'yukle' || komut === 'load') yukle();
 else if (komut === 'liste' || komut === 'list') liste();
 else if (komut === 'toplu-kaydet' || komut === 'saveall') topluKaydet();
 else if (komut === 'toplu-yukle' || komut === 'loadall') topluYukle();
+else if (komut === 'pano' || komut === 'panel') pano();
 else dur('bilinmeyen komut: ' + komut);

@@ -148,7 +148,7 @@ Kullanıcı o sırada başka bir iş verirse yeni iş önceliklidir; açık söz
 Yeni kullanıcı işi, açık sözleşmelerden önce owns eşleştirmesiyle yönlendirilir. İstek açık sözleşmenin owns kümesine giriyorsa o sözleşmeye devam edilir; girmiyorsa eski sözleşme yeni işi kilitlemez, yeni iş için yeni sözleşme veya ajan rotası açılır. Aynı dosya iki aktif sözleşmeye atanmaz; çakışmada atama durur ve T0 kararı gerekir. Eşleştirme dosya sahipliğine bakar, başlık benzerliğine değil: konusu yakın görünen bir sözleşme, dosyası tutmuyorsa yeni işi üstlenmez.
 Ajan mesajı kısa, net ve saygılıdır; ilgisiz açık sözleşme nedeniyle kullanıcıdan kapsamı yeniden isteme.
 
-## 1.1.1 Kesinti — üçe ayır, kuyruğu kanca yazar
+## 1.1.1 Kesinti — üçe ayır, kuyruğa yaz
 
 Kullanıcı tur ortasında bir şey söylediğinde **o anda okunur ve sınıflanır.** Ertelenmez,
 biriktirilip toplu okunmaz: geciken okuma yanlış yürüyen işi durdurmanın ilacı değil,
@@ -158,39 +158,34 @@ ikizidir. Aciliyet kararı makineye verilmez.
 |---|---|
 | Tek satırda cevaplanır | Cevapla, geç. Kayda hiç girmez. |
 | Yürüyen işi değiştirir | Dur, işi değiştir. |
-| İkisi de değil | Kullanıcıya tek satır söyle: şimdi yapılmıyor, sebebi bu. |
+| İkisi de değil | `live/_acik.json` → `acikta`'ya yaz **ve** aynı anda tek satır bas: `Teknesyum ▸ Sıraya alındı ▸ <madde>` |
 
-**Kesinti anında dosyaya yazma.** O an kancasız ve bu evde kancasız kural ölür: kuyruk
-kurulduğu gün sıfır kez yazıldı, aynı sözleşmedeki kancaya bağlı beş satır tavanı ise
-çalıştı. Üçüncü kolun eylemi kayıt değil, kullanıcıya tek satırdır.
+Üçüncü kolda yazmak ve bildirmek **tek eylemdir**, ikisi ayrılmaz. Kullanıcıya "sıraya
+alındı" demek zaten dosyaya yazmayı gerektirir; ayrı bir disiplin adımı bırakılırsa
+yazılmaz — kuyruk kurulduğu gün tam bu yüzden sıfır kez yazıldı.
 
-Kuyruk dosyası `live/_acik.json` **oturum içidir** ve üç alan taşır: `simdi` (yürüyen iş,
-tek satır), `acikta[]` (en çok 8 madde), `sirada` (sonraki adım, tek satır). Toplam tavan
-10 satır — kanca dosyaya her yazıldığında aşanı kırpar.
-
-`simdi` ve `sirada` **kanca tarafından yazılır, T0 dokunmaz.** Sözleşme dosyası
-oluşturulduğunda ya da `status` `active` olduğunda `simdi` o sözleşmenin kimliği ve
-başlığı olur; `sirada` bağımlılığı biten ilk `open` sözleşmeden türetilir. Sözleşme
-`submitted`/`done` olunca `simdi` temizlenir.
+Kuyruk dosyası **oturum içidir** ve üç alan taşır: `simdi` (yürüyen iş, tek satır),
+`acikta[]` (cevaplanmamış kesintiler, en çok 8 madde), `sirada` (sonraki adım, tek satır).
+Toplam tavan 10 satır — kanca dosyaya her yazıldığında aşanı kırpar.
 
 Kalıcı durum rotadadır (§3.2). `acikta` onun ikizi değildir: oturum kapanınca kuyruk
 düşer, rota kalır. Aynı maddeyi iki yere yazma; kuyruktan çıkan madde ya cevaplanmıştır
 ya bir sözleşmeye işlenmiştir.
 
-**Durum bloğu bağlama basılmaz.** Ne tur başında ne tur ortasında açık iş **listesi**
-enjekte edilir: bir oturumun maliyetinin **%89'u konuşma hacminden** gelir
-(`docs/OLCUM-TABAN.md`) ve her tura basılan liste o kalemi büyütür.
+**Durum bağlama basılmaz.** Ne tur başında ne tur ortasında açık iş listesi enjekte edilir:
+bir oturumun maliyetinin **%89'u konuşma hacminden** gelir (`docs/OLCUM-TABAN.md`) ve her
+tura basılan liste o kalemi büyütür. Kuyruk diskte durur; `Stop` kancası tur biterken
+**tek satır** hatırlatır, statusline `açıkta N` gösterir, listeyi kullanıcı `/report` ile
+açar.
 
-Bu kural **daraldı, kalkmadı**: blok basılmaz, **koşullu tek satır** basılır. Kuyrukta
-madde varken `UserPromptSubmit` bağlama tek satır ekler —
-`Teknesyum ▸ Şu an: <simdi> · Sırada: <sirada> · Açıkta N madde`. **Kuyruk boşken hiçbir
-şey basılmaz**, madde metinleri hiç basılmaz. Ölçüyle çelişmez: her tura değil, kuyruk
-doluyken.
+**Boşaltmayı `Stop` kancası zorlar.** Dalga sonu ve kapanış raporu `acikta` boşalmadan
+kapanmaz — ve bu artık bir hatırlatma değil: `acikta` doluyken kanca turu bitirmez,
+kalan maddeyi söyler ve işi sürdürtür. Boşalınca serbest bırakır.
 
-Kuyruğun asıl tüketicisi T0 değil kullanıcıdır. `Stop` kancası tur biterken **tek satır**
-hatırlatır, statusline `şu an: <simdi> · açıkta N` gösterir — kullanıcı araya girmesi
-gerekip gerekmediğine ekrana bakarak karar verir. Listeyi `/report` açar. Dalga sonu ve
-kapanış raporu `acikta` boşalmadan kapanmaz.
+**Güvenlik valfi.** Aynı madde turu üç kez engellerse kanca geçirir ve `_sorun.log`'a
+yazar; oturum kilitlenmez. Kullanıcı bir maddeyi her zaman elle düşürebilir — `/report`
+üzerinden ya da `live/_acik.json` dosyasını silerek. Bir madde çözülemiyorsa kuyrukta
+tutma: neden düştüğünü kullanıcıya söyle ve `acikta`'dan çıkar.
 
 Yürüyen ajana yönlendirme göndermek ayrı bir karardır — biçimi ve tetiği
 `references/multi-session.md` §5.3.

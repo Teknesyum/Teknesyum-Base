@@ -139,16 +139,43 @@ const S = {
     en: (n) => n + ' item(s) still open — list them with `/report`.',
   },
 
-  planTazele: {
-    tr: () => 'Yürüyen iş bitti — yol planını tazele, sıradakini kuyruktan seç.',
-    en: () => 'The running task is done — refresh the roadmap and pick the next queued item.',
+  siradaAlindi: {
+    tr: (madde) => 'Teknesyum ▸ Sıraya alındı ▸ ' + madde,
+    en: (madde) => 'Teknesyum ▸ Queued ▸ ' + madde,
   },
 
-  acikDurum: {
-    tr: (simdi, sirada, n) =>
-      'Teknesyum ▸ Şu an: ' + simdi + ' · Sırada: ' + sirada + ' · Açıkta ' + n + ' madde',
-    en: (simdi, sirada, n) =>
-      'Teknesyum ▸ Now: ' + simdi + ' · Next: ' + sirada + ' · ' + n + ' item(s) open',
+  aciktaEngel: {
+    tr: (n, madde) =>
+      'Kuyrukta ' +
+      n +
+      ' madde var, tur bitmez. Sıradaki: ' +
+      madde +
+      '. Maddeyi ya yap, ' +
+      'ya bir sözleşmeye işle, ya kullanıcıya neden düştüğünü söyle — sonra `acikta`' +
+      "'dan çıkar.",
+    en: (n, madde) =>
+      'The queue still holds ' +
+      n +
+      ' item(s); the turn cannot end. Next: ' +
+      madde +
+      '. ' +
+      'Do it, fold it into a contract, or tell the user why it is dropped — then remove ' +
+      'it from `acikta`.',
+  },
+
+  aciktaValf: {
+    tr: (tavan, madde) =>
+      'Kuyruk valfi açıldı: aynı madde ' +
+      tavan +
+      ' kez turu engelledi, geçiriliyor — ' +
+      madde +
+      '. `_sorun.log`a yazıldı.',
+    en: (tavan, madde) =>
+      'Queue valve released: the same item blocked ' +
+      tavan +
+      ' turns, letting it pass — ' +
+      madde +
+      '. Logged to `_sorun.log`.',
   },
 
   yonlendirmeTavan: {

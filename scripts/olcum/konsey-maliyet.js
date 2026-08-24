@@ -71,7 +71,7 @@ function main() {
     girdiler.push(arg[i]);
   }
   if (!girdiler.length) {
-    console.error('kullanim: node scripts/olcum/konsey-maliyet.js <ajanId|transkript...> [--tip lite|tam] [--konu "..."] [--tur N] [--yaz docs/stats/konsey.md]');
+    console.error('kullanim: node scripts/olcum/konsey-maliyet.js <ajanId|transkript...> [--konu "..."] --tur N [--yaz docs/stats/konsey.md]');
     process.exit(2);
   }
 
@@ -102,9 +102,16 @@ function main() {
     + ' · duvar suresi ' + sure + 'sn');
 
   if (bayrak.yaz) {
-    const satir = '| ' + (bayrak.tip || '?') + ' | ' + (bayrak.konu || '?') + ' | '
-      + (bayrak.tur || '?') + ' | ' + olcum.length + ' | ' + bin(toplam.cikti) + ' | '
-      + bin(esdeger(toplam)) + ' | ' + sure + ' |';
+    // `Tip` sutunu dustu — "lite" ayri bir kavram degil, uzatilmamis kosunun adi.
+    // Geriye ucuz kosuyu pahalidan ayiran tek boyut olarak `Tur` kaldi; bos kalirsa
+    // tabloda ayrim kalmaz. O yuzden satir yazmayi reddediyoruz, '?' yazmiyoruz.
+    const tur = Number(bayrak.tur);
+    if (!Number.isFinite(tur) || tur < 1) {
+      console.error('--tur verilmeden satir yazilmaz: tur sayisi tablonun tek ayirt edici boyutu');
+      process.exit(4);
+    }
+    const satir = '| ' + (bayrak.konu || '?') + ' | ' + tur + ' | ' + olcum.length + ' | '
+      + bin(toplam.cikti) + ' | ' + bin(esdeger(toplam)) + ' | ' + sure + ' |';
     fs.appendFileSync(path.resolve(bayrak.yaz), satir + '\n', 'utf8');
     console.log('yazildi: ' + bayrak.yaz);
   }

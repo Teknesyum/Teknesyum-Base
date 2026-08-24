@@ -8798,6 +8798,52 @@ ol('relay description ornek talep listesi duruyor', () => {
     icerir(d, ornek);
 });
 
+console.log('\nKonsey defteri');
+
+// Kosu 3'te `lite` ayri bir kavram olmaktan cikti; `Tip` sutunu ve `--tip` bayragi dustu.
+// Geriye ucuz kosuyu pahalidan ayiran tek boyut olarak `Tur` kaldi — bos kalirsa tabloda
+// ayrim kalmaz, o yuzden script '?' yazmak yerine satir yazmayi reddeder.
+ol('konsey defteri --tur olmadan satir yazmaz', () => {
+  const betik = path.join(__dirname, '..', 'scripts', 'olcum', 'konsey-maliyet.js');
+  const k = fs.readFileSync(betik, 'utf8');
+  if (/--tip|bayrak\.tip/.test(k))
+    throw new Error('`--tip` bayragi hâlâ duruyor, lite kavrami kodda yasiyor');
+  icerir(k, '--tur verilmeden satir yazilmaz');
+  const dizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-defter-'));
+  const hedef = path.join(dizin, 'k.md');
+  fs.writeFileSync(hedef, '');
+  const sahte = path.join(dizin, 'a.jsonl');
+  fs.writeFileSync(
+    sahte,
+    JSON.stringify({
+      timestamp: '2026-08-24T10:00:00.000Z',
+      message: { model: 'claude-opus-5', usage: { input_tokens: 10, output_tokens: 20 } },
+    }) + '\n'
+  );
+  const r = spawnSync(process.execPath, [betik, sahte, '--konu', 'x', '--yaz', hedef], {
+    encoding: 'utf8',
+  });
+  esit(r.status, 4, 'tur verilmeyince cikis kodu 4 olmali');
+  esit(fs.readFileSync(hedef, 'utf8'), '', 'satir yazilmamali');
+  const r2 = spawnSync(
+    process.execPath,
+    [betik, sahte, '--konu', 'x', '--tur', '2', '--yaz', hedef],
+    { encoding: 'utf8' }
+  );
+  esit(r2.status, 0, 'tur verilince yazmali');
+  icerir(fs.readFileSync(hedef, 'utf8'), '| x | 2 | 1 |');
+});
+
+ol('konsey protokolu lite kavramini tasimaz, kimlik acik', () => {
+  const yol = path.join(__dirname, '..', 'docs', 'konsey', 'PROTOKOL.md');
+  const k = fs.readFileSync(yol, 'utf8');
+  if (/Üye A|Üye B/.test(k)) throw new Error('protokol hâlâ anonim A/B sozlugunu tasiyor');
+  icerir(k, 'Kimlik açıktır');
+  icerir(k, 'uzatma_karari');
+  icerir(k, 'gozlemsiz_belirsizlik');
+  icerir(k, 'Mekanik donduruldu');
+});
+
 console.log('\nZil tekrari');
 
 // OLCULDU (24.08.2026, kullanici bildirdi): zil arka arkaya 5-10 kez caliyordu.

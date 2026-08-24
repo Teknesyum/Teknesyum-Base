@@ -8139,6 +8139,57 @@ ol('acik madde yokken statusline acikta yazmaz', () => {
   icermez(durumSatiri(p), 'açıkta');
 });
 
+function stopCikti(p) {
+  return JSON.parse(calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }).out || '{}');
+}
+
+ol('acikta doluyken Stop turu bitirmez, kalan maddeyi soyler', () => {
+  const { p } = kuyrukKur(1, { simdi: '', acikta: ['ikon seti', 'README adimi'], sirada: '' });
+  const o = stopCikti(p);
+  esit(o.decision, 'block', 'tur bitti, kuyruk doluydu');
+  icerir(o.reason, 'ikon seti', 'kalan madde soylenmedi');
+  icerir(o.reason, '2 madde');
+});
+
+ol('acikta bosken Stop turu serbest birakir', () => {
+  const bos = kuyrukKur(1, { simdi: 'T3', acikta: [], sirada: 'T4' });
+  esit(stopCikti(bos.p).decision, undefined, 'bos kuyrukta engelledi');
+  const yok = proje(1, 0);
+  esit(stopCikti(yok.p).decision, undefined, 'dosya yokken engelledi');
+});
+
+ol('ayni madde tavani asinca Stop gecirir ve _sorun.log a yazar', () => {
+  const { p, live } = kuyrukKur(1, { simdi: '', acikta: ['cozulemeyen madde'], sirada: '' });
+  for (let i = 1; i <= 3; i++) esit(stopCikti(p).decision, 'block', i + '. turda engellemedi');
+  const son = stopCikti(p);
+  esit(son.decision, undefined, 'tavan asildi ama hala engelliyor — oturum kilitli');
+  icerir(son.systemMessage, 'Kuyruk valfi');
+  const g = fs.readFileSync(path.join(live, '_sorun.log'), 'utf8');
+  icerir(g, 'kuyruk valfi');
+  icerir(g, 'cozulemeyen madde');
+});
+
+ol('madde degisince engel sayaci sifirlanir', () => {
+  const { p, live } = kuyrukKur(1, { simdi: '', acikta: ['ilk madde'], sirada: '' });
+  const f = path.join(live, '_acik.json');
+  for (let i = 0; i < 3; i++) stopCikti(p);
+  fs.writeFileSync(f, JSON.stringify({ simdi: '', acikta: ['ikinci madde'], sirada: '' }));
+  esit(stopCikti(p).decision, 'block', 'yeni maddede sayac tasindi');
+  esit(json(path.join(live, '_acik-engel.json')).n, 1, 'sayac sifirlanmadi');
+});
+
+ol('kuyruk bosalinca engel sayaci silinir', () => {
+  const { p, live } = kuyrukKur(1, { simdi: '', acikta: ['madde'], sirada: '' });
+  stopCikti(p);
+  esit(fs.existsSync(path.join(live, '_acik-engel.json')), true);
+  fs.writeFileSync(
+    path.join(live, '_acik.json'),
+    JSON.stringify({ simdi: '', acikta: [], sirada: '' })
+  );
+  stopCikti(p);
+  esit(fs.existsSync(path.join(live, '_acik-engel.json')), false, 'sayac dosyasi kaldi');
+});
+
 ol('hooks.json PreToolUse matcher SendMessage tasir', () => {
   const h = JSON.parse(fs.readFileSync(path.join(KOK, 'hooks', 'hooks.json'), 'utf8'));
   const hepsi = h.hooks.PreToolUse.map((x) => x.matcher || '');
@@ -8234,9 +8285,12 @@ ol('yonlendirme tavani ve kuyruk satiri dil.js ten gelir, tr ve en var', () => {
     kaynak.indexOf('yonlendirmeYonerge')
   );
   icerir(blok, 'aciktaKuyruk');
+  icerir(blok, 'siradaAlindi');
+  icerir(blok, 'aciktaEngel');
+  icerir(blok, 'aciktaValf');
   icerir(blok, 'yonlendirmeTavan');
-  esit((blok.match(/\btr:/g) || []).length, 2, 'tr karsiligi eksik');
-  esit((blok.match(/\ben:/g) || []).length, 2, 'en karsiligi eksik');
+  esit((blok.match(/\btr:/g) || []).length, 5, 'tr karsiligi eksik');
+  esit((blok.match(/\ben:/g) || []).length, 5, 'en karsiligi eksik');
   const { p, live } = kuyrukKur(1, { simdi: '', acikta: ['a'], sirada: '' });
   fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify({ agent_id: 'a1' }));
   const en = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, { TEKNESYUM_DIL: 'en' });
@@ -8255,6 +8309,9 @@ ol('kesinti disiplini ve yonlendirme bicimi belgede', () => {
   icerir(s, '## 1.1.1 Kesinti');
   icerir(s, 'live/_acik.json');
   icerir(s, 'Durum bağlama basılmaz');
+  icerir(s, 'Teknesyum ▸ Sıraya alındı ▸');
+  icerir(s, 'Güvenlik valfi');
+  icerir(s, 'kanca turu bitirmez');
   const m = fs.readFileSync(COK_OTURUM, 'utf8');
   icerir(m, '## 5.3 Yönlendirme');
   icerir(m, 'Tavan 5 satır');

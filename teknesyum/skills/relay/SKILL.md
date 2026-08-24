@@ -158,7 +158,11 @@ ikizidir. Aciliyet kararı makineye verilmez.
 |---|---|
 | Tek satırda cevaplanır | Cevapla, geç. Kayda hiç girmez. |
 | Yürüyen işi değiştirir | Dur, işi değiştir. |
-| İkisi de değil | `live/_acik.json` → `acikta`'ya yaz, kullanıcıya tek satır: kuyruğa alındı |
+| İkisi de değil | `live/_acik.json` → `acikta`'ya yaz **ve** aynı anda tek satır bas: `Teknesyum ▸ Sıraya alındı ▸ <madde>` |
+
+Üçüncü kolda yazmak ve bildirmek **tek eylemdir**, ikisi ayrılmaz. Kullanıcıya "sıraya
+alındı" demek zaten dosyaya yazmayı gerektirir; ayrı bir disiplin adımı bırakılırsa
+yazılmaz — kuyruk kurulduğu gün tam bu yüzden sıfır kez yazıldı.
 
 Kuyruk dosyası **oturum içidir** ve üç alan taşır: `simdi` (yürüyen iş, tek satır),
 `acikta[]` (cevaplanmamış kesintiler, en çok 8 madde), `sirada` (sonraki adım, tek satır).
@@ -172,7 +176,16 @@ ya bir sözleşmeye işlenmiştir.
 bir oturumun maliyetinin **%89'u konuşma hacminden** gelir (`docs/OLCUM-TABAN.md`) ve her
 tura basılan liste o kalemi büyütür. Kuyruk diskte durur; `Stop` kancası tur biterken
 **tek satır** hatırlatır, statusline `açıkta N` gösterir, listeyi kullanıcı `/report` ile
-açar. Dalga sonu ve kapanış raporu `acikta` boşalmadan kapanmaz.
+açar.
+
+**Boşaltmayı `Stop` kancası zorlar.** Dalga sonu ve kapanış raporu `acikta` boşalmadan
+kapanmaz — ve bu artık bir hatırlatma değil: `acikta` doluyken kanca turu bitirmez,
+kalan maddeyi söyler ve işi sürdürtür. Boşalınca serbest bırakır.
+
+**Güvenlik valfi.** Aynı madde turu üç kez engellerse kanca geçirir ve `_sorun.log`'a
+yazar; oturum kilitlenmez. Kullanıcı bir maddeyi her zaman elle düşürebilir — `/report`
+üzerinden ya da `live/_acik.json` dosyasını silerek. Bir madde çözülemiyorsa kuyrukta
+tutma: neden düştüğünü kullanıcıya söyle ve `acikta`'dan çıkar.
 
 Yürüyen ajana yönlendirme göndermek ayrı bir karardır — biçimi ve tetiği
 `references/multi-session.md` §5.3.

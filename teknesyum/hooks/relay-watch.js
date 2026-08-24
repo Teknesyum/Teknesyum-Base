@@ -80,6 +80,7 @@ function run(j) {
     if (kap) kapsayiciTopla(kap, kapDurum);
     paketDenetle(j, root);
     acikBildir(root);
+    acikEngelle(root);
     return turBitir(j, root);
   }
   if (j.hook_event_name === 'PostCompact') return sikismaSonrasi(root);
@@ -1719,6 +1720,51 @@ function acikBildir(root) {
   const d = acikOku(root);
   if (!d || !d.acikta.length) return;
   duyur(ceviri('aciktaKuyruk', d.acikta.length), 1);
+}
+
+// Kuyruk `D3`'te T0'ın disiplinine bağlıydı ve sıfır kez yazıldı. Boşaltma da öyleydi:
+// "dalga sonu `acikta` boşalmadan kapanmaz" yazılıydı, kimse bakmıyordu. `Stop` kancası
+// artık dosyaya kendisi bakar — madde varken tur bitmez.
+const ACIK_ENGEL = '_acik-engel.json';
+
+// Tavan 3: yönlendirme tavanıyla aynı büyüklük sınıfında ve modelin bir maddeyi iki kez
+// deneyip üçüncüde farklı yol bulmasına yetiyor. Daha düşüğü (1-2) çözülebilir maddeyi
+// erken bırakır, daha yükseği kilitlenmeyi kullanıcının fark edemeyeceği kadar uzatır:
+// üç engelleme aynı maddede takılı bir turu birkaç dakikada görünür kılar.
+const ACIK_ENGEL_TAVAN = 3;
+
+// Sonsuz döngü riski gerçek: model maddeyi çözemezse `Stop` her seferinde engeller ve
+// oturum kilitlenir. Valf iki yönlü — sayaç tavana varınca kanca geçirir ve `_sorun.log`'a
+// yazar; kullanıcı da maddeyi `/report` üzerinden ya da dosyayı silerek elle düşürebilir.
+function acikEngelle(root) {
+  if (!root) return;
+  const d = acikOku(root);
+  if (!d || !d.acikta.length) return acikEngelSifirla(root);
+  const live = izKoku(root);
+  const f = path.join(live, ACIK_ENGEL);
+  const madde = d.acikta[0];
+  const onceki = read(f) || {};
+  const n = onceki.madde === madde ? (Number(onceki.n) || 0) + 1 : 1;
+  if (n > ACIK_ENGEL_TAVAN) {
+    sorunYaz(live, ['kuyruk valfi', ACIK_ENGEL_TAVAN + ' kez engellendi', madde].join(' | '));
+    try {
+      fs.unlinkSync(f);
+    } catch {}
+    duyur(ceviri('aciktaValf', ACIK_ENGEL_TAVAN, madde), 1);
+    return;
+  }
+  try {
+    fs.mkdirSync(live, { recursive: true });
+    yaz(f, { madde, n });
+  } catch {}
+  ciktiEkle({ decision: 'block', reason: ceviri('aciktaEngel', d.acikta.length, madde) });
+}
+
+function acikEngelSifirla(root) {
+  if (!root) return;
+  try {
+    fs.unlinkSync(path.join(izKoku(root), ACIK_ENGEL));
+  } catch {}
 }
 
 const YONLENDIRME_TAVAN = 5;

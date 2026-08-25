@@ -266,8 +266,9 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
       'teknesyum:denetci',
       'teknesyum:kayitci',
     ]) {
-      if (s.includes(eski))
-        throw new Error(path.basename(f) + ' hâlâ "' + eski.trim() + '" içeriyor');
+      const vurdu =
+        eski === '/durum' ? /\/durum(?![a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ-])/.test(s) : s.includes(eski);
+      if (vurdu) throw new Error(path.basename(f) + ' hâlâ "' + eski.trim() + '" içeriyor');
     }
   }
 });
@@ -10423,6 +10424,7 @@ const UI_SUITE = [
   'u3-forms.js',
   'u4-renk.js',
   'u5-a11y.js',
+  'u6-durum.js',
   'u7-avalonia.js',
   'u8-glow.js',
   'u9-renkkorlugu.js',

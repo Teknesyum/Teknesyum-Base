@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { s: ceviri, dil, profil } = require('./dil.js');
 const { read, norm, safe, roleKoku } = require('./ortak.js');
+const { SIRA, sozlesmeAdi, durum, bilinenDurum } = require('./contract-schema.js');
 
 let raw = '';
 process.stdin.on('data', (d) => (raw += d));
@@ -116,11 +117,6 @@ function sorunYaz(live, satir, etiket) {
 const YAZMA_FIILI =
   /(^|[\s;|&])((mv|move-item|cp|copy-item|rm|remove-item|del|erase|touch|tee|sed\s+-i|set-content|add-content|out-file|new-item)\b|>>?)/i;
 
-// ÖLÇÜLDÜ: sözleşme durumu ajanın beyanıyla ilerliyordu; bir düzeltme turunda `submitted`
-// olan sözleşme yeniden `open` yazılıp denetim sırası sıfırlandı. Merdiven tek yönlüdür.
-// `blocked` her iki yönde serbesttir — engel gerçek bir durumdur, kurtarma da öyle.
-const SIRA = { open: 0, active: 1, submitted: 2, accepted: 3, done: 3 };
-
 function relayKoku(start) {
   const r = roleKoku(start);
   return r ? r.relay : null;
@@ -133,26 +129,21 @@ function canonical(hedef) {
   const contracts = path.join(relay, 'contracts');
   const relative = path.relative(contracts, absolute);
   if (!relative || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) return null;
-  if (!/^T[^/\\]+\.md$/i.test(relative)) return null;
+  if (!sozlesmeAdi(relative)) return null;
   return absolute;
-}
-
-function durum(metin) {
-  const m = String(metin).match(/^status:[ \t]*([a-z]+)/im);
-  return m ? m[1].toLowerCase() : null;
 }
 
 function gerileme(hedef, yeniMetin) {
   if (!canonical(hedef)) return;
   const yeni = durum(yeniMetin);
-  if (yeni === null || SIRA[yeni] === undefined) return;
+  if (!bilinenDurum(yeni)) return;
   let eski = null;
   try {
     eski = durum(fs.readFileSync(hedef, 'utf8'));
   } catch {
     return;
   }
-  if (eski === null || SIRA[eski] === undefined) return;
+  if (!bilinenDurum(eski)) return;
   // ÖLÇÜLDÜ: canlı koşuda scribe `open`'dan doğrudan `submitted`'a atladı. Basamak
   // atlanınca sözleşme "kimse üzerinde çalışmıyor" görünür; ajan düşerse kurtarma
   // hangi işin yarım kaldığını bilemez. `active` işaretlemek bir satırlık iştir.

@@ -1389,6 +1389,41 @@ ol('done/ altına Edit engellenir', () => {
   icerir(r.err, 'ENGELLENDİ');
 });
 
+ol('T disindaki sozlesme kimlikleri de done/ kapisiyla korunur', () => {
+  // ÖLÇÜLDÜ (25.08.2026, dis denetim TB-003): kapi yalniz T ile baslayan dosyayi
+  // taniyordu; depoda D, E, F, S, U kimlikli 21 sozlesme korumasizdi.
+  for (const ad of ['D1.md', 'E1.md', 'F3.md', 'S2.md', 'U11.md']) {
+    esit(
+      calistir(KORU, {
+        tool_name: 'Edit',
+        tool_input: { file_path: '/p/.claude/relay/contracts/done/' + ad },
+      }).kod,
+      2,
+      ad + ' korunmadi'
+    );
+  }
+});
+
+ol('done/ disinda kalan yol kapiyi tetiklemez', () => {
+  // `../../` cozuldugunde dosya done/ altinda degildir; kapi yol metnine degil
+  // cozulmus konuma bakar.
+  esit(
+    calistir(KORU, {
+      tool_name: 'Edit',
+      tool_input: { file_path: '/p/.claude/relay/contracts/done/../../kacis.md' },
+    }).kod,
+    0
+  );
+  esit(
+    calistir(KORU, {
+      tool_name: 'Edit',
+      tool_input: { file_path: '/p/.claude/relay/contracts/done/README.md' },
+    }).kod,
+    2,
+    'done/ altindaki her dosya salt okunur'
+  );
+});
+
 ol('göreli Windows yolu da engellenir (mutlak yol şartı bypass ediyordu)', () => {
   esit(
     calistir(KORU, {

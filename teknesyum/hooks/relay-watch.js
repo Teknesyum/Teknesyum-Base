@@ -4,6 +4,7 @@ const { execFileSync } = require('child_process');
 const { s: ceviri, premium, profil } = require('./dil.js');
 const { PROFIL, sapmalar, sapmaSatiri } = require('../scripts/premium.js');
 const kapsayici = require('./kapsayici.js');
+const { sozlesmeAdi } = require('./contract-schema.js');
 // Ayna betiği kancanın yolunda değilse açılış yine de basılmalı; eksik dosya bildirimi
 // düşürmez, yalnız ayna satırını susturur.
 let aynaDurumu = () => null;
@@ -247,7 +248,7 @@ function run(j) {
 
       if (target) {
         const n = norm(target);
-        const m = n.match(/\/relay\/contracts\/(?:done\/)?(T[^/]+)\.md$/i);
+        const m = n.match(/\/relay\/contracts\/(?:done\/)?([A-Za-z]{1,4}\d{1,4})\.md$/);
         if (m && !s.contract) s.contract = m[1];
         if (!m && /^(Write|Edit|NotebookEdit)$/.test(j.tool_name || '')) {
           const rel = short(target, proj);
@@ -517,7 +518,7 @@ function anaKapsam(root, j) {
   const t = j.tool_input || {};
   const hedef = t.file_path || t.notebook_path || '';
   if (!hedef) return;
-  if (/\/relay\/contracts\/(?:done\/)?T[^/]+\.md$/i.test(norm(hedef))) return;
+  if (/\/relay\/contracts\/(?:done\/)?[A-Za-z]{1,4}\d{1,4}\.md$/.test(norm(hedef))) return;
   const k = kimlikOku(j);
   kapsamYaz(root, [
     {
@@ -1164,7 +1165,7 @@ function gorusKaydet(root, t) {
 function acikSozlesmeler(root) {
   const dir = path.join(root, 'contracts');
   return dosyalar(dir)
-    .filter((f) => /^T[^/]+\.md$/i.test(f))
+    .filter((f) => sozlesmeAdi(f))
     .map((f) => {
       const govde = metin(path.join(dir, f));
       const d = (govde || '').slice(0, 1200).match(/^status:[ \t]*(open|active|submitted)/im);

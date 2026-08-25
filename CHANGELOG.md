@@ -6,6 +6,22 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.57.0] - 2026-08-25
+
+### Fixed
+
+- **Contract protection covered one contract out of twenty-two.** The `done/` gate, the
+  seal check and the status-regression ladder all resolved a contract through a pattern
+  that only accepted `T`-prefixed filenames, while the repository carried open contracts
+  named `D1`-`D4`, `E1`, `F1`-`F3`, `S1`, `S2`, `U1`-`U11`. Twenty-one of them could be
+  moved into `done/` unsealed, or walked backwards down the status ladder, with nothing
+  objecting — the status line said twenty-three pieces of work while the guard saw one.
+  Identity and status now come from a single `contract-schema.js`, which the guard and the
+  watcher both read; `sealed` joined the ladder at the same rung as `done`, having been an
+  unknown value that silently skipped the regression check on the one contract that used
+  it. Found by an external audit of the repository at v2.56.1 and verified against the
+  working tree before the fix.
+
 ## [2.56.1] - 2026-08-24
 
 ### Fixed

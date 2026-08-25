@@ -1,0 +1,21 @@
+{
+  "contractId": "T1",
+  "auditorRunId": "a46315ebbc255c94a",
+  "headSha": "d2a7e0045f6d50c95a3ec366c66d3f5173db26d6",
+  "diffHash": "2dad2d89fc983972ebea7cb34c1bfd97502a90419f65f7cae4b25449a843d6ce",
+  "owns": [
+    "teknesyum/hooks/ortak.js",
+    "teknesyum/hooks/dil.js",
+    "teknesyum/scripts/premium.js",
+    "teknesyum/commands/premium.md"
+  ],
+  "verification": [
+    "```",
+    "T1 yeniden denetim: GEÇTİ (şartname ✓ · kalite ✓)",
+    "Dört bulgu: 4/4 kapandı. (1) premium.js:152 `if (!k) continue;` — okunamayan kayıt artık atlanıyor, testi 2826-2839 hem `yarim.json` hem `bos.json` için hayatta kalmayı sınıyor. (2) premium.js:217-232 yeni `dugmeProfili()` SETTINGS.md'yi gerçekte"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T18:20:30.439Z",
+  "usedAt": "2026-08-25T18:20:30.498Z",
+  "completedSha": "d2a7e0045f6d50c95a3ec366c66d3f5173db26d6"
+}

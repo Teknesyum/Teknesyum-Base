@@ -1,0 +1,20 @@
+{
+  "contractId": "T4",
+  "auditorRunId": "ae48a2f88be23219b",
+  "headSha": "d2a7e0045f6d50c95a3ec366c66d3f5173db26d6",
+  "diffHash": "1803f6408532a16166109c12c064c1c4353f168f6f66f58f3e17c6a226824fd9",
+  "owns": [
+    "test/run.js",
+    ".github/workflows/test.yml",
+    "package.json"
+  ],
+  "verification": [
+    "GEÇTİ  T4  · şartname ✓ · kalite ✓",
+    "✓ Üç OS × iki Node LTS, üç yeşil koşu — `.github/workflows/test.yml:13-14` + koordinatör CI kanıtı (2416082/run 32882138246, c6b9998, d2a7e00)",
+    "✓ `claude` kurulu olmadan aynı sonuç — `test/run.js:3928-3941` (PATH yalnız fikstür dizini), `6317-6331` (sahte binary"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T18:28:22.837Z",
+  "usedAt": "2026-08-25T18:28:22.997Z",
+  "completedSha": "d2a7e0045f6d50c95a3ec366c66d3f5173db26d6"
+}

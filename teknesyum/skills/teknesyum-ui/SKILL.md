@@ -45,6 +45,7 @@ aydınlık isteyen proje bu standardı kapatır (`"kapali": true`) ve kendi pale
 | Tailwind v4 | `assets/theme.css` | `src/index.css` başına |
 | Düz CSS / Vanilla | `assets/theme.css` | `src/theme.css`, `<link>` ile bağla |
 | WPF / .NET | `assets/Theme.xaml` | `Themes/Theme.xaml`, `App.xaml` MergedDictionaries |
+| Avalonia | `assets/Theme.axaml` | `Assets/Theme.axaml`, `App.axaml` içinde `StyleInclude` |
 | WinForms / CLI | `assets/Palette.cs` | proje köküne |
 
 **Varsayılan bağımlılıklar.** Yeni projede bunlar sorulmadan kurulur; hepsi izin veren
@@ -82,13 +83,28 @@ neon-pink    #ff00ea   ikincil dolgu, çerçeve, durum — uyarı, ters eylem
 neon-purple  #b026ff   üçüncül dolgu, çerçeve, durum — mod anahtarı, scrollbar
 pink-text    #ff54eb   pembenin METİN rolü — mono değer, kritik sayı
 purple-text  #c67eff   morun METİN rolü — ikincil bağlantı, ghost buton yazısı
-success      #34d399   yalnızca "tamamlandı"
 bg           #000000   uygulama zemini — nötr, tam siyah
 surface      #08090a   panel zemini (95% opak), zeminden ancak çerçevesiyle ayrılır
 text         #ffffff   okunması gereken HER şey — gövde, başlık, tablo, değer, etiket metni
 label        #00f3ff   etiket ve bölüm başlığı (kalın, tracking'li — uppercase değil)
+danger      →#ff00ea   pembenin ROL adı — hata, yıkıcı eylem, ters onay
+danger-text →#ff54eb   pink-text'in ROL adı — hata METNİ (dolgu hex'i metinde 7:1 vermez)
+warning      #fbbf24   YALNIZCA uyarı yüzeyi: metin, çerçeve, ikon. Dolgu ve buton yok.
+success      #34d399   yalnızca "tamamlandı"
 disabled     #71717a   YALNIZCA devre dışı kontrol. Tek gri budur.
 ```
+
+**Rol kazanır.** Durum bildiren her bileşen — hata metni, form doğrulama, uyarı kutusu,
+durum noktası, tehlike butonu — **rol tokenı** yazar: `danger`, `warning`, `success`.
+Marka ve dekor — glow, scrollbar, hero, başlık — **marka tokenı** yazmayı sürdürür.
+Rol tokenı marka tokenının **değerini izler**, kopyasını değil: CSS'te `var()`, XAML'da
+ayrı fırça, C#'ta düz atama. Üçünde de tek doğruluk kaynağı bu tablodur; **rol tokenının
+hex'i asla elden yazılmaz ve denetimde eşitliği ölçülür** (`test/u4-renk.js`).
+
+**`info` rolü bilerek yok.** Bilgi kutusu bugün yok ve kullanılmayan token borçtur.
+İhtiyaç doğunca eklenir; açılırsa maviye bağlanır ve **birincil butonla aynı ekranda
+info dolgusu kullanılmaz** — ikisi de mavi dolgu olur, kullanıcı tıklanabilir olanı
+ayırt edemez.
 
 **Pembe ve morun iki hex'i var, çünkü iki işi var.** Dolgu hex'i marka kimliğidir ve
 değişmedi; metin hex'i aynı OKLCH hue'da açıklığı artırılmış hâlidir. Hue farkı ölçüldü:
@@ -103,6 +119,36 @@ pembede 0.06°, morda 0.11° — göz aynı rengi görür, kontrast ölçer geç
 
 `neon-blue` (15.26 / 14.49) ve `success` (10.92 / 10.37) 7:1'i zaten geçiyor; onlarda rol
 bölünmesi yok, tek hex iki işi de görür.
+
+**`warning #fbbf24` — yalnızca uyarı yüzeyi: metin, çerçeve, ikon. Dolgu ve buton yok.**
+Kısıt `success`in kalıbının aynısıdır, yeni kalıp değil. Amber, `success`ten sonra neon
+üçlünün dışındaki **ikinci** kromatik ailedir; "üçlü saflığı" zaten bugün de yoktu.
+
+Yasağın gerekçesi ölçüldü: amber dolgu üstünde **beyaz metin 1.67:1 — çöker**. Siyah
+metin 12.58:1 verirdi, ama dolguya izin veren bir kalıp yazının rengini her seferinde
+yeniden tartışmaya açar.
+
+**Yerine ne konur:** uyarı metni `warning` (12.58 / 11.94), çerçeve `warning/50`
+(`#08090a` üstünde **3.59:1**, 1.4.11'in 3:1 eşiğini geçer), ikon aynı renk. Eylem
+gerekiyorsa buton **birincil** (mavi) ya da **`danger`** (pembe) olur; uyarı rengi
+butona girmez.
+
+**Amber `/50` merdiveni taşıyor, pembe ve mor taşımıyordu.** Ölçüldü, `#08090a` üstünde:
+pembe/50 **2.17**, mor/50 **1.83** — ikisi de 3:1'in altında; amber/50 **3.59** üstünde.
+Uyarı çerçevesinin `/50` olarak verilebilmesinin sebebi bu fark.
+
+**Renk tek başına anlam taşımaz — amber için de baştan.** Amber ile `success`
+protanopide ΔE2000 **15.2** ile ayrışmıyor (`docs/olcumler/renk-korlugu.md`). Yeşil ve
+amber durum satırları yan yana duruyorsa her satır renge ek olarak bir **ikon ya da
+metin** taşır; istisnası yok.
+
+**Şerh:** `warning` hex'i `U9` ΔE ölçümüne tabidir. Kötü çıkarsa değişecek olan tek şey
+bu hex satırıdır; rol adı ve kısıt değişmez.
+
+| Rol | Hex | `#000000` | `#08090a` |
+|---|---|---|---|
+| **warning** · uyarı yüzeyi | `#fbbf24` | **12.58** | **11.94** |
+| warning `/50` · çerçeve | `#826417` (komposit) | 3.57 | **3.59** |
 
 Bir ekranda **mavi baskın, pembe vurgu, mor seyrek**. Pembe ve morun asıl yeri
 **durum**tur: hover, focus, seçim, sürükleme. Kalıcı pembe metin, bilinçli marka vurgusu
@@ -148,9 +194,41 @@ taşıyıcısı olur: şekil, ikon, metin ya da konum.
 
 Ölçüt tek cümle: **ekran görüntüsünü gri tonlamaya çevir, bilgi hâlâ okunuyorsa geçer.**
 
+**Pembe ve mor birbirinden ayırt edilemez — ölçüldü.** Viénot 1999 ile simüle edilip
+ΔE2000 ile ölçüldü; tam tablo ve kaynaklar `docs/olcumler/renk-korlugu.md`.
+
+| Çift | Hex | Normal | Protanopi | Deuteranopi |
+|---|---|---|---|---|
+| pembe / mor | `#ff00ea` / `#b026ff` | 14.3 | **5.8** | 13.8 |
+| pembe-metin / mor-metin | `#ff54eb` / `#c67eff` | 11.7 | **5.6** | **5.2** |
+| amber / success | `#fbbf24` / `#34d399` | 39.6 | 15.2 | 22.2 |
+| amber / pembe | `#fbbf24` / `#ff00ea` | 72.0 | 78.4 | 65.6 |
+| mavi / success | `#00f3ff` / `#34d399` | 23.0 | 31.5 | 32.7 |
+| mavi / mor | `#00f3ff` / `#b026ff` | 54.2 | 45.4 | 30.2 |
+
+Eşikler: **< 10 ayırt edilemez · 10–20 zayıf, tek ayırt edici olamaz · > 20 yeterli.**
+Bu eşikler pratiktir, **WCAG karşılığı yoktur.** Ölçü ΔE2000'dir, kontrast oranı değil:
+kontrast yalnız parlaklık farkını görür ve eş parlaklıklı vurgu çiftlerinde körleşir.
+
+İki kural çıktı:
+
+1. **Pembe ve mor aynı ekranda tek ayırt edici olamaz.** Yerine biri yeterli: çifti böl
+   ve birini `neon-blue` `#00f3ff` ile değiştir (mavi–mor en kötü durumda 30.2), ya da
+   ikinci bir taşıyıcı ekle (ikon, etiket, konum), ya da ikisini aynı anda gösterme.
+   Yasak olan renklerin kendisi değil, **tek taşıyıcı olmaları.**
+2. **Renk hiçbir durumda tek taşıyıcı olamaz** — durum her zaman ikon, etiket ya da
+   konumla da kodlanır (WCAG 1.4.1, A). Palet değişmeden kalıcı çözüm budur: dikromat
+   kullanıcıda yedi vurgu renginden üçü (pembe, mor, mavi) tek bir mavi-mor kümesine,
+   ikisi (amber, success) tek bir sarı-zeytin kümesine düşüyor.
+
+Mavi ayırt edici taşıyabilen tek vurgu rengidir; mavili çiftler en kötü durumda 30.2.
+`amber / success` protanopide 15.2 ile zayıftır — "uyarı" ile "tamamlandı" yalnız renkle
+ayrılmaz. Tritanopi ve anomali şiddetleri **ölçülmedi.**
+
 **Dolgulu butonun yazısı siyahtır.** Neon dolgu üzerine beyaz yazı `neon-blue`'da
 1.38:1 verir — okunmaz. `tk-btn-primary` ve `tk-btn-danger` `color: #000` kullanır.
-Kural asset'te uygulanıyordu ama burada yazılı değildi.
+Kural asset'te uygulanıyordu ama burada yazılı değildi. `warning` dolgulu buton diye
+bir şey yok (yukarıdaki kısıt); olsaydı yazısı da siyah olurdu — beyaz 1.67:1 verir.
 
 **Zemin düz renk değil, yumuşak geçişli bir gradienttir.** Uygulamanın tamamını kaplayan
 tek bir gradient bulunur; panel ve kutular onun üstüne oturur. Düz `#000000` dolgu eksik
@@ -191,6 +269,33 @@ PDF'i, dış sayfa) `surface` çerçeve içine alınır, kenara dayanmaz.
 
 Glow **kutuya** uygulanır: dolgulu buton `box-shadow: 0 0 20px <renk>40`, çerçeveli kutu
 `inset 0 0 8px <renk>`, ikon `drop-shadow(0 0 5px <renk>)`. Glow'suz neon yüzey yok.
+
+**Glow'un payı: 24px.** Dışa taşan bir hale komşusuna 24px'ten yakınsa komşunun altında
+kesilir ve kirli bir kenar bırakır. Kural: dışa taşan glow taşıyan her yüzeyin çevresinde
+en az **24px** boşluk bulunur (§8 aralık merdiveninin en üst basamağı). Boşluk yoksa glow
+konmaz — yerine `/50` kenarlık kullanılır.
+
+**Kuralın sınırı ve tek muafiyeti.** Pay kuralının gerekçesi dışa taşan halenin komşuda
+kesilmesidir; kapsam o gerekçeyle çizilir:
+
+- **Inset glow** (`inset 0 0 8px <renk>`) dışa taşmaz → pay talebi hiç doğmaz. Muafiyet
+  değil, **kuralın tanım alanı dışı.**
+- **Scrollbar** tek gerçek muafiyettir: 10px yolda 24px pay fiziksel olarak imkânsız ve
+  thumb'ın komşusu yok, kesilme görünmez.
+- **`--tk-glow-hero`** (blur 8, `drop-shadow`) taşması küçüktür ama vardır: hero sayı
+  panel kenarına 24px'ten yakınsa aynı pay kuralına girer.
+
+Tek cümlede: *24px payı yalnız dışa taşan glow ister; taşmayan (inset) ve kesişecek
+komşusu olmayan (scrollbar) yüzeyler kapsam dışıdır.*
+
+Bu muafiyetler **pay** kuralına aittir. Gölge **animasyonu** yasağı ayrı bir kuraldır ve
+istisnası yoktur (§5.4 → M6): scrollbar thumb'ının halesi bu yüzden duruk kalır, yalnız
+dolgu rengi geçer.
+
+**Glow ve kaydırma.** Glow, kaydırılabilir ya da sanallaştırılmış tekrar eden öğeye (liste
+satırı, tablo satırı, grid hücresi) verilmez; kapsayıcı panele verilir ve satır kenarlıkla
+ayrılır. WPF'te tekrar eden öğede `DropShadowEffect` **mutlak yasaktır**. Sayı eşiği yok —
+gerekçe, kapsam tablosu ve ölçüm reçetesi `references/motion.md` **M15**'te.
 
 **Metne glow verilmez.** Ölçüldü: hale kenarları yumuşatıyor, küçük puntoda okunurluğu
 düşürüyor, ekran görüntüsünde bulanık çıkıyor. Neon etkisi zaten renkten geliyor. Tek
@@ -432,7 +537,8 @@ Görsel sıra soldan sağa şu olur: `Destek ☕` · `Teknesyum` · küçült ·
   `WindowChrome.IsHitTestVisibleInChrome="True"` (WPF) taşır; şeridin kalanı sürüklenir.
 - **Tıklama alanı 24×24 DIP'ten küçük olamaz** (§5.3), görünen yazı daha küçük olabilir.
 
-Hazır bileşen: `assets/Signature.tsx` (React) · `assets/Signature.xaml` (WPF).
+Hazır bileşen: `assets/Signature.tsx` (React) · `assets/Signature.xaml` (WPF) ·
+`assets/Signature.axaml` (Avalonia).
 Linkler `assets/links.json`'da:
 - GitHub: `https://github.com/Teknesyum`
 - Destek: `https://github.com/sponsors/Teknesyum` — **aktif**
@@ -501,8 +607,12 @@ buton, `1.1` ikon.
 **Yerleşim, piksel disiplini, gradient ve geri bildirim yüzeyleri:** `references/layout.md`.
 Bir panel, pencere veya sayfa yerleşimi kurarken o dosya okunur.
 
-**Hareketin gerekçeleri:** `references/motion.md`. §5.4'ün tabloları oradaki `M1` … `M14`
+**Hareketin gerekçeleri:** `references/motion.md`. §5.4'ün tabloları oradaki `M1` … `M15`
 başlıklarına atıf verir; **hareket işi yapmadan önce o dosya okunur.**
+
+**Giriş, form doğrulama, modal ve toast kuracaksan `references/forms.md` okunur:**
+placeholder yasağı ve ikamesi, hata çerçevesi/metni ölçümleri ve toast çeşit sınırı orada;
+web karşılığı `assets/forms.css`, WPF karşılığı `assets/Forms.xaml`.
 
 ## 5.3 Bileşen ölçüleri
 
@@ -584,6 +694,22 @@ Anahat, sekme şablonunun **kökünün kendisidir** — kökün içindeki karde�
 Seçili ve seçili olmayan hâlin **dört kenarı da** canlı görüntüde doğrulanır. Onay kutusunu
 taşıyan panele sabit `Height` verilmez; alt kenarı yiyen şey odur.
 
+**Metin girişi** — `min-height` **40 DIP** *(varsayılan, ölçülmedi — oran tahmini)*:
+16px metin + 12 DIP x 2 dikey dolgu. Buton 14 DIP dikey dolgu kullanıyor, giriş bir kademe
+dar. Bu değer 24 DIP hedef tabanının yerine geçmez, onu aşar. Caret `--tk-blue`, seçim
+mavi `/30`. **Placeholder yoktur** — gerekçe ve ikamesi `references/forms.md` §1.
+
+**Modal** — genişlik `min(560px, 90vw)` *(varsayılan, ölçülmedi)*, karartma
+`rgba(0, 0, 0, 0.6)` *(varsayılan, ölçülmedi)*, gövde `--tk-measure`. Arka plan tıklaması
+onay isteyen modalda **kapatmaz**, bilgi modalında **kapatır**; `Esc` her ikisinde kapatır.
+WPF'te ayrı `Window` + `ShowDialog()`; aynı pencere içi overlay ise `IsFocusScope` yetmez,
+`KeyboardNavigation.TabNavigation="Cycle"` + açılışta `Keyboard.Focus` + kapanışta dönüş.
+
+**Toast** — sağ alt, kenarlardan 24 DIP, en fazla 3, dördüncü gelince en eski düşer.
+Ömür 6 sn *(varsayılan, ölçülmedi)*; `danger` toast kalıcıdır, elle kapatılır. Hover'da ve
+klavye odağı içerideyken sayaç durur. Kapat çarpısı hedef alanı 24x24, simge 14 DIP.
+`aria-live="polite"` kapta; `role="alert"` yalnız kalıcı hata toast'ında.
+
 **Bilgi rozeti** — teknik/kritik ayarın yanında **12×12** boyutunda, üst simge konumunda,
 metinden **6 DIP** uzakta `?`. Tooltip ayrıntılı ve **iki dilli**. Hover'da yalnızca
 **rengi** değişir: glow yok, büyüme yok, kayma yok.
@@ -600,7 +726,7 @@ paylaşır; aynı şeritte iki ayrı ölçü kullanılmaz.
 
 **Hareket işi yapmadan önce `references/motion.md` okunur.** Bu bölümde tablolar ve
 tokenlar durur; her satırın **neden** orada olduğu `motion.md`'dedir ve satırların yanındaki
-`M1` … `M14` atıfları oradaki başlıkları gösterir. Gerekçeyi okumadan tabloyu uygulayan
+`M1` … `M15` atıfları oradaki başlıkları gösterir. Gerekçeyi okumadan tabloyu uygulayan
 kişi tabloyu yanlış uygular — atıf süs değil, işin parçasıdır.
 
 **Duruş: bu tema animasyonlu bir temadır.** Durgun teslim varsayılan değil, eksiktir.
@@ -677,6 +803,7 @@ Sınırlar kesindir; her satırın gerekçesi (hit-test, yankı, kademe) → **M
 | Odak | halka **anında** belirir | halkayı yumuşatarak geciktirmek → 0 ms bırak | M2 |
 | Giriş | 8 DIP kayma + opaklık, 240 ms | 40 DIP uçuş, dönerek gelme → 8 DIP ile aynı etki | M2 |
 | Liste | 40 ms kademe, **en çok 6 eleman** | 20 elemanı tek tek düşürmek → kademeyi kaldır, hepsi birlikte belirsin | M8 |
+| Kaydırma | tekil yüzeyde duruk glow | tekrar eden öğede glow, WPF `DropShadowEffect` → glow kapsayıcı panele | M15 |
 
 ### Sonsuz döngü — yasak, iki adı konmuş istisna
 
@@ -779,7 +906,7 @@ Lisansı olmayan depo "serbest" demek değildir — telif varsayılan olarak sah
   taşımaz (§2, WCAG 1.4.1)
 - Durum noktasını yalnız renkle ayırmak → dolu daire / halka şekil farkı (§2)
 - §5.4 tablosunu `references/motion.md` okumadan uygulamak → satırların gerekçesi orada,
-  atıflar `M1` … `M14`
+  atıflar `M1` … `M15`
 - Etiketi UPPERCASE veya Title Case yazmak → ilki büyük gerisi küçük (§3)
 - Beş satırlık paragraf, boşluksuz açıklama metni → 2-4 satırlık bloklar (§3.2)
 - `width`/`height`/`box-shadow` animasyonu → `transform` + `opacity` (§5.4)
@@ -796,6 +923,7 @@ Lisansı olmayan depo "serbest" demek değildir — telif varsayılan olarak sah
 - Tek renkli odak halkası → mavi halka mavi dolguda 1.00:1; çift katman (§5.3)
 - `:focus` kullanmak → `:focus-visible`; farede halka çıkmaz (§5.3)
 - İmza bloğunu ana ekrana ya da alt bilgiye koymak → başlık çubuğu, küçültün solu (§4)
+- Liste/tablo satırına glow vermek → glow kapsayıcı panele, satır kenarlıkla ayrılır (M15)
 
 ## 7. Masaüstü ve dil yamaları
 
@@ -805,6 +933,13 @@ pencere çerçevesi ve başlık çubuğu, `locale/` klasörü. Web/React işinde
 **Hareket işi yapan her platformda `references/motion.md` zorunlu** — web, React, Electron,
 WPF, WinForms ayrımsız. §5.4'te kalan tablolar orayı gösterir; gerekçe okunmadan tablo
 uygulanmaz.
+
+**Avalonia işinde `references/avalonia.md` zorunlu.** `assets/Theme.xaml` orada
+çalışmaz: `SystemParameters.FocusVisualStyleKey`, `Style.Triggers`, `Storyboard` ve
+`LineStackingStrategy` Avalonia'da yok. Karşılığı `assets/Theme.axaml` ve
+`assets/Signature.axaml`; token adları birebir aynı, değişen yalnız mekanizma.
+`references/desktop.md` ve `references/motion.md` Avalonia'da da yürürlüktedir —
+kural değişmedi, aracı değişti.
 
 ## 8. Varsayılanlar — tartışılmadan uygulanır
 

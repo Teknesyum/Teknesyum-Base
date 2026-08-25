@@ -10006,6 +10006,31 @@ ol('zil damgasi yazilamazsa ses yine calar', () => {
   }
 });
 
+console.log('\nUI suiteleri (U3-U9)');
+
+const UI_SUITE = [
+  'u3-forms.js',
+  'u4-renk.js',
+  'u7-avalonia.js',
+  'u8-glow.js',
+  'u9-renkkorlugu.js',
+];
+
+for (const ad of UI_SUITE) {
+  ol('suite ' + ad + ' tek başına geçiyor', () => {
+    const r = spawnSync(process.execPath, [path.join(__dirname, ad)], {
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    if (r.error) throw new Error(ad + ' çalıştırılamadı: ' + r.error.message);
+    esit(
+      r.status,
+      0,
+      ad + ' düştü — son çıktı: ' + String(r.stdout).slice(-600) + String(r.stderr).slice(-600)
+    );
+  });
+}
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

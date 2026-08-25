@@ -1,7 +1,8 @@
 # Masaüstü ve yerelleştirme — Teknesyum neon
 
 WinForms/WPF projelerinde zorunlu kurallar ve `locale/` yamaları. Web/React işinde
-bu dosyayı okuma; `SKILL.md` yeter.
+bu dosyayı okuma; `SKILL.md` yeter. Avalonia projesinde kurallar burada, mekanizma
+karşılıkları `references/avalonia.md`'de — `Theme.xaml` yerine `assets/Theme.axaml`.
 
 ## 7. Taşma ve kırpılma — masaüstü (WinForms/WPF) için zorunlu
 
@@ -201,6 +202,11 @@ yerlerden olur, teslimden önce **hepsi tek tek gezilir**:
 | Metin imleci ve seçim rengi | girdi alanları | seçim `neon-blue/30`, caret neon-blue |
 | Odak çerçevesi | klavye gezinme | noktalı native çerçeve yerine neon glow — **kaldırma, değiştir** |
 | Devre dışı görünüm | pasif düğme | `disabled` tokenı + imleç; sistemin gri gölgesi değil |
+
+**`MessageBox` yasağının ikamesi:** İkamesi `references/forms.md` §3'tedir:
+`TkModalWindow` stili + `ShowDialog()`. Yasak artık ikamesiz değil. Modal ve toast
+kalıplarının tamamı `references/forms.md`'de; web karşılığı `assets/forms.css`, WPF
+karşılığı `assets/Forms.xaml`.
 
 **Ölçüt:** ekranı gezerken "bu kutu Windows'a mı ait?" diye düşündüren bir öğe kalmışsa
 tema tamamlanmamıştır. Aynı ölçüt hata ve boş durum ekranları için de geçerlidir — en çok

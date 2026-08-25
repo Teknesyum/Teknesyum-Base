@@ -129,6 +129,24 @@ function oku(yol) {
   }
 }
 
+const TK = path.join(HOME, 'teknesyum.json');
+
+function teknesyumOku() {
+  if (!fs.existsSync(TK)) return {};
+  try {
+    const t = JSON.parse(fs.readFileSync(TK, 'utf8'));
+    if (t && typeof t === 'object' && !Array.isArray(t)) return t;
+  } catch {}
+  return null;
+}
+
+function izSil(t) {
+  delete t.claudeMdRulesEklendi;
+  if (Object.keys(t).length)
+    ekle(TK, JSON.stringify(t, null, 2), 'kurulum izi silindi (teknesyum.json)');
+  else cikar(TK, 'teknesyum.json kaldırıldı (yalnız kurulum izi taşıyordu)');
+}
+
 function planDenetle() {
   const engel = [];
   for (const is of plan) {
@@ -276,12 +294,19 @@ function kaldir() {
   const cp = path.join(HOME, 'CLAUDE.md');
   if (fs.existsSync(cp)) {
     const r = oku(cp);
+    const t = teknesyumOku();
     if (!r.ok) hata.push('CLAUDE.md okunamadı, dokunulmadı: ' + r.hata);
     else if (/(^|\n)@RULES\.md(\r?\n|$)/.test(r.govde)) {
-      const yeni = r.govde.replace(/(^|\n)@RULES\.md(\r?\n|$)/, '$1');
-      if (yeni === '') cikar(cp, 'CLAUDE.md kaldırıldı (yalnız @RULES.md taşıyordu)');
-      else ekle(cp, yeni, "CLAUDE.md'den @RULES.md çıkarıldı");
-    } else atlanan.push("CLAUDE.md'de eklenti izi yok, dokunulmadı");
+      if (t && t.claudeMdRulesEklendi === true) {
+        const yeni = r.govde.replace(/(^|\n)@RULES\.md(\r?\n|$)/, '$1');
+        if (yeni === '') cikar(cp, 'CLAUDE.md kaldırıldı (yalnız @RULES.md taşıyordu)');
+        else ekle(cp, yeni, "CLAUDE.md'den @RULES.md çıkarıldı");
+        izSil(t);
+      } else atlanan.push('@RULES.md satırını kurulum eklemedi (iz yok), sizin sayıldı ve korundu');
+    } else {
+      atlanan.push("CLAUDE.md'de eklenti izi yok, dokunulmadı");
+      if (t && t.claudeMdRulesEklendi === true) izSil(t);
+    }
   }
 
   hata.push(...planDenetle());
@@ -389,7 +414,16 @@ async function main() {
   const mevcut = fs.existsSync(cp) ? oku(cp) : { ok: true, govde: '' };
   if (!mevcut.ok) hata.push('CLAUDE.md okunamadı, dokunulmadı: ' + mevcut.hata);
   else if (/@RULES\.md/.test(mevcut.govde)) atlanan.push('CLAUDE.md zaten @RULES.md taşıyor');
-  else ekle(cp, '@RULES.md\n' + mevcut.govde, "CLAUDE.md'ye @RULES.md eklendi");
+  else {
+    ekle(cp, '@RULES.md\n' + mevcut.govde, "CLAUDE.md'ye @RULES.md eklendi");
+    const t = teknesyumOku();
+    if (t) {
+      t.claudeMdRulesEklendi = true;
+      ekle(TK, JSON.stringify(t, null, 2), 'kurulum izi yazıldı (teknesyum.json)');
+    } else {
+      atlanan.push('teknesyum.json bozuk — @RULES.md izi yazılamadı, kaldırmada satır korunacak');
+    }
+  }
 
   hata.push(...planDenetle());
   if (hata.length) plan.length = 0;

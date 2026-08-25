@@ -235,7 +235,9 @@ function katmanB() {
     'amberin RGB kanalları 251;191;36 olmalı');
   onay('B7 Ansi.Success duruyor', ansi.includes(`${ESC}[38;2;52;211;153m`));
   // ANSI kanalları hex ile aynı sayıyı söylüyor mu.
-  const sgr = ansi.match(/Warning\s*=\s*"\[38;2;(\d+);(\d+);(\d+)m"/);
+  const sgr = ansi.match(
+    new RegExp(`Warning\\s*=\\s*"${ESC}\\[38;2;(\\d+);(\\d+);(\\d+)m"`)
+  );
   esit('B7 ANSI kanalları amberle aynı', sgr.slice(1, 4).map(Number).join(','), amberKanal.join(','));
 
   // B8. Kısıt metni üç dosyada da yazılı. Kısıt yazılı değilse token serbesttir.

@@ -134,7 +134,13 @@ Açık soru: yok
 Üç alan yeter: hangi paket ve durumu, raporun yolu, açık soru. Değişen dosya listesi
 uzunsa onu da yazma — rapor dosyasında zaten var.
 
-**İş yarıda duruyorsa dönüş bloğu yetmez.** Oturum limiti, beklenen karar, dışarıdan
+**Kullanıcıdan bir şey bekliyorsan dönüş bloğu yetmez** — iş yarıda kalmış olsun ya da
+bitmiş olsun. Ölçüldü (25.08.2026): kural yalnız "yarıda duruyorsa" diye yazılıydı;
+sözleşmenin bittiği ama sıradakinin sorulduğu bir turda hiçbir yer başlığı istemedi,
+soru bloğun üçüncü satırına sıkıştı ve kullanıcı ne yapacağını bulamadı. Ölçüt işin
+durumu değil, senin beklentindir.
+
+Oturum limiti, beklenen karar, dışarıdan
 gelecek bir cevap — duruşun bedelini kullanıcı öder ve ne yapacağını senden öğrenir.
 Mesajın en altına numaralı **Senden istediklerim** bölümü koy; her madde ne yapılacağını
 ve kopyalanacak tam metni versin:

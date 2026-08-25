@@ -6,6 +6,27 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.58.0] - 2026-08-25
+
+### Fixed
+
+- **Two closing obligations shared one slot, so the second was never voiced.** The Stop
+  gates were chained with `||`: a turn that both declared the work finished without a
+  return block and waited on a decision only ever heard about the first. The user asked
+  why the "what I need from you" section was missing — the rule was written, the hook for
+  it existed, and it simply never ran that turn. The gates are now collected and reported
+  together. The return-block instruction and its written spec both said the block is at
+  most five lines with one open question on the third, which structurally cannot hold a
+  numbered, copyable section; both now state that the ceiling covers the block alone and
+  does not stand in for the heading. The spec asked the wrong question too — whether the
+  work was paused, when what matters is whether anything is expected of the user.
+- **Five UI suites existed and none of them ran.** 750 checks across 95 kB of test code,
+  wired to neither `npm test` nor CI. A suite that is written but not connected is worse
+  than one that was never written, because the green report does not cover what it appears
+  to. A runner now drives all six suites and both entry points call it.
+- **Two lint errors that had been failing CI.** An iterable callback returning a value,
+  and a literal control character embedded in a regular expression.
+
 ## [2.57.0] - 2026-08-25
 
 ### Fixed

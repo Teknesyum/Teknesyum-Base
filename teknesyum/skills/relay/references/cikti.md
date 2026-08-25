@@ -50,6 +50,12 @@ Birinci satır ne bitti + durum. İkinci satır rapor dosyasının yolu — **g�
 değil dosyaya yazılır**, karşı taraf dosyayı kendi okur. Üçüncü satır varsa tek açık
 soru; yoksa yazma.
 
+**Beş satır tavanı yalnız bloğun kendisi içindir.** Blok `Senden istediklerim`
+başlığının yerine geçmez. Üçüncü satırdaki soru işi tarif eder, nasıl yapılacağını
+değil; kullanıcıdan karar ya da aksiyon bekliyorsan bloğu bas, hemen ardından başlığı aç
+ve numaralı maddelerde tam kopyalanabilir metni ver. Ölçüldü (25.08.2026): iki kural
+birbirini kesti, model tavana uyup başlığı yazmadı ve kullanıcı ne yapacağını bulamadı.
+
 Açık bir paket ya da sözleşme varken bitiş bildirip bu bloğu vermeden kapanırsan `Stop`
 kancası seni geri çevirir. Şüphedeysen bloğu ver; beş satır ucuzdur, kullanıcının
 oturumlar arasında elle özet yazması değildir.

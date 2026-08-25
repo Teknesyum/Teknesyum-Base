@@ -1044,9 +1044,18 @@ const TAVAN = 25;
 function paketDenetle(j, root) {
   const govde = j.stop_hook_active ? '' : sonMesaj(j.transcript_path);
   if (!govde) return { govde: '', engel: '' };
-  const engel = devirIhlali(govde) || donusEksik(root, govde) || sendenEksik(root, govde);
+  // ÖLÇÜLDÜ (25.08.2026, kullanıcı sordu): üç kapı `||` ile diziliydi. Bir tur hem
+  // "bitti" diyip dönüş bloğu vermediğinde hem de karar beklediğinde yalnız ilki
+  // duyuluyordu; `sendenEksik` hiç değerlendirilmiyordu. Üçü bağımsız yükümlülük,
+  // tek slot paylaşamazlar — hepsi toplanır ve birlikte bildirilir.
+  const engeller = [
+    devirIhlali(govde),
+    donusEksik(root, govde),
+    sendenEksik(root, govde),
+  ].filter(Boolean);
+  const engel = engeller.join('\n\n');
   if (engel) ciktiEkle({ decision: 'block', reason: engel });
-  return { govde, engel: engel || '' };
+  return { govde, engel };
 }
 
 // ÖLÇÜLDÜ: tavan vardı, taban yoktu. Uzun bloğu engelliyorduk ama işini bitiren işçi
@@ -1074,8 +1083,11 @@ const SENDEN_ALAN = /^[ \t#*]*(senden|needed|from you|senden istediklerim)[ \t]*
 // duruyordu. Kullanıcıdan iş isteyen ama duraklamayan turlar hiç yakalanmadı —
 // kural yazılıydı, dört tur üst üste unutuldu ve kullanıcı fark etti. Kalıp listesi
 // kasten dar: yanlış pozitif bir turu yakar, yanlış negatifi kullanıcı görür.
+// `mı ... mı?` biçimi kalıba eklendi. Ölçüldü: dönüş bloğuna sıkıştırılan soru iki
+// sözleşmeden hangisinin sıraya gireceğini soruyordu — apaçık bir seçim, ama liste onu
+// görmedi ve yükümlülük ikinci kez düştü.
 const ISTEK =
-  /(yeniden başlat|yeniden baslat|kapatıp aç|kapatip ac|restart|onayla|onayını|onayini|kararını (yaz|ver)|karar ver|hangisini seç|hangisini sec|sen (yap|aç|ac|çalıştır|calistir|seç|sec)\b)/i;
+  /(yeniden başlat|yeniden baslat|kapatıp aç|kapatip ac|restart|onayla|onayını|onayini|kararını (yaz|ver)|karar ver|hangisini seç|hangisini sec|sen (yap|aç|ac|çalıştır|calistir|seç|sec)\b|\b(mı|mi|mu|mü)\b[^?\n]{0,60}\b(mı|mi|mu|mü)\?)/i;
 
 function sendenEksik(root, govde) {
   const son = govde.slice(-1500);
@@ -1373,7 +1385,9 @@ function acilis(root, kapNotu, oturumId, cwd, kaynak) {
   // adları düz metne dönüyordu (ölçüldü: VidShrink açılışı, beş uyarı tek satır).
   // Marka öneki yalnız ilk satırda. Her satıra konsaydı beş kez tekrarlanırdı; hiç
   // konmasaydı blok kimsenin değil gibi dururdu.
-  parca.forEach((p, i) => duyur(p, 1, i > 0));
+  parca.forEach((p, i) => {
+    duyur(p, 1, i > 0);
+  });
   const g = guncellemeBak();
   if (g) duyur(ceviri('guncellemeVar', g.uzak, g.kurulu));
   if (depoBak(cwd, kaynak)) duyur(ceviri('depoGeride'));

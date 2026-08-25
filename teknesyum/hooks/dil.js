@@ -533,14 +533,20 @@ const S = {
       'geri alınamaz, tekrarı kullanıcı görür. Yalnız dönüş bloğunu ayrı ve kısa bir mesaj ' +
       'olarak bas: kopyalanabilir tek blok, en fazla 5 satır — birinci satır ' +
       '<paket/sözleşme> + durum, ikinci satır "Rapor: <dosya yolu>", varsa üçüncü satır ' +
-      'tek açık soru. Rapor gövdesini sohbete değil dosyaya yaz.',
+      'tek açık soru. Rapor gövdesini sohbete değil dosyaya yaz. Beş satır tavanı yalnız ' +
+      'bloğun kendisi içindir: blok **Senden istediklerim** başlığının yerine geçmez. ' +
+      'Kullanıcıdan karar ya da aksiyon bekliyorsan bloğu bas, hemen ardından başlığı aç ' +
+      've numaralı maddelerde tam kopyalanabilir metni ver.',
     en:
       'Teknesyum: with an open packet/contract you do not get to declare the work finished ' +
       'and close without a return block (multi-session.md §5.1). Do not rewrite your answer ' +
       '— a printed message cannot be taken back and the user sees the duplicate. Print only ' +
       'the return block as a separate, short message: one copyable block of at most 5 lines ' +
       '— first line <packet/contract> + status, second line "Report: <file path>", third ' +
-      'line one open question if there is one. The report body goes in a file, not the chat.',
+      'line one open question if there is one. The report body goes in a file, not the chat. ' +
+      'The five-line ceiling covers the block alone: it does not stand in for the **What I ' +
+      'need from you** heading. If you are waiting on a decision or an action, print the ' +
+      'block, then open the heading and give the exact text to copy in numbered items.',
   },
   paketSohbete: {
     tr:

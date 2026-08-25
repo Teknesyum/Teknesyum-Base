@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: node test/run.js
+      - run: node test/all.js
       - name: tests leave the tree clean
         shell: bash
         run: |

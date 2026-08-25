@@ -998,6 +998,47 @@ ol('duraklama bildiren mesaj senden bolumu olmadan kapanmaz', () => {
   icerir(o.reason, 'Senden istediklerim');
 });
 
+ol('bir turda iki yukumluluk varsa ikisi de bildirilir', () => {
+  // ÖLÇÜLDÜ (25.08.2026): kapılar `||` ile diziliydi; dönüş bloğu eksikliği yakalanınca
+  // "Senden istediklerim" hiç değerlendirilmiyordu. Kullanıcı eksik başlığı sordu.
+  const { p } = proje(0, 0);
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
+  fs.writeFileSync(
+    path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
+'---\nstatus: active\n---\n'
+  );
+  const m = 'T1 tamamlandi, yayinda. Sirada hangisi olsun, once T4 mu T5 mi?';
+  const r = calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'Stop', transcript_path: transcript(m) },
+    ek
+  );
+  const o = JSON.parse(r.out);
+  esit(o.decision, 'block');
+  icerir(o.reason, 'dönüş bloğu', 'donus blogu kapisi susmus');
+  icerir(o.reason, 'Senden istediklerim', 'ikinci kapi kisa devreye ugramis');
+});
+
+ol('donus blogu mesaji basligin yerine gecmedigini soyler', () => {
+  const { p } = proje(0, 0);
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
+  fs.writeFileSync(
+    path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
+'---\nstatus: active\n---\n'
+  );
+  const r = calistir(
+    IZLE,
+    {
+      ...ort(p),
+      hook_event_name: 'Stop',
+      transcript_path: transcript('T1 tamamlandi, butun testler gecti.'),
+    },
+    ek
+  );
+  const o = JSON.parse(r.out);
+  icerir(o.reason, 'yerine geçmez', 'bes satir tavani basligi da kapatiyor sanilabilir');
+});
+
 ol('senden bolumu varsa duraklama serbest', () => {
   const { p } = proje(0, 0);
   const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };

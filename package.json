@@ -1,10 +1,10 @@
 {
   "name": "teknesyum-base",
-  "version": "2.57.0",
+  "version": "2.58.0",
   "private": true,
   "description": "Test harness for the Teknesyum Base plugin — hooks, statusline, packaging",
   "scripts": {
-    "test": "node test/run.js"
+    "test": "node test/all.js"
   },
   "license": "AGPL-3.0-or-later"
 }

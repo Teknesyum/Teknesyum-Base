@@ -184,13 +184,25 @@ kontrol(
 
 // hover asla tek taşıyıcı olamaz: :hover taşıyan her seçici listesi :focus-visible de taşır.
 // Tek istisna, hover'ı iptal eden devre dışı kuralıdır.
+// ÖLÇÜLDÜ (25.08.2026, tur 2 denetimi): kapı önce düz `/disabled/` bakıyordu ve
+// `:hover:not(:disabled)` yazımını da iptal sanıp muaf tutuyordu — yani olumlu her hover
+// kuralı kapıdan sızabiliyordu. `:not(...)` içi soyulmadan bu kapı çalışmaz.
+const notSoy = (s) => s.replace(/:not\([^()]*\)/g, '');
 for (const { secici } of kurallar) {
   if (!secici.includes(':hover')) continue;
-  const iptal = /disabled/.test(secici);
+  const iptal = /:disabled|\[aria-disabled/.test(notSoy(secici));
   kontrol(
     iptal || secici.includes(':focus-visible'),
     "durumlar.css hover'ı tek taşıyıcı bırakıyor, odak eşi yok: " + secici
   );
+}
+// Kapının kendisi kanarya ile sınanır: iptal görünümlü ama olumlu bir hover kuralı
+// muaf tutulmamalı.
+if (/:disabled|\[aria-disabled/.test(notSoy("[data-tk='x']:hover:not(:disabled)"))) {
+  console.error('KALDI');
+  console.error('  - KANARYA DÜŞMEDİ: hover kapısı `:hover:not(:disabled)` yazımını hâlâ');
+  console.error('    iptal sanıyor. Kapı ölü. Test burada durur.');
+  process.exit(1);
 }
 
 // basılı hâl transformdan bağımsız ikinci bir taşıyıcı taşır (azaltılmış hareket).
@@ -205,14 +217,144 @@ for (const { secici, bildirimler } of kurallar) {
 
 // dört eksik durum gerçekten dolduruldu mu
 for (const parca of [
-  '.tk-toggle:disabled',
-  '.tk-slider:hover',
-  '.tk-slider:focus-visible',
-  '.tk-slider:disabled',
-  '.tk-cell[aria-disabled=',
-  '.tk-btn-icon:active',
+  "[data-tk='toggle']:disabled",
+  "[data-tk='slider']:hover",
+  "[data-tk='slider']:focus-visible",
+  "[data-tk='slider']:disabled",
+  "[data-tk='hucre']:disabled",
+  "[data-tk='ikon-buton']:active",
 ]) {
   kontrol(cssGovde.includes(parca), 'durumlar.css eksik durumu doldurmuyor: ' + parca);
+}
+
+// --- 3.1 · seçiciler gerçek işaretlemeye bağlanıyor mu ---
+// ÖLÇÜLDÜ (25.08.2026, tur 2 denetimi): tur 1'de seçiciler `.tk-toggle`, `.tk-slider`,
+// `.tk-cell`, `.tk-btn-icon` sınıflarına bağlıydı ve bu sınıflar depoda HİÇ YOK —
+// components.md çıplak Tailwind yazıyor, theme.css yalnız `.tk-btn*` tanımlıyor. Dört
+// "doldurulan" durum hiçbir öğeyle eşleşmiyordu. Kapı buradan sonra açık kalamaz.
+
+const themeCss = oku(path.join(assets, 'theme.css'));
+const tanimliSiniflar = new Set((themeCss.match(/\.tk-[a-z0-9-]+/g) || []).map((s) => s.slice(1)));
+for (const { secici } of kurallar) {
+  for (const sinif of secici.match(/\.[a-zA-Z][\w-]*/g) || []) {
+    kontrol(
+      tanimliSiniflar.has(sinif.slice(1)),
+      'durumlar.css tanımlı olmayan sınıfa bağlanıyor: ' + sinif + ' (' + secici + ')'
+    );
+  }
+}
+
+// durumlar.md §2.1'deki işaretleme fikstürü tek kaynaktır; test kendi HTML'ini uydurmaz.
+const fiksturBlok = (durumlarMd.match(/```html\n([\s\S]*?)```/) || [])[1];
+kontrol(!!fiksturBlok, 'durumlar.md §2.1 işaretleme fikstürünü taşımıyor');
+
+function fiksturuAyristir(html) {
+  const ogeler = [];
+  const yigin = [];
+  const re = /<(\/?)([a-zA-Z][\w-]*)((?:\s+[^<>]*?)?)(\/?)>/g;
+  let m;
+  while ((m = re.exec(html))) {
+    const [, kapanis, etiket, ham, kendiKapanan] = m;
+    if (kapanis) {
+      yigin.pop();
+      continue;
+    }
+    const nitelikler = {};
+    const nre = /([\w-]+)(?:\s*=\s*"([^"]*)")?/g;
+    let n;
+    while ((n = nre.exec(ham))) nitelikler[n[1]] = n[2] === undefined ? '' : n[2];
+    const oge = { etiket, nitelikler, ata: yigin.slice() };
+    ogeler.push(oge);
+    if (!kendiKapanan && !['input', 'img', 'br'].includes(etiket)) yigin.push(oge);
+  }
+  return ogeler;
+}
+
+function bilesikAyristir(bilesik) {
+  const nitelikler = [];
+  for (const a of bilesik.match(/\[[\w-]+\s*=\s*'[^']*'\]/g) || []) {
+    const p = a.slice(1, -1).split('=');
+    nitelikler.push([p[0].trim(), p[1].trim().slice(1, -1)]);
+  }
+  const notlar = (bilesik.match(/:not\([^()]*\)/g) || []).join('');
+  const govde = bilesik.replace(/:not\([^()]*\)/g, '');
+  return {
+    nitelikler,
+    devreDisiOlmali: /:disabled/.test(govde),
+    devreDisiOlmamali: /:disabled/.test(notlar),
+  };
+}
+
+function esler(oge, k) {
+  // Nitelik taşımayan bileşik hiçbir şeye bağlanmış sayılmaz: durum katmanının tek
+  // tutamağı `data-tk` sözleşmesidir, sınıf adı değil.
+  if (!k.nitelikler.length) return false;
+  for (const [ad, deger] of k.nitelikler) {
+    if (oge.nitelikler[ad] !== deger) return false;
+  }
+  const devreDisi = 'disabled' in oge.nitelikler;
+  if (k.devreDisiOlmali && !devreDisi) return false;
+  if (k.devreDisiOlmamali && devreDisi) return false;
+  return true;
+}
+
+function seciciEslesiyor(secici, ogeler) {
+  const temiz = secici.replace(/::[\w-]+/g, '').trim();
+  const bilesikler = temiz
+    .split(/\s+(?![^[]*\])/)
+    .filter(Boolean)
+    .map(bilesikAyristir);
+  const son = bilesikler[bilesikler.length - 1];
+  for (const oge of ogeler) {
+    if (!esler(oge, son)) continue;
+    if (bilesikler.length === 1) return true;
+    const ust = bilesikler[bilesikler.length - 2];
+    if (oge.ata.some((a) => esler(a, ust))) return true;
+  }
+  return false;
+}
+
+const fikstur = fiksturuAyristir(fiksturBlok || '');
+kontrol(fikstur.length >= 10, 'işaretleme fikstürü çok kısa: ' + fikstur.length + ' öğe');
+
+for (const { secici } of kurallar) {
+  for (const tek of secici.split(',').map((s) => s.trim())) {
+    kontrol(
+      seciciEslesiyor(tek, fikstur),
+      'durumlar.css seçicisi işaretleme sözleşmesinde karşılık bulmuyor: ' + tek
+    );
+  }
+}
+
+// Ters yön: fikstürdeki her `data-tk` değeri bir seçici tarafından kullanılmalı.
+// Tek bilinçli istisna `deger` — salt okunur gösterim beş durumun hiçbirini almaz.
+const fiksturDegerleri = new Set(fikstur.map((o) => o.nitelikler['data-tk']).filter(Boolean));
+const seciciDegerleri = new Set(
+  (cssGovde.match(/\[data-tk\s*=\s*'([^']*)'\]/g) || []).map((s) =>
+    s.replace(/.*'([^']*)'.*/, '$1')
+  )
+);
+for (const d of seciciDegerleri) {
+  kontrol(
+    fiksturDegerleri.has(d),
+    'durumlar.css fikstürde olmayan bir data-tk değerine bağlanıyor: ' + d
+  );
+}
+const kullanilmayan = [...fiksturDegerleri].filter((d) => !seciciDegerleri.has(d));
+kontrol(
+  kullanilmayan.join(',') === 'deger',
+  'fikstürde durum katmanına bağlanmamış öğe var: [' +
+    kullanilmayan.join(', ') +
+    '] — beklenen yalnız "deger"'
+);
+
+// Kanarya: fikstürden `disabled` sökülürse devre dışı seçicileri eşleşmemeli.
+const sakatFikstur = fiksturuAyristir((fiksturBlok || '').replace(/\sdisabled/g, ''));
+if (kurallar.every(({ secici }) => seciciEslesiyor(secici.split(',')[0].trim(), sakatFikstur))) {
+  console.error('KALDI');
+  console.error('  - KANARYA DÜŞMEDİ: fikstürden disabled söküldü, eşleşme denetimi fark');
+  console.error('    etmedi. Seçici eşleştirici ölü. Test burada durur.');
+  process.exit(1);
 }
 
 // --- 4 · WPF paritesi ---

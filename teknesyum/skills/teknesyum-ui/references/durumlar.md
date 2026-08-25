@@ -70,7 +70,59 @@ Ad kalıbı depodaki `data-tk-*` kalıbının aynısıdır (`forms.css` `data-tk
 nitelikle değiştirilir; değiştirme işi `U10` birleştirmesine aittir.
 
 WPF karşılığı `VisualStateManager` değil `ControlTemplate.Triggers`'tır —
-`assets/Durumlar.xaml` bu yolu izler, `Theme.xaml` ile `Forms.xaml` zaten öyle yazılmış.
+`Durumlar.xaml` (assets) bu yolu izler, `Theme.xaml` ile `Forms.xaml` zaten öyle yazılmış.
+
+---
+
+## 2.1 · İşaretleme sözleşmesi — durum katmanı neye bağlanır
+
+**Durum katmanı sınıf adına bağlanamaz.** Depoda `.tk-toggle`, `.tk-slider`, `.tk-cell`,
+`.tk-btn-icon` diye bir sınıf yoktur: `components.md` bu dört bileşeni çıplak Tailwind
+dizesiyle yazar (`components.md:81-84, 94-101, 108-110, 121-130`) ve `theme.css` yalnız
+`.tk-btn*` ailesini tanımlar. Uydurulmuş bir sınıf adına bağlanan kural hiçbir öğeyle
+eşleşmez — dosyada durur ama ekranda yoktur.
+
+Bağlanılan şey bu yüzden **`data-tk` niteliğidir**. Aşağıdaki tablo sözleşmedir: soldaki
+niteliği taşımayan öğe durum katmanını almaz.
+
+| Nitelik | Taşıyan öğe | Zorunlu ek |
+|---|---|---|
+| `data-tk="toggle"` | anahtarın kendisi, `<button role="switch">` | `aria-checked`, devre dışıysa `disabled` + `title` |
+| `data-tk="toggle-sap"` | anahtarın içindeki sap `<div>` | — |
+| `data-tk="slider"` | `<input type="range">` | devre dışıysa `disabled` + `title` |
+| `data-tk="hucre"` | seçilebilir değer hücresi `<button>` | `data-tk-durum`, devre dışıysa `disabled` + `title` |
+| `data-tk="deger"` | salt okunur gösterim, `<span class="tk-mono">` | — |
+| `data-tk="ikon-buton"` | ikon butonu `<button>` | `aria-label`, devre dışıysa `disabled` + `title` |
+
+Devre dışı hâlin taşıyıcısı **yerli `:disabled`**tir, `aria-disabled` değil: dördü de
+yerli `<button>` ya da `<input>`. `aria-disabled` yalnız yerli olmayan bir öğe kullanmak
+zorunda kalındığında yazılır ve o durumda `disabled` de eklenemeyeceği için odak
+yönetimi elle yapılır.
+
+Fikstür — `test/u6-durum.js` `durumlar.css`in her seçicisini bu işaretlemeye karşı sınar;
+eşleşmeyen seçici testi düşürür:
+
+```html
+<button data-tk="toggle" data-tk-durum="kapali" role="switch" aria-checked="false">
+  <div data-tk="toggle-sap"></div>
+</button>
+<button data-tk="toggle" data-tk-durum="acik" role="switch" aria-checked="true" disabled
+        title="Bu ayar bu planda değiştirilemez">
+  <div data-tk="toggle-sap"></div>
+</button>
+<input data-tk="slider" type="range" />
+<input data-tk="slider" type="range" disabled title="Önce kaynak seç" />
+<button data-tk="hucre" data-tk-durum="bos">7</button>
+<button data-tk="hucre" data-tk-durum="secili">7</button>
+<button data-tk="hucre" data-tk-durum="tamam">7</button>
+<button data-tk="hucre" data-tk-durum="bos" disabled title="Bu hücre kilitli">7</button>
+<span data-tk="deger" class="tk-mono">42</span>
+<button data-tk="ikon-buton" aria-label="Kapat"></button>
+<button data-tk="ikon-buton" aria-label="Sil" disabled title="Silme yetkin yok"></button>
+```
+
+Ölçü ve yerleşim sınıfları bu fikstürde bilerek yok: onlar `components.md`in işidir ve
+durum katmanı onlara bakmaz.
 
 ---
 
@@ -197,7 +249,7 @@ birlikte yazıyor; ikincisi çoğu tarayıcıda birincisini etkisizleştirir ve 
 kalır. **Tarayıcıda doğrulanmadı.** Bozuk çıkarsa hover'ın taşıyıcısı yalnız ray çerçevesi
 olur (4.11, tek başına yeterli) — yeni token üretilmez.
 
-### Değer hücresi / grid · `.tk-cell`
+### Değer hücresi / grid · `data-tk="hucre"`
 
 Seçilebilir kontrol. `components.md:122` ona `cursor-pointer` ve hover halkası veriyor;
 salt okunur değildir.
@@ -210,7 +262,7 @@ salt okunur değildir.
 | basılı | `scale(0.98)` + `data-tk-durum` değişimi; renk sıçraması durum değişiminin kendisidir | — |
 | devre dışı | metin + çerçeve `--tk-disabled`, dolgu şeffaf, `box-shadow: none` ile hover halkası **açıkça iptal**, `cursor: not-allowed` | 4.12 |
 
-### Değer hücresi / grid · `.tk-value`
+### Değer hücresi / grid · `data-tk="deger"`
 
 Salt okunur gösterim. Aynı adı taşıyan iki şeyin ayrıldığı yer burasıdır.
 

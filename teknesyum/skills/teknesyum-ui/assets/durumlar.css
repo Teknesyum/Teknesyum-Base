@@ -1,79 +1,87 @@
 /* Teknesyum Neon — durum katmanı. `theme.css`ten ve bileşen sınıflarından SONRA yüklenir.
 
+   SEÇİCİLER NİTELİKTEDİR, SINIF DEĞİL. Depoda `.tk-toggle`, `.tk-slider`, `.tk-cell`,
+   `.tk-btn-icon` diye bir sınıf YOK: components.md bu dört bileşeni çıplak Tailwind
+   dizesiyle yazıyor ve theme.css yalnız `.tk-btn*` ailesini tanımlıyor. Uydurulmuş sınıf
+   adına bağlanan durum katmanı hiçbir öğeyle eşleşmez, yani hiç yok demektir.
+   Bağlanılan şey bu yüzden `durumlar.md` §2'nin kendi kararı olan `data-tk` nitelik
+   sözleşmesidir; hangi öğenin hangi niteliği taşıdığı `durumlar.md` §2.1'de fikstürüyle
+   yazılı ve `test/u6-durum.js` eşleşmeyi o fikstüre karşı sınıyor.
+
    Bu dosya yalnız DURUMLAR ARASI FARKI taşır. Ölçü, yerleşim, tipografi ve yarıçap
    yazmaz — onlar `references/components.md` ile `theme.css`in. İzin verilen bildirimler
    yedi tanedir: color · background-color · border-color · box-shadow: none · cursor ·
    transform · transition. Sekizincisi eklenirse `components.md` ile iki kaynak doğar.
 
-   Gerekçeler, ölçümler ve muafiyetler: `references/durumlar.md`.
+   Gerekçeler, ölçümler ve muafiyetler: `durumlar.md` (references).
    `opacity` hiçbir durumda değişmez — yasak ve ikamesi `components.md` "Butonlar". */
 
 /* --- toggle (anahtar) ---
    Kapalı hâlin grisi `--tk-disabled`tir ve bu, tek gri kuralının TEK istisnasıdır
    (durumlar.md §4). Kapalı ile devre dışı arasındaki farkı renk yapmaz: devre dışı olan
    cursor, `title` ve `aria-disabled` taşır, kapalı olan taşımaz. */
-.tk-toggle {
+[data-tk='toggle'] {
   transition:
     border-color var(--tk-t-instant) var(--tk-e-out),
     background-color var(--tk-t-instant) var(--tk-e-out),
     transform var(--tk-t-instant) var(--tk-e-out);
 }
 /* Hover tek taşıyıcı olamaz: odak eşi aynı seçici listesindedir. Ölçüldü 5.49:1. */
-.tk-toggle:hover:not(:disabled),
-.tk-toggle:focus-visible:not(:disabled) {
+[data-tk='toggle']:hover:not(:disabled),
+[data-tk='toggle']:focus-visible:not(:disabled) {
   border-color: var(--tk-border-strong);
 }
 /* Basılı hâlin ikinci taşıyıcısı çerçevedir: azaltılmış harekette `scale` düşer,
    `theme.css` `transform: none !important` yazıyor. */
-.tk-toggle:active:not(:disabled) {
+[data-tk='toggle']:active:not(:disabled) {
   border-color: var(--tk-border-strong);
   transform: scale(0.98);
 }
-.tk-toggle:disabled {
+[data-tk='toggle']:disabled {
   border-color: var(--tk-disabled);
   background-color: transparent;
   box-shadow: none;
   cursor: not-allowed;
   transform: none;
 }
-.tk-toggle:disabled .tk-toggle-sap {
+[data-tk='toggle']:disabled [data-tk='toggle-sap'] {
   background-color: var(--tk-disabled);
 }
 
 /* --- slider ---
    Duruk ray çerçevesi `--tk-border-decorative` (2.14:1) ve bilerek 3:1 altındadır: duruk
-   taşıyıcı ray değil, sap ile sağdaki mono değerdir. Hover ve odak rayı 4.11e çıkarır. */
-.tk-slider {
+   taşıyıcı ray değil, sap ile sağdaki mono değerdir. Hover ve odak rayı 4.11'e çıkarır. */
+[data-tk='slider'] {
   transition: border-color var(--tk-t-instant) var(--tk-e-out);
 }
-.tk-slider:hover:not(:disabled),
-.tk-slider:focus-visible:not(:disabled) {
+[data-tk='slider']:hover:not(:disabled),
+[data-tk='slider']:focus-visible:not(:disabled) {
   border-color: var(--tk-border);
 }
 /* Sürükleme. `:active` fare düğmesi basılıyken sürer; sap `transform` almaz. */
-.tk-slider:active:not(:disabled) {
+[data-tk='slider']:active:not(:disabled) {
   border-color: var(--tk-border-strong);
 }
-.tk-slider:disabled {
+[data-tk='slider']:disabled {
   border-color: var(--tk-disabled);
   cursor: not-allowed;
   transform: none;
 }
-.tk-slider:disabled::-webkit-slider-thumb {
+[data-tk='slider']:disabled::-webkit-slider-thumb {
   background-color: var(--tk-disabled);
   cursor: not-allowed;
 }
-.tk-slider:disabled::-moz-range-thumb {
+[data-tk='slider']:disabled::-moz-range-thumb {
   background-color: var(--tk-disabled);
   cursor: not-allowed;
 }
 
-/* --- değer hücresi (`.tk-cell`) ---
-   Seçilebilir KONTROL. Salt okunur gösterim `.tk-value`dir ve beş durumun hiçbirini
+/* --- değer hücresi ---
+   Seçilebilir KONTROL. Salt okunur gösterim `data-tk="deger"`dir ve beş durumun hiçbirini
    almaz; ayrım `durumlar.md` §5te yazılı, bu dosyada karşılığı yoktur.
    Hover halkası `components.md`te; odak eşi `theme.css`in genel çift katman halkasıdır,
-   o yüzden burada hover kuralı YOKTUR — yalnız devre dışı hâl ve iptali yazılır. */
-.tk-cell[aria-disabled='true'] {
+   o yüzden burada olumlu bir hover kuralı YOKTUR — yalnız devre dışı hâl ve iptali. */
+[data-tk='hucre']:disabled {
   color: var(--tk-disabled);
   border-color: var(--tk-disabled);
   background-color: transparent;
@@ -81,9 +89,9 @@
   cursor: not-allowed;
   transform: none;
 }
-/* Hover halkasının açık iptali. Kaynak sırasına güvenilmez, eşit özgüllükte kural
-   `components.md`ten de gelebilir. */
-.tk-cell[aria-disabled='true']:hover {
+/* Hover halkasının açık iptali. Kaynak sırasına güvenilmez: eşit özgüllükte bir kural
+   `components.md`in ürettiği Tailwind çıktısından da gelebilir. */
+[data-tk='hucre']:disabled:hover {
   border-color: var(--tk-disabled);
   box-shadow: none;
   transform: none;
@@ -94,28 +102,28 @@
    ŞERH: bu üç değer `components.md` "Butonlar" ikon satırında da yazılı. İkinci kaynak
    bilerek bırakıldı — `components.md` bu sözleşmenin `owns` listesinde değil; tekilleştirme
    `U10` birleştirmesine ait. */
-.tk-btn-icon {
+[data-tk='ikon-buton'] {
   transition:
     color var(--tk-t-instant) var(--tk-e-out),
     background-color var(--tk-t-instant) var(--tk-e-out),
     border-color var(--tk-t-instant) var(--tk-e-out),
     transform var(--tk-t-instant) var(--tk-e-out);
 }
-.tk-btn-icon:hover:not(:disabled),
-.tk-btn-icon:focus-visible:not(:disabled) {
+[data-tk='ikon-buton']:hover:not(:disabled),
+[data-tk='ikon-buton']:focus-visible:not(:disabled) {
   color: var(--tk-pink-text);
   background-color: color-mix(in srgb, var(--tk-pink) 10%, transparent);
   border-color: color-mix(in srgb, var(--tk-pink) 50%, transparent);
 }
 /* Basılı: dolgu 1.06 → 1.42, çerçeve 2.17 → 6.11. Sıçramayı çerçeve taşır, `scale` değil —
    azaltılmış harekette `transform` düşer, çerçeve durur. */
-.tk-btn-icon:active:not(:disabled) {
+[data-tk='ikon-buton']:active:not(:disabled) {
   color: var(--tk-pink-text);
   background-color: color-mix(in srgb, var(--tk-pink) 30%, transparent);
   border-color: var(--tk-pink);
   transform: scale(0.98);
 }
-.tk-btn-icon:disabled {
+[data-tk='ikon-buton']:disabled {
   color: var(--tk-disabled);
   background-color: transparent;
   border-color: var(--tk-disabled);

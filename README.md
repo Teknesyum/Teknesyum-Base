@@ -229,11 +229,18 @@ A hook enforces the gate instead of trusting it, and it checks all four fields �
 `audit: passed` with the rest left at `—` is refused. It also checks that the fields mean
 something: `auditor_id` has to name a `live/` record belonging to an auditor that wrote no
 files, and `diff` has to intersect the contract's `owns` (see the auditor section above).
-An unsealed file cannot land in `done/`
-through `Write`, and cannot get there through the shell either — redirects, `mv`,
-`Move-Item`, `cp` and deletions targeting `done/` are refused unless the source already
-carries the seal. Reading is untouched. Without this, an agent that finished badly could
-declare itself done and quietly drop out of the audit queue.
+An unsealed file cannot land in `done/` through `Write`, and the common shell spellings
+are refused too — redirects, `mv`, `Move-Item`, `cp` and deletions targeting `done/` need
+the source to already carry the seal. Reading is untouched.
+
+**The shell half is a deny-list, and a deny-list is not a boundary.** A hook sees the
+command a tool declares, not what the process then does: `node -e` calling `fs.rename`,
+`git mv`, `install`, a junction pointing at `done/` under another name, or a .NET call
+from PowerShell all reach the directory without matching a write verb. Treat the gate as
+what stops an agent from taking a shortcut, not as what stops one determined to get
+around it. Without it, an agent that finished badly could declare itself done and quietly
+drop out of the audit queue; with it, doing so takes a deliberate detour that reads as one
+in the transcript.
 
 ### Surviving interruptions
 

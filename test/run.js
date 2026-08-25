@@ -44,6 +44,7 @@ const BOS_CFG = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-cfg-'));
 
 function calistir(script, yuk, ek) {
   const r = spawnSync(process.execPath, [script], {
+    maxBuffer: 64 * 1024 * 1024,
     input: JSON.stringify(yuk),
     encoding: 'utf8',
     env: {
@@ -1161,7 +1162,13 @@ ol('paralel hook süreçleri birbirinin kaydını silmez', () => {
     });
   const cocuk = [];
   for (let n = 0; n < 8; n++) {
-    cocuk.push(spawnSync(process.execPath, [IZLE], { input: yuk(n), encoding: 'utf8' }));
+    cocuk.push(
+      spawnSync(process.execPath, [IZLE], {
+        maxBuffer: 64 * 1024 * 1024,
+        input: yuk(n),
+        encoding: 'utf8',
+      })
+    );
   }
   const l = JSON.parse(fs.readFileSync(path.join(live, '_running.json'), 'utf8'));
   if (!Array.isArray(l)) throw new Error('liste bozulmuş');
@@ -1746,9 +1753,15 @@ function worktreeProje() {
   const main = path.join(p, 'main');
   const wt = path.join(p, 'worktree');
   fs.mkdirSync(main, { recursive: true });
-  spawnSync('git', ['-C', main, 'init', '--initial-branch=main'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', main, 'init', '--initial-branch=main'], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   fs.writeFileSync(path.join(main, 'index.js'), 'const a = 1;\n');
-  spawnSync('git', ['-C', main, 'add', 'index.js'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', main, 'add', 'index.js'], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   spawnSync(
     'git',
     [
@@ -1762,12 +1775,15 @@ function worktreeProje() {
       '-m',
       'init',
     ],
-    { encoding: 'utf8' }
+    { maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }
   );
   const relay = path.join(main, '.claude', 'relay');
   fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
   fs.writeFileSync(path.join(relay, 'contracts', 'T1.md'), '---\nstatus: active\n---\n');
-  spawnSync('git', ['-C', main, 'worktree', 'add', '--detach', wt], { encoding: 'utf8' });
+  spawnSync('git', ['-C', main, 'worktree', 'add', '--detach', wt], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   return { main, wt, relay };
 }
 
@@ -1811,7 +1827,10 @@ function ayriGitDizini() {
   const store = path.join(kap, 'store');
   fs.mkdirSync(depo, { recursive: true });
   fs.mkdirSync(path.join(kap, '.claude', 'relay', 'contracts'), { recursive: true });
-  spawnSync('git', ['init', '--separate-git-dir=' + store, depo], { encoding: 'utf8' });
+  spawnSync('git', ['init', '--separate-git-dir=' + store, depo], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   return { depo, kap, store };
 }
 
@@ -1826,7 +1845,7 @@ function ortakOku(cwd, ifade) {
         ifade +
         '))',
     ],
-    { cwd, encoding: 'utf8' }
+    { cwd, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }
   );
   return ((r.stdout || '') + (r.stderr || '')).trim();
 }
@@ -1881,7 +1900,11 @@ ol("worktree cwd'sinde iki kanca aynı röle kökünü görür", () => {
 });
 
 ol('bozuk girdide çökmez', () => {
-  const r = spawnSync(process.execPath, [DURUM], { input: 'bu json degil', encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [DURUM], {
+    maxBuffer: 64 * 1024 * 1024,
+    input: 'bu json degil',
+    encoding: 'utf8',
+  });
   esit(r.status, 0);
 });
 
@@ -2009,7 +2032,10 @@ function uiCheckupProje() {
 }
 
 function uiCheckupScan(p) {
-  const r = spawnSync(process.execPath, [UICHECKUP, p], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [UICHECKUP, p], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   esit(r.status, 0, 'uicheckup taraması');
   return JSON.parse(r.stdout);
 }
@@ -2022,7 +2048,10 @@ function uiCheckupPlan(p) {
 }
 
 function uiCheckupApply(args) {
-  return spawnSync(process.execPath, [UICHECKUP_APPLY, ...args], { encoding: 'utf8' });
+  return spawnSync(process.execPath, [UICHECKUP_APPLY, ...args], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
 }
 
 ol('uicheckup taraması deterministik plan ve digest üretir', () => {
@@ -2120,7 +2149,10 @@ function haritaProje() {
 
 ol('harita ic bagi cozer, dis paketi ayirir', () => {
   const p = haritaProje();
-  const r = spawnSync(process.execPath, [HARITA, p], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [HARITA, p], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   esit(r.status, 0, 'harita cikmali');
   const j = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'harita.json'), 'utf8'));
   esit(j['src/a.js'].ic[0], 'src/b.js', 'goreli require cozulmeli');
@@ -2131,7 +2163,10 @@ ol('harita ic bagi cozer, dis paketi ayirir', () => {
 
 ol('harita yetimi ve merkezi isaretler', () => {
   const p = haritaProje();
-  spawnSync(process.execPath, [HARITA, p], { encoding: 'utf8' });
+  spawnSync(process.execPath, [HARITA, p], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   const m = fs.readFileSync(path.join(p, '.claude', 'harita.md'), 'utf8');
   icerir(m, 'src/yalniz.js', 'yetim listelenmeli');
   icerir(m, '## Bağlar');
@@ -2141,7 +2176,10 @@ ol('harita donguyu bulur', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dongu-'));
   fs.writeFileSync(path.join(p, 'a.js'), "require('./b');\n");
   fs.writeFileSync(path.join(p, 'b.js'), "require('./a');\n");
-  spawnSync(process.execPath, [HARITA, p], { encoding: 'utf8' });
+  spawnSync(process.execPath, [HARITA, p], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   icerir(fs.readFileSync(path.join(p, '.claude', 'harita.md'), 'utf8'), '## Döngüler');
 });
 
@@ -2152,7 +2190,10 @@ ol('harita C# using satirini ad alanina baglar', () => {
     path.join(p, 'Svc.cs'),
     'using App.Models;\nusing System.IO;\nnamespace App.Svc;\n'
   );
-  spawnSync(process.execPath, [HARITA, p], { encoding: 'utf8' });
+  spawnSync(process.execPath, [HARITA, p], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   const j = JSON.parse(fs.readFileSync(path.join(p, '.claude', 'harita.json'), 'utf8'));
   esit(j['Svc.cs'].ns[0], 'App.Models', 'ic ad alani baglanmali');
   esit(j['Svc.cs'].dis.includes('System'), true, 'cerceve ad alani dis sayilmali');
@@ -2176,7 +2217,10 @@ function platformProje(cfg) {
 
 ol('platform denetimi gomulu yolu ve tek platform hedefini bulur', () => {
   const p = platformProje(null);
-  const r = spawnSync(process.execPath, [PLATFORM, p, '--kati'], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [PLATFORM, p, '--kati'], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   icerir(r.stdout, 'gömülü sürücü harfi');
   icerir(r.stdout, 'tek platform hedefi');
   icerir(r.stdout, 'CI iş akışı yok');
@@ -2185,7 +2229,10 @@ ol('platform denetimi gomulu yolu ve tek platform hedefini bulur', () => {
 
 ol('proje bazinda kapatilan kural bulgu uretmez', () => {
   const p = platformProje({ platformlar: ['win'], platformNeden: 'kabuk ilişkilendirmesi' });
-  const r = spawnSync(process.execPath, [PLATFORM, p, '--kati'], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [PLATFORM, p, '--kati'], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   icerir(r.stdout, 'Kural bu projede kapalı');
   icerir(r.stdout, 'kabuk ilişkilendirmesi');
   esit(r.status, 0, 'kapali projede kapi acik kalmali');
@@ -2446,6 +2493,7 @@ ol('platform denetimi olmayan yolu bildirir', () => {
     process.execPath,
     [PLATFORM, path.join(os.tmpdir(), 'teknesyum-yok-' + Date.now())],
     {
+      maxBuffer: 64 * 1024 * 1024,
       encoding: 'utf8',
     }
   );
@@ -2559,6 +2607,7 @@ function oturumProjesi() {
 // bekleyen test düştü — kusur kayıtta değil testteydi. Koşu kendi konfig kökünü kurar.
 function oturumCalistir(...ek) {
   const r = spawnSync(process.execPath, [OTURUM, ...ek], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, CLAUDE_CONFIG_DIR: BOS_CFG },
   });
@@ -2747,6 +2796,7 @@ function premiumKopya() {
 function premiumCalistir(komut, p, cfg, ek) {
   const argv = Array.isArray(komut) ? komut : [komut];
   const r = spawnSync(process.execPath, [PREMIUM, ...argv, '--kok', p], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: {
       ...process.env,
@@ -3006,6 +3056,7 @@ function oturumProfilOku(cfg, sid) {
     process.execPath,
     ['-e', 'process.stdout.write(require(process.argv[1]).profil())', DIL],
     {
+      maxBuffer: 64 * 1024 * 1024,
       encoding: 'utf8',
       env: {
         ...process.env,
@@ -3336,7 +3387,11 @@ ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
           dilYolu +
           ');process.stdout.write(String(d.depoSayisi())+"|"+d.s("onArastirma").join(" ")+"|"+d.s("onArastirmaHatirlatma"))',
       ],
-      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: cfg } }
+      {
+        maxBuffer: 64 * 1024 * 1024,
+        encoding: 'utf8',
+        env: { ...process.env, CLAUDE_CONFIG_DIR: cfg },
+      }
     );
     return (r.stdout || '') + (r.stderr || '');
   };
@@ -3430,7 +3485,11 @@ ol('premium notu paralel acmayi varsayilan sayar', () => {
     const r = spawnSync(
       process.execPath,
       ['-e', 'process.stdout.write(require(' + dilYolu + ').s("premiumNotu"))'],
-      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_DIL: d } }
+      {
+        maxBuffer: 64 * 1024 * 1024,
+        encoding: 'utf8',
+        env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_DIL: d },
+      }
     );
     return (r.stdout || '') + (r.stderr || '');
   };
@@ -3577,6 +3636,7 @@ function ayarOku(cfg, sid, anahtar, root) {
       anahtar,
     ],
     {
+      maxBuffer: 64 * 1024 * 1024,
       encoding: 'utf8',
       env: {
         ...process.env,
@@ -3662,7 +3722,11 @@ ol('eco notu premium notunun yarisini gecmez', () => {
           dilYolu +
           ');process.stdout.write(m.s("ecoNotu").length+" "+m.s("premiumNotu").length)',
       ],
-      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: BOS_CFG, TEKNESYUM_DIL: d } }
+      {
+        maxBuffer: 64 * 1024 * 1024,
+        encoding: 'utf8',
+        env: { ...process.env, CLAUDE_CONFIG_DIR: BOS_CFG, TEKNESYUM_DIL: d },
+      }
     );
     const [eco, prem] = String(r.stdout || '')
       .split(' ')
@@ -3675,14 +3739,34 @@ const RC = path.join(KOK, 'scripts', 'rc.js');
 
 function rcCalistir(arg, ek) {
   return spawnSync(process.execPath, [RC].concat(arg), {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, TEKNESYUM_DIL: 'tr', ...(ek || {}) },
   });
 }
 
+// ÖLÇÜLDÜ (25.08.2026, dış denetim TB-008): dört `/rc` testi makinede kurulu gerçek
+// `claude` binary'sine bağlıydı. CI'da yoktu, `claudeYolu()` null döndü, testler exit 3
+// aldı ve üç OS işi de bu yüzden kırıldı. Fikstür kendi binary'sini kurar: PATH yalnız
+// fikstür dizinini gösterir, böylece `where`/`which` araması her iki ortamda da düşer ve
+// çözüm deterministik olarak `<ev>/.local/bin` yedeğine iner.
+function rcEvKur(d) {
+  const bin = path.join(d, '.local', 'bin');
+  fs.mkdirSync(bin, { recursive: true });
+  const exe = path.join(bin, process.platform === 'win32' ? 'claude.exe' : 'claude');
+  fs.writeFileSync(exe, '');
+  if (process.platform !== 'win32') fs.chmodSync(exe, 0o755);
+  return {
+    USERPROFILE: d,
+    HOME: d,
+    CLAUDE_CONFIG_DIR: path.join(d, '.claude'),
+    PATH: bin,
+    Path: bin,
+  };
+}
+
 function rcEv() {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcev-'));
-  return { USERPROFILE: d, HOME: d, CLAUDE_CONFIG_DIR: path.join(d, '.claude') };
+  return rcEvKur(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcev-')));
 }
 
 // Transkriptler konfig kökünün altında durur. Yalnız `USERPROFILE`'ı ezen fikstür
@@ -3711,14 +3795,12 @@ ol('rc acilis sorularini kapatir, gelismis kip geri acar', () => {
   const ayar = path.join(evDizin, '.claude.json');
   const anahtar = process.cwd().replace(/\\/g, '/');
   fs.writeFileSync(ayar, JSON.stringify({ projects: {} }));
-  rcCalistir(['--metin', '--ad', 'A'], { USERPROFILE: evDizin, HOME: evDizin });
+  const evOrt = rcEvKur(evDizin);
+  rcCalistir(['--metin', '--ad', 'A'], evOrt);
   let j = JSON.parse(fs.readFileSync(ayar, 'utf8'));
   esit(j.remoteDialogSeen, true, 'evet hayir sorusu kapatilmali');
   esit(j.projects[anahtar].remoteControlSpawnMode, 'same-dir', 'kip sorusu kapatilmali');
-  const g = rcCalistir(['--gelismis', '--metin', '--ad', 'A'], {
-    USERPROFILE: evDizin,
-    HOME: evDizin,
-  });
+  const g = rcCalistir(['--gelismis', '--metin', '--ad', 'A'], evOrt);
   j = JSON.parse(fs.readFileSync(ayar, 'utf8'));
   esit(j.projects[anahtar].remoteControlSpawnMode, undefined, 'gelismis kipte soru geri gelmeli');
   esit(/--spawn/.test(g.stdout), false, 'gelismis kipte kip dayatilmamali');
@@ -3801,6 +3883,7 @@ ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
   fs.mkdirSync(baska, { recursive: true });
   fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(baska, 'S1.jsonl'));
   const r = spawnSync(process.execPath, [OTURUM, 'kaydet', 'uzak', '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, ...evOrt, CLAUDE_CODE_SESSION_ID: 'S1' },
   });
@@ -3832,6 +3915,7 @@ function filoKur() {
 ol('loadall butun projelerin durumunu tek ekranda verir', () => {
   const { dip, evOrt } = filoKur();
   const r = spawnSync(process.execPath, [OTURUM, 'toplu-yukle', '--kok', dip], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' },
   });
@@ -3853,6 +3937,7 @@ ol('loadall butun projelerin durumunu tek ekranda verir', () => {
 ol('saveall her projeyi kendi klasorune kaydeder ve depoya sizdirmaz', () => {
   const { dip, evOrt } = filoKur();
   const r = spawnSync(process.execPath, [OTURUM, 'toplu-kaydet', '--kok', dip], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' },
   });
@@ -3878,6 +3963,7 @@ ol('load son kayit olmadan onceki oturumu transkriptten devralir', () => {
   fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(dizin, 'ONCEKI.jsonl'));
   const ort = { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' };
   const r = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...ort, CLAUDE_CODE_SESSION_ID: 'BASKA' },
   });
@@ -3886,6 +3972,7 @@ ol('load son kayit olmadan onceki oturumu transkriptten devralir', () => {
   icerir(r.stdout, 'ONCEKI');
   // Argümansız /load da kayıt yokken aynı yere düşer.
   const b = spawnSync(process.execPath, [OTURUM, 'yukle', '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...ort, CLAUDE_CODE_SESSION_ID: 'BASKA' },
   });
@@ -3893,6 +3980,7 @@ ol('load son kayit olmadan onceki oturumu transkriptten devralir', () => {
   icerir(b.stdout, 'ÖNCEKİ OTURUM');
   // Devralınacak oturum bu oturumun kendisiyse geri dönülecek bir şey yoktur.
   const c = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...ort, CLAUDE_CODE_SESSION_ID: 'ONCEKI' },
   });
@@ -3920,12 +4008,14 @@ ol('transkript konfig kökünü izler, ev dizinini değil', () => {
     TEKNESYUM_DIL: 'tr',
   };
   const y = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...taban, CLAUDE_CODE_SESSION_ID: 'BASKA' },
   });
   esit(y.status, 0, 'konfig kökündeki transkript bulunmalı');
   icerir(y.stdout, 'ONCEKI');
   const k = spawnSync(process.execPath, [OTURUM, 'kaydet', 'sinav', '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...taban, CLAUDE_CODE_SESSION_ID: 'ONCEKI' },
   });
@@ -5086,6 +5176,7 @@ function profilKonfigi(ad) {
 
 function profilliOturum(ad, ...ek) {
   const r = spawnSync(process.execPath, [OTURUM, ...ek], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, CLAUDE_CONFIG_DIR: profilKonfigi(ad) },
   });
@@ -5173,6 +5264,7 @@ ol('eco filo dokumu tek satira iner, devam promptu kisalmaz', () => {
     JSON.stringify({ profil: 'eco' }) + '\n'
   );
   const r = spawnSync(process.execPath, [OTURUM, 'toplu-yukle', '--kok', dip], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' },
   });
@@ -5214,6 +5306,7 @@ ol('eco baslik tamponu kucultur, normal yarim megabayt okur', () => {
       JSON.stringify({ profil: ad }) + '\n'
     );
     return spawnSync(process.execPath, [OTURUM, 'toplu-yukle', '--kok', dip], {
+      maxBuffer: 64 * 1024 * 1024,
       encoding: 'utf8',
       env: { ...process.env, ...evOrt, TEKNESYUM_DIL: 'tr' },
     }).stdout;
@@ -5238,7 +5331,11 @@ ol('durum uc profilin ayirt edici degerlerini basar', () => {
 });
 
 ol('premium yardimi ve belgesi uc profili esit anlatir', () => {
-  const y = spawnSync(process.execPath, [PREMIUM], { encoding: 'utf8' }).stdout || '';
+  const y =
+    spawnSync(process.execPath, [PREMIUM], {
+      maxBuffer: 64 * 1024 * 1024,
+      encoding: 'utf8',
+    }).stdout || '';
   for (const s of ['node premium.js eco', 'node premium.js normal', 'node premium.js premium'])
     icerir(y, s);
   icerir(y, 'ham.jsonl.gz');
@@ -5249,7 +5346,11 @@ ol('premium yardimi ve belgesi uc profili esit anlatir', () => {
 });
 
 ol('premium belgesi ve yardimi hicbir yere yazmadigini soyler', () => {
-  const y = spawnSync(process.execPath, [PREMIUM], { encoding: 'utf8' }).stdout || '';
+  const y =
+    spawnSync(process.execPath, [PREMIUM], {
+      maxBuffer: 64 * 1024 * 1024,
+      encoding: 'utf8',
+    }).stdout || '';
   icerir(y, 'Hiçbiri depo dosyası yazmaz');
   const k = fs.readFileSync(path.join(KOK, 'commands', 'premium.md'), 'utf8');
   icerir(k, '**Betik hiçbir depo dosyası yazmaz.**');
@@ -5263,7 +5364,7 @@ ol('premium.js require edildiginde CLI calismaz', () => {
   const r = spawnSync(
     process.execPath,
     ['-e', 'require(process.argv[1]);process.stdout.write("SESSIZ")', PREMIUM],
-    { encoding: 'utf8' }
+    { maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }
   );
   esit((r.stdout || '').trim(), 'SESSIZ', 'require CLI ciktisi bastı: ' + r.stdout);
   esit(r.status, 0, 'require cikis kodu');
@@ -5277,7 +5378,11 @@ const surum = require(SURUM);
 // Uzak sorgu hiç gerçek ağa çıkmamalı: `origin` yerel bir bare depoya bakar, `ls-remote`
 // dosya sisteminden okur. CI ağsız koşabilir.
 function git(a, d) {
-  spawnSync('git', a, { cwd: d, stdio: 'ignore' });
+  spawnSync('git', a, {
+    maxBuffer: 64 * 1024 * 1024,
+    cwd: d,
+    stdio: 'ignore',
+  });
 }
 
 function surumKur(kuruluSurum, etiket, pazarsiz) {
@@ -5327,6 +5432,7 @@ function surumAcilis(cfg) {
 
 function surumCalistir(cfg, ek) {
   const r = spawnSync(process.execPath, [SURUM].concat(ek || []), {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, CLAUDE_CONFIG_DIR: cfg },
   });
@@ -5504,6 +5610,7 @@ ol('durum ciktisi etiket alanini tasir, pano ikinci kontrol yazmaz', () => {
 ol('guncelle komut bulunamayinca sebebi doner, cokmez', () => {
   const { cfg } = surumKur('1.0.0', 'v9.9.9');
   const r = spawnSync(process.execPath, [SURUM, 'guncelle'], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, PATH: path.join(cfg, 'bos-dizin') },
   });
@@ -5532,6 +5639,7 @@ function sahteClaude(cfg) {
 ol('guncelle komut basariyla donse bile kurulu surum hedefe ulasmadiysa tutmadi der', () => {
   const { cfg } = surumKur('1.0.0', 'v9.9.9');
   const r = spawnSync(process.execPath, [SURUM, 'guncelle', '--json'], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, PATH: sahteClaude(cfg) },
   });
@@ -5545,6 +5653,7 @@ ol('guncelle komut basariyla donse bile kurulu surum hedefe ulasmadiysa tutmadi 
 ol('guncelle sonucu json olarak da okunur ve dogrulama alanlari tasir', () => {
   const { cfg } = surumKur('1.0.0', 'v9.9.9');
   const r = spawnSync(process.execPath, [SURUM, 'guncelle', '--json'], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, PATH: path.join(cfg, 'bos-dizin') },
   });
@@ -5608,7 +5717,10 @@ function taramaProje(depo) {
 }
 
 function taramaCalistir(p, ...arg) {
-  const r = spawnSync(process.execPath, [TARAMA, ...arg, '--proje', p], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [TARAMA, ...arg, '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   return { out: r.stdout || '', err: r.stderr || '', kod: r.status };
 }
 
@@ -5631,11 +5743,17 @@ function agac(kok) {
 }
 
 ol('tarama profil verilmeden kullanimi basip cikar', () => {
-  const r = spawnSync(process.execPath, [TARAMA], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [TARAMA], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   esit(r.status, 2, 'kullanim kodu');
   icerir(r.stdout, 'kullanım:');
   esit(
-    spawnSync(process.execPath, [TARAMA, '--json'], { encoding: 'utf8' }).status,
+    spawnSync(process.execPath, [TARAMA, '--json'], {
+      maxBuffer: 64 * 1024 * 1024,
+      encoding: 'utf8',
+    }).status,
     2,
     'bayrak profil yerine gecmez'
   );
@@ -5990,6 +6108,7 @@ function ekranBash(c, komut, cwd) {
 function ekranAc(c, dakika) {
   const arg = dakika === undefined ? [] : [String(dakika)];
   const r = spawnSync(process.execPath, [EKRAN, '--ac', ...arg], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: {
       ...process.env,
@@ -6250,7 +6369,10 @@ function uiProje(secenek) {
 }
 
 function uiCalistir(p, ...arg) {
-  const r = spawnSync(process.execPath, [TARAMA, 'ui', ...arg, '--proje', p], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [TARAMA, 'ui', ...arg, '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   return { out: r.stdout || '', err: r.stderr || '', kod: r.status };
 }
 
@@ -6259,7 +6381,11 @@ function uiJson(p, ...arg) {
 }
 
 function uiDepo(p) {
-  const vcs = (...a) => spawnSync('git', ['-C', p, ...a], { encoding: 'utf8' });
+  const vcs = (...a) =>
+    spawnSync('git', ['-C', p, ...a], {
+      maxBuffer: 64 * 1024 * 1024,
+      encoding: 'utf8',
+    });
   vcs('init', '-q');
   vcs('add', '-A');
   vcs('-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'ilk');
@@ -6520,6 +6646,7 @@ ol('ui kipi uc profil kipini bozmaz', () => {
   fs.mkdirSync(path.join(kap, 'ui'), { recursive: true });
   fs.writeFileSync(path.join(kap, 'ui', 'package.json'), '{"name":"ui","version":"1.0.0"}');
   const a = spawnSync(process.execPath, [TARAMA, 'eco', '--proje', 'ui'], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     cwd: kap,
   });
@@ -6573,8 +6700,41 @@ function beepCfg() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-beep-cfg-'));
 }
 
+// Bayt hızı 8000 seçildi: süre = data boyu / bayt hızı ve üç değer tam çıkıyor.
+// Gövde yazılmaz, `wavSure` yalnız başlığı okur — 44 bayt yeter.
+function wavYaz(yol, saniye) {
+  const hiz = 8000;
+  const veri = Math.round(hiz * saniye);
+  const b = Buffer.alloc(44);
+  b.write('RIFF', 0, 'ascii');
+  b.writeUInt32LE(36 + veri, 4);
+  b.write('WAVEfmt ', 8, 'ascii');
+  b.writeUInt32LE(16, 16);
+  b.writeUInt16LE(1, 20);
+  b.writeUInt16LE(1, 22);
+  b.writeUInt32LE(hiz, 24);
+  b.writeUInt32LE(hiz, 28);
+  b.writeUInt16LE(1, 32);
+  b.writeUInt16LE(8, 34);
+  b.write('data', 36, 'ascii');
+  b.writeUInt32LE(veri, 40);
+  fs.writeFileSync(yol, b);
+}
+
+// ÖLÇÜLDÜ (25.08.2026, dış denetim TB-008): süre testi makinedeki Windows ses
+// dosyalarına bağlıydı; macOS ve Ubuntu CI'da o klasör yok, iş kırılıyordu. Fikstür
+// kendi seslerini sentezler ve kökü `TEKNESYUM_SES_KOKU` ile gösterir.
+function sesKoku() {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ses-'));
+  wavYaz(path.join(d, 'Windows Startup.wav'), 0.22);
+  wavYaz(path.join(d, 'ding.wav'), 0.4);
+  wavYaz(path.join(d, 'Windows Default.wav'), 0.41);
+  return d;
+}
+
 function beepCalistir(argv, cfg, ek) {
   const r = spawnSync(process.execPath, [BEEP, ...argv], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: {
       ...process.env,
@@ -6591,6 +6751,7 @@ function beepCalistir(argv, cfg, ek) {
 
 function beepKanca(olay, cfg, ek) {
   const r = spawnSync(process.execPath, [BEEP_KANCA], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     input: typeof olay === 'string' ? olay : JSON.stringify(olay),
     env: {
@@ -6638,7 +6799,7 @@ ol('beep argumansiz uc olayi kaynagiyla basar, ayar dosyasi yazmaz', () => {
 });
 
 ol('beep durum tablosu sureyi wav basligindan okur', () => {
-  const r = beepCalistir([], beepCfg());
+  const r = beepCalistir([], beepCfg(), { TEKNESYUM_SES_KOKU: sesKoku() });
   icerir(r.out, '0,22 s');
   icerir(r.out, '0,40 s');
   icerir(r.out, '0,41 s');
@@ -6982,11 +7143,23 @@ ol('scan ui standart kurulu degilken bulgulari ihlal saymaz', () => {
 // Depo parca parca cekilir; testler bunu yerel bir bare depoyla uctan uca dogrular.
 const OZEL = path.join(KOK, 'scripts', 'ozel.js');
 
+// ÖLÇÜLDÜ (25.08.2026, dış denetim TB-008): kimlik yalnız testin kendi `git` çağrılarına
+// veriliyordu; `ozel.js`'in içeriden açtığı git süreçleri makinenin genel ayarına
+// düşüyordu. Global kimliği olmayan CI koşucusunda commit sessizce başarısız oluyor ve
+// iki test kırılıyordu. Üretim süreci de aynı kimliği alır.
+const GIT_KIMLIK = {
+  GIT_AUTHOR_NAME: 't',
+  GIT_AUTHOR_EMAIL: 't@t',
+  GIT_COMMITTER_NAME: 't',
+  GIT_COMMITTER_EMAIL: 't@t',
+};
+
 function ozelCalistir(argv, cfg, cwd) {
   const r = spawnSync(process.execPath, [OZEL].concat(argv), {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     cwd: cwd || cfg,
-    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg },
+    env: { ...process.env, ...GIT_KIMLIK, CLAUDE_CONFIG_DIR: cfg },
     timeout: 120000,
   });
   return { kod: r.status, out: (r.stdout || '') + (r.stderr || '') };
@@ -6994,16 +7167,11 @@ function ozelCalistir(argv, cfg, cwd) {
 
 function gitCalistir(kok, argv) {
   return spawnSync('git', argv, {
+    maxBuffer: 64 * 1024 * 1024,
     cwd: kok,
     encoding: 'utf8',
     timeout: 60000,
-    env: {
-      ...process.env,
-      GIT_AUTHOR_NAME: 't',
-      GIT_AUTHOR_EMAIL: 't@t',
-      GIT_COMMITTER_NAME: 't',
-      GIT_COMMITTER_EMAIL: 't@t',
-    },
+    env: { ...process.env, ...GIT_KIMLIK },
   });
 }
 
@@ -7126,7 +7294,12 @@ ol('ayna kurulu ama bosken acilis bunu soyler, doluyken susar', () => {
         'process.stdout.write(JSON.stringify(require(process.argv[1]).aynaDurumu(process.cwd())))',
         OZEL,
       ],
-      { encoding: 'utf8', cwd: s.proje, env: { ...process.env, CLAUDE_CONFIG_DIR: s.cfg } }
+      {
+        maxBuffer: 64 * 1024 * 1024,
+        encoding: 'utf8',
+        cwd: s.proje,
+        env: { ...process.env, CLAUDE_CONFIG_DIR: s.cfg },
+      }
     );
     return JSON.parse(r.stdout || 'null');
   };
@@ -7188,6 +7361,7 @@ ol('tavan notu 200k iddiasi tasimaz, kisitlayan degiskeni olcer', () => {
       process.execPath,
       [path.join(KOK, 'scripts', 'premium.js'), 'autocompact', '900000'],
       {
+        maxBuffer: 64 * 1024 * 1024,
         encoding: 'utf8',
         env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, ...ek },
         timeout: 60000,
@@ -7208,6 +7382,7 @@ ol('autoCompactWindow yazilinca yeniden baslatma ve tavan notu basilir', () => {
   const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ac-'));
   const c = (a) =>
     spawnSync(process.execPath, [path.join(KOK, 'scripts', 'premium.js')].concat(a), {
+      maxBuffer: 64 * 1024 * 1024,
       encoding: 'utf8',
       env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, CLAUDE_CODE_AUTO_COMPACT_WINDOW: '' },
       timeout: 60000,
@@ -7283,6 +7458,7 @@ ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
   const proje = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-logp-'));
   const c = (a, cwd) =>
     spawnSync(process.execPath, [path.join(KOK, 'scripts', 'log.js')].concat(a), {
+      maxBuffer: 64 * 1024 * 1024,
       encoding: 'utf8',
       cwd: cwd || proje,
       env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_BASE: '' },
@@ -7321,6 +7497,7 @@ ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
   fs.writeFileSync(path.join(base, 'teknesyum', '.claude-plugin', 'plugin.json'), '{}');
   const cb = (a) =>
     spawnSync(process.execPath, [path.join(KOK, 'scripts', 'log.js')].concat(a), {
+      maxBuffer: 64 * 1024 * 1024,
       encoding: 'utf8',
       cwd: proje,
       env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_BASE: base },
@@ -8168,11 +8345,16 @@ ol('uzakta yerelde olmayan is varsa tek satir uyari basilir', () => {
 // ona ulasmaz ama disktedir. Dogru soru ulasilabilirlik: uzak uc HEAD'in atasi mi?
 ol('fetch edilmis ama birlestirilmemis is geride sayilir', () => {
   const d = depoKur('geride-fetchli');
-  const u = spawnSync('git', ['-C', d.w, 'rev-parse', 'FETCH_HEAD'], { encoding: 'utf8' });
+  const u = spawnSync('git', ['-C', d.w, 'rev-parse', 'FETCH_HEAD'], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
   const sha = (u.stdout || '').trim();
   esit(/^[0-9a-f]{40}$/.test(sha), true, 'fetch sonrasi uzak uc cozulebilmeli');
   // Eski yuklem tam olarak burada yaniliyordu: nesne yerelde var, dolayisiyla `guncel`.
-  const yereldeVar = spawnSync('git', ['-C', d.w, 'cat-file', '-e', sha + '^{commit}']);
+  const yereldeVar = spawnSync('git', ['-C', d.w, 'cat-file', '-e', sha + '^{commit}'], {
+    maxBuffer: 64 * 1024 * 1024,
+  });
   esit(yereldeVar.status, 0, 'fetch edilmis commit yerelde bulunmali — hatanin kaynagi bu');
   esit(depoSurum.durum(d.w).geride, true, 'fetch edilmis geride depo geride sayilmali');
   icerir(depoAcilis(d), DEPO_SATIR);
@@ -8263,7 +8445,7 @@ ol('depo-surum.js require edilince CLI calismaz, sonuc nesne olarak okunur', () 
   const r = spawnSync(
     process.execPath,
     ['-e', 'require(process.argv[1]);process.stdout.write("SESSIZ")', DEPO],
-    { encoding: 'utf8' }
+    { maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }
   );
   esit((r.stdout || '').trim(), 'SESSIZ', 'require CLI ciktisi bastı: ' + r.stdout);
   esit(r.status, 0, 'require cikis kodu');
@@ -8666,6 +8848,7 @@ ol('kayit yokken transkriptten devralinca da devir notu basilir', () => {
   fs.mkdirSync(t, { recursive: true });
   fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(t, 'D1.jsonl'));
   const r = spawnSync(process.execPath, [OTURUM, 'yukle', 'son', '--proje', p], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, ...evOrt },
   });
@@ -8712,6 +8895,7 @@ function aynaKir(a) {
 
 function aynaOturum(a, ...ek) {
   const r = spawnSync(process.execPath, [OTURUM, ...ek], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, CLAUDE_CONFIG_DIR: a.cfg },
   });
@@ -8720,8 +8904,10 @@ function aynaOturum(a, ...ek) {
 
 function aynaAgaci(a) {
   return (
-    spawnSync('git', ['-C', a.bare, 'ls-tree', '-r', '--name-only', 'HEAD'], { encoding: 'utf8' })
-      .stdout || ''
+    spawnSync('git', ['-C', a.bare, 'ls-tree', '-r', '--name-only', 'HEAD'], {
+      maxBuffer: 64 * 1024 * 1024,
+      encoding: 'utf8',
+    }).stdout || ''
   );
 }
 
@@ -8864,7 +9050,11 @@ ol('TEKNESYUM_AYNA=0 aynayi tumden kapatir', () => {
   const r = spawnSync(
     process.execPath,
     [OTURUM, 'kaydet', 'kapali', '--proje', p, '--transkript', path.join(p, 'kaynak.jsonl')],
-    { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: a.cfg, TEKNESYUM_AYNA: '0' } }
+    {
+      maxBuffer: 64 * 1024 * 1024,
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_CONFIG_DIR: a.cfg, TEKNESYUM_AYNA: '0' },
+    }
   );
   esit(r.status, 0, 'kapali ayna cikis kodu');
   icerir(r.stdout, 'özel ayna: kayıt yerelde; özel ayna kurulu değil, push edilmedi');
@@ -8873,6 +9063,7 @@ ol('TEKNESYUM_AYNA=0 aynayi tumden kapatir', () => {
 
 function panoCalistir(cfgKok, proje, ek) {
   return spawnSync(process.execPath, [OTURUM, 'pano', '--proje', proje].concat(ek || []), {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
     env: { ...process.env, CLAUDE_CONFIG_DIR: cfgKok, TEKNESYUM_PREMIUM: '' },
   });
@@ -8951,7 +9142,11 @@ ol('profil satiri modu ve kaynagini soyler', () => {
       spawnSync(
         process.execPath,
         ['-e', 'process.stdout.write(require(process.argv[1]).profilKaynak("S9"))', DIL],
-        { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, ...(ek || {}) } }
+        {
+          maxBuffer: 64 * 1024 * 1024,
+          encoding: 'utf8',
+          env: { ...process.env, CLAUDE_CONFIG_DIR: cfg, ...(ek || {}) },
+        }
       ).stdout || ''
     ).trim();
   esit(sor({ TEKNESYUM_PREMIUM: '' }), 'makine', 'oturum kaydi yokken makine');
@@ -9108,6 +9303,7 @@ ol('konsey defteri --tur olmadan satir yazmaz', () => {
     }) + '\n'
   );
   const r = spawnSync(process.execPath, [betik, sahte, '--konu', 'x', '--yaz', hedef], {
+    maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
   });
   esit(r.status, 4, 'tur verilmeyince cikis kodu 4 olmali');
@@ -9115,7 +9311,7 @@ ol('konsey defteri --tur olmadan satir yazmaz', () => {
   const r2 = spawnSync(
     process.execPath,
     [betik, sahte, '--konu', 'x', '--tur', '2', '--yaz', hedef],
-    { encoding: 'utf8' }
+    { maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }
   );
   esit(r2.status, 0, 'tur verilince yazmali');
   icerir(fs.readFileSync(hedef, 'utf8'), '| x | 2 | 1 |');

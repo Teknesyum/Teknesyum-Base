@@ -43,7 +43,13 @@ const MAC_VARSAYILAN = {
 
 const BAYAT_MS = 7 * 24 * 60 * 60 * 1000;
 
+// Ses kökü platforma gömülüydü ve hiçbir yerden yönlendirilemiyordu. Ölçüldü
+// (25.08.2026, dış denetim TB-008): süre testi Windows'un `Media` klasöründeki gerçek
+// dosyalara bağlıydı, macOS ve Ubuntu CI'da o dosyalar yok ve iş kırılıyordu. Değişken
+// testin fikstür kökünü göstermesini sağlar; sesini başka yerde tutan kullanıcı da
+// aynı kapıdan geçer.
 function medyaKoku() {
+  if (process.env.TEKNESYUM_SES_KOKU) return process.env.TEKNESYUM_SES_KOKU;
   if (process.platform === 'win32')
     return path.join(process.env.SystemRoot || 'C:\\Windows', 'Media');
   if (process.platform === 'darwin') return '/System/Library/Sounds';

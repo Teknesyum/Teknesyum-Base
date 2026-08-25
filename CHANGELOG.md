@@ -6,6 +6,31 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.59.0] - 2026-08-25
+
+### Fixed
+
+- **The test suite depended on the machine it ran on, and CI had been red for 71 runs.**
+  Four `/rc` tests needed a real `claude` binary on PATH; the fixture now installs its own
+  and points PATH at it, so the lookup falls through the same way on a developer machine
+  and on a bare runner. Two `/ozel` tests gave a Git identity to their own `git` calls but not
+  to the git processes the command itself spawns, so a runner without a global identity
+  failed the commit silently. The sound-duration test read the headers of real Windows
+  media files, which do not exist on macOS or Ubuntu; the media root can now be pointed
+  elsewhere and the fixture synthesises three WAV headers of exactly known length. All 72
+  `spawnSync` calls got an explicit output ceiling — one UI scan had already been observed
+  truncating its JSON mid-string on macOS, which reads as a parse error rather than as
+  the buffer limit it is.
+
+### Changed
+
+- **The README claimed more than the gate delivers.** It said an unsealed contract could
+  not reach `done/` through the shell either. A hook sees the command a tool declares, not
+  what the process then does: an interpreter calling `fs.rename`, `git mv`, or a junction
+  under another name all arrive without matching a write verb. The section now says what
+  the deny-list covers and names what it cannot, which is what an external threat model
+  of the mechanism concluded independently.
+
 ## [2.58.0] - 2026-08-25
 
 ### Fixed

@@ -4,7 +4,7 @@ const { execFileSync } = require('child_process');
 const { s: ceviri, premium, profil } = require('./dil.js');
 const { PROFIL, sapmalar, sapmaSatiri } = require('../scripts/premium.js');
 const kapsayici = require('./kapsayici.js');
-const { sozlesmeAdi } = require('./contract-schema.js');
+const { sozlesmeAdi, bilinenDurum } = require('./contract-schema.js');
 // Ayna betiği kancanın yolunda değilse açılış yine de basılmalı; eksik dosya bildirimi
 // düşürmez, yalnız ayna satırını susturur.
 let aynaDurumu = () => null;
@@ -1181,7 +1181,20 @@ function acikSozlesmeler(root) {
     .map((f) => {
       const govde = metin(path.join(dir, f));
       const d = (govde || '').slice(0, 1200).match(/^status:[ \t]*(open|active|submitted)/im);
-      if (!d) return null;
+      if (!d) {
+        // Bilinen ama açık olmayan durum (done, sealed, blocked, accepted) listeden meşru
+        // düşer; bilinmeyen durum sessizce düşmez, `_sorun.log`'a bir satır bırakır.
+        const ham = ((govde || '').slice(0, 1200).match(/^status:[ \t]*([A-Za-z]+)/im) || [])[1];
+        if (!bilinenDurum(ham ? ham.toLowerCase() : null))
+          sorunYaz(
+            izKoku(root),
+            'relay-watch | bilinmeyen sözleşme durumu, listeden düşürüldü: ' +
+              f +
+              ' | status: ' +
+              (ham || '—')
+          );
+        return null;
+      }
       const owns = (govde.match(/^owns:[ \t]*\[([^\]]*)\]/im) || [])[1] || '';
       const title = (govde.match(/^title:[ \t]*(.+)$/im) || [])[1] || f.slice(0, -3);
       return {

@@ -148,17 +148,62 @@ function canonical(hedef) {
   return absolute;
 }
 
+// ÖLÇÜLDÜ (tur 2 denetimi, K4): bilinmeyen durum sessizce geçiyordu ve iki adımlık
+// yıkama mümkündü — `status: bozuk` Write sessiz geçer, ardından `bozuk -> open`
+// yazılırken eski durum bilinmediği için gerileme denetimi hiç çalışmazdı. Sessiz
+// `return` yok: bilinmeyen yeni durum da, bilinmeyen eski durum da kapalı tarafa düşer;
+// eski taraf ayrıca `_sorun.log`'a yazılır. Mesajlar dil.js'te değil burada — dil.js
+// bu sözleşmenin owns kümesinde yok, kalıp ECO_ATLAMA ile aynı.
+const DURUM_ENGELI = {
+  yeni: {
+    tr: (d) => [
+      'Bilinmeyen sözleşme durumu yazılamaz: `' + d + '`.',
+      'Geçerli durumlar: open, active, submitted, blocked, accepted, done, sealed.',
+    ],
+    en: (d) => [
+      'Unknown contract status cannot be written: `' + d + '`.',
+      'Valid statuses: open, active, submitted, blocked, accepted, done, sealed.',
+    ],
+  },
+  eski: {
+    tr: (d) => [
+      'Sözleşmenin dosyadaki durumu tanınmıyor: `' + d + '` — geçiş gerileme sayıldı.',
+      'Önce `status:` satırını geçerli bir duruma düzelt; hangi durum olacağı T0 kararıdır.',
+    ],
+    en: (d) => [
+      "The contract's current status is not recognized: `" + d + '` — treated as a regression.',
+      'Fix the `status:` line to a valid status first; which one is a T0 decision.',
+    ],
+  },
+};
+
+function durumEngeli(taraf, d) {
+  const g = DURUM_ENGELI[taraf];
+  return engelle(...(dil() === 'tr' ? g.tr(d) : g.en(d)));
+}
+
 function gerileme(hedef, yeniMetin) {
   if (!canonical(hedef)) return;
   const yeni = durum(yeniMetin);
-  if (!bilinenDurum(yeni)) return;
+  if (yeni === null) return;
+  if (!bilinenDurum(yeni)) return durumEngeli('yeni', yeni);
   let eski = null;
   try {
     eski = durum(fs.readFileSync(hedef, 'utf8'));
   } catch {
     return;
   }
-  if (!bilinenDurum(eski)) return;
+  if (!bilinenDurum(eski)) {
+    const relay = relayKoku(path.dirname(path.resolve(hedef)));
+    if (relay)
+      sorunYaz(
+        path.join(relay, 'live'),
+        'bilinmeyen eski durum: ' + (eski === null ? '—' : eski) + ' — ' + path.basename(hedef),
+        'durum yıkaması'
+      );
+    return durumEngeli('eski', eski === null ? '—' : eski);
+  }
+  if (yeni === 'blocked' || eski === 'blocked') return;
   // ÖLÇÜLDÜ: canlı koşuda scribe `open`'dan doğrudan `submitted`'a atladı. Basamak
   // atlanınca sözleşme "kimse üzerinde çalışmıyor" görünür; ajan düşerse kurtarma
   // hangi işin yarım kaldığını bilemez. `active` işaretlemek bir satırlık iştir.

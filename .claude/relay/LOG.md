@@ -79,3 +79,4 @@
 2026-08-25 · S2 teslim: scan ui standart kapısı (iki katmanlı teknesyum-ui.json, DURDU + /uisetup, çıkış 2), profil kiplerine bilgi satırı + JSON ui alanı, --tamamla iki fazlı (Faz 1 teorik düzeltme, Faz 2 başsız-önce uçtan uca, ekran kapısı salt okunur), eski ui-plan.json kapatma; 8 yeni test, 535/535
 2026-08-25 · T6 tur 2 · builder · containment delikleri + icerideMi fallback + ac adDenetle + detached HEAD kolu kapatildi, 5 yeni test, 533/533 yesil · submitted
 2026-08-25 · T8 teslim (tur 2): post-install'a --kaldir yolu — statusLine imzayla çıkar, şablon RULES.md ve @RULES.md satırı damgalı yedekle geri alınır, kullanıcı içeriği bayt bayt korunur; indir() toplam süre tek bütçeden düşer; 4 kaldırma duman testi + 2 bütçe denetimi, 532/532
+2026-08-25 · T8 teslim (tur 3): kurulum @RULES.md satırını eklediğinde teknesyum.json'a claudeMdRulesEklendi izi yazar; kaldırma satırı yalnız iz varken çıkarır, iz yoksa kullanıcının sayar ve korur; 2 yeni duman testi, 555/555

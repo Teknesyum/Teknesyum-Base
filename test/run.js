@@ -5149,6 +5149,31 @@ ol('kur → kaldir dongusu kullanici dosyalarini bayt bayt geri getirir', () => 
   );
 });
 
+ol('kullanicinin eklenti oncesi @RULES.md satiri kur → kaldir dongusunde aynen kalir', () => {
+  const onceki = '@RTK.md\n@RULES.md\n\n# huylarim\n';
+  const d = piEv((p) => fs.writeFileSync(path.join(p, 'CLAUDE.md'), onceki));
+  esit(piCalistir(d).status, 0);
+  const r = piCalistir(d, {}, ['--kaldir']);
+  esit(r.status, 0, r.stdout + r.stderr);
+  esit(
+    fs.readFileSync(path.join(d, 'CLAUDE.md'), 'utf8'),
+    onceki,
+    'kendi satiri bayt bayt kalmali'
+  );
+  icerir(r.stdout, 'kurulum eklemedi');
+});
+
+ol('kurulumun ekledigi @RULES.md satiri kaldirmada cikar, iz teknesyum.json ile tasinir', () => {
+  const d = piEv((p) => fs.writeFileSync(path.join(p, 'CLAUDE.md'), '# huylarim\n'));
+  esit(piCalistir(d).status, 0);
+  const t = JSON.parse(fs.readFileSync(path.join(d, 'teknesyum.json'), 'utf8'));
+  esit(t.claudeMdRulesEklendi, true, 'kurulum iz birakmali');
+  const r = piCalistir(d, {}, ['--kaldir']);
+  esit(r.status, 0, r.stdout + r.stderr);
+  esit(fs.readFileSync(path.join(d, 'CLAUDE.md'), 'utf8'), '# huylarim\n', 'satir cikmali');
+  esit(fs.existsSync(path.join(d, 'teknesyum.json')), false, 'iz temizlenmeli');
+});
+
 ol('kaldirma kullanicinin statusLine ve kurallarina dokunmaz', () => {
   const d = piEv();
   esit(piCalistir(d).status, 0);

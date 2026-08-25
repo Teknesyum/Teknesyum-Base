@@ -49,11 +49,11 @@ function indir(url, secenek) {
     if (kotu) return red(new Error(kotu));
     const u = new URL(url);
 
-    const istek = al(u, { timeout: SURE_TAVANI }, (r) => {
+    const kalan = SURE_TAVANI - (Date.now() - t0);
+    if (kalan <= 0) return red(new Error('toplam süre aşıldı'));
+    const istek = al(u, { timeout: kalan }, (r) => {
       if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location) {
         r.resume();
-        const kalan = SURE_TAVANI - (Date.now() - t0);
-        if (kalan <= 0) return red(new Error('toplam süre aşıldı'));
         return indir(new URL(r.headers.location, u).toString(), {
           get: al,
           adim: n + 1,
@@ -106,6 +106,10 @@ const damga = () =>
 
 function ekle(yol, icerik, etiket) {
   plan.push({ yol, icerik, etiket });
+}
+
+function cikar(yol, etiket) {
+  plan.push({ yol, sil: true, etiket });
 }
 
 function yazilabilir(dizin) {
@@ -161,9 +165,13 @@ function uygula() {
         throw new Error('arıza enjeksiyonu (adım ' + cok + ')');
       const yedek = fs.existsSync(is.yol) ? is.yol + '.teknesyum-yedek-' + d : null;
       if (yedek) fs.copyFileSync(is.yol, yedek);
-      const gecici = is.yol + '.teknesyum-tmp-' + d;
-      fs.writeFileSync(gecici, is.icerik);
-      fs.renameSync(gecici, is.yol);
+      if (is.sil) {
+        fs.unlinkSync(is.yol);
+      } else {
+        const gecici = is.yol + '.teknesyum-tmp-' + d;
+        fs.writeFileSync(gecici, is.icerik);
+        fs.renameSync(gecici, is.yol);
+      }
       yapildi.push({ is, yedek });
       yapilan.push(is.etiket + (yedek ? ' (yedek: ' + path.basename(yedek) + ')' : ''));
     }
@@ -214,7 +222,77 @@ async function koprulukIcerik() {
   }
 }
 
+function rapor(sonSatir) {
+  console.log('\n  Teknesyum Base\n');
+  for (const y of yapilan) console.log('  ✓ ' + y);
+  for (const a of atlanan) console.log('  · ' + a);
+  for (const h of hata) console.log('  ✗ ' + h);
+  if (hata.length) {
+    console.log('\n  İşlem tamamlanmadı — yukarıdaki satırlar elle müdahale bekliyor.\n');
+    process.exitCode = 1;
+    return;
+  }
+  console.log('\n  ' + sonSatir + '\n');
+}
+
+// Kaldırma yalnız eklentinin izlerini geri çıkarır: kendi imzasını taşıyan statusLine
+// bloğu, dokunulmamış RULES.md şablonu ve CLAUDE.md'ye eklenen @RULES.md satırı.
+// Kullanıcının kendi içeriği bayt bayt yerinde kalır; her mutasyon damgalı yedek alır.
+function kaldir() {
+  const sp = path.join(HOME, 'settings.json');
+  if (fs.existsSync(sp)) {
+    let s = null;
+    try {
+      s = JSON.parse(fs.readFileSync(sp, 'utf8'));
+      if (!s || typeof s !== 'object' || Array.isArray(s)) throw new Error('nesne değil');
+    } catch {
+      hata.push('settings.json okunamadı (bozuk JSON) — dosyaya DOKUNULMADI. Elle düzelt: ' + sp);
+    }
+    if (s) {
+      if (
+        s.statusLine &&
+        s.statusLine.command &&
+        /teknesyum-statusline/.test(s.statusLine.command)
+      ) {
+        delete s.statusLine;
+        if (Object.keys(s).length) ekle(sp, JSON.stringify(s, null, 2), 'statusLine kaldırıldı');
+        else cikar(sp, 'settings.json kaldırıldı (yalnız eklenti ayarı taşıyordu)');
+      } else if (s.statusLine) {
+        atlanan.push('statusLine size ait, dokunulmadı');
+      }
+    }
+  }
+
+  if (fs.existsSync(SL)) cikar(SL, 'statusline köprüsü kaldırıldı');
+
+  const hp = path.join(HOME, 'RULES.md');
+  if (fs.existsSync(hp)) {
+    const r = oku(hp);
+    if (!r.ok) hata.push('RULES.md okunamadı, dokunulmadı: ' + r.hata);
+    else if (r.govde === RULES) cikar(hp, 'RULES.md kaldırıldı (dokunulmamış şablon)');
+    else atlanan.push('RULES.md sizin kurallarınızı taşıyor, korundu');
+  }
+
+  const cp = path.join(HOME, 'CLAUDE.md');
+  if (fs.existsSync(cp)) {
+    const r = oku(cp);
+    if (!r.ok) hata.push('CLAUDE.md okunamadı, dokunulmadı: ' + r.hata);
+    else if (/(^|\n)@RULES\.md(\r?\n|$)/.test(r.govde)) {
+      const yeni = r.govde.replace(/(^|\n)@RULES\.md(\r?\n|$)/, '$1');
+      if (yeni === '') cikar(cp, 'CLAUDE.md kaldırıldı (yalnız @RULES.md taşıyordu)');
+      else ekle(cp, yeni, "CLAUDE.md'den @RULES.md çıkarıldı");
+    } else atlanan.push("CLAUDE.md'de eklenti izi yok, dokunulmadı");
+  }
+
+  hata.push(...planDenetle());
+  if (hata.length) plan.length = 0;
+  if (plan.length) uygula();
+  if (!plan.length && !hata.length && !atlanan.length) atlanan.push('kaldırılacak iz bulunamadı');
+  rapor('Kaldırma tamam — yedekler *.teknesyum-yedek-* olarak duruyor.');
+}
+
 async function main() {
+  if (process.argv.includes('--kaldir')) return kaldir();
   try {
     fs.mkdirSync(HOME, { recursive: true });
   } catch (e) {
@@ -333,20 +411,11 @@ async function main() {
   if (!varMi('graphify'))
     eksik.push('graphify  (uv tool install graphifyy)  → büyük kod tabanı indeksleme');
 
-  console.log('\n  Teknesyum Base\n');
-  for (const y of yapilan) console.log('  ✓ ' + y);
-  for (const a of atlanan) console.log('  · ' + a);
-  for (const h of hata) console.log('  ✗ ' + h);
   if (eksik.length) {
-    console.log('\n  Opsiyonel, kurulmadı:');
-    for (const e of eksik) console.log('    - ' + e);
+    atlanan.push('opsiyonel, kurulmadı:');
+    for (const e of eksik) atlanan.push('  - ' + e);
   }
-  if (hata.length) {
-    console.log('\n  Kurulum tamamlanmadı — yukarıdaki satırlar elle müdahale bekliyor.\n');
-    process.exitCode = 1;
-    return;
-  }
-  console.log("\n  Claude Code'u yeniden başlat.\n");
+  rapor("Claude Code'u yeniden başlat.");
 }
 
 if (require.main === module) main();

@@ -26,9 +26,9 @@ function sahteGet(cevaplar) {
   };
 }
 
-async function hata(cevaplar) {
+async function hata(cevaplar, ek) {
   try {
-    await PIM.indir(IYI, { get: sahteGet(cevaplar) });
+    await PIM.indir(IYI, { get: sahteGet(cevaplar), ...(ek || {}) });
     return '';
   } catch (e) {
     return e.message;
@@ -55,6 +55,29 @@ const bekle = [
       process.exitCode = 1;
       return;
     }
+  }
+
+  const tukenmis = await hata([{ status: 200, body: 'kucuk' }], {
+    basla: Date.now() - PIM.SURE_TAVANI - 1,
+  });
+  if (tukenmis !== 'toplam süre aşıldı') {
+    process.stdout.write(
+      'bütçe tükenince "toplam süre aşıldı" beklenirdi, gelen "' + tukenmis + '"'
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  const verilen = [];
+  const olcenGet = (u, o, cb) => {
+    verilen.push(o.timeout);
+    return sahteGet([{ status: 200, body: 'kucuk' }])(u, o, cb);
+  };
+  await PIM.indir(IYI, { get: olcenGet, basla: Date.now() - (PIM.SURE_TAVANI - 5000) });
+  if (!(verilen[0] > 0 && verilen[0] <= 5000)) {
+    process.stdout.write('istek zaman aşımı kalan bütçeden düşmeli, verilen: ' + verilen[0]);
+    process.exitCode = 1;
+    return;
   }
   process.stdout.write('tamam');
 })();

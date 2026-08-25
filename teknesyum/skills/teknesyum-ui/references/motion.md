@@ -249,3 +249,27 @@ Kuralın makinece denetlenebilen kısmı `test/u8-glow.js` içindedir: glow toke
 değeri, glow'un tekrar eden öğe seçicisine düşüp düşmediği, `transition`/`animation`
 bildirimlerinde `box-shadow`/`filter` geçip geçmediği (M6) ve `backdrop-filter` sayısı.
 Test envanteri her koşuda yeniden sayar, sabit sayı taşımaz.
+
+### Glow'un payı — 24px ve muafiyetleri
+
+**Glow'un payı: 24px.** Dışa taşan bir hale komşusuna 24px'ten yakınsa komşunun altında
+kesilir ve kirli bir kenar bırakır. Kural: dışa taşan glow taşıyan her yüzeyin çevresinde
+en az **24px** boşluk bulunur (`SKILL.md` §8 aralık merdiveninin en üst basamağı). Boşluk
+yoksa glow konmaz — yerine `/50` kenarlık kullanılır.
+
+**Kuralın sınırı ve tek muafiyeti.** Pay kuralının gerekçesi dışa taşan halenin komşuda
+kesilmesidir; kapsam o gerekçeyle çizilir:
+
+- **Inset glow** (`inset 0 0 8px <renk>`) dışa taşmaz → pay talebi hiç doğmaz. Muafiyet
+  değil, **kuralın tanım alanı dışı.**
+- **Scrollbar** tek gerçek muafiyettir: 10px yolda 24px pay fiziksel olarak imkânsız ve
+  thumb'ın komşusu yok, kesilme görünmez.
+- **`--tk-glow-hero`** (blur 8, `drop-shadow`) taşması küçüktür ama vardır: hero sayı
+  panel kenarına 24px'ten yakınsa aynı pay kuralına girer.
+
+Tek cümlede: *24px payı yalnız dışa taşan glow ister; taşmayan (inset) ve kesişecek
+komşusu olmayan (scrollbar) yüzeyler kapsam dışıdır.*
+
+Bu muafiyetler **pay** kuralına aittir. Gölge **animasyonu** yasağı ayrı bir kuraldır ve
+istisnası yoktur (`SKILL.md` §5.4 → M6): scrollbar thumb'ının halesi bu yüzden duruk
+kalır, yalnız dolgu rengi geçer.

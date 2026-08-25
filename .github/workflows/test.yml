@@ -11,13 +11,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node }}
       - run: node test/all.js
+        env:
+          TEKNESYUM_TEMP_KATI: '1'
       - name: tests leave the tree clean
         shell: bash
         run: |

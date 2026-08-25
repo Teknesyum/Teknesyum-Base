@@ -11,6 +11,43 @@ const DURUM = path.join(KOK, 'scripts', 'statusline.js');
 const OTURUM = path.join(KOK, 'scripts', 'oturum.js');
 const DIL = path.join(KOK, 'hooks', 'dil.js');
 
+// ÖLÇÜLDÜ (25.08.2026, dış denetim TB-012): 139 `mkdtempSync` noktası doğrudan
+// `os.tmpdir()` altına açıyordu ve hiçbiri toplanmıyordu — ölçümde %TEMP% altında
+// 220.576 dizin birikmişti. Koşunun bütün geçici dizinleri tek bir kökün altında durur
+// ve koşu biterken kök silinir; test kodunda tek satırlık değişiklik, sızıntı sıfır.
+const KOKTEMP = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kosu-'));
+
+// Tek `rmSync` yetmiyor: bir çocuk direnirse kök `ENOTEMPTY` verip 138 dizini birden
+// bırakıyor. Önce tek tek, sonra kök denenir; direnen kalırsa sessiz geçilmez — sayısı
+// basılır ve `TEKNESYUM_TEMP_KATI=1` (CI) altında koşu bunun için düşer.
+function tempTopla() {
+  let kalan = 0;
+  const sil = (p) => {
+    try {
+      fs.rmSync(p, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  let cocuk = [];
+  try {
+    cocuk = fs.readdirSync(KOKTEMP);
+  } catch {
+    return 0;
+  }
+  for (const c of cocuk) if (!sil(path.join(KOKTEMP, c))) kalan++;
+  if (!kalan) sil(KOKTEMP);
+  return kalan;
+}
+
+process.on('exit', () => {
+  const kalan = tempTopla();
+  if (!kalan) return;
+  console.log('\n  ⚠ ' + kalan + ' geçici dizin silinemedi: ' + KOKTEMP);
+  if (process.env.TEKNESYUM_TEMP_KATI === '1') process.exitCode = 1;
+});
+
 let gecti = 0;
 const kaldi = [];
 
@@ -40,7 +77,7 @@ function icerir(s, p, not) {
 
 // Testler kullanıcının gerçek `~/.claude` klasörünü okumamalı. Okurlarsa makinedeki
 // bir ayar (örn. `debug: true`) testi geçirir ya da düşürür; sonuç makineye bağlı olur.
-const BOS_CFG = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-cfg-'));
+const BOS_CFG = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-cfg-'));
 
 function calistir(script, yuk, ek) {
   const r = spawnSync(process.execPath, [script], {
@@ -68,7 +105,7 @@ function calistir(script, yuk, ek) {
 }
 
 function proje(sozlesme, biten) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-test-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-test-'));
   const relay = path.join(p, '.claude', 'relay');
   fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
   for (let i = 0; i < sozlesme; i++)
@@ -100,7 +137,7 @@ function duyuruMetni(r) {
 }
 
 function konfig(kurulu) {
-  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg-'));
   if (kurulu) {
     fs.writeFileSync(path.join(c, 'teknesyum-statusline.js'), '//');
     fs.writeFileSync(
@@ -245,7 +282,7 @@ ol('SessionStart röle durumunu ve sözleşme sayacını bildirir', () => {
 });
 
 ol('UserPromptSubmit her istekte ölçü satırını zorunlu kılar', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const r = calistir(
     IZLE,
     { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'şunu yap' },
@@ -258,13 +295,13 @@ ol('UserPromptSubmit her istekte ölçü satırını zorunlu kılar', () => {
 });
 
 ol('UserPromptSubmit röle kurulu olmayan klasörde iz bırakmaz', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'x' }, konfig(true));
   if (fs.existsSync(path.join(p, '.claude'))) throw new Error('boş klasörde .claude açıldı');
 });
 
 function transcript(metin) {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tr-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-tr-'));
   const f = path.join(d, 'oturum.jsonl');
   fs.writeFileSync(
     f,
@@ -283,7 +320,7 @@ const PAKET_BLOK =
   '```';
 
 ol("sohbete basılan görev paketi Stop hook'unda engellenir", () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const r = calistir(
     IZLE,
     {
@@ -299,7 +336,7 @@ ol("sohbete basılan görev paketi Stop hook'unda engellenir", () => {
 });
 
 ol('normal kod bloğu ve tek satırlık teslim engellenmez', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const bos = (m) =>
     calistir(
       IZLE,
@@ -312,7 +349,7 @@ ol('normal kod bloğu ve tek satırlık teslim engellenmez', () => {
 });
 
 ol('kullanicidan is isteyen tur baslik olmadan kapanamaz', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-senden-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-senden-'));
   const dur = (m) =>
     calistir(
       IZLE,
@@ -334,7 +371,7 @@ ol('kullanicidan is isteyen tur baslik olmadan kapanamaz', () => {
 });
 
 ol('sohbete basılan rapor gövdesi engellenir', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const blok = '```\n## Rapor\n' + '- yapıldı\n'.repeat(30) + '```';
   const r = calistir(
     IZLE,
@@ -347,7 +384,7 @@ ol('sohbete basılan rapor gövdesi engellenir', () => {
 });
 
 ol('kopyalanmak için sunulan uzun blok engellenir', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const uzun = '---\n' + 'satır\n'.repeat(30) + '---\n';
   const r = calistir(
     IZLE,
@@ -364,7 +401,7 @@ ol('kopyalanmak için sunulan uzun blok engellenir', () => {
 });
 
 ol('kopyalama emri olmadan `---` ayraçlı uzun cevap engellenmez', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const uzun = '---\n' + 'satır\n'.repeat(30) + '---\n';
   esit(
     calistir(
@@ -378,7 +415,7 @@ ol('kopyalama emri olmadan `---` ayraçlı uzun cevap engellenmez', () => {
 
 ol('SubagentStop ajanın modelini ve eforunu ize yazar', () => {
   const { p, live } = proje(1, 0);
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ajantr-'));
   const at = path.join(d, 'agent-a1.jsonl');
   fs.writeFileSync(
     at,
@@ -466,7 +503,7 @@ ol('basarisiz arac adim saymaz, hata olarak yazilir', () => {
 });
 
 ol('Stop döngüye girmez (stop_hook_active)', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   esit(
     calistir(
       IZLE,
@@ -485,7 +522,7 @@ ol('Stop döngüye girmez (stop_hook_active)', () => {
 // "Susar" kullaniciya bir sey basmaz demek. Gunluk bildirme yordami modele giden baglamdir
 // ve rolesiz projede de yazilir — bozukluk cogunlukla rolesiz bir projede gorulur.
 ol('röle kurulu değilse ve makine bağlıysa açılışta kullanıcıya bir şey basmaz', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const m = JSON.parse(
     calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(true)).out
   );
@@ -495,7 +532,7 @@ ol('röle kurulu değilse ve makine bağlıysa açılışta kullanıcıya bir ş
 });
 
 ol('statusline bağlı değilse açılışta kurulumu hatırlatır', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const m = JSON.parse(
     calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(false)).out
   );
@@ -589,7 +626,7 @@ ol('TEKNESYUM_SESSIZ=1 bildirimleri kapatır', () => {
 
 ol('steering=0 bütün Teknesyum satırlarını susturur', () => {
   const { p } = proje(2, 1);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ steering: 0 }));
   const ek = { CLAUDE_CONFIG_DIR: cfg };
   esit(calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, ek).out, '');
@@ -613,7 +650,7 @@ ol('varsayılan seviye 1: temel yönlenme var, fark satırı yok', () => {
 
 ol('steering=2 fark satırlarını ister', () => {
   const { p } = proje(2, 1);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg2-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg2-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ steering: 2 }));
   const r = calistir(
     IZLE,
@@ -626,7 +663,7 @@ ol('steering=2 fark satırlarını ister', () => {
 
 ol('TEKNESYUM_STEERING ortam değişkeni dosyayı ezer', () => {
   const { p } = proje(2, 1);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg3-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg3-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ steering: 2 }));
   esit(
     calistir(
@@ -639,7 +676,7 @@ ol('TEKNESYUM_STEERING ortam değişkeni dosyayı ezer', () => {
 });
 
 function yonlendirmeProje(sozlesmeler) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-yonlendirme-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-yonlendirme-'));
   const c = path.join(p, '.claude', 'relay', 'contracts');
   fs.mkdirSync(c, { recursive: true });
   for (const s of sozlesmeler) {
@@ -753,7 +790,7 @@ ol('varsayilan dil ingilizce', () => {
 
 ol('dil ayari teknesyum.json dosyasindan okunur', () => {
   const { p } = proje(2, 1);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dil-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-dil-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr' }));
   const r = calistir(
     IZLE,
@@ -765,7 +802,7 @@ ol('dil ayari teknesyum.json dosyasindan okunur', () => {
 
 ol('gecersiz dil degeri ingilizceye duser', () => {
   const { p } = proje(2, 1);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dil2-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-dil2-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'de' }));
   const r = calistir(
     IZLE,
@@ -932,7 +969,7 @@ ol('ajan yonergelerinde yalin dil ve sorun kaydi kurali var', () => {
 });
 
 ol('kanca engelleri secili dilde konusur', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-engel-dil-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-engel-dil-'));
   const c = path.join(p, '.claude', 'relay', 'contracts');
   fs.mkdirSync(c, { recursive: true });
   const f = path.join(c, 'T1.md');
@@ -948,7 +985,7 @@ ol('kanca engelleri secili dilde konusur', () => {
 });
 
 ol('open durumundan dogrudan submitted engellenir', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-basamak-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-basamak-'));
   const c = path.join(p, '.claude', 'relay', 'contracts');
   fs.mkdirSync(c, { recursive: true });
   const f = path.join(c, 'T1.md');
@@ -963,7 +1000,7 @@ ol('open durumundan dogrudan submitted engellenir', () => {
 });
 
 ol('open durumundan active serbest', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-basamak2-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-basamak2-'));
   const c = path.join(p, '.claude', 'relay', 'contracts');
   fs.mkdirSync(c, { recursive: true });
   const f = path.join(c, 'T1.md');
@@ -979,7 +1016,7 @@ ol('open durumundan active serbest', () => {
 
 ol('duraklama bildiren mesaj senden bolumu olmadan kapanmaz', () => {
   const { p } = proje(0, 0);
-  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
@@ -1003,7 +1040,7 @@ ol('bir turda iki yukumluluk varsa ikisi de bildirilir', () => {
   // ÖLÇÜLDÜ (25.08.2026): kapılar `||` ile diziliydi; dönüş bloğu eksikliği yakalanınca
   // "Senden istediklerim" hiç değerlendirilmiyordu. Kullanıcı eksik başlığı sordu.
   const { p } = proje(0, 0);
-  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
@@ -1022,7 +1059,7 @@ ol('bir turda iki yukumluluk varsa ikisi de bildirilir', () => {
 
 ol('donus blogu mesaji basligin yerine gecmedigini soyler', () => {
   const { p } = proje(0, 0);
-  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
@@ -1042,7 +1079,7 @@ ol('donus blogu mesaji basligin yerine gecmedigini soyler', () => {
 
 ol('senden bolumu varsa duraklama serbest', () => {
   const { p } = proje(0, 0);
-  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
@@ -1063,7 +1100,7 @@ ol('senden bolumu varsa duraklama serbest', () => {
 
 ol('duraklama yoksa senden bolumu istenmez', () => {
   const { p } = proje(0, 0);
-  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
     '---\nstatus: active\n---\n'
@@ -1081,7 +1118,7 @@ ol('duraklama yoksa senden bolumu istenmez', () => {
 });
 
 ol('bayat kayit noktasiyla duzeltme turu acilmaz', () => {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bayat-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bayat-'));
   const c = path.join(d, '.claude', 'relay', 'contracts');
   fs.mkdirSync(c, { recursive: true });
   const f = path.join(c, 'T1.md');
@@ -1138,7 +1175,7 @@ ol('siradan istekte arastirma hatirlatmasi cikmaz', () => {
 });
 
 ol('yeni projede PLAN.md yazimi arastirma kapisina takilir', () => {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-plankapi-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-plankapi-'));
   fs.mkdirSync(path.join(d, '.claude', 'relay', 'contracts', 'done'), { recursive: true });
   const r = calistir(KORU, {
     hook_event_name: 'PreToolUse',
@@ -1232,8 +1269,8 @@ ol('SubagentStop duyurusu bağlama değil ekrana yazılır', () => {
 console.log('\nİz');
 
 ol('genel iz temizliği az sayıda klasörde de çalışır', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg-'));
   const kok = path.join(cfg, 'teknesyum', 'live');
   const bayat = path.join(kok, 'eski-oturum');
   fs.mkdirSync(bayat, { recursive: true });
@@ -1388,7 +1425,7 @@ ol('TEKNESYUM_DEBUG olay gunlugu yazar, varsayilanda yazmaz', () => {
 
 ol('debug ayar dosyasindan da acilir, ortam degiskeni gerekmez', () => {
   const { p, live } = proje(1, 0);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg-'));
   const yuk = {
     ...ort(p),
     hook_event_name: 'PostToolUse',
@@ -1405,8 +1442,8 @@ ol('debug ayar dosyasindan da acilir, ortam degiskeni gerekmez', () => {
 });
 
 ol('röle yoksa iz genel dizine düşer, proje kirletilmez', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg-'));
   calistir(
     IZLE,
     {
@@ -1560,7 +1597,7 @@ ol('zincirin baska halkasindaki yazma fiili done/ ile iliskilendirilmez', () => 
 });
 
 ol('mühürlü sözleşme bile kabuktan taşınamaz', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-muhur-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-muhur-'));
   const src = path.join(p, 'T1.md');
   fs.writeFileSync(src, MUHURLU);
   const r = calistir(KORU, {
@@ -1800,7 +1837,7 @@ ol('alt klasörden açılan oturumda röle bulunur', () => {
 });
 
 function worktreeProje() {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-worktree-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-worktree-'));
   const main = path.join(p, 'main');
   const wt = path.join(p, 'worktree');
   fs.mkdirSync(main, { recursive: true });
@@ -1872,7 +1909,7 @@ ol('worktree sözleşme durumu canonical yoldan korunur', () => {
 // koşullu kırpan sürüm hiçbir şey bulmuyordu: iki kanca iki ayrı köke varıyordu. `kap`
 // bilerek kurulmuş tuzak — depoyla ilgisi yok, kimse oraya sahip çıkmamalı.
 function ayriGitDizini() {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ayrigit-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ayrigit-'));
   const kap = path.join(p, 'kap');
   const depo = path.join(p, 'depo');
   const store = path.join(kap, 'store');
@@ -1960,7 +1997,7 @@ ol('bozuk girdide çökmez', () => {
 });
 
 function sozlesmeProje(eskiDurum) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-durum-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-durum-'));
   const c = path.join(p, '.claude', 'relay', 'contracts');
   fs.mkdirSync(c, { recursive: true });
   const f = path.join(c, 'T1.md');
@@ -2001,7 +2038,7 @@ ol('blocked her durumdan yazılabilir', () => {
 });
 
 ol('bozuk js yazımı ayrıştırma hatasıyla geri döner', () => {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-sozdizim-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-sozdizim-'));
   const f = path.join(d, 'bozuk.js');
   fs.writeFileSync(f, 'function a( {\n');
   const r = calistir(IZLE, {
@@ -2015,7 +2052,7 @@ ol('bozuk js yazımı ayrıştırma hatasıyla geri döner', () => {
 });
 
 ol('sağlam js sessiz geçer', () => {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-sozdizim2-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-sozdizim2-'));
   const f = path.join(d, 'iyi.js');
   fs.writeFileSync(f, 'const a = 1;\n');
   const r = calistir(IZLE, {
@@ -2028,7 +2065,7 @@ ol('sağlam js sessiz geçer', () => {
 });
 
 ol('ESM kaynağı CommonJS sanılıp yanlış alarm verilmez', () => {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-esm-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-esm-'));
   const f = path.join(d, 'mod.js');
   fs.writeFileSync(f, "import x from 'y';\nexport default x;\n");
   esit(
@@ -2043,7 +2080,7 @@ ol('ESM kaynağı CommonJS sanılıp yanlış alarm verilmez', () => {
 });
 
 ol('bozuk json geri döner, tsconfig denetlenmez', () => {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-json-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-json-'));
   const a = path.join(d, 'a.json');
   fs.writeFileSync(a, '{ "x": }');
   icerir(
@@ -2072,7 +2109,7 @@ const UICHECKUP = path.join(KOK, 'scripts', 'uicheckup.js');
 const UICHECKUP_APPLY = path.join(KOK, 'scripts', 'uicheckup-apply.js');
 
 function uiCheckupProje() {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-uicheckup-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uicheckup-'));
   fs.mkdirSync(path.join(p, 'src'), { recursive: true });
   fs.writeFileSync(
     path.join(p, 'src', 'Panel.jsx'),
@@ -2184,7 +2221,7 @@ ol('apply plan path traversal reddeder', () => {
 const HARITA = path.join(KOK, 'scripts', 'harita.js');
 
 function haritaProje() {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-harita-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-harita-'));
   fs.mkdirSync(path.join(p, 'src'), { recursive: true });
   fs.mkdirSync(path.join(p, 'node_modules', 'paket'), { recursive: true });
   fs.writeFileSync(path.join(p, 'node_modules', 'paket', 'index.js'), 'module.exports = 1;');
@@ -2224,7 +2261,7 @@ ol('harita yetimi ve merkezi isaretler', () => {
 });
 
 ol('harita donguyu bulur', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dongu-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-dongu-'));
   fs.writeFileSync(path.join(p, 'a.js'), "require('./b');\n");
   fs.writeFileSync(path.join(p, 'b.js'), "require('./a');\n");
   spawnSync(process.execPath, [HARITA, p], {
@@ -2235,7 +2272,7 @@ ol('harita donguyu bulur', () => {
 });
 
 ol('harita C# using satirini ad alanina baglar', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cs-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cs-'));
   fs.writeFileSync(path.join(p, 'Model.cs'), 'namespace App.Models;\nclass M {}\n');
   fs.writeFileSync(
     path.join(p, 'Svc.cs'),
@@ -2253,7 +2290,7 @@ ol('harita C# using satirini ad alanina baglar', () => {
 const PLATFORM = path.join(KOK, 'scripts', 'platform-denetim.js');
 
 function platformProje(cfg) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-platform-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-platform-'));
   fs.writeFileSync(
     path.join(p, 'app.js'),
     'const kok = "C:\\Users\\ali";\nconst x = require("child_process");\n'
@@ -2315,7 +2352,7 @@ ol('yonlendirici sablon AGENTS.md adini tasir', () => {
 });
 
 function acikSozlesmeProje() {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-donus-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-donus-'));
   const c = path.join(p, '.claude', 'relay', 'contracts');
   fs.mkdirSync(c, { recursive: true });
   fs.writeFileSync(path.join(c, 'T1.md'), '---\nname: T1\nstatus: active\n---\n');
@@ -2323,7 +2360,7 @@ function acikSozlesmeProje() {
 }
 
 function stopIle(cwd, mesaj) {
-  const t = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-iz-')), 'x.jsonl');
+  const t = path.join(fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-iz-')), 'x.jsonl');
   fs.writeFileSync(
     t,
     JSON.stringify({
@@ -2346,13 +2383,13 @@ ol('donus blogu verilmisse engel yok', () => {
 });
 
 ol('acik sozlesme yokken bitis cumlesi engellenmez', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   fs.mkdirSync(path.join(p, '.claude', 'relay'), { recursive: true });
   esit(stopIle(p, 'Hepsi tamamlandı, testler geçti.').out, '', 'sozlesme yoksa sessiz');
 });
 
 function taptazeProje(ekle) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-yeni-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-yeni-'));
   fs.mkdirSync(path.join(p, '.claude', 'relay', 'contracts'), { recursive: true });
   fs.writeFileSync(path.join(p, 'index.js'), 'const a = 1;\n');
   if (ekle) {
@@ -2393,7 +2430,7 @@ ol('yerlesik projede on arastirma istenmez', () => {
 });
 
 function profilCfg(profil) {
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-profil-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-profil-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr', profil }));
   return { CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_PREMIUM: '' };
 }
@@ -2553,7 +2590,7 @@ ol('platform denetimi olmayan yolu bildirir', () => {
 });
 
 ol('govdeli CLAUDE.md engellenir, isaretci serbest', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-agents-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-agents-'));
   fs.mkdirSync(path.join(p, 'src'), { recursive: true });
   const yaz = (dosya, icerik) =>
     calistir(KORU, {
@@ -2573,7 +2610,7 @@ ol('govdeli CLAUDE.md engellenir, isaretci serbest', () => {
 });
 
 ol('Edit ile CLAUDE.md govdesi engellenir, isaretci duzenlemesi serbest', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-agents-edit-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-agents-edit-'));
   fs.mkdirSync(path.join(p, 'src'), { recursive: true });
   fs.mkdirSync(path.join(p, '.claude'), { recursive: true });
   const duzenle = (dosya, eski, yeni) =>
@@ -2599,7 +2636,7 @@ ol('Edit ile CLAUDE.md govdesi engellenir, isaretci duzenlemesi serbest', () => 
 });
 
 function oturumProjesi() {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-oturum-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-oturum-'));
   const sat = [
     {
       type: 'user',
@@ -2832,7 +2869,7 @@ ol('olmayan kayit ve kacis denemesi reddedilir', () => {
 const PREMIUM = path.join(KOK, 'scripts', 'premium.js');
 
 function premiumKopya() {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-premium-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-premium-'));
   fs.mkdirSync(path.join(p, 'agents'), { recursive: true });
   fs.mkdirSync(path.join(p, 'skills', 'relay'), { recursive: true });
   for (const f of fs.readdirSync(path.join(KOK, 'agents')))
@@ -2841,7 +2878,7 @@ function premiumKopya() {
     path.join(KOK, 'skills', 'relay', 'SETTINGS.md'),
     path.join(p, 'skills', 'relay', 'SETTINGS.md')
   );
-  return { p, cfg: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-premium-cfg-')) };
+  return { p, cfg: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-premium-cfg-')) };
 }
 
 function premiumCalistir(komut, p, cfg, ek) {
@@ -3428,7 +3465,7 @@ ol('konsey uyeleri medium eforda cagrilir', () => {
 ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
   const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
   const oku = (premium) => {
-    const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-'));
+    const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-depo-'));
     fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr', premium }));
     const r = spawnSync(
       process.execPath,
@@ -3531,7 +3568,7 @@ ol('premium paralel tavani yirmidir ve gerekcesi yazili', () => {
 ol('premium notu paralel acmayi varsayilan sayar', () => {
   const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
   const oku = (d) => {
-    const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-not-'));
+    const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-not-'));
     fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: d, premium: true }));
     const r = spawnSync(
       process.execPath,
@@ -3563,8 +3600,8 @@ ol('konfig elle degistirilse de durum uyusmazlik bildirmez', () => {
 
 ol('premium notu yalnizca acikken enjekte edilir', () => {
   const { p } = proje(1, 0);
-  const kapali = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-pcfg0-'));
-  const acik = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-pcfg1-'));
+  const kapali = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-pcfg0-'));
+  const acik = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-pcfg1-'));
   fs.writeFileSync(path.join(kapali, 'teknesyum.json'), JSON.stringify({ dil: 'tr' }));
   fs.writeFileSync(path.join(acik, 'teknesyum.json'), JSON.stringify({ dil: 'tr', premium: true }));
   const iste = (cfg) =>
@@ -3579,7 +3616,7 @@ ol('premium notu yalnizca acikken enjekte edilir', () => {
 });
 
 function profilKonfig(ayar) {
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-eco-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-eco-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr', ...ayar }));
   return cfg;
 }
@@ -3715,7 +3752,7 @@ ol('iki oturum kimliginde parallel_width farkli deger doner', () => {
 ol('sapmayan dugmede proje SETTINGS.md hala gecerli', () => {
   const { p, cfg } = premiumKopya();
   premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-kat' });
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kat-'));
+  const root = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kat-'));
   fs.writeFileSync(path.join(root, 'SETTINGS.md'), 'agent_stall : 3\nparallel_width : 7\n');
   esit(ayarOku(cfg, 'w-kat', 'agent_stall', root), '3', 'sapmayan dugme projeden okunmali');
   esit(ayarOku(cfg, 'w-kat', 'parallel_width', root), '1', 'sapan dugmede oturum profili kazanir');
@@ -3817,14 +3854,14 @@ function rcEvKur(d) {
 }
 
 function rcEv() {
-  return rcEvKur(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcev-')));
+  return rcEvKur(fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-rcev-')));
 }
 
 // Transkriptler konfig kökünün altında durur. Yalnız `USERPROFILE`'ı ezen fikstür
 // sonucu makinedeki `CLAUDE_CONFIG_DIR`'e bırakır: ayarı taşımış geliştiricide test
 // başka bir dizine bakar. Kök açıkça sabitlenir.
 function oturumEvi() {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ev-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ev-'));
   return { ev: d, ort: { USERPROFILE: d, HOME: d, CLAUDE_CONFIG_DIR: path.join(d, '.claude') } };
 }
 
@@ -3842,7 +3879,7 @@ ol('rc acilis sorularini kapatir, gelismis kip geri acar', () => {
     komutSatiri('claude', 'A', ['--spawn', 'same-dir']),
     '"claude" remote-control --name "A" --spawn same-dir'
   );
-  const evDizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcev-'));
+  const evDizin = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-rcev-'));
   const ayar = path.join(evDizin, '.claude.json');
   const anahtar = process.cwd().replace(/\\/g, '/');
   fs.writeFileSync(ayar, JSON.stringify({ projects: {} }));
@@ -3863,7 +3900,7 @@ ol('rcall arsivlenmis ve tamamlanmis klasorleri disarida birakir', () => {
   esit(elenir('.claude', []), true, 'nokta ile baslayan elenmeli');
   esit(elenir('Runly', []), false, 'proje elenmemeli');
   esit(elenir('Runly', ['runly']), true, 'atla listesi calismali');
-  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcall-'));
+  const dip = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-rcall-'));
   for (const ad of ['Alfa', 'Beta', '!Tamamlandı', '_eski']) {
     fs.mkdirSync(path.join(dip, ad, '.git'), { recursive: true });
   }
@@ -3878,7 +3915,7 @@ ol('rcall arsivlenmis ve tamamlanmis klasorleri disarida birakir', () => {
 });
 
 ol('rcall metin kipinde her proje icin komut basar', () => {
-  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcall2-'));
+  const dip = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-rcall2-'));
   fs.mkdirSync(path.join(dip, 'Gama', '.git'), { recursive: true });
   const r = rcCalistir(['--hepsi', '--metin', '--kok', dip], rcEv());
   esit(r.status, 0, 'metin kipi calismali');
@@ -3887,13 +3924,13 @@ ol('rcall metin kipinde her proje icin komut basar', () => {
 });
 
 ol('rcall proje bulamazsa kod 6 verir', () => {
-  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcall3-'));
+  const dip = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-rcall3-'));
   const r = rcCalistir(['--hepsi', '--metin', '--kok', dip], rcEv());
   esit(r.status, 6, 'bos klasorde cikis kodu 6');
 });
 
 ol('rc istemci yoksa kurulum satirini verir', () => {
-  const bos = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rc-bos-'));
+  const bos = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-rc-bos-'));
   const r = rcCalistir(['--metin', '--ad', 'X'], {
     PATH: bos,
     Path: bos,
@@ -3951,7 +3988,7 @@ ol('rc bosluklu ve turkce adi oldugu gibi gecirir', () => {
 });
 
 ol('rcall politikaya uymayan klasoru acmaz, elenenlere yazar', () => {
-  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcall4-'));
+  const dip = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-rcall4-'));
   for (const ad of ['Duzgun', 'kotu&ad']) {
     fs.mkdirSync(path.join(dip, ad, '.git'), { recursive: true });
   }
@@ -3963,7 +4000,7 @@ ol('rcall politikaya uymayan klasoru acmaz, elenenlere yazar', () => {
 });
 
 ol('rc baslatici kullanici degerini kabuktan gecirmez', () => {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rclaunch-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-rclaunch-'));
   const cikti = path.join(d, 'argv.json');
   const nisan = path.join(d, 'sentinel');
   const yuk = [
@@ -4028,7 +4065,7 @@ ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
 });
 
 function filoKur() {
-  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-filo-'));
+  const dip = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-filo-'));
   const { ev: evDizin, ort: evOrt } = oturumEvi();
   const kaynak = oturumProjesi();
   for (const ad of ['Alfa', 'Beta']) {
@@ -4129,8 +4166,8 @@ ol('load son kayit olmadan onceki oturumu transkriptten devralir', () => {
 // `/save`, `/load`, `/saveall`, `/loadall` sessizce çalışmaz olur.
 ol('transkript konfig kökünü izler, ev dizinini değil', () => {
   const p = oturumProjesi();
-  const bosEv = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bosev-'));
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfgtr-'));
+  const bosEv = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bosev-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfgtr-'));
   const dizin = path.join(cfg, 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
   fs.mkdirSync(dizin, { recursive: true });
   fs.copyFileSync(path.join(p, 'kaynak.jsonl'), path.join(dizin, 'ONCEKI.jsonl'));
@@ -4164,7 +4201,7 @@ ol('transkript konfig kökünü izler, ev dizinini değil', () => {
 ol('acilis acik sozlesme varken onceki oturumu haber verir', () => {
   const { p } = proje(2, 1);
   const k = konfig(true);
-  const bosEv = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bosev-'));
+  const bosEv = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bosev-'));
   const dizin = path.join(k.CLAUDE_CONFIG_DIR, 'projects', p.replace(/[^a-zA-Z0-9]/g, '-'));
   fs.mkdirSync(dizin, { recursive: true });
   fs.writeFileSync(path.join(dizin, 'ESKI.jsonl'), '{}\n');
@@ -4179,7 +4216,7 @@ ol('acilis acik sozlesme varken onceki oturumu haber verir', () => {
 const KAPSAYICI = path.join(KOK, 'hooks', 'kapsayici.js');
 
 function kapsayiciKur() {
-  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kap-'));
+  const dip = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kap-'));
   fs.mkdirSync(path.join(dip, 'Alfa', '.git'), { recursive: true });
   fs.mkdirSync(path.join(dip, 'Beta', '.git'), { recursive: true });
   fs.mkdirSync(path.join(dip, 'Alfa', 'src'), { recursive: true });
@@ -4191,13 +4228,13 @@ ol('kapsayici klasor taninir, projenin kendisi tanınmaz', () => {
   const dip = kapsayiciKur();
   esit(kok(dip), path.resolve(dip), 'ust klasor kapsayici sayilmali');
   esit(kok(path.join(dip, 'Alfa')), null, 'proje kapsayici sayilmamali');
-  esit(kok(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'))), null, 'bos klasor degil');
+  esit(kok(fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'))), null, 'bos klasor degil');
 });
 
 ol('dokunulan dosya etkin projeyi belirler', () => {
   const { izle, etkin } = require(KAPSAYICI);
   const dip = kapsayiciKur();
-  const durum = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dur-')), 'k.json');
+  const durum = path.join(fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-dur-')), 'k.json');
   izle(dip, durum, { tool_input: { file_path: path.join(dip, 'Alfa', 'src', 'a.js') } });
   esit(etkin(durum).ad, 'Alfa', 'ilk proje secilmeli');
   izle(dip, durum, { tool_input: { file_path: path.join(dip, 'Beta', 'b.js') } });
@@ -4310,7 +4347,7 @@ ol('kapsayici koku ikinci cagrida dizini yeniden okumaz', () => {
 
 ol('genel kok worktree oturumunda alt klasore kaymaz', () => {
   const { wt } = worktreeProje();
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg-'));
   const yuk = {
     cwd: wt,
     session_id: 'wt-1',
@@ -4331,8 +4368,8 @@ ol('genel kok worktree oturumunda alt klasore kaymaz', () => {
 });
 
 ol('eski canli genel koku duruyorsa oraya yazmaya devam edilir', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bos-'));
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg-'));
   fs.mkdirSync(path.join(cfg, 'teknesyum', 'canli'), { recursive: true });
   calistir(
     IZLE,
@@ -4349,7 +4386,7 @@ ol('eski canli genel koku duruyorsa oraya yazmaya devam edilir', () => {
 
 ol('role kurulu projede de genel kok supurulur, kullanim sayaci korunur', () => {
   const { p } = proje(1, 0);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-cfg-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg-'));
   const kok = path.join(cfg, 'teknesyum', 'live');
   const bayat = path.join(kok, 'eski-oturum');
   fs.mkdirSync(bayat, { recursive: true });
@@ -4397,7 +4434,7 @@ ol('debug gunlugu tavani asinca son satirlara kirpilir', () => {
 });
 
 function ajanBitir(p, ek, tanim) {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ajantr-'));
   const at = path.join(d, 'agent-' + tanim.id + '.jsonl');
   fs.writeFileSync(
     at,
@@ -4462,7 +4499,7 @@ ol('cagri model gecmediyse beklenen model profilden turetilir', () => {
 
 ol('premium oturumunda sessiz model dususu yakalanir', () => {
   const { p, live } = proje(1, 0);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dusus-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-dusus-'));
   fs.writeFileSync(
     path.join(cfg, 'teknesyum.json'),
     JSON.stringify({ dil: 'tr', profil: 'premium' })
@@ -4486,7 +4523,7 @@ ol('premium oturumunda sessiz model dususu yakalanir', () => {
 
 ol('cagri modeli profil beklentisini ezer', () => {
   const { p, live } = proje(1, 0);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ezme-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ezme-'));
   fs.writeFileSync(
     path.join(cfg, 'teknesyum.json'),
     JSON.stringify({ dil: 'tr', profil: 'premium' })
@@ -4508,7 +4545,7 @@ ol('cagri modeli profil beklentisini ezer', () => {
 
 ol('konseyin ikinci koltugu fable ile acilinca sapma sayilmaz', () => {
   const { p, live } = proje(1, 0);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-konsey-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-konsey-'));
   fs.writeFileSync(
     path.join(cfg, 'teknesyum.json'),
     JSON.stringify({ dil: 'tr', profil: 'premium' })
@@ -4534,7 +4571,7 @@ ol('konseyin ikinci koltugu fable ile acilinca sapma sayilmaz', () => {
 
 ol('normal biten ajan sorun gunlugune yazilmaz', () => {
   const { p, live } = proje(1, 0);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bitis-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bitis-'));
   fs.writeFileSync(
     path.join(cfg, 'teknesyum.json'),
     JSON.stringify({ dil: 'tr', profil: 'premium', debug: true })
@@ -4550,7 +4587,7 @@ ol('normal biten ajan sorun gunlugune yazilmaz', () => {
 
 ol('beyanla uyusan ajan sorun gunlugu acmaz', () => {
   const { p, live } = proje(1, 0);
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ajantr-'));
   const at = path.join(d, 'agent-b2.jsonl');
   fs.writeFileSync(
     at,
@@ -4573,7 +4610,7 @@ ol('beyanla uyusan ajan sorun gunlugu acmaz', () => {
 
 ol('cagrida secilen model beyan sayilir, uyusmazlik uydurulmaz', () => {
   const { p, live } = proje(1, 0);
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ajantr-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ajantr-'));
   const at = path.join(d, 'agent-b3.jsonl');
   fs.writeFileSync(
     at,
@@ -4608,7 +4645,7 @@ ol('cagrida secilen model beyan sayilir, uyusmazlik uydurulmaz', () => {
 console.log('\nKoruma — mühür kanıtı');
 
 function kanitProje(kayitlar) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kanit-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kanit-'));
   const relay = path.join(p, '.claude', 'relay');
   const live = path.join(relay, 'live');
   fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
@@ -4695,7 +4732,7 @@ function t7Git(kok, args) {
 }
 
 function t7Proje() {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-t7-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-t7-'));
   fs.mkdirSync(path.join(p, 'src'), { recursive: true });
   fs.writeFileSync(path.join(p, 'src', 'a.js'), 'const a = 1;\n');
   const relay = path.join(p, '.claude', 'relay');
@@ -4878,7 +4915,7 @@ const PI = path.join(KOK, 'scripts', 'post-install.js');
 const PIM = require(PI);
 
 function piEv(kur) {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-pi-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-pi-'));
   if (kur) kur(d);
   return d;
 }
@@ -5121,7 +5158,7 @@ ol('sessizlik esigi SETTINGS.md dugmesinden okunur', () => {
 
 function dongulu(eylem, buyut) {
   const { p, live } = proje(1, 0);
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-dongu-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-dongu-'));
   const tp = path.join(d, 'agent-a1.jsonl');
   fs.writeFileSync(tp, 'x\n');
   let son = '';
@@ -5241,7 +5278,7 @@ let _turLive = null;
 
 function turProje() {
   const { p, live } = proje(1, 0);
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tur-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-tur-'));
   _turLive = live;
   return { p, live, ek: { CLAUDE_CONFIG_DIR: cfg } };
 }
@@ -5395,7 +5432,7 @@ ol('ingilizce kurulumda tur ozeti ingilizce yazilir', () => {
 
 ol('alt ajan transkripti de token tahminine girer', () => {
   const { p, ek } = turProje();
-  const at = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-alt-')), 'agent-a1.jsonl');
+  const at = path.join(fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-alt-')), 'agent-a1.jsonl');
   fs.writeFileSync(at, 'x\n');
   calistir(IZLE, {
     ...ort(p),
@@ -5460,7 +5497,7 @@ console.log('\nBildirim biçimi');
 // Kullanicinin canlida cevirecegi sabit budur; testi de o dosyayi kopyalayip sabiti
 // degistirerek kosar, boylece iki bicimin de uretilebildigi gercekten olculur.
 function bicimKopya(bicim) {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-bicim-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bicim-'));
   fs.mkdirSync(path.join(d, 'hooks'), { recursive: true });
   fs.mkdirSync(path.join(d, 'scripts'), { recursive: true });
   fs.mkdirSync(path.join(d, 'agents'), { recursive: true });
@@ -5657,7 +5694,7 @@ ol('premium turu sagligi dugmelerini kaydirmaz', () => {
 // Profil `~/.claude/teknesyum.json` içinden okunuyor; test makinedeki gerçek ayara
 // bakmasın diye her koşu kendi konfig kökünü kurar.
 function profilKonfigi(ad) {
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-profil-cfg-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-profil-cfg-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ profil: ad }) + '\n');
   return cfg;
 }
@@ -5769,7 +5806,7 @@ ol('eco filo dokumu tek satira iner, devam promptu kisalmaz', () => {
 });
 
 ol('eco baslik tamponu kucultur, normal yarim megabayt okur', () => {
-  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-baslik-'));
+  const dip = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-baslik-'));
   const { ev: evDizin, ort: evOrt } = oturumEvi();
   const p = path.join(dip, 'Gama');
   fs.mkdirSync(path.join(p, '.git'), { recursive: true });
@@ -5874,7 +5911,7 @@ function git(a, d) {
 }
 
 function surumKur(kuruluSurum, etiket, pazarsiz) {
-  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-surum-'));
+  const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-surum-'));
   const bare = path.join(c, 'bare');
   fs.mkdirSync(bare);
   git(['init', '-q', '--bare'], bare);
@@ -6029,7 +6066,7 @@ ol('/update komutu marketplace adli cagriyi verir', () => {
 });
 
 function etiketDepo(paketSurum, etiketler) {
-  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-etiket-'));
+  const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-etiket-'));
   git(['init', '-q'], c);
   git(['config', 'user.email', 't@t'], c);
   git(['config', 'user.name', 't'], c);
@@ -6074,7 +6111,7 @@ ol('etiket denetimi hic etiket yokken uyarir, etiket surumden yeniyken susar', (
 
 ol('etiket denetimi paket ya da depo yokken null doner, cokmez', () => {
   esit(surum.etiketDurumu(etiketDepo(null, ['v1.0.0'])), null, 'package.json yok');
-  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-etiket-'));
+  const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-etiket-'));
   fs.writeFileSync(path.join(c, 'package.json'), JSON.stringify({ version: '1.0.0' }));
   esit(surum.etiketDurumu(c), null, 'git deposu degil');
   esit(surum.etiketDurumu(path.join(c, 'yok')), null, 'dizin yok');
@@ -6190,7 +6227,7 @@ ol('/update bayraksiz salt okur, guncellemeyi yalniz --guncelle tetikler', () =>
 const TARAMA = path.join(KOK, 'scripts', 'tarama.js');
 
 function taramaProje(depo) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tarama-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-tarama-'));
   fs.mkdirSync(path.join(p, '.claude', 'relay', 'contracts', 'done'), { recursive: true });
   fs.mkdirSync(path.join(p, 'docs', 'taramalar'), { recursive: true });
   fs.mkdirSync(path.join(p, 'src'), { recursive: true });
@@ -6248,7 +6285,7 @@ ol('tarama profil verilmeden kullanimi basip cikar', () => {
 });
 
 function taramaKapsayici() {
-  const kap = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapsayici-'));
+  const kap = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapsayici-'));
   for (const ad of ['alfa', 'beta']) {
     fs.mkdirSync(path.join(kap, ad), { recursive: true });
     fs.writeFileSync(path.join(kap, ad, 'package.json'), '{"name":"' + ad + '"}');
@@ -6447,7 +6484,7 @@ ol('tarama --tamamla hicbir dosyayi degistirmez', () => {
 
 ol('kapsam kaydi SubagentStop ile dolar', () => {
   const { p } = proje(1, 0);
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapsam-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapsam-'));
   const at = path.join(d, 'agent-k1.jsonl');
   fs.writeFileSync(
     at,
@@ -6474,7 +6511,7 @@ ol('kapsam kaydi SubagentStop ile dolar', () => {
 
 ol('kapsam kaydi ana oturum dokunusunu da alir', () => {
   const { p } = proje(1, 0);
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-anakapsam-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-anakapsam-'));
   const tp = path.join(d, 'oturum-1.jsonl');
   fs.writeFileSync(
     tp,
@@ -6500,7 +6537,7 @@ ol('kapsam kaydi ana oturum dokunusunu da alir', () => {
 
 ol('kapsam kaydi sozlesme dosyasini incelenen dosya saymaz', () => {
   const { p } = proje(1, 0);
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapsam-s-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapsam-s-'));
   const tp = path.join(d, 'oturum-1.jsonl');
   fs.writeFileSync(tp, JSON.stringify({ type: 'assistant', message: { model: 'x' } }) + '\n');
   const dokun = (hedef) =>
@@ -6541,7 +6578,7 @@ function ekranKok(c) {
 }
 
 function ekranCfg(kapaliMi) {
-  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ekran-'));
+  const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ekran-'));
   fs.mkdirSync(ekranKok(c), { recursive: true });
   if (kapaliMi) fs.writeFileSync(path.join(c, 'teknesyum.json'), '{"ekran_kapisi":false}');
   return c;
@@ -6782,10 +6819,10 @@ ol('ekran kapisi bassiz bayrak tasiyan komutu kapaliyken de gecirir', () => {
 
 ol('ekran kapisi npm start yalniz electron projesinde engellenir', () => {
   const c = ekranCfg();
-  const bos = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-npm-'));
+  const bos = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-npm-'));
   fs.writeFileSync(path.join(bos, 'package.json'), '{"name":"x"}');
   esit(ekranBash(c, 'npm start', bos).kod, 0, 'electron olmayan projede gecmeli');
-  const el = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-el-'));
+  const el = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-el-'));
   fs.writeFileSync(path.join(el, 'package.json'), '{"devDependencies":{"electron":"30"}}');
   esit(ekranBash(c, 'npm start', el).kod, 2, 'electron projesinde engellenmeli');
 });
@@ -6834,7 +6871,7 @@ const UI_CSS = [
 
 function uiProje(secenek) {
   const o = secenek || {};
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-uikip-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uikip-'));
   const yaz = (gorece, govde) => {
     const tam = path.join(p, gorece);
     fs.mkdirSync(path.dirname(tam), { recursive: true });
@@ -7130,7 +7167,7 @@ ol('ui kipi uc profil kipini bozmaz', () => {
   icerir(t.out, '--tamamla · bu betik hiçbir dosyaya yazmadı');
   icermez(t.out, 'başlık:');
   esit(uiJson(p).kip, 'ui', 'ui kipi profilden bagimsiz');
-  const kap = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-uiad-'));
+  const kap = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uiad-'));
   fs.mkdirSync(path.join(kap, 'ui'), { recursive: true });
   fs.writeFileSync(path.join(kap, 'ui', 'package.json'), '{"name":"ui","version":"1.0.0"}');
   const a = spawnSync(process.execPath, [TARAMA, 'eco', '--proje', 'ui'], {
@@ -7185,7 +7222,7 @@ const BEEP = path.join(KOK, 'scripts', 'beep.js');
 const BEEP_KANCA = path.join(KOK, 'hooks', 'beep.js');
 
 function beepCfg() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-beep-cfg-'));
+  return fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-beep-cfg-'));
 }
 
 // Bayt hızı 8000 seçildi: süre = data boyu / bayt hızı ve üç değer tam çıkıyor.
@@ -7213,7 +7250,7 @@ function wavYaz(yol, saniye) {
 // dosyalarına bağlıydı; macOS ve Ubuntu CI'da o klasör yok, iş kırılıyordu. Fikstür
 // kendi seslerini sentezler ve kökü `TEKNESYUM_SES_KOKU` ile gösterir.
 function sesKoku() {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ses-'));
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ses-'));
   wavYaz(path.join(d, 'Windows Startup.wav'), 0.22);
   wavYaz(path.join(d, 'ding.wav'), 0.4);
   wavYaz(path.join(d, 'Windows Default.wav'), 0.41);
@@ -7432,7 +7469,7 @@ ol('beep kancasi hicbir girdide sifirdan farkli donmez', () => {
 
 ol('proje dosyasi oturum ve makinenin ustundedir', () => {
   const cfg = beepCfg();
-  const proje = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-beep-proje-'));
+  const proje = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-beep-proje-'));
   fs.mkdirSync(path.join(proje, '.claude'), { recursive: true });
   fs.writeFileSync(
     path.join(proje, '.claude', 'teknesyum-beep.json'),
@@ -7664,7 +7701,7 @@ function gitCalistir(kok, argv) {
 }
 
 function ozelSahne() {
-  const kok = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ozel-'));
+  const kok = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ozel-'));
   const cfg = path.join(kok, 'cfg');
   const proje = path.join(kok, 'proje');
   const uzak = path.join(kok, 'uzak.git');
@@ -7679,7 +7716,7 @@ function ozelSahne() {
 }
 
 ol('ozel kurulu degilken hicbir alt komut cokmez', () => {
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ozel-yok-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ozel-yok-'));
   for (const k of [[], ['pusla'], ['cek'], ['projeler'], ['ekle', 'a.txt']]) {
     const r = ozelCalistir(k, cfg);
     esit(r.kod, 0, (k[0] || 'durum') + ' cikis kodu 0 olmali');
@@ -7904,7 +7941,7 @@ ol('ozel projeler listesi icerik indirmeden okunur', () => {
 // (docs/openlogs/HATA-200k-baglam-penceresi-iddiasi.md). Not artik sabit sayi soylemiyor,
 // kisitlayan degiskeni olcuyor.
 ol('tavan notu 200k iddiasi tasimaz, kisitlayan degiskeni olcer', () => {
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-tavan-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-tavan-'));
   const c = (ek) =>
     spawnSync(
       process.execPath,
@@ -7928,7 +7965,7 @@ ol('tavan notu 200k iddiasi tasimaz, kisitlayan degiskeni olcer', () => {
 });
 
 ol('autoCompactWindow yazilinca yeniden baslatma ve tavan notu basilir', () => {
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ac-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ac-'));
   const c = (a) =>
     spawnSync(process.execPath, [path.join(KOK, 'scripts', 'premium.js')].concat(a), {
       maxBuffer: 64 * 1024 * 1024,
@@ -7951,7 +7988,7 @@ ol('autoCompactWindow yazilinca yeniden baslatma ve tavan notu basilir', () => {
 // Kullanici "pusla" diyor, `/pusla` yazmiyor. Iki depoyu birden gondermeyi modelin
 // hatirlamasina birakmak, unutuldugu turda fark edilmeyen bir yedek kaybidir.
 ol('pusla sozu ayna kuruluyken iki depo akisini hatirlatir', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-pusla-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-pusla-'));
   const ek = konfig(true);
   const sor = (prompt) => {
     const r = calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt }, ek);
@@ -7978,7 +8015,7 @@ ol('pusla sozu ayna kuruluyken iki depo akisini hatirlatir', () => {
 // Alt ajanin bitisi kullanicinin isinin bitisi degil. Kanca gercekten ne yapiyor,
 // kaynaga bakarak degil kosarak olculur.
 ol('alt ajan bitisi ses vermez, ses yalniz tur makbuzuyla cikar', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ses-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ses-'));
   for (const olay of ['SubagentStop', 'SubagentStart', 'PostToolUse', 'UserPromptSubmit']) {
     const r = calistir(
       IZLE,
@@ -8003,8 +8040,8 @@ ol('alt ajan bitisi ses vermez, ses yalniz tur makbuzuyla cikar', () => {
 });
 
 ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-log-'));
-  const proje = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-logp-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-log-'));
+  const proje = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-logp-'));
   const c = (a, cwd) =>
     spawnSync(process.execPath, [path.join(KOK, 'scripts', 'log.js')].concat(a), {
       maxBuffer: 64 * 1024 * 1024,
@@ -8041,7 +8078,7 @@ ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
   esit(c(['sayi']).stdout.trim(), '1');
 
   // Depo kokunu isaret edince `al` gunlugu surum kontrolune tasir.
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-logb-'));
+  const base = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-logb-'));
   fs.mkdirSync(path.join(base, 'teknesyum', '.claude-plugin'), { recursive: true });
   fs.writeFileSync(path.join(base, 'teknesyum', '.claude-plugin', 'plugin.json'), '{}');
   const cb = (a) =>
@@ -8075,7 +8112,7 @@ ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
 });
 
 ol('acilis acik gunlugu ve bildirme yordamini soyler', () => {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-logacilis-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-logacilis-'));
   const ek = konfig(true);
   const sor = () => calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, ek);
   const bos = sor();
@@ -8641,7 +8678,7 @@ ol('ikinci gorus tetikleyicisi kancada olculuyor', () => {
   icerir(bes, 'GORUS.md', 'olcu 3: kaydin yeri yazili olmali');
 
   // Kapi gercekten calisiyor mu: dorduncu turda ve denetimsiz sozlesme secilmeli
-  const kv = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-gorus-'));
+  const kv = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-gorus-'));
   const cdir = path.join(kv, 'contracts');
   fs.mkdirSync(cdir, { recursive: true });
   const yaz = (ad, g) => fs.writeFileSync(path.join(cdir, ad), g);
@@ -8720,7 +8757,7 @@ ol('lisans olcutu lisanssiz depoyu ve celisen beyani yakalar', () => {
   const AGPL = 'GNU AFFERO GENERAL PUBLIC LICENSE\nVersion 3, 19 November 2007\n';
   const MIT = 'MIT License\n\nPermission is hereby granted, free of charge, to any person\n';
   const kur = (dosyalar) => {
-    const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-lisans-'));
+    const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-lisans-'));
     for (const [ad, govde] of Object.entries(dosyalar)) {
       const y = path.join(p, ad);
       fs.mkdirSync(path.dirname(y), { recursive: true });
@@ -8812,7 +8849,7 @@ const depoSurum = require(DEPO);
 const DEPO_SATIR = 'Teknesyum ▸ depo uzaktan geride — önce `git pull`, sonra iş';
 
 function depoKur(kip) {
-  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-'));
+  const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-depo-'));
   const bare = path.join(c, 'bare');
   fs.mkdirSync(bare);
   git(['init', '-q', '--bare'], bare);
@@ -8844,7 +8881,7 @@ function depoKur(kip) {
     // "yerelde var mi" diye sordugu icin bu hali `guncel` sayiyordu.
     if (kip === 'geride-fetchli') git(['fetch', '-q', 'origin'], w);
   }
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-cfg-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-depo-cfg-'));
   return { c, w, bare, cfg, kayit: path.join(cfg, 'teknesyum', 'live', 'depo-surum.json') };
 }
 
@@ -8917,7 +8954,7 @@ ol('yerel ileridiyse uyari basilmaz — push edilmemis is yalan uyari uretmez', 
 });
 
 ol('git deposu degilse, origin yoksa, uzak erisilemezse sessiz kalinir', () => {
-  const bos = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-depo-yok-'));
+  const bos = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-depo-yok-'));
   esit(depoSurum.kok(bos), null, 'git deposu olmayan dizinde kok null');
   esit(depoSurum.durum(bos), null, 'git deposu olmayan dizinde durum null');
 
@@ -9308,7 +9345,7 @@ ol('kesinti disiplini ve yonlendirme bicimi belgede', () => {
 console.log('\nKayıt taşınabilirliği ve durum panosu');
 
 function devirProjesi(blokA, blokB) {
-  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-devir-'));
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-devir-'));
   const sat = [
     {
       type: 'user',
@@ -9408,7 +9445,7 @@ ol('kayit yokken transkriptten devralinca da devir notu basilir', () => {
 });
 
 function aynaKur(bare) {
-  const c = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-ayna-'));
+  const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-ayna-'));
   let dip = bare;
   if (!dip) {
     dip = path.join(c, 'bare');
@@ -9425,7 +9462,7 @@ function aynaKur(bare) {
     git(['commit', '-qm', 'ilk'], klon);
     git(['push', '-q', '-u', 'origin', 'HEAD'], klon);
   }
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-aynacfg-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-aynacfg-'));
   return { c, bare: dip, klon, cfg };
 }
 
@@ -9541,7 +9578,7 @@ ol('push basarisizsa kayit yerelde kalir ve sebep basilir, yutulmaz', () => {
 
 ol('bir makinede save, otekinde load — veri elle tasinmadan gelir', () => {
   const pA = devirProjesi('Senden istediklerim: A maddesi kalsin', 'ikinci blok');
-  const pB = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-otekimakine-'));
+  const pB = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-otekimakine-'));
   const A = aynaKur();
   aynaBagla(A, pA, 'ortakproje');
   const k = aynaOturum(
@@ -9685,7 +9722,7 @@ ol('pano son kaydi ve push durumunu soyler', () => {
 });
 
 ol('profil satiri modu ve kaynagini soyler', () => {
-  const cfg = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-profilkaynak-'));
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-profilkaynak-'));
   const sor = (ek) =>
     (
       spawnSync(
@@ -9840,7 +9877,7 @@ ol('konsey defteri --tur olmadan satir yazmaz', () => {
   if (/--tip|bayrak\.tip/.test(k))
     throw new Error('`--tip` bayragi hâlâ duruyor, lite kavrami kodda yasiyor');
   icerir(k, '--tur verilmeden satir yazilmaz');
-  const dizin = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-defter-'));
+  const dizin = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-defter-'));
   const hedef = path.join(dizin, 'k.md');
   fs.writeFileSync(hedef, '');
   const sahte = path.join(dizin, 'a.jsonl');

@@ -6,6 +6,19 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.62.1] - 2026-08-25
+
+### Fixed
+
+- **The test run no longer leaves its temporary directories behind.** 139 places created
+  one directly under the system temp directory and nothing ever removed them — a measured
+  220,576 directories had accumulated. They now all live under a single run root that is
+  removed when the run ends, child by child so one stubborn entry cannot strand the other
+  138. Anything that survives is counted and printed rather than passed over in silence,
+  and under `TEKNESYUM_TEMP_KATI=1` — which CI sets — a leftover fails the run.
+- **CI covers two Node versions.** The matrix was three operating systems on Node 20 only;
+  it is now three by Node 20 and 22.
+
 ## [2.62.0] - 2026-08-25
 
 ### Fixed

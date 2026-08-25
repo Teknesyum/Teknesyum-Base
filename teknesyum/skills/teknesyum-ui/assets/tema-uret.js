@@ -1260,7 +1260,15 @@ const ciktilar = [
   ['Theme.axaml', axamlUret()],
   ['Palette.cs', paletteUret()]
 ];
+// ÖLÇÜLDÜ (25.08.2026, CI): satır sonu sabitlenince yalnız yazıldığı platform tutar —
+// autocrlf Windows'ta CRLF, Unix'te LF çeker; dört dosyada her satır farklı görünür.
+// EOL hedef dosyanın o anki halinden alınır, dosya yoksa LF.
 for (const [ad, icerik] of ciktilar) {
-  fs.writeFileSync(path.join(kok, ad), icerik.replace(/\n/g, '\r\n'), 'utf8');
+  const hedef = path.join(kok, ad);
+  let eol = '\n';
+  try {
+    if (fs.readFileSync(hedef, 'utf8').includes('\r\n')) eol = '\r\n';
+  } catch {}
+  fs.writeFileSync(hedef, eol === '\n' ? icerik : icerik.replace(/\n/g, '\r\n'), 'utf8');
 }
 console.log('uretildi: ' + ciktilar.map(c => c[0]).join(', ') + ' <- ' + path.basename(tokenYolu));

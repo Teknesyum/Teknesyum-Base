@@ -6,6 +6,16 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.63.1] - 2026-08-25
+
+### Fixed
+
+- **The theme generator no longer hard-codes Windows line endings.** It wrote CRLF
+  unconditionally, which matched a Windows checkout and nothing else — on Linux and
+  macOS every generated line differed from the repository and the byte-identity suite
+  failed across four files. The generator now takes the line ending from the file it is
+  about to replace, defaulting to LF, so the output is byte-identical on every platform.
+
 ## [2.63.0] - 2026-08-25
 
 ### Added

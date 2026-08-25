@@ -1,0 +1,21 @@
+{
+  "contractId": "S2",
+  "auditorRunId": "a9f3aafe54a0d4e12",
+  "headSha": "a756a9bd982cbb8c27676194c4b81da60d9139ab",
+  "diffHash": "97f1ba4435a509dcda50d1c466116579a8b6b4f71a81a6ff4889fc8be503091d",
+  "owns": [
+    "teknesyum/scripts/tarama.js",
+    "teknesyum/commands/scan.md",
+    "teknesyum/hooks/dil.js",
+    "test/run.js"
+  ],
+  "verification": [
+    "```",
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 profil kipi ui bilgi satırı, kapı değil — CHECK (S2.md:34, spawnSync + `j.ui` şartı) çıkış 0, çıktı `ui {\"kurulu\":true,\"kapali\":false,\"katman\":\"makine\",\"dosya\":9,\"ihlal\":25}`, EXPECT `ui` bulundu (S2.md:133); alanlar tarama.js:1715-1721, insan-okur satır"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T18:04:26.745Z",
+  "usedAt": "2026-08-25T18:04:26.821Z",
+  "completedSha": "a756a9bd982cbb8c27676194c4b81da60d9139ab"
+}

@@ -16,3 +16,4 @@
 {"id":"U8","round":"1","auditorRunId":"afb871fd5c7ca6190","headSha":"8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494","diffHash":"9094629922d9a43b2c0bd001c84a42755ebe0708428d97e3703fb8ccd78f1d46","at":"2026-08-25T14:01:56.179Z"}
 {"id":"U9","round":"1","auditorRunId":"a7cab9cb16f1e08c6","headSha":"8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494","diffHash":"17b91afe277281f56231a14f66c1025b8e952d7109f192187e54ea4e063aad9f","at":"2026-08-25T14:01:56.235Z"}
 {"id":"D3","round":"2","auditorRunId":"aafaf877e4c5381c2","headSha":"8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494","diffHash":"edc255c1eda05eba5ddbcb637aed5035823c5c339044bce467eb227065183418","at":"2026-08-25T17:05:37.358Z"}
+{"id":"T2","kaynak":"devralindi","at":"2026-08-25T13:58:57.436Z"}

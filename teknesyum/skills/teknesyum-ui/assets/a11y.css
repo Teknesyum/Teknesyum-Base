@@ -1,0 +1,112 @@
+/* Teknesyum Neon — ekran okuyucu ve yüksek kontrast katmanı (SKILL §5.8).
+   `theme.css`ten SONRA import edilir; kendi token tanımı yoktur, hepsini oradan okur.
+   Gerekçeler ve kullanım kalıpları: references/a11y.md.
+
+   ŞERH (U10): `.tk-sr-only` genel bir utility'dir ve birleştirmede `theme.css`e
+   taşınmaya adaydır; bu dosya owns çakışmasını önlemek için ayrı açıldı.
+
+   BU DOSYADA HAM RENK YOKTUR. Tema renkleri `--tk-*` tokenından, yüksek kontrast
+   renkleri CSS sistem renklerinden (Canvas, CanvasText, Highlight, GrayText,
+   ButtonText) gelir — forced-colors altında neon korunmaz, sisteme teslim edilir. */
+
+/* ==========================================================================
+   1 · sr-only — görsel olarak gizli, ekran okuyucuya açık
+   ========================================================================== */
+
+/* `display:none` ve `visibility:hidden` KULLANILMAZ — ekran okuyucu da göremez.
+   Öğeyi 1px'e kırpıp akıştan çıkaran clip kalıbı tek doğru yoldur. */
+.tk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Odak alınca görünür olan varyant — "içeriğe atla" bağlantısı gibi. */
+.tk-sr-only-focusable:focus,
+.tk-sr-only-focusable:focus-within {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+}
+
+/* ==========================================================================
+   2 · aria-live bölgesi — baştan var, baştan boş
+   ========================================================================== */
+
+/* Bölge sayfa yüklenirken DOM'da boş durur; içerikle birlikte sonradan eklenen
+   bölgeyi okuyucu duyurmaz. Markup: <div class="tk-sr-only tk-live" aria-live="polite">.
+   Sınıfın tek işi boş bölgenin yerleşimi bozmamasıdır. */
+.tk-live:empty {
+  display: block;
+  min-height: 0;
+}
+
+/* ==========================================================================
+   3 · forced-colors — neon sisteme teslim edilir
+   ========================================================================== */
+
+@media (forced-colors: active) {
+  /* Çift katman odak halkasının iç katmanı (box-shadow) sistemce silinir;
+     halka TEKE düşer ve bu kabul edilir. Dış katman sistem renginde çizilsin
+     diye outline açıkça bırakılır — Highlight, zeminden sistem garantisiyle
+     ayrışır, ölçüm gerekmez. */
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+
+  /* box-shadow glow'ları sistem siler; `filter: drop-shadow` SİLİNMEZ ve
+     sistem renkli metnin altında hayalet bırakır — elle kapatılır. */
+  .tk-hero,
+  .tk-btn,
+  .tk-panel {
+    filter: none;
+    box-shadow: none;
+  }
+
+  /* Devre dışı hâl opaklıkla verilemez — sistem paleti opaklığı ezer.
+     Tek doğru sinyal GrayText'tir; `title` zorunluluğu (SKILL §2) burada da sürer. */
+  .tk-btn:disabled {
+    color: GrayText;
+    border-color: GrayText;
+    opacity: 1;
+  }
+
+  /* Durum noktasının rengi ezilir; bilgiyi şekil taşır (dolu daire / halka,
+     SKILL §2). Halkanın çerçevesi sistem renginde görünür kalsın diye açık yazılır. */
+  .tk-dot-on {
+    background: CanvasText;
+  }
+  .tk-dot-off {
+    background: transparent;
+    border-color: CanvasText;
+  }
+
+  /* Gradient zemin düz Canvas'a düşer — sistem paleti gradiente izin vermez,
+     yarım kalmış bir gradient bantlaşmadan kötüdür. */
+  body {
+    background: Canvas;
+    animation: none;
+  }
+}
+
+/* `forced-color-adjust: none` YALNIZ renk yutucusu istisnadır: palet örneği,
+   renk seçici önizlemesi gibi rengin KENDİSİNİN veri olduğu yüzey. Etkileşimli
+   hiçbir öğeye verilmez — kullanıcı yüksek kontrastı okuyamadığı için açtı. */
+.tk-renk-ornegi {
+  forced-color-adjust: none;
+}

@@ -67,13 +67,11 @@
 2026-08-23 · Yeni ürün standardı: tema renkleri locale gibi ayrı dosyada · U11 açılacak
 2026-08-24 · D1 teslim: depo sürüm kapısı — açılışta ls-remote, 3 sn tavan, günde bir kez; 429/429
 2026-08-24 · D3 teslim: kesinti diskte durur — _acik.json (tavan 10 satır), Stop tek satırı, statusline açıkta N · ajan X/Y, SendMessage 5 satır tavanı block ile mekanik, steered[] izi; 440/440
-<<<<<<< HEAD
 2026-08-24 · D2 teslim: devir.md son mesajı kırpmadan taşıyor, kayıt özel aynaya push ediliyor (ham.jsonl hariç), /load önce çekiyor, /update durum panosu oldu; 444/444
-=======
 2026-08-24 · D3 tur 2: yönlendirme tavanı PreToolUse'a taşındı (hedef 'to', stderr+exit 2), hooks.json matcher SendMessage aldı; kök sebep düzeltildi — tool_input eksik değildi, kurulu eklenti 2.42.1 bu kodu hiç taşımıyor; 443/443
->>>>>>> worktree-agent-a2075d3517fc89212
 2026-08-24 · D4 teslim: premium advisor effort medium, /update --guncelle kolu (bayraksız pano salt okur), sürüm-etiket denetimi ve güncelleme sonrası sürüm doğrulaması; 469/469
 2026-08-24 · F1 teslim: yedi ajan tanımına relay skill yasağı (kaçışsız), relay description kapsam ibaresi aldı ve 367→356 karaktere indi, örnek talep listesi korundu, 5 yeni test; worktree 463/463 (taban 458, main tabanı 469 — worktree D4 öncesi)
 2026-08-24 · F3 teslim: pencere ölçümü bench yerine transkript replay — scripts/olcum/pencere.js salt okur ve 72 MB'ı akıtır, 25 gerçek compact_boundary ölçüldü (sonrası ilk tur cache_creation normalin 22,5 katı), cache bayatlaması %2,0 ölçülüp modele katıldı; sonuç 500k (1M, 500k'nın 1,45 katı), alt ajan atıfı ölçülemedi; 458/458
 2026-08-24 · F2 teslim (tur 2): kesinti kuyruğa yazılırken aynı anda 'Sıraya alındı' basılır, Stop kancası acikta doluyken turu bitirmez, aynı madde 3 kez engellerse valf açılıp _sorun.log'a yazar; tur başı enjeksiyonu yok; 5 yeni test, 479/479 (taban 474)
 2026-08-25 20:19 | T3 tur 2 teslim edildi (builder) — K4 yikama kapali, K5 parametreli fixture + D1/E1/S2/U7 testleri, sealed->open testi, relay-watch _sorun.log satiri; 532/532 yesil
+2026-08-25 · U5 teslim: §5.8 ekran okuyucu — isimsiz interaktif öğe yasağı web+WPF (aria-label sırası, title yetmez, AutomationProperties.Name), .tk-sr-only clip kalıbı + focusable varyantı, aria-live tablosu (ilerlemede live yok, progressbar), forced-colors teslim kuralı (halka teke düşer, GrayText, filter elle kapanır); konsey fable görüşü uygulandı; 74/74

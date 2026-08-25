@@ -5007,8 +5007,8 @@ function piEv(kur) {
   return d;
 }
 
-function piCalistir(d, ek) {
-  return spawnSync(process.execPath, [PI], {
+function piCalistir(d, ek, arg) {
+  return spawnSync(process.execPath, [PI, ...(arg || [])], {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
     env: { ...process.env, CLAUDE_CONFIG_DIR: d, TEKNESYUM_AUTOCOMPACT: '', ...(ek || {}) },
@@ -5115,6 +5115,64 @@ ol('ikinci kosu ayni sonucu verir, @RULES.md iki kere eklenmez', () => {
   esit(r.status, 0);
   const c = fs.readFileSync(path.join(d, 'CLAUDE.md'), 'utf8');
   esit(c.split('@RULES.md').length - 1, 1, 'tek satir kalmali');
+});
+
+ol('temiz HOME: kur → kaldir sonrasi yedekler disinda iz kalmaz', () => {
+  const d = piEv();
+  const r1 = piCalistir(d);
+  esit(r1.status, 0, 'kurulum gecmeli: ' + r1.stdout + r1.stderr);
+  const r2 = piCalistir(d, {}, ['--kaldir']);
+  esit(r2.status, 0, 'kaldirma gecmeli: ' + r2.stdout + r2.stderr);
+  const kalan = fs.readdirSync(d).filter((f) => !/teknesyum-yedek-/.test(f));
+  esit(kalan.join(','), '', 'kurulum oncesi hale donmeli');
+  esit(piYedek(d).length > 0, true, 'kaldirma damgali yedek birakmali');
+});
+
+ol('kur → kaldir dongusu kullanici dosyalarini bayt bayt geri getirir', () => {
+  const oncekiS = JSON.stringify({ model: 'opus', x: 1 }, null, 2);
+  const oncekiC = 'benim huylarim\n';
+  const d = piEv((p) => {
+    fs.writeFileSync(path.join(p, 'settings.json'), oncekiS);
+    fs.writeFileSync(path.join(p, 'CLAUDE.md'), oncekiC);
+  });
+  esit(piCalistir(d).status, 0);
+  const r = piCalistir(d, {}, ['--kaldir']);
+  esit(r.status, 0, r.stdout + r.stderr);
+  esit(fs.readFileSync(path.join(d, 'settings.json'), 'utf8'), oncekiS, 'settings bayt bayt');
+  esit(fs.readFileSync(path.join(d, 'CLAUDE.md'), 'utf8'), oncekiC, 'CLAUDE.md bayt bayt');
+  esit(fs.existsSync(path.join(d, 'RULES.md')), false, 'sablon RULES.md kalkmali');
+  esit(fs.existsSync(path.join(d, 'teknesyum-statusline.js')), false, 'kopru kalkmali');
+  esit(
+    fs.readdirSync(d).filter((f) => /teknesyum-tmp-/.test(f)).length,
+    0,
+    'gecici dosya kalmamali'
+  );
+});
+
+ol('kaldirma kullanicinin statusLine ve kurallarina dokunmaz', () => {
+  const d = piEv();
+  esit(piCalistir(d).status, 0);
+  const sp = path.join(d, 'settings.json');
+  const s = JSON.parse(fs.readFileSync(sp, 'utf8'));
+  s.statusLine = { type: 'command', command: 'kendi-satirim.sh' };
+  fs.writeFileSync(sp, JSON.stringify(s, null, 2));
+  fs.appendFileSync(path.join(d, 'RULES.md'), '- benim kuralim\n');
+  const r = piCalistir(d, {}, ['--kaldir']);
+  esit(r.status, 0, r.stdout + r.stderr);
+  const s2 = JSON.parse(fs.readFileSync(sp, 'utf8'));
+  esit(s2.statusLine.command, 'kendi-satirim.sh', 'ozel statusLine kalmali');
+  icerir(r.stdout, 'statusLine size ait');
+  icerir(fs.readFileSync(path.join(d, 'RULES.md'), 'utf8'), 'benim kuralim');
+  icerir(r.stdout, 'kurallarınızı taşıyor');
+});
+
+ol('kaldirma bozuk settings.json karsisinda dosyaya dokunmaz', () => {
+  const ham = '{bozuk json\n';
+  const d = piEv((p) => fs.writeFileSync(path.join(p, 'settings.json'), ham));
+  const r = piCalistir(d, {}, ['--kaldir']);
+  esit(r.status, 1, 'non-zero donmeli');
+  icerir(r.stdout, 'DOKUNULMADI');
+  esit(fs.readFileSync(path.join(d, 'settings.json'), 'utf8'), ham, 'bayt bayt korunmali');
 });
 
 const IYI = 'https://raw.githubusercontent.com/Teknesyum/teknesyum-base/v1.0.0/x.js';

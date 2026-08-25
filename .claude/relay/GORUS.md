@@ -5,3 +5,4 @@
 2026-08-24 12:51 | advisor | Fable-Görüş Vurgu Biçimi | bekleyen: E1,S1,U1,U2
 2026-08-24 12:49 | advisor | Gerçek advisor çağrısı | bekleyen: E1,S1,U1,U2
 2026-08-24 13:10 | advisor | Fable-Görüş Pencere Rakamları | bekleyen: E1,S1,U1,U2
+2026-08-25 13:58 | advisor | U5 konsey görüşü fable | bekleyen: E1,S1,U1,U2

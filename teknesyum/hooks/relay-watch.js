@@ -1048,11 +1048,9 @@ function paketDenetle(j, root) {
   // "bitti" diyip dönüş bloğu vermediğinde hem de karar beklediğinde yalnız ilki
   // duyuluyordu; `sendenEksik` hiç değerlendirilmiyordu. Üçü bağımsız yükümlülük,
   // tek slot paylaşamazlar — hepsi toplanır ve birlikte bildirilir.
-  const engeller = [
-    devirIhlali(govde),
-    donusEksik(root, govde),
-    sendenEksik(root, govde),
-  ].filter(Boolean);
+  const engeller = [devirIhlali(govde), donusEksik(root, govde), sendenEksik(root, govde)].filter(
+    Boolean
+  );
   const engel = engeller.join('\n\n');
   if (engel) ciktiEkle({ decision: 'block', reason: engel });
   return { govde, engel };

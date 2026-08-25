@@ -85,8 +85,7 @@ function xmlOku(kaynak, dosyaAdi) {
       const kapa = kaynak.indexOf('-->', ac + 4);
       if (kapa === -1) hata(ac, 'kapanmamis yorum');
       const icerik = kaynak.slice(ac + 4, kapa);
-      if (icerik.includes('--'))
-        hata(ac, 'yorum icinde cift tire var, XML bunu kabul etmez');
+      if (icerik.includes('--')) hata(ac, 'yorum icinde cift tire var, XML bunu kabul etmez');
       // yorumu ayni satir sayisini koruyacak sekilde bosluga cevir
       yorumsuz += kaynak.slice(ac, kapa + 3).replace(/[^\n]/g, ' ');
       i = kapa + 3;
@@ -107,8 +106,7 @@ function xmlOku(kaynak, dosyaAdi) {
       const ad = kaynak.slice(ac + 2, kapa).trim();
       const ust = yigin.pop();
       if (!ust) hata(ac, 'fazladan kapanis: </' + ad + '>');
-      if (ust.ad !== ad)
-        hata(ac, '<' + ust.ad + '> yerine </' + ad + '> ile kapatilmis');
+      if (ust.ad !== ad) hata(ac, '<' + ust.ad + '> yerine </' + ad + '> ile kapatilmis');
       yorumsuz += kaynak.slice(ac, kapa + 1);
       i = kapa + 1;
       continue;
@@ -141,8 +139,7 @@ function xmlOku(kaynak, dosyaAdi) {
     let kalan = temiz.slice(adEsl[0].length);
     while ((m = ozRe.exec(kalan)) !== null) {
       const ozAd = m[1];
-      if (Object.prototype.hasOwnProperty.call(oz, ozAd))
-        hata(ac, 'ayni ozellik iki kez: ' + ozAd);
+      if (Object.prototype.hasOwnProperty.call(oz, ozAd)) hata(ac, 'ayni ozellik iki kez: ' + ozAd);
       oz[ozAd] = m[3] !== undefined ? m[3] : m[4];
     }
     // ozellik gibi gorunmeyen artik kaldi mi
@@ -244,17 +241,15 @@ ol('1 · Theme.xaml (kaynak) iyi bicimli XML', () => {
 ol('2 · WPF anahtarlarinin hepsi Avalonia surumunde var', () => {
   const a = anahtarlar(wpf.ogeler);
   const b = anahtarlar(tema.ogeler);
-  const eksik = [...a.keys()].filter(
-    (k) => !b.has(k) && !KAYNAK_KARSILIGI_YOK.includes(k)
-  );
-  dogru(eksik.length === 0, 'Theme.axaml\'da eksik anahtar: ' + eksik.join(', '));
+  const eksik = [...a.keys()].filter((k) => !b.has(k) && !KAYNAK_KARSILIGI_YOK.includes(k));
+  dogru(eksik.length === 0, "Theme.axaml'da eksik anahtar: " + eksik.join(', '));
 });
 
 ol('2 · Avalonia surumunde fazladan anahtar yok', () => {
   const a = anahtarlar(wpf.ogeler);
   const b = anahtarlar(tema.ogeler);
   const fazla = [...b.keys()].filter((k) => !a.has(k));
-  dogru(fazla.length === 0, 'Theme.xaml\'da olmayan anahtar: ' + fazla.join(', '));
+  dogru(fazla.length === 0, "Theme.xaml'da olmayan anahtar: " + fazla.join(', '));
 });
 
 ol('2 · karsiligi olmayan anahtar listesi tam olarak beklenen', () => {
@@ -262,8 +257,7 @@ ol('2 · karsiligi olmayan anahtar listesi tam olarak beklenen', () => {
   const sapan = KAYNAK_KARSILIGI_YOK.filter((k) => b.has(k));
   dogru(
     sapan.length === 0,
-    'istisna listesindeki anahtar Theme.axaml\'da tanimli, liste guncellenmeli: ' +
-      sapan.join(', ')
+    "istisna listesindeki anahtar Theme.axaml'da tanimli, liste guncellenmeli: " + sapan.join(', ')
   );
   // istisnanin karsiligi gercekten yazilmis mi
   dogru(
@@ -326,7 +320,10 @@ const YASAK = [
   '<Hyperlink',
 ];
 
-for (const [ad, kay] of [['Theme.axaml', () => tema], ['Signature.axaml', () => imza]]) {
+for (const [ad, kay] of [
+  ['Theme.axaml', () => tema],
+  ['Signature.axaml', () => imza],
+]) {
   ol('4 · ' + ad + ' WPF artigi tasimiyor', () => {
     const govde = kay().yorumsuz;
     const bulunan = YASAK.filter((y) => govde.includes(y));
@@ -345,26 +342,29 @@ ol('4 · hover ve basma keyframe degil Transition ile yazilmis', () => {
 });
 
 ol('4 · RenderTransform hicbir yerde nesne olarak verilmiyor (U1 dersi)', () => {
-  for (const [ad, kay] of [['Theme.axaml', tema], ['Signature.axaml', imza]]) {
+  for (const [ad, kay] of [
+    ['Theme.axaml', tema],
+    ['Signature.axaml', imza],
+  ]) {
     dogru(
       !kay.yorumsuz.includes('<ScaleTransform') && !kay.yorumsuz.includes('<TransformGroup'),
       ad + ' icinde transform nesnesi var; deger metin olmali ("scale(0.98)")'
     );
     for (const o of kay.ogeler) {
       if (o.ad === 'Setter' && o.oz.Property === 'RenderTransform' && o.oz.Value === undefined)
-        throw new Error(ad + ' — RenderTransform setter\'i deger yerine nesne aliyor');
+        throw new Error(ad + " — RenderTransform setter'i deger yerine nesne aliyor");
     }
   }
 });
 
 // 5 — kullanilan her kaynak tanimli
 ol('5 · kullanilan her StaticResource tanimli', () => {
-  const tanimli = new Set([
-    ...anahtarlar(tema.ogeler).keys(),
-    ...anahtarlar(imza.ogeler).keys(),
-  ]);
+  const tanimli = new Set([...anahtarlar(tema.ogeler).keys(), ...anahtarlar(imza.ogeler).keys()]);
   const eksik = [];
-  for (const [ad, kay] of [['Theme.axaml', tema], ['Signature.axaml', imza]]) {
+  for (const [ad, kay] of [
+    ['Theme.axaml', tema],
+    ['Signature.axaml', imza],
+  ]) {
     for (const k of staticResourceAdlari(kay.yorumsuz))
       if (!tanimli.has(k)) eksik.push(ad + ' → ' + k);
   }
@@ -373,8 +373,7 @@ ol('5 · kullanilan her StaticResource tanimli', () => {
 
 ol('5 · Signature.axaml kendi iki temasini tanimliyor', () => {
   const a = anahtarlar(imza.ogeler);
-  for (const k of ['SigChip', 'SigText'])
-    dogru(a.has(k), 'Signature.axaml icinde ' + k + ' yok');
+  for (const k of ['SigChip', 'SigText']) dogru(a.has(k), 'Signature.axaml icinde ' + k + ' yok');
 });
 
 // 6 — azaltilmis hareket

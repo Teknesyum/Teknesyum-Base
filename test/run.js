@@ -1005,7 +1005,7 @@ ol('bir turda iki yukumluluk varsa ikisi de bildirilir', () => {
   const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
-'---\nstatus: active\n---\n'
+    '---\nstatus: active\n---\n'
   );
   const m = 'T1 tamamlandi, yayinda. Sirada hangisi olsun, once T4 mu T5 mi?';
   const r = calistir(
@@ -1024,7 +1024,7 @@ ol('donus blogu mesaji basligin yerine gecmedigini soyler', () => {
   const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kapi-')) };
   fs.writeFileSync(
     path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
-'---\nstatus: active\n---\n'
+    '---\nstatus: active\n---\n'
   );
   const r = calistir(
     IZLE,
@@ -2363,8 +2363,7 @@ ol('research_repos eco profilinde 1 depoya iner', () => {
 });
 
 ol('SKILL eco bolumunu ve tersine donen ilke sirasini anlatir', () => {
-  const s = relayMetin()
-    .replace(/\r/g, '');
+  const s = relayMetin().replace(/\r/g, '');
   const duz = s.replace(/\s+/g, ' ');
   icerir(s, '## 0.1 Üç profil');
   icerir(duz, 'token tasarrufu > kullanıcı rahatlığı > kod verimliliği');
@@ -3352,8 +3351,7 @@ ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
 });
 
 ol('ajan adi kurali modeli one alir, ornek bicime uyar', () => {
-  const s = relayMetin()
-    .replace(/\r/g, '');
+  const s = relayMetin().replace(/\r/g, '');
   const i = s.indexOf('**Ajan adı `<Model>-<İş Adı>` biçiminde yazılır.**');
   if (i < 0) throw new Error('ajan adlandırma kuralı SKILL.md içinde yok');
   const blok = (s.slice(i).match(/```\n([\s\S]*?)```/) || [])[1] || '';
@@ -3378,8 +3376,7 @@ ol('ajan adi kurali modeli one alir, ornek bicime uyar', () => {
 });
 
 ol('plan uretimi ikinci gorus tetikleyicisidir ve konseyden ayrilir', () => {
-  const s = relayMetin()
-    .replace(/\r/g, '');
+  const s = relayMetin().replace(/\r/g, '');
   const i = s.indexOf('## 1.5.1');
   const j = s.indexOf('## 1.6');
   if (i < 0 || j < i) throw new Error('§1.5.1 bulunamadı');
@@ -3396,8 +3393,7 @@ ol('plan uretimi ikinci gorus tetikleyicisidir ve konseyden ayrilir', () => {
 });
 
 ol('ikinci gorus tetikleyicileri dokuza cikti ve her biri olculebilir', () => {
-  const s = relayMetin()
-    .replace(/\r/g, '');
+  const s = relayMetin().replace(/\r/g, '');
   const bolum = s.slice(s.indexOf('## 1.5.1'), s.indexOf('## 1.6'));
   const madde = bolum.split('\n').filter((r) => /^\d+\. /.test(r));
   esit(madde.length, 9, 'dokuz tetikleyici olmali');
@@ -3416,8 +3412,7 @@ ol('ikinci gorus tetikleyicileri dokuza cikti ve her biri olculebilir', () => {
 });
 
 ol('premium paralel tavani yirmidir ve gerekcesi yazili', () => {
-  const s = relayMetin()
-    .replace(/\r/g, '');
+  const s = relayMetin().replace(/\r/g, '');
   icerir(s, 'Paralel tavanı\n**yirmidir**');
   icerir(s, 'ölçüsü hızdır, token değil');
   icerir(s, 'bölünebilen işi bölmemek\ngerekçe ister');
@@ -7126,7 +7121,11 @@ ol('ayna kurulu ama bosken acilis bunu soyler, doluyken susar', () => {
   const sor = () => {
     const r = spawnSync(
       process.execPath,
-      ['-e', 'process.stdout.write(JSON.stringify(require(process.argv[1]).aynaDurumu(process.cwd())))', OZEL],
+      [
+        '-e',
+        'process.stdout.write(JSON.stringify(require(process.argv[1]).aynaDurumu(process.cwd())))',
+        OZEL,
+      ],
       { encoding: 'utf8', cwd: s.proje, env: { ...process.env, CLAUDE_CONFIG_DIR: s.cfg } }
     );
     return JSON.parse(r.stdout || 'null');
@@ -7138,7 +7137,7 @@ ol('ayna kurulu ama bosken acilis bunu soyler, doluyken susar', () => {
   ozelCalistir(['ekle', './gizli.txt'], s.cfg, s.proje);
   esit(sor().sayi, 1, 'dosya eklenince sayi artmali');
   const k = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
-  icerir(k, "ayna && !ayna.sayi");
+  icerir(k, 'ayna && !ayna.sayi');
   icerir(k, "ceviri('aynaBos'");
 });
 
@@ -9158,7 +9157,7 @@ ol('makbuz ayrac renginde basilmaz, bitmis ajan kaydi da tazelik suzgecinden gec
   icerir(k, 'C.dim + mk');
   if (/out = out\.filter\(\(a\) => !olu\(a\) \|\| taze\(a\.last_seen\)\)/.test(k))
     throw new Error('tazelik suzgeci hâlâ yalniz olu ajanlara uygulaniyor');
-  icerir(k, "a.stop_reason === null && !olu(a)) || taze(a.last_seen)");
+  icerir(k, 'a.stop_reason === null && !olu(a)) || taze(a.last_seen)');
   icerir(k, "replace(/\\s+/g, ' ')");
 });
 

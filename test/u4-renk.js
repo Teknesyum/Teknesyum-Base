@@ -30,7 +30,10 @@ let gecen = 0;
 const hatalar = [];
 
 function onay(ad, kosul, detay) {
-  if (kosul) { gecen++; return; }
+  if (kosul) {
+    gecen++;
+    return;
+  }
   hatalar.push(detay ? `${ad} — ${detay}` : ad);
 }
 function esit(ad, a, b) {
@@ -44,12 +47,12 @@ function yakin(ad, a, b, tol) {
 // 1. Kontrast hesabı — WCAG 2.x görece parlaklık ve kontrast oranı
 // ---------------------------------------------------------------------------
 
-const kanal = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const kanal = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 
 function parlaklik(hex) {
   const [r, g, b] = kanal(hex)
-    .map(v => v / 255)
-    .map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+    .map((v) => v / 255)
+    .map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
@@ -64,12 +67,19 @@ function kontrast(a, b) {
 function komposit(on, alfa, zemin) {
   const f = kanal(on);
   const z = kanal(zemin);
-  return '#' + f
-    .map((v, i) => Math.round(v * alfa + z[i] * (1 - alfa)).toString(16).padStart(2, '0'))
-    .join('');
+  return (
+    '#' +
+    f
+      .map((v, i) =>
+        Math.round(v * alfa + z[i] * (1 - alfa))
+          .toString(16)
+          .padStart(2, '0')
+      )
+      .join('')
+  );
 }
 
-const yuvarla = n => Number(n.toFixed(2));
+const yuvarla = (n) => Number(n.toFixed(2));
 
 const BG = '#000000';
 const SURFACE = '#08090a';
@@ -132,11 +142,17 @@ function katmanA() {
 // ---------------------------------------------------------------------------
 
 // XAML ve C# yorumları ASCII'ye katlanmış yazılıyor; metin ararken aksanı düşür.
-const katla = s => s
-  .normalize('NFD').replace(/[̀-ͯ]/g, '')
-  .replace(/[ıİ]/g, 'i').replace(/[şŞ]/g, 's').replace(/[ğĞ]/g, 'g')
-  .replace(/[çÇ]/g, 'c').replace(/[öÖ]/g, 'o').replace(/[üÜ]/g, 'u')
-  .toUpperCase();
+const katla = (s) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[ıİ]/g, 'i')
+    .replace(/[şŞ]/g, 's')
+    .replace(/[ğĞ]/g, 'g')
+    .replace(/[çÇ]/g, 'c')
+    .replace(/[öÖ]/g, 'o')
+    .replace(/[üÜ]/g, 'u')
+    .toUpperCase();
 
 function csDeger(ad) {
   const m = CSS.match(new RegExp(`^\\s*${ad}\\s*:\\s*([^;]+);`, 'm'));
@@ -158,7 +174,11 @@ function katmanB() {
   // `--tk-warning-border` gerçekten amberin /50'si mi — üçüncü bir hex olmasın.
   const rgba = csDeger('--tk-warning-border').match(/rgba\((\d+), (\d+), (\d+), ([\d.]+)\)/);
   const amberKanal = kanal(AMBER);
-  esit('B1 çerçeve amberin kendisi', [+rgba[1], +rgba[2], +rgba[3]].join(','), amberKanal.join(','));
+  esit(
+    'B1 çerçeve amberin kendisi',
+    [+rgba[1], +rgba[2], +rgba[3]].join(','),
+    amberKanal.join(',')
+  );
   esit('B1 çerçeve alfası /50', rgba[4], '0.5');
 
   // B2. EN BÜYÜK RİSK: `@theme` katmanı. `:root` güncellenip burası unutulursa
@@ -185,19 +205,35 @@ function katmanB() {
   onay('B3 XAML Info fırçası yok', !/x:Key="Info[A-Za-z0-9]*"/.test(XAML));
   onay('B3 Palette Info alanı yok', !/\bColor\s+Info\s*=/.test(CS));
   // Yokluğun gerekçesi ve açılırsa ne olacağı yazılı olmalı; sessiz eksik değil.
-  for (const [ad, m] of [['CSS', CSS], ['XAML', XAML], ['Palette', CS]]) {
+  for (const [ad, m] of [
+    ['CSS', CSS],
+    ['XAML', XAML],
+    ['Palette', CS],
+  ]) {
     onay(`B3 ${ad} info notu yazılı`, katla(m).includes('BILEREK YOK'));
     onay(`B3 ${ad} info açılırsa maviye bağlanır`, katla(m).includes('MAVIYE BAGLANIR'));
   }
 
   // B4. Rol kazanır: durum bildiren bileşenler rol tokenına geçti.
-  onay('B4 .tk-btn-danger rol tokenı yazıyor', /\.tk-btn-danger\s*\{[^}]*background:\s*var\(--tk-danger\)/.test(CSS));
-  onay('B4 .tk-btn-danger ham pembe yazmıyor', !/\.tk-btn-danger\s*\{[^}]*background:\s*var\(--tk-pink\)/.test(CSS));
+  onay(
+    'B4 .tk-btn-danger rol tokenı yazıyor',
+    /\.tk-btn-danger\s*\{[^}]*background:\s*var\(--tk-danger\)/.test(CSS)
+  );
+  onay(
+    'B4 .tk-btn-danger ham pembe yazmıyor',
+    !/\.tk-btn-danger\s*\{[^}]*background:\s*var\(--tk-pink\)/.test(CSS)
+  );
   onay('B4 .tk-dot-off rol tokenı yazıyor', /\.tk-dot-off\s*\{[^}]*var\(--tk-danger\)/.test(CSS));
   onay('B4 .tk-dot-on rol tokenı yazıyor', /\.tk-dot-on\s*\{[^}]*var\(--tk-success\)/.test(CSS));
   // Dekor marka tokenında KALIR — rol her yeri yutmasın.
-  onay('B4 scrollbar marka tokenında', /::-webkit-scrollbar-thumb\s*\{[^}]*var\(--tk-purple\)/.test(CSS));
-  onay('B4 danger halesi marka tokenında', /\.tk-btn-danger\s*\{[^}]*var\(--tk-glow-pink\)/.test(CSS));
+  onay(
+    'B4 scrollbar marka tokenında',
+    /::-webkit-scrollbar-thumb\s*\{[^}]*var\(--tk-purple\)/.test(CSS)
+  );
+  onay(
+    'B4 danger halesi marka tokenında',
+    /\.tk-btn-danger\s*\{[^}]*var\(--tk-glow-pink\)/.test(CSS)
+  );
 
   // B5. XAML rol fırçaları.
   esit('B5 XAML Danger', xamlFirca('Danger'), '#FFFF00EA');
@@ -211,44 +247,66 @@ function katmanB() {
   onay('B5 hata metni stili var', /x:Key="DangerBody"/.test(XAML));
   // XAML yorumunda çift tire yasak — dosyayı sessizce bozar.
   const yorumlar = XAML.match(/<!--[\s\S]*?-->/g) || [];
-  onay('B5 XAML yorumlarında çift tire yok',
-    yorumlar.every(y => !y.slice(4, -3).includes('--')),
-    'bir yorum gövdesinde "--" var');
+  onay(
+    'B5 XAML yorumlarında çift tire yok',
+    yorumlar.every((y) => !y.slice(4, -3).includes('--')),
+    'bir yorum gövdesinde "--" var'
+  );
 
   // B6. Palette.cs — takma ad düz atama, hex kopyalanmıyor.
   onay('B6 Danger = NeonPink', /Color\s+Danger\s*=\s*NeonPink;/.test(CS));
   onay('B6 DangerText = PinkText', /Color\s+DangerText\s*=\s*PinkText;/.test(CS));
   onay('B6 Warning hex', /Color\s+Warning\s*=\s*ColorTranslator\.FromHtml\("#FBBF24"\);/.test(CS));
-  onay('B6 Warning50 = amber /50',
-    /Color\s+Warning50\s*=\s*Color\.FromArgb\(0x80,\s*0xFB,\s*0xBF,\s*0x24\);/.test(CS));
-  onay('B6 Success duruyor', /Color\s+Success\s*=\s*ColorTranslator\.FromHtml\("#34D399"\);/.test(CS));
+  onay(
+    'B6 Warning50 = amber /50',
+    /Color\s+Warning50\s*=\s*Color\.FromArgb\(0x80,\s*0xFB,\s*0xBF,\s*0x24\);/.test(CS)
+  );
+  onay(
+    'B6 Success duruyor',
+    /Color\s+Success\s*=\s*ColorTranslator\.FromHtml\("#34D399"\);/.test(CS)
+  );
   // Rol alanı marka alanından SONRA tanımlanmalı — C# statik ilklendirme sırası.
   onay('B6 NeonPink Dangerdan önce', CS.indexOf('Color NeonPink') < CS.indexOf('Color Danger '));
-  onay('B6 PinkText DangerTextten önce', CS.indexOf('Color PinkText') < CS.indexOf('Color DangerText'));
+  onay(
+    'B6 PinkText DangerTextten önce',
+    CS.indexOf('Color PinkText') < CS.indexOf('Color DangerText')
+  );
 
   // B7. ANSI sabiti. Unutulursa terminal çıktısı paletten kopar.
   const ESC = '\u001b';
   const ansi = CS.slice(CS.indexOf('class Ansi'));
   onay('B7 Ansi.Danger = Pink', /string\s+Danger\s*=\s*Pink;/.test(ansi));
   onay('B7 Ansi.DangerText = PinkText', /string\s+DangerText\s*=\s*PinkText;/.test(ansi));
-  onay('B7 Ansi.Warning amber SGR', ansi.includes(`Warning    = "${ESC}[38;2;251;191;36m"`),
-    'amberin RGB kanalları 251;191;36 olmalı');
+  onay(
+    'B7 Ansi.Warning amber SGR',
+    ansi.includes(`Warning    = "${ESC}[38;2;251;191;36m"`),
+    'amberin RGB kanalları 251;191;36 olmalı'
+  );
   onay('B7 Ansi.Success duruyor', ansi.includes(`${ESC}[38;2;52;211;153m`));
   // ANSI kanalları hex ile aynı sayıyı söylüyor mu.
-  const sgr = ansi.match(
-    new RegExp(`Warning\\s*=\\s*"${ESC}\\[38;2;(\\d+);(\\d+);(\\d+)m"`)
+  const sgr = ansi.match(new RegExp(`Warning\\s*=\\s*"${ESC}\\[38;2;(\\d+);(\\d+);(\\d+)m"`));
+  esit(
+    'B7 ANSI kanalları amberle aynı',
+    sgr.slice(1, 4).map(Number).join(','),
+    amberKanal.join(',')
   );
-  esit('B7 ANSI kanalları amberle aynı', sgr.slice(1, 4).map(Number).join(','), amberKanal.join(','));
 
   // B8. Kısıt metni üç dosyada da yazılı. Kısıt yazılı değilse token serbesttir.
   onay('B8 CSS dolgu yasağı', katla(CSS).includes('DOLGU VE BUTON YOK'));
   onay('B8 XAML dolgu yasağı', katla(XAML).includes('DOLGU VE DUGME YOK'));
   onay('B8 Palette dolgu yasağı', katla(CS).includes('DOLGU VE DUGME YOK'));
-  for (const [ad, m] of [['CSS', CSS], ['XAML', XAML], ['Palette', CS]]) {
+  for (const [ad, m] of [
+    ['CSS', CSS],
+    ['XAML', XAML],
+    ['Palette', CS],
+  ]) {
     onay(`B8 ${ad} yalnız uyarı yüzeyi`, katla(m).includes('YALNIZCA UYARI YUZEYI'));
     onay(`B8 ${ad} alternatif yazılı`, katla(m).includes('YERINE NE KONUR'));
     onay(`B8 ${ad} beyaz metin gerekçesi`, katla(m).includes('1.67'));
-    onay(`B8 ${ad} renk tek başına anlam taşımaz`, katla(m).includes('RENK TEK BASINA ANLAM TASIMAZ'));
+    onay(
+      `B8 ${ad} renk tek başına anlam taşımaz`,
+      katla(m).includes('RENK TEK BASINA ANLAM TASIMAZ')
+    );
     onay(`B8 ${ad} U9 şerhi`, katla(m).includes('U9'));
   }
 

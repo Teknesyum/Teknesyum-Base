@@ -31,7 +31,10 @@ const hatalar = [];
 const envanter = [];
 
 function onay(ad, kosul, detay) {
-  if (kosul) { gecen++; return true; }
+  if (kosul) {
+    gecen++;
+    return true;
+  }
   hatalar.push(detay ? `${ad} — ${detay}` : ad);
   return false;
 }
@@ -83,7 +86,11 @@ function ayikla(css, kf) {
       i = j;
       continue;
     }
-    if (c === '}') { onek = ''; i++; continue; }
+    if (c === '}') {
+      onek = '';
+      i++;
+      continue;
+    }
     onek += c;
     i++;
   }
@@ -95,14 +102,17 @@ function bildirimler(govde) {
   const duz = govde.replace(/\{[^{}]*\}/g, '');
   return duz
     .split(';')
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean)
-    .map(s => {
+    .map((s) => {
       const k = s.indexOf(':');
       if (k < 0) return null;
       return {
         ozellik: s.slice(0, k).trim().toLowerCase(),
-        deger: s.slice(k + 1).trim().replace(/\s+/g, ' '),
+        deger: s
+          .slice(k + 1)
+          .trim()
+          .replace(/\s+/g, ' '),
       };
     })
     .filter(Boolean);
@@ -153,8 +163,13 @@ const NTH = /:nth-(child|of-type)\b/i;
 const WPF = /(ItemsControl|DataGridRow|ListViewItem|ListBoxItem|TreeViewItem)/;
 
 function tekrarEdenMi(secici) {
-  return ELEMAN.test(secici) || SINIF.test(secici) || ROL.test(secici) ||
-    NTH.test(secici) || WPF.test(secici);
+  return (
+    ELEMAN.test(secici) ||
+    SINIF.test(secici) ||
+    ROL.test(secici) ||
+    NTH.test(secici) ||
+    WPF.test(secici)
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -178,12 +193,18 @@ function s0_ayristiriciSaglam() {
   // Ayrıştırıcının kendisi çalışıyor mu: iki demir. Bunlar düşerse aşağıdaki
   // bütün "ihlal bulunamadı" sonuçları anlamsızdır.
   onay('S2 kural sayısı makul', kurallar.length >= 20, `${kurallar.length} kural bulundu`);
-  onay('S3 bildirim sayısı makul', tumBildirim.length >= 100, `${tumBildirim.length} bildirim bulundu`);
-  const kok = kurallar.find(k => k.secici === ':root');
+  onay(
+    'S3 bildirim sayısı makul',
+    tumBildirim.length >= 100,
+    `${tumBildirim.length} bildirim bulundu`
+  );
+  const kok = kurallar.find((k) => k.secici === ':root');
   onay('S4 :root bloğu ayrıştırıldı', !!kok && kok.govde.includes('--tk-glow-blue'));
-  const kfSayi = kurallar.filter(k => k.keyframe).length;
+  const kfSayi = kurallar.filter((k) => k.keyframe).length;
   onay('S5 @keyframes adımları ayrıştırıldı', kfSayi >= 1, `${kfSayi} adım bulundu`);
-  envanter.push(`kural: ${kurallar.length}, bildirim: ${tumBildirim.length}, keyframe adımı: ${kfSayi}`);
+  envanter.push(
+    `kural: ${kurallar.length}, bildirim: ${tumBildirim.length}, keyframe adımı: ${kfSayi}`
+  );
 }
 
 // --- 1. Glow tokenları -----------------------------------------------------
@@ -203,12 +224,17 @@ function t1_tokenlar() {
   }
   const adlar = Object.keys(bulunan).sort();
   onay('T1.0 glow tokenı bulundu', adlar.length > 0, 'hiç `--tk-glow-*` tanımı yok');
-  onay('T1.1 token kümesi birebir aynı',
+  onay(
+    'T1.1 token kümesi birebir aynı',
     adlar.join(',') === Object.keys(BEKLENEN_TOKEN).sort().join(','),
-    `bulunan: ${adlar.join(', ') || '(yok)'}`);
+    `bulunan: ${adlar.join(', ') || '(yok)'}`
+  );
   for (const [ad, deger] of Object.entries(BEKLENEN_TOKEN)) {
-    onay(`T1.2 ${ad} değeri değişmemiş`, bulunan[ad] === deger,
-      `beklenen "${deger}", bulunan "${bulunan[ad] || '(yok)'}"`);
+    onay(
+      `T1.2 ${ad} değeri değişmemiş`,
+      bulunan[ad] === deger,
+      `beklenen "${deger}", bulunan "${bulunan[ad] || '(yok)'}"`
+    );
   }
   envanter.push(`glow tokenı: ${adlar.length} (${adlar.join(', ')})`);
 
@@ -223,10 +249,16 @@ function t1_tokenlar() {
   if (hm && xm) {
     const xb = xm[0].match(/BlurRadius="([\d.]+)"/);
     const xo = xm[0].match(/Opacity="([\d.]+)"/);
-    onay('T1.5 XAML blur = CSS blur', !!xb && Number(xb[1]) === Number(hm[1]),
-      `XAML ${xb && xb[1]}, CSS ${hm[1]}`);
-    onay('T1.6 XAML opaklık = CSS alfa', !!xo && Number(xo[1]) === Number(hm[2]),
-      `XAML ${xo && xo[1]}, CSS ${hm[2]}`);
+    onay(
+      'T1.5 XAML blur = CSS blur',
+      !!xb && Number(xb[1]) === Number(hm[1]),
+      `XAML ${xb && xb[1]}, CSS ${hm[1]}`
+    );
+    onay(
+      'T1.6 XAML opaklık = CSS alfa',
+      !!xo && Number(xo[1]) === Number(hm[2]),
+      `XAML ${xo && xo[1]}, CSS ${hm[2]}`
+    );
   }
 }
 
@@ -244,12 +276,12 @@ function t2a_glowTanimi() {
     ['-webkit-box-shadow', '0 0 12px var(--tk-pink)'],
   ];
   const glowDegil = [
-    ['box-shadow', '0 0 0 2px #000000'],            // odak halkası — bulanıklık yok
-    ['box-shadow', '0 0 40px rgba(0, 0, 0, 0.8)'],  // panel derinliği — siyah
+    ['box-shadow', '0 0 0 2px #000000'], // odak halkası — bulanıklık yok
+    ['box-shadow', '0 0 40px rgba(0, 0, 0, 0.8)'], // panel derinliği — siyah
     ['box-shadow', 'none'],
-    ['filter', 'blur(4px)'],                        // drop-shadow değil
-    ['background', '0 0 20px #00f3ff'],             // gölge özelliği değil
-    ['transition', 'box-shadow 240ms'],             // T3'ün işi, glow değil
+    ['filter', 'blur(4px)'], // drop-shadow değil
+    ['background', '0 0 20px #00f3ff'], // gölge özelliği değil
+    ['transition', 'box-shadow 240ms'], // T3'ün işi, glow değil
   ];
   for (const [p, v] of glow) {
     onay(`T2a glow sayılmalı: ${p}: ${v}`, glowMu({ ozellik: p, deger: v }));
@@ -263,26 +295,52 @@ function t2_tekrarEdenOge() {
   if (!kurallar.length) return;
   const glowlu = tumBildirim.filter(glowMu);
   // Bozuk desen sessizce geçmesin: bu temada glow VARDIR, sıfır bulmak hatadır.
-  if (!onay('T2.0 glow bildirimi bulundu', glowlu.length > 0,
-    'hiç glow bulunamadı — desen bozuk ya da tema glow\'suz kalmış')) return;
+  if (
+    !onay(
+      'T2.0 glow bildirimi bulundu',
+      glowlu.length > 0,
+      "hiç glow bulunamadı — desen bozuk ya da tema glow'suz kalmış"
+    )
+  )
+    return;
 
   const seciciler = [];
   for (const b of glowlu) {
     const s = b.kural.secici;
     if (!seciciler.includes(s)) seciciler.push(s);
-    for (const parca of s.split(',').map(x => x.trim()).filter(Boolean)) {
-      onay(`T2.1 "${parca}" tekrar eden öğe değil`, !tekrarEdenMi(parca),
-        `glow tekrar eden öğeye verilmiş (${b.ozellik}: ${b.deger}) — glow kapsayıcı panele taşınır, satır kenarlık ve /20→/30 dolgu ile ayrılır (M15)`);
+    for (const parca of s
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean)) {
+      onay(
+        `T2.1 "${parca}" tekrar eden öğe değil`,
+        !tekrarEdenMi(parca),
+        `glow tekrar eden öğeye verilmiş (${b.ozellik}: ${b.deger}) — glow kapsayıcı panele taşınır, satır kenarlık ve /20→/30 dolgu ile ayrılır (M15)`
+      );
     }
   }
   // Deseni de denetle: bilinen ihlal örnekleri yakalanmalı, bilinen temiz
   // seçiciler yakalanmamalı. Bu olmadan `tekrarEdenMi` hep false dönerek geçer.
-  for (const k of ['.log-row', 'tbody tr', '.tk-table td', 'li.item', '.grid-cell',
-    '[role="row"]', '.list li:nth-child(2)', 'ListBoxItem']) {
+  for (const k of [
+    '.log-row',
+    'tbody tr',
+    '.tk-table td',
+    'li.item',
+    '.grid-cell',
+    '[role="row"]',
+    '.list li:nth-child(2)',
+    'ListBoxItem',
+  ]) {
     onay(`T2.2 desen "${k}" yakalanıyor`, tekrarEdenMi(k));
   }
-  for (const k of ['.tk-panel', '.tk-btn-primary', '.tk-hero', '::-webkit-scrollbar-thumb',
-    ':focus-visible', '.tk-titlebar']) {
+  for (const k of [
+    '.tk-panel',
+    '.tk-btn-primary',
+    '.tk-hero',
+    '::-webkit-scrollbar-thumb',
+    ':focus-visible',
+    '.tk-titlebar',
+  ]) {
     onay(`T2.3 desen "${k}" yanlış yakalanmıyor`, !tekrarEdenMi(k));
   }
   envanter.push(`glow taşıyan seçici: ${seciciler.length} (${seciciler.join(' | ')})`);
@@ -292,30 +350,50 @@ function t2_tekrarEdenOge() {
 
 function t3_golgeAnimasyonu() {
   if (!kurallar.length) return;
-  const gecisler = tumBildirim.filter(b =>
-    /^(-webkit-)?(transition|transition-property|animation|animation-name)$/.test(b.ozellik));
-  if (!onay('T3.0 geçiş bildirimi bulundu', gecisler.length > 0,
-    'hiç `transition`/`animation` yok — desen bozuk ya da tema durgun kalmış')) return;
+  const gecisler = tumBildirim.filter((b) =>
+    /^(-webkit-)?(transition|transition-property|animation|animation-name)$/.test(b.ozellik)
+  );
+  if (
+    !onay(
+      'T3.0 geçiş bildirimi bulundu',
+      gecisler.length > 0,
+      'hiç `transition`/`animation` yok — desen bozuk ya da tema durgun kalmış'
+    )
+  )
+    return;
 
   for (const b of gecisler) {
     const v = b.deger.toLowerCase();
-    onay(`T3.1 "${b.kural.secici}" geçişinde box-shadow yok`, !/\bbox-shadow\b/.test(v),
-      `${b.ozellik}: ${b.deger} — gölge animasyonu yerine renk/opaklık geçişi (M6)`);
-    onay(`T3.2 "${b.kural.secici}" geçişinde filter yok`, !/\bfilter\b/.test(v),
-      `${b.ozellik}: ${b.deger} — filtre animasyonu yerine opacity/transform (M6)`);
-    onay(`T3.3 "${b.kural.secici}" geçişi "all" değil`, !/(^|[\s,])all([\s,]|$)/.test(v),
-      `${b.ozellik}: ${b.deger} — "all" gölgeyi de kapsar; özellikler tek tek yazılır (M6)`);
+    onay(
+      `T3.1 "${b.kural.secici}" geçişinde box-shadow yok`,
+      !/\bbox-shadow\b/.test(v),
+      `${b.ozellik}: ${b.deger} — gölge animasyonu yerine renk/opaklık geçişi (M6)`
+    );
+    onay(
+      `T3.2 "${b.kural.secici}" geçişinde filter yok`,
+      !/\bfilter\b/.test(v),
+      `${b.ozellik}: ${b.deger} — filtre animasyonu yerine opacity/transform (M6)`
+    );
+    onay(
+      `T3.3 "${b.kural.secici}" geçişi "all" değil`,
+      !/(^|[\s,])all([\s,]|$)/.test(v),
+      `${b.ozellik}: ${b.deger} — "all" gölgeyi de kapsar; özellikler tek tek yazılır (M6)`
+    );
   }
   // Keyframe içinde gölge/filtre değiştirmek de gölge animasyonudur.
   for (const b of tumBildirim) {
     if (!b.kural.keyframe) continue;
-    onay(`T3.4 ${b.kural.keyframe} adımında box-shadow/filter yok`,
+    onay(
+      `T3.4 ${b.kural.keyframe} adımında box-shadow/filter yok`,
       !/^(-webkit-)?(box-shadow|filter)$/.test(b.ozellik),
-      `${b.ozellik}: ${b.deger}`);
+      `${b.ozellik}: ${b.deger}`
+    );
   }
   // Desen denetimi: ihlal metni gerçekten yakalanıyor mu?
-  onay('T3.5 desen ihlali yakalıyor',
-    /\bbox-shadow\b/.test('box-shadow 240ms ease') && /(^|[\s,])all([\s,]|$)/.test('all 240ms'));
+  onay(
+    'T3.5 desen ihlali yakalıyor',
+    /\bbox-shadow\b/.test('box-shadow 240ms ease') && /(^|[\s,])all([\s,]|$)/.test('all 240ms')
+  );
   envanter.push(`geçiş bildirimi: ${gecisler.length}`);
 }
 
@@ -323,12 +401,18 @@ function t3_golgeAnimasyonu() {
 
 function t4_backdropFilter() {
   if (!kurallar.length) return;
-  const bf = tumBildirim.filter(b =>
-    /^(-webkit-)?backdrop-filter$/.test(b.ozellik) && b.deger.toLowerCase() !== 'none');
-  const seciciler = bf.map(b => b.kural.secici);
-  onay('T4.1 backdrop-filter sayısı ≤ 1', bf.length <= 1,
-    `${bf.length} bulundu: ${seciciler.join(' | ')} — ikinci bulanık yüzey yerine opak zemin (M15)`);
-  envanter.push(`backdrop-filter: ${bf.length}${seciciler.length ? ' (' + seciciler.join(' | ') + ')' : ''}`);
+  const bf = tumBildirim.filter(
+    (b) => /^(-webkit-)?backdrop-filter$/.test(b.ozellik) && b.deger.toLowerCase() !== 'none'
+  );
+  const seciciler = bf.map((b) => b.kural.secici);
+  onay(
+    'T4.1 backdrop-filter sayısı ≤ 1',
+    bf.length <= 1,
+    `${bf.length} bulundu: ${seciciler.join(' | ')} — ikinci bulanık yüzey yerine opak zemin (M15)`
+  );
+  envanter.push(
+    `backdrop-filter: ${bf.length}${seciciler.length ? ' (' + seciciler.join(' | ') + ')' : ''}`
+  );
 }
 
 // --- 5. M15 belgede yerinde mi (tek başına yeterli değil) -------------------
@@ -336,18 +420,22 @@ function t4_backdropFilter() {
 function t5_motionM15() {
   if (!motionHam) return;
   const bolumler = motionHam.split(/^## /m);
-  const m15 = bolumler.find(b => b.startsWith('M15'));
+  const m15 = bolumler.find((b) => b.startsWith('M15'));
   if (!onay('T5.1 motion.md M15 başlığı var', !!m15)) return;
   onay('T5.2 M15 gövdesi dolu', m15.length > 800, `${m15.length} karakter`);
-  onay('T5.3 M15 gölge animasyonunu M6\'ya havale ediyor', /\bM6\b/.test(m15));
-  onay('T5.4 M15 WPF DropShadowEffect yasağını taşıyor',
-    /DropShadowEffect/.test(m15) && /yasak/i.test(m15));
+  onay("T5.3 M15 gölge animasyonunu M6'ya havale ediyor", /\bM6\b/.test(m15));
+  onay(
+    'T5.4 M15 WPF DropShadowEffect yasağını taşıyor',
+    /DropShadowEffect/.test(m15) && /yasak/i.test(m15)
+  );
   onay('T5.5 M15 yasağın alternatifini yazıyor', /Yerine ne konur|Yerine:/.test(m15));
   onay('T5.6 M15 16 ms ölçütünü taşıyor', /16\s?ms/.test(m15));
-  onay('T5.7 M15 ölçüm reçetesi veriyor',
-    /CompositionTarget\.Rendering/.test(m15) && /Performance/.test(m15));
+  onay(
+    'T5.7 M15 ölçüm reçetesi veriyor',
+    /CompositionTarget\.Rendering/.test(m15) && /Performance/.test(m15)
+  );
   onay('T5.8 M15 ölçülmediğini söylüyor', /ölçülmez|ölçülmedi/.test(m15));
-  onay('T5.9 giriş atıf aralığı M15\'i kapsıyor', /`M1`\s*…\s*`M15`/.test(motionHam));
+  onay("T5.9 giriş atıf aralığı M15'i kapsıyor", /`M1`\s*…\s*`M15`/.test(motionHam));
 }
 
 // ---------------------------------------------------------------------------
@@ -364,7 +452,7 @@ t5_motionM15();
 
 console.log('U8 glow — envanter (her koşuda yeniden sayılır):');
 for (const e of envanter) console.log(`  · ${e}`);
-console.log('  · kare süresi: ölçülmedi — Node\'dan ölçülemez, reçetesi motion.md M15\'te');
+console.log("  · kare süresi: ölçülmedi — Node'dan ölçülemez, reçetesi motion.md M15'te");
 console.log(`U8 glow — ${gecen} doğrulama geçti, ${hatalar.length} düştü.`);
 
 if (hatalar.length) {

@@ -36,7 +36,10 @@ let gecen = 0;
 const hatalar = [];
 
 function onay(ad, kosul, detay) {
-  if (kosul) { gecen++; return; }
+  if (kosul) {
+    gecen++;
+    return;
+  }
   hatalar.push(detay ? `${ad} — ${detay}` : ad);
 }
 function esit(ad, a, b) {
@@ -51,8 +54,12 @@ function yakin(ad, a, b, tol) {
 function katla(s) {
   return s
     .toLocaleLowerCase('tr')
-    .replace(/[ıİ]/g, 'i').replace(/[şŞ]/g, 's').replace(/[ğĞ]/g, 'g')
-    .replace(/[üÜ]/g, 'u').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c')
+    .replace(/[ıİ]/g, 'i')
+    .replace(/[şŞ]/g, 's')
+    .replace(/[ğĞ]/g, 'g')
+    .replace(/[üÜ]/g, 'u')
+    .replace(/[öÖ]/g, 'o')
+    .replace(/[çÇ]/g, 'c')
     .replace(/[‐-―−]/g, '-')
     .replace(/\s+/g, ' ')
     .trim();
@@ -175,10 +182,16 @@ function katmanA() {
   onay('A0 desen listesi boş değil', adlar.length >= 15, `${adlar.length} desen`);
   for (const ad of adlar) {
     const d = DESEN[ad];
-    onay(`A ${ad} · pozitif fixture eşleşiyor`, yeni(ad).test(d.pozitif),
-      'desen ölü — hiçbir şeyle eşleşmiyor, aşağıdaki denetimleri sessizce geçirirdi');
-    onay(`A ${ad} · negatif fixture eşleşmiyor`, !yeni(ad).test(d.negatif),
-      'desen fazla geniş — yanlış metni de kabul ediyor');
+    onay(
+      `A ${ad} · pozitif fixture eşleşiyor`,
+      yeni(ad).test(d.pozitif),
+      'desen ölü — hiçbir şeyle eşleşmiyor, aşağıdaki denetimleri sessizce geçirirdi'
+    );
+    onay(
+      `A ${ad} · negatif fixture eşleşmiyor`,
+      !yeni(ad).test(d.negatif),
+      'desen fazla geniş — yanlış metni de kabul ediyor'
+    );
   }
 }
 
@@ -186,12 +199,12 @@ function katmanA() {
 // B. KONTRAST HESABI
 // ===========================================================================
 
-const kanal = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const kanal = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 
 function parlaklik(hex) {
   const [r, g, b] = kanal(hex)
-    .map(v => v / 255)
-    .map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+    .map((v) => v / 255)
+    .map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
@@ -206,9 +219,16 @@ function kontrast(a, b) {
 function komposit(on, alfa, zemin) {
   const f = kanal(on);
   const z = kanal(zemin);
-  return '#' + f
-    .map((v, i) => Math.round(v * alfa + z[i] * (1 - alfa)).toString(16).padStart(2, '0'))
-    .join('');
+  return (
+    '#' +
+    f
+      .map((v, i) =>
+        Math.round(v * alfa + z[i] * (1 - alfa))
+          .toString(16)
+          .padStart(2, '0')
+      )
+      .join('')
+  );
 }
 
 // theme.css `:root` katmanını ayrıştır ve `var()` zincirlerini çöz.
@@ -218,7 +238,10 @@ function tokenlar() {
   const ham = {};
   let m;
   let sayi = 0;
-  while ((m = re.exec(kok)) !== null) { ham[m[1]] = m[2].trim(); sayi++; }
+  while ((m = re.exec(kok)) !== null) {
+    ham[m[1]] = m[2].trim();
+    sayi++;
+  }
   onay('B0 theme.css :root tokenları okundu', sayi >= 30, `${sayi} token bulundu`);
   const coz = (ad, derinlik) => {
     if (derinlik > 8) return null;
@@ -241,8 +264,11 @@ function katmanB() {
   yakin('B1 #767676 beyazda 4.54:1', kontrast('#767676', '#ffffff'), 4.54, 0.01);
   yakin('B1 aynı renk 1:1', kontrast('#ff00ea', '#ff00ea'), 1.0, 0.001);
   // Negatif kontrol: hesap her şeye "geçti" demiyor.
-  onay('B1 negatif kontrol · #333 siyahta 7:1 vermiyor', kontrast('#333333', '#000000') < 7,
-    `çıkan ${kontrast('#333333', '#000000').toFixed(2)}`);
+  onay(
+    'B1 negatif kontrol · #333 siyahta 7:1 vermiyor',
+    kontrast('#333333', '#000000') < 7,
+    `çıkan ${kontrast('#333333', '#000000').toFixed(2)}`
+  );
 
   esit('B2 --tk-surface çözüldü', T['--tk-surface'], YUZEY);
   esit('B2 --tk-danger pembeye bağlı', T['--tk-danger'], '#ff00ea');
@@ -279,12 +305,15 @@ function katmanB() {
   onay('B5 --tk-text 7:1 eşiğini geçiyor', kontrast(T['--tk-text'], YUZEY) >= 7);
 
   // B6. Çerçeve tokenları 3:1 geçiyor mu (giriş varsayılan ve hover durumu).
-  for (const [ad, oran] of [['--tk-border', 4.11], ['--tk-border-strong', 5.49]]) {
+  for (const [ad, oran] of [
+    ['--tk-border', 4.11],
+    ['--tk-border-strong', 5.49],
+  ]) {
     const m = /rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/.exec(T[ad] || '');
     onay(`B6 ${ad} rgba olarak ayrıştı`, m !== null, `çıkan ${T[ad]}`);
     if (!m) continue;
-    const hex = '#' + [m[1], m[2], m[3]]
-      .map(v => Number(v).toString(16).padStart(2, '0')).join('');
+    const hex =
+      '#' + [m[1], m[2], m[3]].map((v) => Number(v).toString(16).padStart(2, '0')).join('');
     const o = kontrast(komposit(hex, Number(m[4]), YUZEY), YUZEY);
     yakin(`B6 ${ad} oranı`, Number(o.toFixed(2)), oran, 0.01);
     onay(`B6 ${ad} 3:1 geçiyor`, o >= 3, `çıkan ${o.toFixed(2)}`);
@@ -295,8 +324,9 @@ function katmanB() {
   const amber = /rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/.exec(T['--tk-warning-border']);
   onay('B7 --tk-warning-border ayrıştı', amber !== null);
   if (amber) {
-    const hex = '#' + [amber[1], amber[2], amber[3]]
-      .map(v => Number(v).toString(16).padStart(2, '0')).join('');
+    const hex =
+      '#' +
+      [amber[1], amber[2], amber[3]].map((v) => Number(v).toString(16).padStart(2, '0')).join('');
     const o = kontrast(komposit(hex, Number(amber[4]), YUZEY), YUZEY);
     onay('B7 amber /50 çerçeve 3:1 geçiyor', o >= 3, `çıkan ${o.toFixed(2)}`);
     onay('B7 amber /50 pembe /50 den yüksek', o > o50);
@@ -316,31 +346,39 @@ function katmanC() {
 
   // C1. Hata çerçevesi tam hex okuyor, /50 pembe geçmiyor.
   onay('C1 hata çerçevesi var(--tk-danger) okuyor', yeni('hataCercevesi').test(govde));
-  onay('C1 CSS gövdesinde pembe /50 yok',
-    !/rgba\(\s*255\s*,\s*0\s*,\s*234\s*,\s*0?\.5\s*\)/.test(govde));
+  onay(
+    'C1 CSS gövdesinde pembe /50 yok',
+    !/rgba\(\s*255\s*,\s*0\s*,\s*234\s*,\s*0?\.5\s*\)/.test(govde)
+  );
   onay('C1 CSS gövdesinde elden yazılmış pembe hex yok', !/#ff00ea/i.test(govde));
-  onay('C1 XAML hata tetikleyicisi Danger fırçasını yazıyor',
-    /Validation\.HasError"\s+Value="True">[\s\S]{0,200}StaticResource Danger\}/.test(XAML));
+  onay(
+    'C1 XAML hata tetikleyicisi Danger fırçasını yazıyor',
+    /Validation\.HasError"\s+Value="True">[\s\S]{0,200}StaticResource Danger\}/.test(XAML)
+  );
   onay('C1 XAML gövdesinde pembe /50 fırçası yok', !/NeonPink50|PinkText50/.test(XAML));
 
   // C2. Placeholder kuralında gri yok.
   const ph = yeni('placeholderKurali').exec(govde);
-  onay('C2 ::placeholder kuralı bulundu', ph !== null,
-    'kural yoksa "gri yok" denetimi boşa döner');
+  onay('C2 ::placeholder kuralı bulundu', ph !== null, 'kural yoksa "gri yok" denetimi boşa döner');
   if (ph) {
     onay('C2 placeholder kuralında gri yok', !yeni('gri').test(ph[1]), `içerik: ${ph[1].trim()}`);
     onay('C2 placeholder --tk-text yazıyor', /var\(--tk-text\)/.test(ph[1]));
   }
   // `AdornedElementPlaceholder` WPF'in hata şablonu düğümüdür, placeholder metni değil.
-  onay('C2 XAML placeholder/watermark stili yok', !/Watermark|Placeholder/i.test(
-    XAML.replace(/<!--[\s\S]*?-->/g, ' ').replace(/AdornedElementPlaceholder/g, 'AE')));
-  onay('C2 forms.md placeholder yerine ne konacağını yazıyor',
-    katla(MD).includes('yerine ne konur') || katla(MD).includes('yardim metni'));
+  onay(
+    'C2 XAML placeholder/watermark stili yok',
+    !/Watermark|Placeholder/i.test(
+      XAML.replace(/<!--[\s\S]*?-->/g, ' ').replace(/AdornedElementPlaceholder/g, 'AE')
+    )
+  );
+  onay(
+    'C2 forms.md placeholder yerine ne konacağını yazıyor',
+    katla(MD).includes('yerine ne konur') || katla(MD).includes('yardim metni')
+  );
 
   // C3. Ham süre yok — sıfır eşleşme AÇIKÇA sınanıyor.
   const ham = govde.match(yeni('hamSure'));
-  onay('C3 CSS gövdesinde ham süre yok', ham === null,
-    ham ? `bulunan: ${ham.join(', ')}` : '');
+  onay('C3 CSS gövdesinde ham süre yok', ham === null, ham ? `bulunan: ${ham.join(', ')}` : '');
   const gecisRe = yeni('gecis');
   const gecisler = [];
   let g;
@@ -353,8 +391,14 @@ function katmanC() {
   // C4. Caret ve seçim.
   onay('C4 caret-color var(--tk-blue)', yeni('caret').test(govde));
   onay('C4 ::selection kuralı var', /::selection\s*\{/.test(govde));
-  onay('C4 XAML CaretBrush NeonBlue', /CaretBrush"\s+Value="\{StaticResource NeonBlue\}"/.test(XAML));
-  onay('C4 XAML SelectionBrush tanımlı', /SelectionBrush"\s+Value="\{StaticResource TkSelection\}"/.test(XAML));
+  onay(
+    'C4 XAML CaretBrush NeonBlue',
+    /CaretBrush"\s+Value="\{StaticResource NeonBlue\}"/.test(XAML)
+  );
+  onay(
+    'C4 XAML SelectionBrush tanımlı',
+    /SelectionBrush"\s+Value="\{StaticResource TkSelection\}"/.test(XAML)
+  );
 
   // C5. Renk paritesi — CSS'teki rgb değerleri token hex'iyle aynı mı.
   const mavi = /rgba\(\s*0\s*,\s*243\s*,\s*255\s*,\s*0\.3\s*\)/.test(govde);
@@ -376,8 +420,12 @@ function katmanC() {
   const perdeXaml = /x:Key="TkModalPerde"\s+Color="#([0-9A-Fa-f]{2})000000"/.exec(XAML);
   onay('C6 XAML perde rengi ayrıştı', perdeXaml !== null);
   if (perdeCss && perdeXaml) {
-    yakin('C6 karartma iki platformda aynı', parseInt(perdeXaml[1], 16) / 255,
-      Number(perdeCss[1]), 0.005);
+    yakin(
+      'C6 karartma iki platformda aynı',
+      parseInt(perdeXaml[1], 16) / 255,
+      Number(perdeCss[1]),
+      0.005
+    );
     esit('C6 karartma değeri 0.6', Number(perdeCss[1]), 0.6);
   }
 
@@ -399,23 +447,39 @@ function katmanC() {
   while ((s = setterRe.exec(XAML)) !== null) {
     (setterlar[s[1]] = setterlar[s[1]] || []).push(Number(s[2]));
   }
-  onay('C7 XAML Width setterları okundu', Array.isArray(setterlar.Width),
-    `bulunan anahtarlar: ${Object.keys(setterlar).join(', ')}`);
+  onay(
+    'C7 XAML Width setterları okundu',
+    Array.isArray(setterlar.Width),
+    `bulunan anahtarlar: ${Object.keys(setterlar).join(', ')}`
+  );
   if (genisCss && setterlar.Width) {
-    onay('C7 modal genişliği paritesi', setterlar.Width.includes(Number(genisCss[1])),
-      `CSS ${genisCss[1]}, XAML ${setterlar.Width.join('/')}`);
+    onay(
+      'C7 modal genişliği paritesi',
+      setterlar.Width.includes(Number(genisCss[1])),
+      `CSS ${genisCss[1]}, XAML ${setterlar.Width.join('/')}`
+    );
   }
   const toastCss = /width:\s*min\((\d+)px,\s*calc\(100vw - 48px\)\)/.exec(govde);
   onay('C7 CSS toast genişliği ayrıştı', toastCss !== null);
   if (toastCss && setterlar.Width) {
-    onay('C7 toast genişliği paritesi', setterlar.Width.includes(Number(toastCss[1])),
-      `CSS ${toastCss[1]}, XAML ${setterlar.Width.join('/')}`);
+    onay(
+      'C7 toast genişliği paritesi',
+      setterlar.Width.includes(Number(toastCss[1])),
+      `CSS ${toastCss[1]}, XAML ${setterlar.Width.join('/')}`
+    );
   }
   // Kapat çarpısı hedef alanı 24x24 (SKILL §5.3).
-  onay('C7 CSS kapat hedefi 24x24', /\.tk-toast-kapat\s*\{[^}]*width:\s*24px[^}]*height:\s*24px/.test(govde));
-  onay('C7 XAML kapat hedefi 24x24',
-    Array.isArray(setterlar.Width) && setterlar.Width.includes(24) &&
-    Array.isArray(setterlar.Height) && setterlar.Height.includes(24));
+  onay(
+    'C7 CSS kapat hedefi 24x24',
+    /\.tk-toast-kapat\s*\{[^}]*width:\s*24px[^}]*height:\s*24px/.test(govde)
+  );
+  onay(
+    'C7 XAML kapat hedefi 24x24',
+    Array.isArray(setterlar.Width) &&
+      setterlar.Width.includes(24) &&
+      Array.isArray(setterlar.Height) &&
+      setterlar.Height.includes(24)
+  );
 
   // C8. Yarıçap tek: --tk-r ile XAML CornerRadius aynı sayı.
   const rTok = /^(\d+)px$/.exec((T['--tk-r'] || '').trim());
@@ -426,8 +490,11 @@ function katmanC() {
   while ((c = crRe.exec(XAML)) !== null) yaricaplar.add(Number(c[1]));
   onay('C8 XAML CornerRadius bulundu', yaricaplar.size > 0);
   if (rTok) {
-    onay('C8 bütün yarıçaplar tek değer', yaricaplar.size === 1 &&
-      yaricaplar.has(Number(rTok[1])), `token ${rTok[1]}, XAML ${[...yaricaplar].join('/')}`);
+    onay(
+      'C8 bütün yarıçaplar tek değer',
+      yaricaplar.size === 1 && yaricaplar.has(Number(rTok[1])),
+      `token ${rTok[1]}, XAML ${[...yaricaplar].join('/')}`
+    );
   }
   onay('C8 CSS yarıçapı token okuyor', !/border-radius:\s*\d/.test(govde));
 
@@ -445,7 +512,11 @@ function katmanC() {
   onay('C9 Info fırçası XAML de yok', !/(?:Static|Dynamic)Resource\s+Info|x:Key="Info/.test(XAML));
   onay('C9 theme.css hâlâ --tk-info tanımlamıyor', !/^\s*--tk-info:/m.test(TEMA));
   const infoCumle = 'info toast yok, duz metin toast var - beyaz metin, mavi cerceve yok';
-  for (const [ad, metin] of [['forms.md', MD], ['forms.css', CSS], ['Forms.xaml', XAML]]) {
+  for (const [ad, metin] of [
+    ['forms.md', MD],
+    ['forms.css', CSS],
+    ['Forms.xaml', XAML],
+  ]) {
     onay(`C9 info şerhi ${ad} de yazılı`, katla(metin).includes(infoCumle));
   }
 
@@ -454,15 +525,16 @@ function katmanC() {
   const etiket = 'varsayilan, olculmedi';
   const olculmemis = ['40px', 'rgba(0, 0, 0, 0.6)', '560px', '6 sn', '360px'];
   for (const sayi of olculmemis) {
-    const yerler = satirlar
-      .map((l, i) => (l.includes(sayi) ? i : -1))
-      .filter(i => i >= 0);
+    const yerler = satirlar.map((l, i) => (l.includes(sayi) ? i : -1)).filter((i) => i >= 0);
     onay(`C10 "${sayi}" forms.md de geçiyor`, yerler.length > 0);
-    const etiketli = yerler.some(i => satirlar
-      .slice(Math.max(0, i - 1), i + 2)
-      .some(l => katla(l).includes(etiket)));
-    onay(`C10 "${sayi}" (varsayılan, ölçülmedi) etiketi taşıyor`, etiketli,
-      `geçtiği satırlar: ${yerler.map(i => i + 1).join(', ')}`);
+    const etiketli = yerler.some((i) =>
+      satirlar.slice(Math.max(0, i - 1), i + 2).some((l) => katla(l).includes(etiket))
+    );
+    onay(
+      `C10 "${sayi}" (varsayılan, ölçülmedi) etiketi taşıyor`,
+      etiketli,
+      `geçtiği satırlar: ${yerler.map((i) => i + 1).join(', ')}`
+    );
   }
   onay('C10 etiket CSS te de duruyor', katla(CSS).includes(etiket));
   onay('C10 etiket XAML de de duruyor', katla(XAML).includes(etiket));
@@ -471,22 +543,34 @@ function katmanC() {
 
   // C11. Arka plan tıklaması — iki tür, iki davranış.
   onay('C11 CSS onay modalı öznitelik taşıyor', /data-tk-modal='onay'/.test(CSS));
-  onay('C11 CSS bilgi modalı öznitelik taşıyor', /data-tk-modal="bilgi"|data-tk-modal='bilgi'/.test(CSS));
+  onay(
+    'C11 CSS bilgi modalı öznitelik taşıyor',
+    /data-tk-modal="bilgi"|data-tk-modal='bilgi'/.test(CSS)
+  );
   const boolRe = yeni('xamlBool');
   const boollar = {};
   let b;
   while ((b = boolRe.exec(XAML)) !== null) boollar[b[1]] = b[2];
   esit('C11 onay modalinde perde KAPATMAZ', boollar.TkModalOnayPerdeKapatir, 'False');
   esit('C11 bilgi modalinde perde KAPATIR', boollar.TkModalBilgiPerdeKapatir, 'True');
-  onay('C11 forms.md ayrımı tabloda yazıyor',
-    katla(MD).includes('kapatmaz') && katla(MD).includes('arka plan tiklamasi'));
+  onay(
+    'C11 forms.md ayrımı tabloda yazıyor',
+    katla(MD).includes('kapatmaz') && katla(MD).includes('arka plan tiklamasi')
+  );
 
   // C12. Toast: hover'da sayaç durur, klavye odağında da durur.
-  onay('C12 CSS hover duraklatma kancası', /\.tk-toast:hover,\s*\.tk-toast:focus-within/.test(govde));
-  onay('C12 XAML IsMouseOver tetikleyicisi',
-    /IsMouseOver"\s+Value="True">[\s\S]{0,160}Value="durdu"/.test(XAML));
-  onay('C12 XAML IsKeyboardFocusWithin tetikleyicisi',
-    /IsKeyboardFocusWithin"\s+Value="True">[\s\S]{0,160}Value="durdu"/.test(XAML));
+  onay(
+    'C12 CSS hover duraklatma kancası',
+    /\.tk-toast:hover,\s*\.tk-toast:focus-within/.test(govde)
+  );
+  onay(
+    'C12 XAML IsMouseOver tetikleyicisi',
+    /IsMouseOver"\s+Value="True">[\s\S]{0,160}Value="durdu"/.test(XAML)
+  );
+  onay(
+    'C12 XAML IsKeyboardFocusWithin tetikleyicisi',
+    /IsKeyboardFocusWithin"\s+Value="True">[\s\S]{0,160}Value="durdu"/.test(XAML)
+  );
   onay('C12 forms.md hover duraklatmayı yazıyor', katla(MD).includes("hover'da sayac durur"));
 
   // C13. Toast ömrü tek yerden: 6000 ms, iki dosyada aynı.
@@ -498,31 +582,41 @@ function katmanC() {
 
   // C14. Erişilebilirlik düğümleri.
   onay('C14 XAML Validation.ErrorTemplate tanımlı', yeni('xamlErrorTemplate').test(XAML));
-  onay('C14 XAML ErrorTemplate stile bağlı',
-    /Validation\.ErrorTemplate"\s+Value="\{DynamicResource TkErrorTemplate\}"/.test(XAML));
+  onay(
+    'C14 XAML ErrorTemplate stile bağlı',
+    /Validation\.ErrorTemplate"\s+Value="\{DynamicResource TkErrorTemplate\}"/.test(XAML)
+  );
   onay('C14 XAML AutomationProperties.HelpText geçiyor', yeni('xamlHelpText').test(XAML));
   const cycle = XAML.match(yeni('xamlCycle'));
-  onay('C14 XAML TabNavigation Cycle', cycle !== null && cycle.length >= 2,
-    cycle ? `${cycle.length} yer` : 'hiç yok');
-  onay('C14 forms.md aria-invalid ve aria-describedby birlikte',
-    MD.includes('aria-invalid="true"') && MD.includes('aria-describedby'));
+  onay(
+    'C14 XAML TabNavigation Cycle',
+    cycle !== null && cycle.length >= 2,
+    cycle ? `${cycle.length} yer` : 'hiç yok'
+  );
+  onay(
+    'C14 forms.md aria-invalid ve aria-describedby birlikte',
+    MD.includes('aria-invalid="true"') && MD.includes('aria-describedby')
+  );
   // Form hata örneğinde role="alert" YOK — yalnız kalıcı hata toast ında kullanılır.
-  const hataOrnek = satirlar.filter(l => l.includes('id="eposta-hata"'));
+  const hataOrnek = satirlar.filter((l) => l.includes('id="eposta-hata"'));
   onay('C14 hata örneği satırı bulundu', hataOrnek.length > 0);
-  onay('C14 form hata metninde role="alert" yok',
-    hataOrnek.every(l => !l.includes('role="alert"')));
+  onay(
+    'C14 form hata metninde role="alert" yok',
+    hataOrnek.every((l) => !l.includes('role="alert"'))
+  );
   onay('C14 aria-live polite yazılı', MD.includes('aria-live="polite"'));
 
   // C15. Renk tek başına anlam taşımaz — ikon ikinci taşıyıcı.
   onay('C15 CSS hata ikonu sınıfı var', /\.tk-error-ikon\s*\{/.test(govde));
   onay('C15 CSS toast ikonu sınıfı var', /\.tk-toast-ikon\s*\{/.test(govde));
-  onay('C15 XAML hata şablonunda Path ikonu var',
-    /TkErrorTemplate[\s\S]{0,900}<Path /.test(XAML));
+  onay('C15 XAML hata şablonunda Path ikonu var', /TkErrorTemplate[\s\S]{0,900}<Path /.test(XAML));
   onay('C15 forms.md kuralı yazıyor', katla(MD).includes('renk tek basina anlam tasimaz'));
 
   // C16. Şerh ve devir listesi.
-  onay('C16 forms.md ilk satırlarında overlays şerhi',
-    katla(satirlar.slice(0, 6).join(' ')).includes('overlays.md'));
+  onay(
+    'C16 forms.md ilk satırlarında overlays şerhi',
+    katla(satirlar.slice(0, 6).join(' ')).includes('overlays.md')
+  );
   onay('C16 forms.css şerhi taşıyor', katla(CSS).includes('overlays.css'));
   onay('C16 Forms.xaml şerhi taşıyor', katla(XAML).includes('overlays.xaml'));
   const devir = MD.slice(MD.indexOf('## Devir listesi'));
@@ -533,10 +627,19 @@ function katmanC() {
 
   // C17. Beş durum eksiksiz.
   for (const durum of ['hover', 'focus-visible', 'disabled', 'readonly']) {
-    onay(`C17 CSS ${durum} durumu tanımlı`, new RegExp(`\\.tk-input(?:\\[[^\\]]*\\])?:${durum}|\\.tk-input\\[${durum}\\]`).test(govde));
+    onay(
+      `C17 CSS ${durum} durumu tanımlı`,
+      new RegExp(`\\.tk-input(?:\\[[^\\]]*\\])?:${durum}|\\.tk-input\\[${durum}\\]`).test(govde)
+    );
   }
   onay('C17 CSS hata durumu tanımlı', /\.tk-input-hata/.test(govde));
-  for (const trig of ['IsMouseOver', 'IsKeyboardFocused', 'IsReadOnly', 'IsEnabled', 'Validation.HasError']) {
+  for (const trig of [
+    'IsMouseOver',
+    'IsKeyboardFocused',
+    'IsReadOnly',
+    'IsEnabled',
+    'Validation.HasError',
+  ]) {
     onay(`C17 XAML ${trig} tetikleyicisi`, XAML.includes(`Property="${trig}"`));
   }
   onay('C17 devre dışıda not-allowed', /cursor:\s*not-allowed/.test(govde));
@@ -554,8 +657,11 @@ function katmanD() {
   if (yorumlar) {
     for (let i = 0; i < yorumlar.length; i++) {
       const ic = yorumlar[i].slice(4, -3);
-      onay(`D1 yorum ${i + 1} çift tire taşımıyor`, !ic.includes('--'),
-        ic.slice(0, 60).replace(/\s+/g, ' '));
+      onay(
+        `D1 yorum ${i + 1} çift tire taşımıyor`,
+        !ic.includes('--'),
+        ic.slice(0, 60).replace(/\s+/g, ' ')
+      );
     }
   }
   // Negatif kontrol: dedektör çalışıyor mu.
@@ -576,7 +682,10 @@ function katmanD() {
     sayac++;
     const [, kapanis, ad, oz, kendi] = m;
     if (kapanis) {
-      if (yigin.pop() !== ad) { bozuk = bozuk || `eşleşmeyen kapanış </${ad}>`; break; }
+      if (yigin.pop() !== ad) {
+        bozuk = bozuk || `eşleşmeyen kapanış </${ad}>`;
+        break;
+      }
     } else if (!kendi) {
       yigin.push(ad);
     }
@@ -585,10 +694,16 @@ function katmanD() {
     if (kalan) bozuk = bozuk || `çözülemeyen öznitelik: ${kalan.slice(0, 40)}`;
   }
   onay('D2 XAML etiketleri okundu', sayac > 100, `${sayac} etiket`);
-  onay('D2 XAML iyi biçimli', bozuk === null && yigin.length === 0,
-    bozuk || `kapanmamış: ${yigin.join(' > ')}`);
-  esit('D2 kök öğe ResourceDictionary',
-    /<ResourceDictionary[\s>]/.test(govde) && /<\/ResourceDictionary>/.test(govde), true);
+  onay(
+    'D2 XAML iyi biçimli',
+    bozuk === null && yigin.length === 0,
+    bozuk || `kapanmamış: ${yigin.join(' > ')}`
+  );
+  esit(
+    'D2 kök öğe ResourceDictionary',
+    /<ResourceDictionary[\s>]/.test(govde) && /<\/ResourceDictionary>/.test(govde),
+    true
+  );
 
   // D3. Her StaticResource referansının bir tanımı var (Forms.xaml ya da Theme.xaml).
   const anahtarRe = yeni('xamlAnahtar');
@@ -612,17 +727,29 @@ function katmanD() {
 
   // D4. Hareket: her DoubleAnimation süre tokenı ve yumuşatma taşıyor, ham süre yok.
   const animler = govde.match(/<DoubleAnimation[\s\S]*?\/>/g);
-  onay('D4 DoubleAnimation bulundu', animler !== null && animler.length >= 8,
-    animler ? `${animler.length} adet` : 'hiç yok');
+  onay(
+    'D4 DoubleAnimation bulundu',
+    animler !== null && animler.length >= 8,
+    animler ? `${animler.length} adet` : 'hiç yok'
+  );
   if (animler) {
     for (let i = 0; i < animler.length; i++) {
       const t = animler[i].replace(/\s+/g, ' ');
-      onay(`D4 anim ${i + 1} süre tokenı okuyor`,
-        /Duration="\{StaticResource T(Instant|Fast|Base|Slow)\}"/.test(t), t.slice(0, 70));
-      onay(`D4 anim ${i + 1} yumuşatma taşıyor`,
-        /EasingFunction="\{StaticResource E(Out|In)\}"/.test(t), t.slice(0, 70));
-      onay(`D4 anim ${i + 1} yalnız Opacity/Transform`,
-        /TargetProperty="(Opacity|\(UIElement\.RenderTransform\))/.test(t), t.slice(0, 70));
+      onay(
+        `D4 anim ${i + 1} süre tokenı okuyor`,
+        /Duration="\{StaticResource T(Instant|Fast|Base|Slow)\}"/.test(t),
+        t.slice(0, 70)
+      );
+      onay(
+        `D4 anim ${i + 1} yumuşatma taşıyor`,
+        /EasingFunction="\{StaticResource E(Out|In)\}"/.test(t),
+        t.slice(0, 70)
+      );
+      onay(
+        `D4 anim ${i + 1} yalnız Opacity/Transform`,
+        /TargetProperty="(Opacity|\(UIElement\.RenderTransform\))/.test(t),
+        t.slice(0, 70)
+      );
     }
   }
   onay('D4 XAML gövdesinde ham 0:0:x süresi yok', !/Duration="0:0:/.test(govde));

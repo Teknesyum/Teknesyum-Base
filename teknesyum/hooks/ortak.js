@@ -174,7 +174,6 @@ function projeMi(d, izler) {
   return sonuc;
 }
 
-
 // Kurulu eklentinin diskteki kökü. Sürümü yola **elle yazmak yasak** — önbellek eski
 // sürümleri yan yana tutuyor ve on klasörün arasından "dosyayı okudum" cümlesi hangi
 // dosyayı okuduğunu söylemiyor. `ls | tail -1` de olmaz: en yüksek numaralı klasör

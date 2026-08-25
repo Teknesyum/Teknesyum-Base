@@ -1502,7 +1502,7 @@ ol('done/ altına Edit engellenir', () => {
 ol('T disindaki sozlesme kimlikleri de done/ kapisiyla korunur', () => {
   // ÖLÇÜLDÜ (25.08.2026, dis denetim TB-003): kapi yalniz T ile baslayan dosyayi
   // taniyordu; depoda D, E, F, S, U kimlikli 21 sozlesme korumasizdi.
-  for (const ad of ['D1.md', 'E1.md', 'F3.md', 'S2.md', 'U11.md']) {
+  for (const ad of ['D1.md', 'E1.md', 'F3.md', 'S2.md', 'U7.md', 'U11.md']) {
     esit(
       calistir(KORU, {
         tool_name: 'Edit',
@@ -2021,12 +2021,13 @@ ol('bozuk girdide çökmez', () => {
   esit(r.status, 0);
 });
 
-function sozlesmeProje(eskiDurum) {
+function sozlesmeProje(eskiDurum, ad) {
   const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-durum-'));
   const c = path.join(p, '.claude', 'relay', 'contracts');
   fs.mkdirSync(c, { recursive: true });
-  const f = path.join(c, 'T1.md');
-  fs.writeFileSync(f, '---\nname: T1\nstatus: ' + eskiDurum + '\n---\n');
+  const dosya = ad || 'T1.md';
+  const f = path.join(c, dosya);
+  fs.writeFileSync(f, '---\nname: ' + dosya.slice(0, -3) + '\nstatus: ' + eskiDurum + '\n---\n');
   return f;
 }
 
@@ -2060,6 +2061,67 @@ ol('blocked her durumdan yazılabilir', () => {
     }).kod,
     0
   );
+});
+
+ol('gerileme engeli T dışı kimliklerde de çalışır', () => {
+  for (const ad of ['D1.md', 'E1.md', 'S2.md', 'U7.md']) {
+    const r = calistir(KORU, {
+      tool_name: 'Write',
+      tool_input: {
+        file_path: sozlesmeProje('submitted', ad),
+        content: '---\nname: ' + ad.slice(0, -3) + '\nstatus: open\n---\n',
+      },
+    });
+    esit(r.kod, 2, ad + ' gerilemesi engellenmeli');
+    icerir(r.err, 'geriye alınamaz');
+  }
+});
+
+ol('T dışı kimlikler kabuktan done/ altına taşınamaz', () => {
+  for (const ad of ['D1.md', 'E1.md', 'S2.md', 'U7.md']) {
+    const kaynak = sozlesmeProje('submitted', ad);
+    const kok = path.dirname(path.dirname(kaynak));
+    const hedef = path.join(path.dirname(kaynak), 'done', ad);
+    const r = calistir(KORU, {
+      cwd: kok,
+      tool_name: 'Bash',
+      tool_input: {
+        command: 'mv ' + kaynak.replace(/\\/g, '/') + ' ' + hedef.replace(/\\/g, '/'),
+      },
+    });
+    esit(r.kod, 2, ad + ' done/ altina tasinabilmis');
+  }
+});
+
+ol('mühürlü sözleşme geri açılamaz: sealed -> open engellenir', () => {
+  const r = calistir(KORU, {
+    tool_name: 'Write',
+    tool_input: {
+      file_path: sozlesmeProje('sealed'),
+      content: '---\nname: T1\nstatus: open\n---\n',
+    },
+  });
+  esit(r.kod, 2, 'sealed -> open engellenmeli');
+  icerir(r.err, 'geriye alınamaz');
+});
+
+ol('yıkama: bilinmeyen durum iki adımda da engellenir', () => {
+  // K4: `status: bozuk` yaz (sessiz gecerdi), sonra `bozuk -> open` yaz (eski durum
+  // bilinmedigi icin gerileme denetimi hic calismazdi). Iki adim da kapali tarafa duser.
+  const f = sozlesmeProje('open');
+  const birinci = calistir(KORU, {
+    tool_name: 'Write',
+    tool_input: { file_path: f, content: '---\nname: T1\nstatus: bozuk\n---\n' },
+  });
+  esit(birinci.kod, 2, 'bilinmeyen yeni durum yazilamamali');
+  icerir(birinci.err, 'bozuk');
+  fs.writeFileSync(f, '---\nname: T1\nstatus: bozuk\n---\n');
+  const ikinci = calistir(KORU, {
+    tool_name: 'Write',
+    tool_input: { file_path: f, content: '---\nname: T1\nstatus: open\n---\n' },
+  });
+  esit(ikinci.kod, 2, 'bilinmeyen eski durumdan cikis engellenmeli');
+  icerir(ikinci.err, 'gerileme');
 });
 
 ol('bozuk js yazımı ayrıştırma hatasıyla geri döner', () => {

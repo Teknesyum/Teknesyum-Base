@@ -9,10 +9,16 @@
 const KIMLIK = /^[A-Z]{1,4}\d{1,4}\.md$/i;
 
 // Merdiven tek yönlüdür. `blocked` her iki yönde serbesttir — engel gerçek bir durumdur,
-// kurtarma da öyle; bu yüzden tabloda yok. `sealed` mühürlenmiş sözleşmedir ve `done` ile
-// aynı basamakta durur: T1 bu durumdaydı ve tablo onu tanımadığı için gerileme denetimi
-// sessizce atlanıyordu — mühürlü sözleşme serbestçe `open` yazılabiliyordu.
+// kurtarma da öyle; bu yüzden merdivende yok ama DURUMLAR onu tanır. `sealed` mühürlenmiş
+// sözleşmedir ve `done` ile aynı basamakta durur: T1 bu durumdaydı ve tablo onu tanımadığı
+// için gerileme denetimi sessizce atlanıyordu — mühürlü sözleşme serbestçe `open`
+// yazılabiliyordu.
 const SIRA = { open: 0, active: 1, submitted: 2, accepted: 3, done: 3, sealed: 3 };
+
+// ÖLÇÜLDÜ (tur 2 denetimi, K4): "bilinen durum" tanımı merdiven tablosuna bağlıyken
+// `blocked` bilinmeyen sayılıyor ve bilinmeyen durum sessizce geçiyordu. Tanınan durum
+// kümesi merdivenden ayrı tutulur; kümede olmayan her şey bilinmeyendir ve kapı kapanır.
+const DURUMLAR = new Set([...Object.keys(SIRA), 'blocked']);
 
 function sozlesmeAdi(ad) {
   return KIMLIK.test(String(ad));
@@ -24,7 +30,7 @@ function durum(metin) {
 }
 
 function bilinenDurum(d) {
-  return d !== null && SIRA[d] !== undefined;
+  return d !== null && DURUMLAR.has(d);
 }
 
-module.exports = { KIMLIK, SIRA, sozlesmeAdi, durum, bilinenDurum };
+module.exports = { KIMLIK, SIRA, DURUMLAR, sozlesmeAdi, durum, bilinenDurum };

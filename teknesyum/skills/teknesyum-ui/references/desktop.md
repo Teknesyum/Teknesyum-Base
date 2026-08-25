@@ -208,6 +208,12 @@ yerlerden olur, teslimden önce **hepsi tek tek gezilir**:
 kalıplarının tamamı `references/forms.md`'de; web karşılığı `assets/forms.css`, WPF
 karşılığı `assets/Forms.xaml`.
 
+Ekran okuyucu WPF'te devredilmez (§5.8): ikon butonu kontrolün kendisinde
+`AutomationProperties.Name` taşır (süs `Path` peer üretmez, `Image`'a ad verilmez),
+duyuru `AutomationProperties.LiveSetting` + `AutomationEvents.LiveRegionChanged` ile
+yapılır, yüksek kontrast `SystemParameters.HighContrast` ile okunur ve açıkken neon
+sözlüğü yüklenmez. Ayrıntı: `references/a11y.md`.
+
 **Ölçüt:** ekranı gezerken "bu kutu Windows'a mı ait?" diye düşündüren bir öğe kalmışsa
 tema tamamlanmamıştır. Aynı ölçüt hata ve boş durum ekranları için de geçerlidir — en çok
 oralar unutulur, çünkü mutlu yolda hiç görünmezler.

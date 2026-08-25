@@ -10419,7 +10419,14 @@ ol('zil damgasi yazilamazsa ses yine calar', () => {
 
 console.log('\nUI suiteleri (U3-U9)');
 
-const UI_SUITE = ['u3-forms.js', 'u4-renk.js', 'u7-avalonia.js', 'u8-glow.js', 'u9-renkkorlugu.js'];
+const UI_SUITE = [
+  'u3-forms.js',
+  'u4-renk.js',
+  'u5-a11y.js',
+  'u7-avalonia.js',
+  'u8-glow.js',
+  'u9-renkkorlugu.js',
+];
 
 for (const ad of UI_SUITE) {
   ol('suite ' + ad + ' tek başına geçiyor', () => {

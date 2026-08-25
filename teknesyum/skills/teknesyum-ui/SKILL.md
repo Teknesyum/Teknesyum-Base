@@ -867,6 +867,23 @@ bakılır.** Sıra şudur:
 
 Lisansı olmayan depo "serbest" demek değildir — telif varsayılan olarak sahibindedir.
 
+## 5.8 Ekran okuyucu
+
+**İsimsiz interaktif öğe yasak** — WCAG 4.1.2, **A** seviyesi. Tıklanabilir her öğenin
+ekran okuyucuya okunan bir adı olur; ikon-only buton web'de `aria-label` (sıra:
+`aria-label` > `aria-labelledby` > `.tk-sr-only` metin — `title` ad değildir), WPF'te
+kontrolün kendisine verilen `AutomationProperties.Name` ile adlanır. İsimli butonun
+ikonu `aria-hidden="true"` + `focusable="false"` taşır.
+
+Duyuru `aria-live` (WPF: `AutomationProperties.LiveSetting` + `LiveRegionChanged`
+olayı) ile yapılır: durum değişimi ve bildirim `polite`, hata `assertive`, ilerleme
+live değil `role="progressbar"` + `aria-valuenow`. Bölge baştan boş DOM'da durur.
+
+Yüksek kontrast modunda (`forced-colors`) neon korunmaz, sisteme **teslim edilir**;
+çift katman odak halkası teke düşer ve bu kabul edilir. Tam kural, tablolar ve WPF
+karşılıkları: `references/a11y.md`; CSS katmanı: `assets/a11y.css` (`theme.css`ten
+sonra import edilir).
+
 ## 6. Sık yapılan hatalar
 
 - Soluk gri gövde metni (`#d1d5db`, `#9ca3af`) → beyaz. Bu temada ara gri yok
@@ -924,6 +941,9 @@ Lisansı olmayan depo "serbest" demek değildir — telif varsayılan olarak sah
 - `:focus` kullanmak → `:focus-visible`; farede halka çıkmaz (§5.3)
 - İmza bloğunu ana ekrana ya da alt bilgiye koymak → başlık çubuğu, küçültün solu (§4)
 - Liste/tablo satırına glow vermek → glow kapsayıcı panele, satır kenarlıkla ayrılır (M15)
+- İkon butona yalnız `title` vermek ya da adı hiç vermemek → isimsiz öğe yasak;
+  `aria-label` / `AutomationProperties.Name` (§5.8)
+- sr-only'yi `display:none` ile yapmak → okuyucu da göremez; `.tk-sr-only` (§5.8)
 
 ## 7. Masaüstü ve dil yamaları
 

@@ -8190,6 +8190,98 @@ ol('ozel projeler listesi icerik indirmeden okunur', () => {
   esit(fs.existsSync(path.join(klon, 'alfa', 'proje', 'a.txt')), true, 'ac klasoru geri sermeli');
 });
 
+ol('ozel unc yolu proje adi olarak da manifest kaynagi olarak da reddeder', () => {
+  const s = ozelSahne();
+  const bolu = String.fromCharCode(92);
+  const r = ozelCalistir(['kur', s.uzak, bolu + bolu + 'sunucu' + bolu + 'pay'], s.cfg, s.proje);
+  esit(r.kod !== 0, true, 'unc proje adi kabul edilmemeliydi');
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.writeFileSync(path.join(s.proje, 'gizli.txt'), 'veri');
+  ozelCalistir(['ekle', './gizli.txt'], s.cfg, s.proje);
+  ozelCalistir(['pusla'], s.cfg, s.proje);
+  const man = path.join(s.cfg, 'teknesyum-ozel', 'alfa', 'ozel.json');
+  const m = JSON.parse(fs.readFileSync(man, 'utf8'));
+  m.dosyalar[0].kaynak = bolu + bolu + 'localhost' + bolu + 'teknesyum-yok' + bolu + 'dis.json';
+  fs.writeFileSync(man, JSON.stringify(m));
+  const c = ozelCalistir(['cek', '--zorla'], s.cfg, s.proje);
+  esit(c.kod, 0, 'cek cikis kodu');
+  icerir(c.out, 'dışına düşüyor', 'unc kaynak atlanmali');
+  icermez(c.out, 'yazıldı', 'unc kaynaga hicbir sey yazilmamali');
+});
+
+ol('ozel cek symlink uzerinden proje disina kacisi durdurur', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.writeFileSync(path.join(s.proje, 'gizli.txt'), 'veri');
+  ozelCalistir(['ekle', './gizli.txt'], s.cfg, s.proje);
+  ozelCalistir(['pusla'], s.cfg, s.proje);
+  const disdizin = path.join(s.kok, 'disdizin');
+  fs.mkdirSync(disdizin);
+  fs.symlinkSync(disdizin, path.join(s.proje, 'baglanti'), 'junction');
+  const man = path.join(s.cfg, 'teknesyum-ozel', 'alfa', 'ozel.json');
+  const m = JSON.parse(fs.readFileSync(man, 'utf8'));
+  m.dosyalar[0].kaynak = './baglanti/kacak.json';
+  fs.writeFileSync(man, JSON.stringify(m));
+  const c = ozelCalistir(['cek', '--zorla'], s.cfg, s.proje);
+  icerir(c.out, 'dışına düşüyor', 'symlink kacisi atlanmali');
+  esit(
+    fs.existsSync(path.join(disdizin, 'kacak.json')),
+    false,
+    'symlink uzerinden disari yazilmis'
+  );
+});
+
+ol('ozel pusla detached head klonunda basari yazmaz', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.writeFileSync(path.join(s.proje, 'gizli.txt'), 'veri');
+  ozelCalistir(['ekle', './gizli.txt'], s.cfg, s.proje);
+  ozelCalistir(['pusla'], s.cfg, s.proje);
+  const klon = path.join(s.cfg, 'teknesyum-ozel');
+  gitCalistir(klon, ['checkout', '--detach']);
+  fs.writeFileSync(path.join(s.proje, 'gizli.txt'), 'veri2');
+  const p = ozelCalistir(['pusla'], s.cfg, s.proje);
+  icermez(p.out, 'Push tamam', 'detached head basari sayilmis');
+  icerir(p.out, 'detached HEAD', 'sebep adiyla soylenmeli');
+  esit(p.kod !== 0, true, 'detached head sifir donmemeli');
+});
+
+ol('ozel pusla uzak reddettiginde basari yazmaz', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.writeFileSync(path.join(s.proje, 'gizli.txt'), 'veri');
+  ozelCalistir(['ekle', './gizli.txt'], s.cfg, s.proje);
+  ozelCalistir(['pusla'], s.cfg, s.proje);
+  const kanca = path.join(s.uzak, 'hooks', 'pre-receive');
+  fs.writeFileSync(kanca, '#!/bin/sh\necho "yetki yok" >&2\nexit 1\n');
+  fs.chmodSync(kanca, 0o755);
+  const onceki = (gitCalistir(s.uzak, ['rev-parse', 'main']).stdout || '').trim();
+  fs.writeFileSync(path.join(s.proje, 'gizli.txt'), 'veri2');
+  const p = ozelCalistir(['pusla'], s.cfg, s.proje);
+  icermez(p.out, 'Push tamam', 'reddedilen push basari sayilmis');
+  icerir(p.out, 'Push başarısız');
+  esit(p.kod !== 0, true, 'reddedilen push sifir donmemeli');
+  const sonraki = (gitCalistir(s.uzak, ['rev-parse', 'main']).stdout || '').trim();
+  esit(sonraki, onceki, 'uzak dal ilerlememis olmali');
+});
+
+ol('ozel cek dallar ayristiginda uyarir, yerel kopyayla devam eder', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.mkdirSync(path.join(s.proje, '.claude'), { recursive: true });
+  fs.writeFileSync(path.join(s.proje, '.claude', 'yerel.json'), '{"a":1}');
+  ozelCalistir(['ekle', './.claude/yerel.json'], s.cfg, s.proje);
+  ozelCalistir(['pusla'], s.cfg, s.proje);
+  const klon = path.join(s.cfg, 'teknesyum-ozel');
+  gitCalistir(klon, ['commit', '--amend', '-m', 'sapma']);
+  fs.unlinkSync(path.join(s.proje, '.claude', 'yerel.json'));
+  const c = ozelCalistir(['cek'], s.cfg, s.proje);
+  esit(c.kod, 0, 'ff-only dususu cek akisini durdurmamali');
+  icerir(c.out, 'uzaktan güncellenemedi', 'merge gereken durum uyari satirina dusmeli');
+  icerir(c.out, 'yazıldı', 'yerel kopyadan cekilmeli');
+  esit(fs.readFileSync(path.join(s.proje, '.claude', 'yerel.json'), 'utf8'), '{"a":1}');
+});
+
 // "Premium dedim, autocontext degismedi" iki ayri sebepten olur: deger oturum acilisinda
 // okunur ve `1000000` bir tavandir. Ikisi de soylenmezse komut calismamis gorunur.
 // Bir donem burada "Opus ~200k" yaziliyordu ve yanlisti: Opus 4.7 ve Sonnet 5 yerel 1M

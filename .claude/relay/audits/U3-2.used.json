@@ -1,0 +1,19 @@
+{
+  "contractId": "U3",
+  "auditorRunId": "a709635107446e6db",
+  "headSha": "27cf37ea19d2c7597f4e9a33724b6e7633b4aaad",
+  "diffHash": "80e8d974a28382a8fb15f2c9455b604e58c07eb46e0bb718a2f24ecb3151f504",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/references/forms.md",
+    "teknesyum/skills/teknesyum-ui/assets/forms.css",
+    "teknesyum/skills/teknesyum-ui/assets/Forms.xaml",
+    "test/u3-forms.js"
+  ],
+  "verification": [
+    "GEÇTİ  T2  · şartname ✓ · kalite ✓ — R2/R9 kanıtı geldi: `node test/u3-forms.js` 372/372 `GEÇTİ` exit=0, `--mutasyon` 30/30 `GEÇTİ` exit=0 (U3.md:557-569); R1/R3/R4/R5/R6/R7/R8 dosyadan doğrulandı (forms.css:49-51,197,260-276 · Forms.xaml:43,183,288 · forms.md:92,252,331-332,412 · test/u3-forms.js:6"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T18:50:40.745Z",
+  "usedAt": "2026-08-25T18:50:40.802Z",
+  "completedSha": "27cf37ea19d2c7597f4e9a33724b6e7633b4aaad"
+}

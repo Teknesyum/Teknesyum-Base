@@ -36,8 +36,31 @@ open ──► active ──► submitted ──► done          (dosya done/ a
 
 **Ajan `done` yazamaz, dosyayı `done/`'a taşıyamaz.** Kendi işini tamamlanmış ilan
 edebilen ajan, denetimi fiilen atlar — bu, denetçinin kod yazamamasıyla aynı ağırlıkta
-bir sınır. Hook mühürsüz dosyanın `done/` altına girmesini `Write` ve `Bash` yollarından
-engeller; kabuk üzerinden kopyalama, yönlendirme ve taşıma da kapsam içindedir.
+bir sınır.
+
+**Tamamlamanın tek yolu tek komuttur.** `Write` ve `Edit` ile `done/` altına girmek
+mühürlü de olsa engellidir; kabukta `done/` geçen parça ya bu komuttur ya bilinen bir
+okuma komutudur, gerisi tanınmadığı için engellenir:
+
+```bash
+node teknesyum/scripts/contract.js complete --id T7
+```
+
+Komut `.claude/relay/audits/<ID>-<tur>.json` altındaki denetim kaydını okur ve dört
+eksende eşleşme arar: sözleşme kimliği, o anki `HEAD`, sözleşmenin `owns` kümesi ve o
+dosyaların içerik hash'i. Kayıt kullanıldıktan sonra tüketilir — aynı denetim ikinci turu
+mühürleyemez. Kaydın alanları:
+
+```json
+{ "contractId": "T7", "auditorRunId": "<live/ altındaki denetçi ID'si>",
+  "headSha": "<git rev-parse HEAD>", "diffHash": "<owns dosyalarının içerik hash'i>",
+  "owns": ["..."], "verification": ["<komut> → exit <kod>"],
+  "result": "passed", "createdAt": "<ISO>" }
+```
+
+Kancanın göremediği yol (`node -e renameSync`, junction, hardlink) sonuçtan yakalanır:
+her `Bash` sonrası ve her kapanışta `done/` içeriği defterle karşılaştırılır, karşılığı
+olmayan sözleşme kullanıcıya bildirilir ve `_sorun.log`'a yazılır.
 
 **Merdiven tek yönlüdür ve hook uygular.** `contracts/*.md` üzerine yazılan `status`
 öncekinden geride olamaz — `submitted` sözleşmeyi `open` yapıp turu sıfırlamak engellenir.
@@ -59,20 +82,19 @@ mühürden sonra `owns` dosyalarında değişiklik olduysa sözleşme yeniden de
 `owns` kontrolü de bu kapıda yapılır: `live/<agent_id>.json` içindeki `files` listesi
 `owns` ∪ `side_effects` kümesini aşıyorsa mühür işlenmez.
 
-**Kapı alanların dolu olmasına değil karşılığına bakar.** `contract-guard.js` mührü
-`live/` kayıtlarıyla karşılaştırır ve üç şeyi arar:
+**Kapı alanların dolu olmasına değil karşılığına bakar.** `contract.js complete` denetim
+kaydını `live/` izleriyle karşılaştırır:
 
-- `auditor_id` `live/` altında gerçekten var olan bir kayda işaret eder ve o kaydın
+- `auditorRunId` `live/` altında gerçekten var olan bir kayda işaret eder ve o kaydın
   `agent_type`'ı `auditor`'dür.
 - O kaydın `files` listesi **boştur**. Denetçi tek bir dosyaya yazmışsa denetim geçersizdir.
   Bu, denetçinin `tools:` satırına bağlı olmayan tek güvencedir: `agents/auditor.md`
   `Write` ve `Edit` istemiyor ama harness listeyi tamamlayabiliyor — ölçümde tamamladı.
-- `diff` boş olmayan bir dosya listesi taşır ve sözleşmenin `owns` kümesiyle kesişir.
+- `verification` boş değildir ve `diffHash` o anki `owns` dosyalarının hash'ini tutar.
 
-`live/` okunamıyor, kayıt bulunamıyor veya sözleşmenin `owns` alanı boşsa kapı **açık
-tarafa düşer**: yalnızca dört alanın dolu olduğu denetlenir, çünkü röle dışında elle
-taşınan meşru sözleşmeler aksi halde kilitlenir. Neyin doğrulanamadığı engel mesajına
-değil `live/_sorun.log`'a yazılır.
+**Kapı kapalı tarafa düşer.** Kanca doğrulama yapamıyorsa — bozuk girdi, beklenmedik
+hata — geçirmez. Bilerek geçmek için `TEKNESYUM_KAPI_ACIK=1`. Neyin doğrulanamadığı
+`live/_sorun.log`'a yazılır.
 
 **`live/` neden var:** kayıt noktası ajanın yazmasına bağlıydı, ajan ölünce yazılmıyordu.
 `relay-watch.js` hook'u `SubagentStart` / `PostToolUse` / `SubagentStop` olaylarında
@@ -192,7 +214,7 @@ veya değişikliği geri al.
 → Çıktı + `status: submitted` → LOG satırı. **Burada durur.**
 
 **T0 kapısı:** `git diff --name-only` ve sözleşmenin doğrulama komutunu çalıştır → çıktıyı
-denetçiye ver → GEÇTİ ise mührü işle → `status: done` → dosyayı `contracts/done/`'a taşı.
+denetçiye ver → GEÇTİ ise mührü işle, denetim kaydını `audits/` altına yaz → `node teknesyum/scripts/contract.js complete --id <ID>`.
 
 **Uzun koşu içeren sözleşmede iki satır baştan yazılır.** Biri kayıt noktası
 talimatı — *her kabul kriterinden sonra `## Kayıt noktası`na tek satır düş ve ara ara

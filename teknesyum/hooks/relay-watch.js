@@ -77,6 +77,7 @@ function run(j) {
     const bozuk = sozdizim(j);
     if (bozuk) ciktiEkle({ decision: 'block', reason: bozuk });
     acikKirp(j);
+    if (/^Bash$/.test(j.tool_name || '')) doneYeniden(root);
   }
 
   if (j.hook_event_name === 'SessionStart') {
@@ -98,6 +99,7 @@ function run(j) {
   if (j.hook_event_name === 'Stop') {
     if (kap) kapsayiciTopla(kap, kapDurum);
     paketDenetle(j, root);
+    doneYeniden(root);
     acikBildir(root);
     acikEngelle(root);
     const engelli = engelliKapanis();
@@ -1468,6 +1470,22 @@ function sorunSayisi(live) {
 // devam satırıydı, açılış "634 ajan sorunu" diyordu. Boşluk düzleştirilir, uzun metin
 // kesilir: sayı gerçeği söylesin, dosya okunabilir kalsın.
 const SORUN_TAVANI = 300;
+
+// ÖLÇÜLDÜ (T7 / tehdit modeli): PreToolUse kancası aracın *beyan ettiği* komutu görür,
+// sürecin ne yaptığını değil — `node -e renameSync`, junction alias ve hardlink kapının
+// altından geçer. Süreç içi yan etkiyi ancak sonuçtan yakalayabiliriz: done/ altındaki
+// her sözleşme, canonical komutun yazdığı defterle karşılaştırılır.
+function doneYeniden(root) {
+  if (!root) return;
+  try {
+    const { doneDenetle } = require('./denetim-kaydi.js');
+    const yetkisiz = doneDenetle(path.dirname(path.dirname(root)), root);
+    if (!yetkisiz.length) return;
+    const satir = ceviri('doneDefterDisi', yetkisiz);
+    sorunYaz(izKoku(root), 'contract-guard | defter dışı done/ girişi: ' + yetkisiz.join(', '));
+    duyur(satir.join('\n'), 1, true);
+  } catch {}
+}
 
 function sorunYaz(live, satir) {
   try {

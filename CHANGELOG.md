@@ -6,6 +6,40 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.61.0] - 2026-08-25
+
+### Changed
+
+- **Completing a contract now goes through one command and no other.** The old gate let a
+  file into `done/` as soon as it carried four seal fields, and four fields are cheap to
+  type. `node teknesyum/scripts/contract.js complete --id <ID>` reads a persistent audit
+  record — `{contractId, auditorRunId, headSha, diffHash, owns, verification, result,
+  createdAt}` — and has to match on every axis: the contract id, the current `HEAD`, the
+  contract's own `owns` set, and a hash over the contents of those files. A record written
+  against an older tree no longer matches, and neither does one whose owned files changed
+  after the auditor looked at them. The record is consumed on use, so the same audit cannot
+  seal a second round. Only then is the file renamed and a ledger line appended. `Write`
+  and `Edit` into `done/` are refused unconditionally, sealed or not.
+- **The shell side is an allow-list.** A hook sees the command a tool declares, not what
+  the process then does — `node -e` calling `fs.rename`, `python -c os.rename`, `git mv`,
+  `install`, `ln`, `mklink`, a .NET call from PowerShell and any private binary all reached
+  the directory without matching a write verb. A shell segment naming `done/` is now either
+  the command above or a recognised read (`cat`, `ls`, `grep`, `git log`, `git diff` and
+  their kin); everything else is blocked for being unrecognised rather than allowed for
+  looking harmless.
+- **The gate fails closed.** It used to exit silently on anything unexpected, so a single
+  piece of malformed hook input removed the whole protection. It now blocks and says why;
+  `TEKNESYUM_KAPI_ACIK=1` opts back out deliberately.
+
+### Added
+
+- **What still gets past the hook is caught afterwards.** On every `Bash` result and at
+  every stop, `git diff --name-status` and a directory scan are compared against the
+  ledger; a contract sitting under `done/` with no ledger line is named to the user and
+  written to `_sorun.log`. Contracts already there when the ledger is first opened are
+  recorded as inherited rather than accused. `contract.js audit` runs the same check on
+  demand and exits non-zero when something is unaccounted for.
+
 ## [2.60.0] - 2026-08-25
 
 ### Security

@@ -556,7 +556,10 @@ function gonder(klon, mesaj) {
       ok: false,
       satir: [
         'Push sonrası uzak uç beklenen commit’te değil — dosya depoya gitmemiş olabilir.',
-        '  beklenen: ' + (sha.slice(0, 8) || '?') + '  ·  uzak: ' + (uzak.stdout.trim().slice(0, 8) || '?'),
+        '  beklenen: ' +
+          (sha.slice(0, 8) || '?') +
+          '  ·  uzak: ' +
+          (uzak.stdout.trim().slice(0, 8) || '?'),
       ],
     };
   return { ok: true, satir: ['Push tamam — ' + dal + ' @ ' + sha.slice(0, 8)] };

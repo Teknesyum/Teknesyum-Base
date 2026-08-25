@@ -42,8 +42,9 @@ henüz başlanmadı
 <!--
 status: open → active → submitted → done
 `submitted`'a kadar ajan yürütür. Sonrası T0'ındır: denetçi GEÇTİ derse T0 mührü
-(`audit: passed`, `auditor_id`, `diff`, `verification`) işler ve dosyayı done/'a taşır.
-Mühürsüz dosyanın done/ altına girmesini hook engeller. Ajan done/'a taşımaz.
+(`audit: passed`, `auditor_id`, `diff`, `verification`) işler, denetim kaydını
+`.claude/relay/audits/` altına yazar ve `contract.js complete --id <ID>` çalıştırır.
+Başka hiçbir yolla done/ altına girilmez. Ajan done/'a taşımaz.
 
 eco profilinde bu şablon kısalır. Şablon ikiye ayrılmaz; T0 doldururken düşürür.
 Asla düşmeyenler: `id` · `status` · `owns` · mühür alanları · `## Kabul kriteri` ·

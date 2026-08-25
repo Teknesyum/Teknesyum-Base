@@ -52,5 +52,5 @@ sadece ne istediğini söyle.
 
 - Alt ajanın kaç adım ilerlediği ölçülemez — statusline kimin çalıştığını ve ne
   kadardır çalıştığını gösterir, yüzde göstermez. Uydurmaz.
-- Bitmiş sözleşme kilitlenir. Mühürsüz bir dosya `done/` altına giremez; kabuktan
-  taşımak da engellenir.
+- Bitmiş sözleşme kilitlenir. `done/` altına yalnız canonical tamamlama komutu girer;
+  kabuktan taşımak da engellenir.

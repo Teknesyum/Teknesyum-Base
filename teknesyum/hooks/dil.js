@@ -672,6 +672,32 @@ const S = {
       'seal — audit: passed · auditor_id · diff · verification. The audit cannot be skipped.',
     ],
   },
+  doneCanonical: {
+    tr: () => [
+      '',
+      'Tamamlamanın tek meşru yolu:',
+      '    node teknesyum/scripts/contract.js complete --id <ID>',
+      'Komut denetim kaydını doğrular, dosyayı atomik taşır ve deftere yazar.',
+    ],
+    en: () => [
+      '',
+      'The only legitimate way to complete a contract:',
+      '    node teknesyum/scripts/contract.js complete --id <ID>',
+      'It verifies the audit record, moves the file atomically and writes the ledger line.',
+    ],
+  },
+  doneDefterDisi: {
+    tr: (liste) => [
+      'done/ altında deftere işlenmemiş sözleşme var: ' + liste.join(', '),
+      'Bunlar canonical komuttan geçmeden taşınmış. `node teknesyum/scripts/contract.js audit`',
+      'ile bak; meşru değilse sözleşmeyi contracts/ altına geri al.',
+    ],
+    en: (liste) => [
+      'Contracts under done/ with no ledger line: ' + liste.join(', '),
+      'They were moved without the canonical command. Run `node teknesyum/scripts/contract.js',
+      'audit`; if the move was not legitimate, put the contract back under contracts/.',
+    ],
+  },
 
   onArastirmaHatirlatma: {
     tr: () =>

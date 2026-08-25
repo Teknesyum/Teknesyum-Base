@@ -1,10 +1,12 @@
 {
   "name": "teknesyum-base",
-  "version": "2.60.0",
+  "version": "2.61.0",
   "private": true,
   "description": "Test harness for the Teknesyum Base plugin — hooks, statusline, packaging",
   "scripts": {
-    "test": "node test/all.js"
+    "test": "node test/all.js",
+    "fmt": "npx --yes @biomejs/biome@2 format --write .",
+    "lint": "npx --yes @biomejs/biome@2 ci --diagnostic-level=error ."
   },
   "license": "AGPL-3.0-or-later"
 }

@@ -33,9 +33,10 @@ approves its own work; and it produces a differently-styled UI in every project.
 ### What this is not
 
 An opinionated working protocol, not a security boundary. Two things here are mechanical —
-hooks run as processes and cannot be talked out of it: the `done/` seal check — which
-verifies the seal against the auditor's own `live/` record rather than its shape — and
-the syntax check on written files. An agent's declared tool list is **not** one of them:
+hooks run as processes and cannot be talked out of it: the `done/` gate — which completes
+a contract only through one command that verifies a single-use audit record against the
+current tree, refuses everything it does not recognise, and re-checks the directory
+afterwards for what it could not see — and the syntax check on written files. An agent's declared tool list is **not** one of them:
 the harness can and does hand an agent more than it asked for. Everything else — sizing the work, splitting it into contracts,
 assigning file ownership, choosing models — is the model following `SKILL.md`. That makes
 it automatic, not deterministic. Treat it as a discipline that holds most of the time and
@@ -229,18 +230,37 @@ A hook enforces the gate instead of trusting it, and it checks all four fields �
 `audit: passed` with the rest left at `—` is refused. It also checks that the fields mean
 something: `auditor_id` has to name a `live/` record belonging to an auditor that wrote no
 files, and `diff` has to intersect the contract's `owns` (see the auditor section above).
-An unsealed file cannot land in `done/` through `Write`, and the common shell spellings
-are refused too — redirects, `mv`, `Move-Item`, `cp` and deletions targeting `done/` need
-the source to already carry the seal. Reading is untouched.
+Completing a contract goes through one command and no other:
 
-**The shell half is a deny-list, and a deny-list is not a boundary.** A hook sees the
-command a tool declares, not what the process then does: `node -e` calling `fs.rename`,
-`git mv`, `install`, a junction pointing at `done/` under another name, or a .NET call
-from PowerShell all reach the directory without matching a write verb. Treat the gate as
-what stops an agent from taking a shortcut, not as what stops one determined to get
-around it. Without it, an agent that finished badly could declare itself done and quietly
-drop out of the audit queue; with it, doing so takes a deliberate detour that reads as one
-in the transcript.
+```bash
+node teknesyum/scripts/contract.js complete --id T7
+```
+
+It reads a persistent audit record — `{contractId, auditorRunId, headSha, diffHash, owns,
+verification, result, createdAt}` — written under `.claude/relay/audits/`, and it has to
+match on every axis: the contract id, the current `HEAD`, the contract's own `owns` set,
+and a hash over the contents of those files. A record that passed for an older tree, or
+one whose owned files changed after the auditor looked at them, no longer matches. The
+record is consumed on use, so the same audit cannot seal a second round. Only then is the
+file renamed into `done/` and a line appended to the ledger. `Write` and `Edit` into
+`done/` are refused unconditionally, sealed or not.
+
+**The shell half is an allow-list, because a deny-list is not a boundary.** A hook sees
+the command a tool declares, not what the process then does: `node -e` calling
+`fs.rename`, `git mv`, `install`, a junction pointing at `done/` under another name, or a
+.NET call from PowerShell all reach the directory without matching a write verb. So a
+shell segment naming `done/` is either the command above or a known read — `cat`, `ls`,
+`grep`, `git log`, `git diff` and their kin — and anything else is blocked for being
+unrecognised rather than allowed for looking harmless. When the gate cannot decide at all
+— malformed hook input, an unexpected throw — it fails closed; `TEKNESYUM_KAPI_ACIK=1`
+opts back out deliberately.
+
+**What still gets through is caught afterwards.** A process can do whatever it likes once
+it is running, so the end state is re-checked: on every `Bash` result and at every stop,
+`git diff --name-status` and a directory scan are compared against the ledger, and any
+contract sitting under `done/` without a ledger line is named to the user and written to
+`_sorun.log`. Contracts already there when the ledger is first opened are recorded as
+inherited rather than accused. `contract.js audit` runs the same check on demand.
 
 ### Surviving interruptions
 
@@ -352,13 +372,12 @@ three layers because no single one of them holds.
    being opened with `Write` and `Edit` added on top of what they declared, so the auditor,
    the planner and the advisor give the memory up. `tools:` is a floor for the harness, not
    a ceiling — layers 1 and 2 are a request, not an enforcement.
-3. **The seal gate checks what actually happened.** `contract-guard.js` refuses to let a
-   contract into `done/` unless `auditor_id` resolves to a real `live/` record whose
-   `agent_type` is `auditor` and whose `files` list is **empty**, and unless `diff` carries
-   a file list that intersects the contract's `owns`. If the auditor touched one file, the
-   audit is void no matter what tools it was handed. When `live/` cannot be read the gate
-   falls open to the format check — otherwise contracts moved by hand outside the relay
-   would be locked out — and records what it could not verify in `live/_sorun.log`.
+3. **The seal gate checks what actually happened.** `contract.js complete` refuses to move
+   a contract into `done/` unless `auditorRunId` resolves to a real `live/` record whose
+   `agent_type` is `auditor` and whose `files` list is **empty**. If the auditor touched
+   one file, the audit is void no matter what tools it was handed. The rest of the record
+   — id, `HEAD`, `owns`, the content hash of the owned files — has to match the tree the
+   command is looking at, and the record is consumed once used.
 
 Evidence that needs a command (tests, build, `git diff --name-only`) is run by the manager
 and pasted into the audit request; anything not supplied comes back marked unproven rather
@@ -466,7 +485,7 @@ can be spent to buy it.** Correctness cannot. Eco may be slow and inelegant; it 
 wrong. That is why the ordering of principles inverts here — on premium and normal the
 manager weighs user comfort first and treats tokens as a budget, on eco tokens come first —
 while the correctness layer does not move at all. The audit still runs, `critical` is a
-floor rather than a target, the four-field seal still guards `done/`, contracts still own
+floor rather than a target, the audit record still guards `done/`, contracts still own
 their files, and acceptance criteria are still run before they are ticked. What eco cuts is
 the *amount* of work, never the *verification* of it: unverified work gets written twice,
 which costs more than it saved.

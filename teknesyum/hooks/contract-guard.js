@@ -11,14 +11,35 @@ process.stdin.on('end', () => {
   try {
     j = JSON.parse(raw);
   } catch {
-    process.exit(0);
+    return kapaliDus('kanca girdisi JSON olarak okunamadı');
   }
   try {
     karar(j);
-  } catch {}
+  } catch (e) {
+    return kapaliDus('kapı beklenmedik hatayla düştü: ' + String((e && e.message) || e));
+  }
   uyariBas();
   process.exit(0);
 });
+
+// ÖLÇÜLDÜ (tehdit modeli, kontrol kapsam tablosu): kapı her beklenmedik durumda sessizce
+// açılıyordu — bozuk kanca JSON'u tek başına korumanın tamamını kaldırıyordu. Varsayılan
+// artık kapalı tarafa düşmek; açık taraf `TEKNESYUM_KAPI_ACIK=1` ile bilerek seçilir.
+function kapaliDus(neden) {
+  if (process.env.TEKNESYUM_KAPI_ACIK === '1') {
+    uyariBas();
+    return process.exit(0);
+  }
+  process.stderr.write(
+    'ENGELLENDİ: ' +
+      [
+        neden + '.',
+        'Kapı doğrulama yapamadığı için kapalı tarafa düştü.',
+        'Bilerek geçmek için `TEKNESYUM_KAPI_ACIK=1` ile çalıştır.',
+      ].join('\n')
+  );
+  return process.exit(2);
+}
 
 // Yol göreli de gelebilir (`.claude/relay/contracts/done/T1.md`). Başında `/` arayan
 // eski desen bu biçimi kaçırıyordu — sınır `(^|/)` ile yazılır.
@@ -111,12 +132,6 @@ function sorunYaz(live, satir, etiket) {
   } catch {}
   return null;
 }
-// ÖLÇÜLDÜ: `>>?` serbest duruyordu ve düzyazıdaki `<sebep>` gibi bir metni yönlendirme
-// sandı — `contracts/done/` sözünü içeren masum bir belge yazımı engellendi. Yönlendirme
-// işareti boşlukla başlar; kelime ortasındaki `>` yönlendirme değildir.
-const YAZMA_FIILI =
-  /(^|[\s;|&])((mv|move-item|cp|copy-item|rm|remove-item|del|erase|touch|tee|sed\s+-i|set-content|add-content|out-file|new-item)\b|>>?)/i;
-
 function relayKoku(start) {
   const r = roleKoku(start);
   return r ? r.relay : null;
@@ -286,45 +301,101 @@ function karar(j) {
       yonlendirici(hedef, duzenlenmis(hedef, t));
     gerileme(hedef, arac === 'Write' ? t.content || '' : t.new_string || '');
     if (!DONE.test(norm(hedef))) return;
-    // Write mührü taşıyorsa denetimden geçmiş sözleşmenin yerleşmesidir; Edit hiçbir
-    // koşulda meşru değil — bitmiş sözleşme değiştirilmez.
-    if (arac === 'Edit') return engelle(...ceviri('doneSaltOkunur'));
-    const sebep = muhurSebebi(t.content || '', hedef);
-    if (sebep === null) return;
-    return engelle(...ceviri('doneSaltOkunur'), ...(sebep ? [sebep] : []));
+    // ÖLÇÜLDÜ (T7 / TB-001): mühürlü Write done/ altına yerleşmeye izin veriyordu, ama
+    // mühür dört alanın varlığından ibaretti. Tamamlama artık tek canonical komuttan
+    // geçer; Write ve Edit hiçbir koşulda meşru değil.
+    const sebep = arac === 'Write' ? muhurSebebi(t.content || '', hedef) : '';
+    return engelle(
+      ...ceviri('doneSaltOkunur'),
+      ...(sebep ? [sebep] : []),
+      ...ceviri('doneCanonical')
+    );
   }
 
   if (arac !== 'Bash') return;
   const komut = String(t.command || '');
   if (!/contracts[\\/]done/i.test(komut)) return;
-  // Yazma fiili komutun herhangi bir yerinde değil, `done/` yolunun geçtiği parçada
-  // aranır. Zincirin başka bir halkasındaki `rm` bu yolla ilgisizdir.
-  const parca = komut
-    .split(/[\n;]|&&|\|\||\|/)
-    .filter((x) => /contracts[\\/]done/i.test(x) && YAZMA_FIILI.test(x));
-  if (!parca.length) return; // okuma serbest: cat, ls, grep
-
-  // Tek meşru yazma: denetimi geçmiş bir sözleşmeyi done/ altına taşımak. Kaynak
-  // dosyada mühür varsa geçir. Komuttan kaynak çıkaramıyorsak kapalı tarafa düş.
-  let curuk = '';
-  for (const aday of yollar(parca.join(' '))) {
-    if (DONE.test(norm(aday))) continue;
-    let govde = null;
-    try {
-      govde = fs.readFileSync(aday, 'utf8');
-    } catch {}
-    if (govde === null) continue;
-    const sebep = muhurSebebi(govde, aday);
-    if (sebep === null) return;
-    if (sebep) curuk = sebep;
-  }
-  return engelle(...ceviri('doneKabuk'), ...(curuk ? [curuk] : []));
+  // ÖLÇÜLDÜ (tehdit modeli, kontrol kapsam tablosu): deny-list `node -e renameSync`,
+  // `install`, `ln`, `mklink`, .NET API çağrısı ve özel binary'yi görmüyordu. Liste
+  // tersine çevrildi: `done/` yolunu içeren parça ya canonical komuttur ya da bilinen
+  // bir okuma komutu; geri kalan her şey bilinmeyendir ve engellenir.
+  const parca = komut.split(/[\n;]|&&|\|\||\|/).filter((x) => /contracts[\\/]done/i.test(x));
+  if (!parca.length) return;
+  if (parca.every(izinli)) return;
+  return engelle(...ceviri('doneKabuk'), ...ceviri('doneCanonical'));
 }
 
-function yollar(komut) {
-  const out = [];
-  for (const m of komut.matchAll(/["']?([\w.~\-/\\:]+\.md)["']?/g)) out.push(m[1]);
-  return out;
+const CANONICAL = /contract\.js["']?[ \t]+complete\b/i;
+
+const OKUMA = new Set([
+  'cat',
+  'type',
+  'less',
+  'more',
+  'head',
+  'tail',
+  'wc',
+  'ls',
+  'dir',
+  'grep',
+  'rg',
+  'egrep',
+  'fgrep',
+  'find',
+  'stat',
+  'file',
+  'diff',
+  'cmp',
+  'sed',
+  'awk',
+  'cut',
+  'sort',
+  'uniq',
+  'tr',
+  'basename',
+  'dirname',
+  'realpath',
+  'readlink',
+  'md5sum',
+  'sha256sum',
+  'get-content',
+  'get-childitem',
+  'select-string',
+  'test-path',
+  'resolve-path',
+  'get-item',
+]);
+
+const GIT_OKUMA = new Set([
+  'status',
+  'diff',
+  'log',
+  'show',
+  'ls-files',
+  'grep',
+  'cat-file',
+  'blame',
+]);
+
+function izinli(parca) {
+  const p = String(parca)
+    .replace(/#[^\n]*$/g, '')
+    .trim();
+  if (!/contracts[\\/]done/i.test(p)) return true;
+  if (CANONICAL.test(p)) return true;
+  if (/>>?[ \t]*["']?[^\s"'|;&]*contracts[\\/]done/i.test(p)) return false;
+  if (/[ \t]-i\b/.test(p) || /-delete\b|-exec\b/.test(p)) return false;
+  const m = /^[(\s]*(?:[A-Za-z_]\w*=\S*\s+)*(\S+)/.exec(p);
+  if (!m) return false;
+  const ad = path
+    .basename(m[1].replace(/["']/g, ''))
+    .toLowerCase()
+    .replace(/\.(exe|cmd|bat|ps1)$/, '');
+  if (ad === 'git') {
+    const alt = (p.match(/\bgit\b[^\S\n]+(?:-C[^\S\n]+\S+[^\S\n]+)?([a-z-]+)/i) || [])[1];
+    return GIT_OKUMA.has(String(alt).toLowerCase());
+  }
+  return OKUMA.has(ad);
 }
 
 function engelle(...satir) {

@@ -81,7 +81,7 @@ ikinci görüş. Düğme değerleri `SETTINGS.md`'deki profil tablosunda.
 
 - **Denetim.** `audit` eco'da `critical`'e düşer ama daha aşağı inmez; `critical` alt
   sınırdır. Ajanın kendi raporu denetim yerine geçmez.
-- **Mühür kapısı.** `contracts/done/` altına dört alanlı mühür olmadan girilmez.
+- **Tamamlama kapısı.** `done/` altına yalnız `contract.js complete` girer; kayıt tek kullanımlık.
 - **`owns` disiplini.** Ajan sahiplenmediği dosyaya yazmaz, engele düşer.
 - **Kabul kriteri.** Ölçülebilir madde yazılır ve gerçekten koşulup doğrulanır. Komutu
   yazılabilen kriter `CHECK:` satırını taşır; `audit` eşiği `high` ve üstündeyse taşımak

@@ -1482,7 +1482,7 @@ ol('göreli Windows yolu da engellenir (mutlak yol şartı bypass ediyordu)', ()
   );
 });
 
-ol('mühürsüz Write engellenir, mühürlü Write geçer', () => {
+ol('done/ altına Write mühürlü de olsa engellenir, canonical komuta yollar', () => {
   esit(
     calistir(KORU, {
       tool_name: 'Write',
@@ -1494,14 +1494,12 @@ ol('mühürsüz Write engellenir, mühürlü Write geçer', () => {
     2,
     'mühürsüz'
   );
-  esit(
-    calistir(KORU, {
-      tool_name: 'Write',
-      tool_input: { file_path: '/p/.claude/relay/contracts/done/T1.md', content: MUHURLU },
-    }).kod,
-    0,
-    'mühürlü'
-  );
+  const r = calistir(KORU, {
+    tool_name: 'Write',
+    tool_input: { file_path: '/p/.claude/relay/contracts/done/T1.md', content: MUHURLU },
+  });
+  esit(r.kod, 2, 'mühürlü');
+  icerir(r.err, 'contract.js complete');
 });
 
 ol('yarım mühür geçmez: dört alanın hepsi dolu olmalı', () => {
@@ -1561,19 +1559,72 @@ ol('zincirin baska halkasindaki yazma fiili done/ ile iliskilendirilmez', () => 
   esit(calistir(KORU, { tool_name: 'Bash', tool_input: { command: metin } }).kod, 0);
 });
 
-ol('mühürlü sözleşmenin kabuktan taşınması geçer', () => {
+ol('mühürlü sözleşme bile kabuktan taşınamaz', () => {
   const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-muhur-'));
   const src = path.join(p, 'T1.md');
   fs.writeFileSync(src, MUHURLU);
-  esit(
-    calistir(KORU, {
-      tool_name: 'Bash',
-      tool_input: {
-        command: 'mv ' + src.replace(/\\/g, '/') + ' /p/.claude/relay/contracts/done/T1.md',
-      },
-    }).kod,
-    0
-  );
+  const r = calistir(KORU, {
+    tool_name: 'Bash',
+    tool_input: {
+      command: 'mv ' + src.replace(/\\/g, '/') + ' /p/.claude/relay/contracts/done/T1.md',
+    },
+  });
+  esit(r.kod, 2);
+  icerir(r.err, 'contract.js complete');
+});
+
+ol('kapi deny-list degil allow-list: yorumlayici ve ozel binary de gecemez', () => {
+  const hedef = '/p/.claude/relay/contracts/done/T1.md';
+  const kaynak = '/p/.claude/relay/contracts/T1.md';
+  for (const c of [
+    "node -e \"require('fs').renameSync('" + kaynak + "','" + hedef + '\')"',
+    'python -c "import os; os.rename(\'' + kaynak + "','" + hedef + '\')"',
+    'python3 -c "import shutil; shutil.move(1)" ' + hedef,
+    'git mv ' + kaynak + ' ' + hedef,
+    'git checkout -- ' + hedef,
+    'powershell -c "[IO.File]::Move(1)" ' + hedef,
+    'install -m 644 ' + kaynak + ' ' + hedef,
+    'ln -s ' + kaynak + ' ' + hedef,
+    'mklink ' + hedef + ' ' + kaynak,
+    'rsync -a ' + kaynak + ' ' + hedef,
+    './tools/tasi ' + kaynak + ' ' + hedef,
+    'sed -i s/a/b/ ' + hedef,
+    'find /p/.claude/relay/contracts/done -name "*.md" -delete',
+  ]) {
+    esit(calistir(KORU, { tool_name: 'Bash', tool_input: { command: c } }).kod, 2, c);
+  }
+});
+
+ol('canonical komut ve okuma komutlari allow-list icinde', () => {
+  for (const c of [
+    'node teknesyum/scripts/contract.js complete --id T1',
+    'cat .claude/relay/contracts/done/T1.md',
+    'ls .claude/relay/contracts/done',
+    'grep -n status .claude/relay/contracts/done/T1.md',
+    'git log --oneline -- .claude/relay/contracts/done',
+    'git diff --name-status HEAD -- .claude/relay/contracts/done',
+    'wc -l .claude/relay/contracts/done/T1.md',
+  ]) {
+    esit(calistir(KORU, { tool_name: 'Bash', tool_input: { command: c } }).kod, 0, c);
+  }
+});
+
+ol('bozuk kanca JSON sessizce gecmez, kapali tarafa duser', () => {
+  const r = spawnSync(process.execPath, [KORU], {
+    input: 'bu json degil',
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    env: { ...process.env, TEKNESYUM_DIL: 'tr' },
+  });
+  esit(r.status, 2, 'fail-open olmamali');
+  icerir(String(r.stderr), 'kapalı tarafa düştü');
+  const a = spawnSync(process.execPath, [KORU], {
+    input: 'bu json degil',
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    env: { ...process.env, TEKNESYUM_DIL: 'tr', TEKNESYUM_KAPI_ACIK: '1' },
+  });
+  esit(a.status, 0, 'bilerek acik taraf secilebilmeli');
 });
 
 ol('açık sözleşmeye yazma serbest', () => {
@@ -2421,7 +2472,7 @@ ol('SKILL eco bolumunu ve tersine donen ilke sirasini anlatir', () => {
   const i = duz.indexOf("**eco'da değişmeyenler.**");
   if (i < 0) throw new Error('eco degismeyenler basligi yok');
   const blok = duz.slice(i, i + 700);
-  for (const kalan of ['Mühür kapısı', '`owns` disiplini', 'Kabul kriteri'])
+  for (const kalan of ['Tamamlama kapısı', '`owns` disiplini', 'Kabul kriteri'])
     icerir(blok, kalan, 'eco degismeyenler listesi');
 });
 
@@ -3916,10 +3967,10 @@ ol('rc baslatici kullanici degerini kabuktan gecirmez', () => {
   const cikti = path.join(d, 'argv.json');
   const nisan = path.join(d, 'sentinel');
   const yuk = [
-    '$(node -e "require(\'fs\').writeFileSync(' + JSON.stringify(nisan) + ",'x')\")",
+    "$(node -e \"require('fs').writeFileSync(" + JSON.stringify(nisan) + ",'x')\")",
     '`' + nisan + '`',
     '%USERPROFILE% & echo x > ' + nisan,
-    "tek'tirnak \"cift\" |^!",
+    'tek\'tirnak "cift" |^!',
   ];
   const plan = path.join(d, 'plan.json');
   fs.writeFileSync(
@@ -4584,9 +4635,11 @@ ol('mühür kanıtı: dosyaya yazmış denetçi kaydı mührü düşürür', () 
   icerir(r.err, 'src/a.js');
 });
 
-ol('mühür kanıtı: temiz denetçi kaydıyla geçer', () => {
+ol('mühür kanıtı: temiz denetçi kaydıyla bile Write done/ altına giremez', () => {
   const { hedef } = kanitProje({ d1: { agent_type: 'teknesyum:auditor', files: [] } });
-  esit(muhurYaz(hedef, KANITLI()).kod, 0);
+  const r = muhurYaz(hedef, KANITLI());
+  esit(r.kod, 2, 'tamamlama artik canonical komuttan gecer');
+  icerir(r.err, 'contract.js complete');
 });
 
 ol('mühür kanıtı: auditor_id denetçi olmayan bir ajana aitse reddedilir', () => {
@@ -4603,9 +4656,9 @@ ol('mühür kanıtı: diff owns ile kesişmiyorsa reddedilir', () => {
   icerir(r.err, 'owns kümesiyle kesişmiyor');
 });
 
-ol('mühür kanıtı: auditor_id live/ altında yoksa biçim denetimine düşülür', () => {
+ol('mühür kanıtı: auditor_id live/ altında yoksa neyin ölçülemediği loga düşer', () => {
   const { hedef, live } = kanitProje({});
-  esit(muhurYaz(hedef, KANITLI()).kod, 0, 'kayıt yokken kilitlenmemeli');
+  esit(muhurYaz(hedef, KANITLI()).kod, 2, 'done/ altina Write her kosulda kapali');
   icerir(fs.readFileSync(path.join(live, '_sorun.log'), 'utf8'), 'live/d1.json yok');
 });
 
@@ -4621,6 +4674,203 @@ ol('mühür kanıtı: kabuktan taşımada da aranır', () => {
 function norm2(p) {
   return p.replace(/\\/g, '/');
 }
+
+console.log('\nKoruma — canonical tamamlama');
+
+const SOZ = path.join(KOK, 'scripts', 'contract.js');
+const KAYIT = require(path.join(KOK, 'hooks', 'denetim-kaydi.js'));
+const GIT_KIM = {
+  GIT_AUTHOR_NAME: 't',
+  GIT_AUTHOR_EMAIL: 't@t',
+  GIT_COMMITTER_NAME: 't',
+  GIT_COMMITTER_EMAIL: 't@t',
+};
+
+function t7Git(kok, args) {
+  return spawnSync('git', ['-C', kok].concat(args), {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    env: { ...process.env, ...GIT_KIM },
+  });
+}
+
+function t7Proje() {
+  const p = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-t7-'));
+  fs.mkdirSync(path.join(p, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(p, 'src', 'a.js'), 'const a = 1;\n');
+  const relay = path.join(p, '.claude', 'relay');
+  fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
+  fs.mkdirSync(path.join(relay, 'live'), { recursive: true });
+  fs.writeFileSync(
+    path.join(relay, 'live', 'd1.json'),
+    JSON.stringify({ agent_type: 'teknesyum:auditor', files: [] })
+  );
+  fs.writeFileSync(
+    path.join(relay, 'contracts', 'T1.md'),
+    '---\nid: T1\nstatus: submitted\nround: 1\nowns: [src/a.js]\n---\n'
+  );
+  t7Git(p, ['init', '-q']);
+  t7Git(p, ['add', '-A']);
+  t7Git(p, ['commit', '-q', '-m', 'ilk']);
+  return { p, relay };
+}
+
+function t7Kayit(p, relay, degis) {
+  const owns = ['src/a.js'];
+  const kayit = Object.assign(
+    {
+      contractId: 'T1',
+      auditorRunId: 'd1',
+      headSha: t7Git(p, ['rev-parse', 'HEAD']).stdout.trim(),
+      diffHash: KAYIT.dosyaOzeti(p, owns),
+      owns,
+      verification: ['node test/run.js → exit 0'],
+      result: 'passed',
+      createdAt: new Date().toISOString(),
+    },
+    degis || {}
+  );
+  fs.mkdirSync(path.join(relay, 'audits'), { recursive: true });
+  fs.writeFileSync(path.join(relay, 'audits', 'T1-1.json'), JSON.stringify(kayit, null, 2));
+  return kayit;
+}
+
+function t7Tamamla(p) {
+  return spawnSync(process.execPath, [SOZ, 'complete', '--id', 'T1', '--kok', p], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+}
+
+ol('canonical komut gecerli denetim kaydiyla sozlesmeyi tasir', () => {
+  const { p, relay } = t7Proje();
+  t7Kayit(p, relay);
+  const r = t7Tamamla(p);
+  esit(r.status, 0, 'tamamlanmali: ' + r.stdout + r.stderr);
+  esit(fs.existsSync(path.join(relay, 'contracts', 'done', 'T1.md')), true, 'done/ altina gecmeli');
+  esit(fs.existsSync(path.join(relay, 'contracts', 'T1.md')), false, 'kaynak kalmamali');
+  esit(fs.existsSync(path.join(relay, 'audits', 'T1-1.json')), false, 'kayit tuketilmeli');
+  esit(fs.existsSync(path.join(relay, 'audits', 'T1-1.used.json')), true, 'kayit muhurlenmeli');
+  icerir(fs.readFileSync(KAYIT.defterYolu(relay), 'utf8'), '"id":"T1"');
+});
+
+ol('denetim kaydi tek kullanimliktir', () => {
+  const { p, relay } = t7Proje();
+  t7Kayit(p, relay);
+  esit(t7Tamamla(p).status, 0);
+  fs.renameSync(
+    path.join(relay, 'contracts', 'done', 'T1.md'),
+    path.join(relay, 'contracts', 'T1.md')
+  );
+  fs.copyFileSync(
+    path.join(relay, 'audits', 'T1-1.used.json'),
+    path.join(relay, 'audits', 'T1-1.json')
+  );
+  const r = t7Tamamla(p);
+  esit(r.status, 2, 'ikinci kullanim reddedilmeli');
+  icerir(r.stdout, 'zaten kullanılmış');
+});
+
+ol('kayit yoksa, eski HEAD icinse ya da dosyalar degistiyse tamamlanmaz', () => {
+  const yok = t7Proje();
+  const r0 = t7Tamamla(yok.p);
+  esit(r0.status, 2, 'kayitsiz tamamlanmamali');
+  icerir(r0.stdout, 'Denetim kaydı yok');
+
+  const eski = t7Proje();
+  t7Kayit(eski.p, eski.relay);
+  fs.writeFileSync(path.join(eski.p, 'src', 'b.js'), 'const b = 2;\n');
+  t7Git(eski.p, ['add', '-A']);
+  t7Git(eski.p, ['commit', '-q', '-m', 'ikinci']);
+  const r1 = t7Tamamla(eski.p);
+  esit(r1.status, 2, 'eski HEAD gecmemeli');
+  icerir(r1.stdout, 'başka bir HEAD');
+
+  const degisen = t7Proje();
+  t7Kayit(degisen.p, degisen.relay);
+  fs.writeFileSync(path.join(degisen.p, 'src', 'a.js'), 'const a = 99;\n');
+  const r2 = t7Tamamla(degisen.p);
+  esit(r2.status, 2, 'degismis dosya gecmemeli');
+  icerir(r2.stdout, 'denetimden sonra değişmiş');
+});
+
+ol('kayit baska sozlesmeye, baska owns kumesine ya da denetci olmayana aitse reddedilir', () => {
+  const a = t7Proje();
+  t7Kayit(a.p, a.relay, { contractId: 'T9' });
+  icerir(t7Tamamla(a.p).stdout, 'başka sözleşmeye ait');
+
+  const b = t7Proje();
+  t7Kayit(b.p, b.relay, { owns: ['src/baska.js'] });
+  icerir(t7Tamamla(b.p).stdout, 'owns kümesi sözleşmeyle aynı değil');
+
+  const c = t7Proje();
+  fs.writeFileSync(
+    path.join(c.relay, 'live', 'd1.json'),
+    JSON.stringify({ agent_type: 'teknesyum:builder', files: [] })
+  );
+  t7Kayit(c.p, c.relay);
+  icerir(t7Tamamla(c.p).stdout, 'denetçi olmayan');
+
+  const d = t7Proje();
+  fs.writeFileSync(
+    path.join(d.relay, 'live', 'd1.json'),
+    JSON.stringify({ agent_type: 'teknesyum:auditor', files: ['src/a.js'] })
+  );
+  t7Kayit(d.p, d.relay);
+  icerir(t7Tamamla(d.p).stdout, 'denetim turunda dosyaya yazmış');
+
+  const e = t7Proje();
+  t7Kayit(e.p, e.relay, { verification: [] });
+  icerir(t7Tamamla(e.p).stdout, 'doğrulama kanıtı yok');
+
+  const f = t7Proje();
+  t7Kayit(f.p, f.relay, { result: 'failed' });
+  icerir(t7Tamamla(f.p).stdout, 'denetim sonucu geçmedi');
+});
+
+ol('kancanin altindan gecen tasima sonradan yakalanir', () => {
+  const { p, relay } = t7Proje();
+  KAYIT.defterKur(relay);
+  fs.renameSync(
+    path.join(relay, 'contracts', 'T1.md'),
+    path.join(relay, 'contracts', 'done', 'T1.md')
+  );
+  const r = spawnSync(process.execPath, [SOZ, 'audit', '--kok', p], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  esit(r.status, 3, 'defter disi giris bildirilmeli');
+  icerir(r.stdout, 'T1');
+  icerir(r.stdout, 'complete');
+});
+
+ol('defter acilirken done/ altinda duranlar devralinir, suclanmaz', () => {
+  const { p, relay } = t7Proje();
+  fs.writeFileSync(path.join(relay, 'contracts', 'done', 'E1.md'), '---\nstatus: done\n---\n');
+  const r = spawnSync(process.execPath, [SOZ, 'audit', '--kok', p], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  esit(r.status, 0, 'devralinan sozlesme suclanmamali');
+  icerir(fs.readFileSync(KAYIT.defterYolu(relay), 'utf8'), 'devralindi');
+});
+
+ol('Stop turunda defter disi giris kullaniciya bildirilir', () => {
+  const { p, relay } = t7Proje();
+  KAYIT.defterKur(relay);
+  fs.renameSync(
+    path.join(relay, 'contracts', 'T1.md'),
+    path.join(relay, 'contracts', 'done', 'T1.md')
+  );
+  const r = calistir(IZLE, {
+    hook_event_name: 'Stop',
+    cwd: p,
+    session_id: 'defter-disi',
+    transcript_path: path.join(p, 'yok.jsonl'),
+  });
+  icerir(r.out + r.err, 'deftere işlenmemiş');
+  icerir(fs.readFileSync(path.join(relay, 'live', '_sorun.log'), 'utf8'), 'defter dışı');
+});
 
 console.log('\nAjan sağlığı');
 

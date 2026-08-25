@@ -1,0 +1,23 @@
+{
+  "contractId": "T8",
+  "auditorRunId": "af9c92a0e22284803",
+  "headSha": "ddb53eea60948257e5e8cc15f3d021f531f87fe3",
+  "diffHash": "7440f942d814868362a1038136541a8f511e551e8dc37e780c5e11b8f1d4b576",
+  "owns": [
+    "install.ps1",
+    "install.sh",
+    "scripts/post-install.js",
+    "teknesyum/scripts/post-install.js",
+    "test/run.js",
+    "test/indir-kapilari.js",
+    "scripts/checksums.js"
+  ],
+  "verification": [
+    "GEÇTİ  T8  · şartname ✓ · kalite ✓",
+    "✓ Kurulum iz yazar, satır zaten varken yazmaz — `teknesyum/scripts/post-install.js:416` (mevcutsa yalnız `atlanan`), `:418-422` (satırı ekleyen dalda `claudeMdRulesEklendi = true`, mevcut alanlar `teknesyumOku()` ile korunur, plan+yedek+temp/rename yolundan geçer"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T18:12:24.664Z",
+  "usedAt": "2026-08-25T18:12:24.741Z",
+  "completedSha": "ddb53eea60948257e5e8cc15f3d021f531f87fe3"
+}

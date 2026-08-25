@@ -1,0 +1,21 @@
+{
+  "contractId": "S1",
+  "auditorRunId": "a65df7723b18855f6",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "8b718a8c542fc1c51a13beec6c344c4fc1df708e5d74d70183c4aaa4626bf1c0",
+  "owns": [
+    "teknesyum/scripts/tarama.js",
+    "teknesyum/commands/scan.md",
+    "teknesyum/hooks/dil.js",
+    "test/run.js"
+  ],
+  "verification": [
+    "GEÇTİ  T3  · şartname ✓ · kalite ✓",
+    "Önceki KALDI gerekçeleri kapandı:",
+    "- T2/K9: dört ölçülmemiş üretim dalı artık testli ve negatif taraflı — tailwind `hover:` (test/run.js:6948, karşıtı `Iyi.tsx`), `gecissizBilesen`+`animasyonsuzListe` (run.js:6962, karşıtları `Modal.tsx`/`Canli.tsx`), tavan altı `s"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.747Z",
+  "usedAt": "2026-08-25T14:01:55.795Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

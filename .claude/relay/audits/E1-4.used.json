@@ -1,0 +1,23 @@
+{
+  "contractId": "E1",
+  "auditorRunId": "a16a1da555dde8a43",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "797509c796844f30c9b0f1928ebe2266d7a335bf047464b550c9a4dd346a715f",
+  "owns": [
+    "teknesyum/hooks/ekran-kapisi.js",
+    "teknesyum/hooks/hooks.json",
+    "teknesyum/commands/ekran.md",
+    "teknesyum/hooks/dil.js",
+    "test/run.js",
+    "docs/masaustu-izolasyon.md"
+  ],
+  "verification": [
+    "GEÇTİ  T4  · şartname ✓ · kalite ✓",
+    "Önceki KALDI kalemleri kapandı: K8 reçetesi test düzenlemelerini içeriyor (docs/masaustu-izolasyon.md:122-131), K10 depo geneli `--write` T3'te koşuldu, T0 kanıtı `npm run lint` temiz.",
+    "✓ K1 computer-use kapalıyken exit 2 / açıkken geçer — teknesyum/hooks/ekran-ka"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.515Z",
+  "usedAt": "2026-08-25T14:01:55.569Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

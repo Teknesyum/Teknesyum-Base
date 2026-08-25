@@ -1,0 +1,19 @@
+{
+  "contractId": "F3",
+  "auditorRunId": "ae702501c28fcb75f",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "23ae1fa75dd8c40dd0f8ea2097db341b4e259caf53c819ee0cc18159b1921883",
+  "owns": [
+    "scripts/olcum/pencere.js",
+    "docs/OLCUM-PENCERE.md"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 üç eşik × dört kalem — docs/OLCUM-PENCERE.md:87-91, input/cache_creation/cache_read/output ayrı sütun, 200k/500k/1M satırları",
+    "✓ K2 çarpan varsayım işaretli — docs/OLCUM-PENCERE.md:35-45 \"belgeye dayalı varsayımdır, fatura ile doğrulanmadı\"; kaynak sütunu v"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.683Z",
+  "usedAt": "2026-08-25T14:01:55.740Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

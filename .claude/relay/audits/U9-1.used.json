@@ -1,0 +1,19 @@
+{
+  "contractId": "U9",
+  "auditorRunId": "a7cab9cb16f1e08c6",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "17b91afe277281f56231a14f66c1025b8e952d7109f192187e54ea4e063aad9f",
+  "owns": [
+    "docs/olcumler/renk-korlugu.md",
+    "test/u9-renkkorlugu.js"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 — Viénot, Brettel & Mollon 1999 kaynaklı: renk-korlugu.md:16-26; matris iki yoldan: u9-renkkorlugu.js:105-140, A1 karşılaştırması js:338-346. CHECK dizgileri belgede var (md:16, md:25, md:26).",
+    "✓ K2 — CIEDE2000: md:43-49, Sharma 2005 kaynaklı; \"WCAG karşılı"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:56.185Z",
+  "usedAt": "2026-08-25T14:01:56.234Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

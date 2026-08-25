@@ -1,0 +1,22 @@
+{
+  "contractId": "F2",
+  "auditorRunId": "a1cfde23b08372311",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "8354ddcc09102d8a401187d30dcda5ce36b0a02d655dd71a477333d82e03853f",
+  "owns": [
+    "teknesyum/hooks/relay-watch.js",
+    "teknesyum/hooks/dil.js",
+    "teknesyum/scripts/statusline.js",
+    "teknesyum/skills/relay/SKILL.md",
+    "test/run.js"
+  ],
+  "verification": [
+    "`Teknesyum ▸ Debug ▸ Read aracı hata verdi — auditor ajanı · a1cfde23b08372311`",
+    "GEÇTİ  T2  · şartname ✓ · kalite ✓",
+    "✓ K1 (kuyruğa yaz + `Sıraya alındı` bas) — SKILL.md:162-170: üçüncü kol \"yaz **ve** aynı anda tek satır bas: `Teknesyum ▸ Sıraya alındı ▸ <madde>`\", tek eylem olduğu yazılı; dil.js:1"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.631Z",
+  "usedAt": "2026-08-25T14:01:55.676Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

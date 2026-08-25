@@ -1,0 +1,20 @@
+{
+  "contractId": "U4",
+  "auditorRunId": "aa88b508a3ba0901d",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "4a9589a514898d58847d501e2e3405e784b072f05d1c80231521f33e0e1de93e",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/assets/theme.css",
+    "teknesyum/skills/teknesyum-ui/assets/Theme.xaml",
+    "teknesyum/skills/teknesyum-ui/assets/Palette.cs",
+    "test/u4-renk.js"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 — `--tk-danger: var(--tk-pink)` theme.css:73, `--tk-success: #34d399` theme.css:36, `--tk-warning: #fbbf24` theme.css:95; `--tk-info` tanımı yok (yalnız yorumda gerekçe, theme.css:69-72; Theme.xaml:53; Palette.cs:28); yeni hex yalnız `#fbbf24`. CHECK'in ölçt"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:56.024Z",
+  "usedAt": "2026-08-25T14:01:56.069Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

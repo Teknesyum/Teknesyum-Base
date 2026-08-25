@@ -1,0 +1,25 @@
+{
+  "contractId": "D3",
+  "auditorRunId": "aafaf877e4c5381c2",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "edc255c1eda05eba5ddbcb637aed5035823c5c339044bce467eb227065183418",
+  "owns": [
+    "teknesyum/hooks/hooks.json",
+    "teknesyum/hooks/relay-watch.js",
+    "teknesyum/hooks/dil.js",
+    "teknesyum/scripts/statusline.js",
+    "teknesyum/skills/relay/references/multi-session.md",
+    "teknesyum/skills/relay/SKILL.md",
+    "teknesyum/commands/report.md",
+    "test/run.js"
+  ],
+  "verification": [
+    "```",
+    "GEÇTİ  T2  · şartname ✓ · kalite ✓",
+    "✓ Altı satırlık gerçek SendMessage engellenir — canlı kanıt eki (25.08 14:04, güncel eklentiyle): \"ENGELLENDİ: Yönlendirme 6 satır, tavan 5…\" metni kaynağa bağlı: dil.js:181-185 (`yonlendirmeTavan`), relay-watch.js:1876-1880 (stderr + `process.exit(2)`); mesa"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T17:05:36.646Z",
+  "usedAt": "2026-08-25T17:05:37.347Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

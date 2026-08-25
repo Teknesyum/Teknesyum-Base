@@ -1,0 +1,21 @@
+{
+  "contractId": "U7",
+  "auditorRunId": "a15e76f6d7e28c520",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "b9d4872fe4264ae5b66cb97eebfc076cac2e1b1839f97d37a2a9c2bca4084bb6",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/assets/Theme.axaml",
+    "teknesyum/skills/teknesyum-ui/assets/Signature.axaml",
+    "teknesyum/skills/teknesyum-ui/references/avalonia.md",
+    "test/u7-avalonia.js"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ 1 XML iyi biçimlilik — test/u7-avalonia.js:57-166 el yazması okuyucu (regex değil); T0 çıktısı: 3 madde ✓",
+    "✓ 2 anahtar birebirliği — Theme.xaml'daki 63 `x:Key` ile Theme.axaml anahtarlarını bağımsız karşılaştırdım: tek fark `AppBgDonus`, istisna listesinde (te"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:56.076Z",
+  "usedAt": "2026-08-25T14:01:56.125Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

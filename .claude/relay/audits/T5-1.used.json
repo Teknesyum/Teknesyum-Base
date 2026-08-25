@@ -1,0 +1,19 @@
+{
+  "contractId": "T5",
+  "auditorRunId": "ace475b27538df1d1",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "1044aec890de676b9189a4f06f0e3b63fb56897bdfd66e7f7752182e40bc03b5",
+  "owns": [
+    "teknesyum/scripts/rc.js",
+    "test/run.js"
+  ],
+  "verification": [
+    "GEÇTİ  T5  · şartname ✓ · kalite ✓",
+    "✓ K1 kabuk dizesi yok, argv ile spawn — rc.js:199-242 plan JSON yazar, rc-launch.js:16 `spawnSync(plan.exe, plan.args)`; kullanıcı değeri hiçbir kabuk metnine girmiyor",
+    "✓ K2 değerler komut metnine gömülmüyor — Linux rc.js:228-237 `bash -lc 'exec \"$1\" \"$2\" \"$3\"'`"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.802Z",
+  "usedAt": "2026-08-25T14:01:55.850Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

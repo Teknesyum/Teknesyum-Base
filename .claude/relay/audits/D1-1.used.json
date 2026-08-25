@@ -1,0 +1,23 @@
+{
+  "contractId": "D1",
+  "auditorRunId": "a9561185771b05f7d",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "5320368858b6177deb9057523e4a0319e91b9417350612a43d423ed05da5941b",
+  "owns": [
+    "teknesyum/scripts/depo-surum.js",
+    "teknesyum/hooks/relay-watch.js",
+    "teknesyum/hooks/dil.js",
+    "test/run.js",
+    "docs/openlogs"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 eşitse sessiz — depo-surum.js:72 `geride: false`; test/run.js:8938 açılışta satır yok",
+    "✓ K2 geride ise tek satır — relay-watch.js:1393 + dil.js:359; test/run.js:8945, sayı basılmadığı da denetli (run.js:8950)",
+    "✓ K3 yerel ileride sessiz — depo-surum.js:73-7"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.334Z",
+  "usedAt": "2026-08-25T14:01:55.382Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

@@ -1,0 +1,26 @@
+{
+  "contractId": "F1",
+  "auditorRunId": "aac9a4874dc6eaf48",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "d8f1c654cfb2fe6cde5b0e97b83a904ca03be2e78b475b79f2a7bdd6db6c36aa",
+  "owns": [
+    "teknesyum/agents/advisor.md",
+    "teknesyum/agents/auditor.md",
+    "teknesyum/agents/builder.md",
+    "teknesyum/agents/planner.md",
+    "teknesyum/agents/scout.md",
+    "teknesyum/agents/scribe.md",
+    "teknesyum/agents/ui-builder.md",
+    "teknesyum/skills/relay/SKILL.md",
+    "test/run.js"
+  ],
+  "verification": [
+    "```",
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ Kriter 1 (7 ajanda yasak) — advisor.md:61, auditor.md:109, builder.md:48, planner.md:82, scout.md:72, scribe.md:36, ui-builder.md:49; hepsinde aynı blok: \"`teknesyum:relay` skill'ini **açma**. Protokol T0 içindir\" — kaçış ifadesi yok. CHECK çıktısı raporda:"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.577Z",
+  "usedAt": "2026-08-25T14:01:55.625Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

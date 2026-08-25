@@ -1,0 +1,27 @@
+{
+  "contractId": "D2",
+  "auditorRunId": "a33722bf92e3356b6",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "1942915cfadacad936967d94ab383e973e8fb77f945dbaa2cf7940a5a59673a5",
+  "owns": [
+    "teknesyum/scripts/oturum.js",
+    "teknesyum/scripts/surum.js",
+    "teknesyum/commands/save.md",
+    "teknesyum/commands/saveall.md",
+    "teknesyum/commands/load.md",
+    "teknesyum/commands/loadall.md",
+    "teknesyum/commands/update.md",
+    "teknesyum/hooks/dil.js",
+    "test/run.js",
+    "docs/openlogs"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 devir.md tam metin — oturum.js:274 son `assistant` metin blokları birleşik, oturum.js:605-617 `devirUret` kırpsız yazıyor, oturum.js:810 dosya, oturum.js:733-738 ozet.md işaretçisi; tool_use blokları girmiyor (oturum.js:259-266)",
+    "✓ K2 dört dosya push, ham.j"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.390Z",
+  "usedAt": "2026-08-25T14:01:55.439Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

@@ -1,0 +1,28 @@
+{
+  "contractId": "U2",
+  "auditorRunId": "af41447da4bc74559",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "54950172c55ed59900780e759a2987167433e795fd0442c0a68d625d3a4892dd",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/references/components.md",
+    "teknesyum/skills/teknesyum-ui/SKILL.md",
+    "teknesyum/skills/teknesyum-ui/references/layout.md",
+    "teknesyum/skills/teknesyum-ui/references/desktop.md",
+    "teknesyum/skills/teknesyum-ui/references/motion.md",
+    "teknesyum/skills/teknesyum-ui/assets/theme.css",
+    "teknesyum/skills/teknesyum-ui/assets/Theme.xaml",
+    "teknesyum/skills/teknesyum-ui/assets/Palette.cs",
+    "teknesyum/skills/teknesyum-ui/assets/Signature.tsx",
+    "teknesyum/skills/teknesyum-ui/assets/Signature.xaml",
+    "test/run.js"
+  ],
+  "verification": [
+    "GEÇTİ  T3  · şartname ✓ · kalite ✓",
+    "✓ Tur 2 bulgu 1 (prose bağımlı iki test) — run.js:8508-8523 sayı varlığı ölçüyor, run.js:8532-8542 `52×36` geçen her satır tarihçe deseniyle sınanıyor; kapandı",
+    "✓ Tur 2 bulgu 2 (silme tabanlı negatif) — eski silme+arama testi yok, yerine run.js:8535-8542 tarihçe"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.962Z",
+  "usedAt": "2026-08-25T14:01:56.009Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

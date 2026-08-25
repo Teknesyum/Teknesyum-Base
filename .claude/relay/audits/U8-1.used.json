@@ -1,0 +1,19 @@
+{
+  "contractId": "U8",
+  "auditorRunId": "afb871fd5c7ca6190",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "9094629922d9a43b2c0bd001c84a42755ebe0708428d97e3703fb8ccd78f1d46",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/references/motion.md",
+    "test/u8-glow.js"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 yapısal kural — motion.md:193-205: tekrar eden öğe tanımı + kapsam tablosu + \"sayı eşiği yok\" (satır 205); test tarafı u8-glow.js:294-347 (T2.1 canlı seçici denetimi, T2.2/T2.3 desen birim testleri)",
+    "✓ K2 16 ms ölçütü — motion.md:235 eşik; reçete iki platfo"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:56.131Z",
+  "usedAt": "2026-08-25T14:01:56.178Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

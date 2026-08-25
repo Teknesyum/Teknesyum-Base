@@ -1,0 +1,21 @@
+{
+  "contractId": "D4",
+  "auditorRunId": "af290b1095ffb9873",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "961b7413c140b771cf3e76850c3172f658256b3f1f510bf32e51ae5e21e5ff66",
+  "owns": [
+    "teknesyum/scripts/premium.js",
+    "teknesyum/scripts/surum.js",
+    "teknesyum/commands/update.md",
+    "teknesyum/hooks/dil.js",
+    "test/run.js"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 premium advisor `medium` — premium.js:28 `{ model: 'fable', effort: 'medium', maxTurns: 20 }`; eco `low` (premium.js:10). Normal bugün `medium` görünüyor ama bu D4'ün değil 2.53.0'ın işi (CHANGELOG.md:314-315 \"advisor rose from low to medium outside eco\"), D"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.456Z",
+  "usedAt": "2026-08-25T14:01:55.507Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

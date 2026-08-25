@@ -1,0 +1,28 @@
+{
+  "contractId": "U1",
+  "auditorRunId": "a8de5e2672a36c8a3",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "7b1e62b4752f7c2ca07b514d331aab79a643ceffa7ff88b45ff37d089b0068c2",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/SKILL.md",
+    "teknesyum/skills/teknesyum-ui/references/components.md",
+    "teknesyum/skills/teknesyum-ui/references/desktop.md",
+    "teknesyum/skills/teknesyum-ui/references/layout.md",
+    "teknesyum/skills/teknesyum-ui/assets/theme.css",
+    "teknesyum/skills/teknesyum-ui/assets/Theme.xaml",
+    "teknesyum/skills/teknesyum-ui/assets/Palette.cs",
+    "teknesyum/skills/teknesyum-ui/assets/Signature.tsx",
+    "teknesyum/skills/teknesyum-ui/assets/Signature.xaml",
+    "teknesyum/skills/teknesyum-ui/assets/locale"
+  ],
+  "verification": [
+    "GEÇTİ  T3  · şartname ✓ · kalite ✓",
+    "Önceki tur (T3) KALDI gerekçeleri kapandı:",
+    "✓ ScaleTransform Setter değeri değil — her Border kendi transform'unu taşıyor (Signature.xaml:59-61, 82-84), yol tam nitelikli (Signature.xaml:23,26)",
+    "✓ `.tk-btn-ghost` çerçevesi tam token — theme.css:259 `var(--tk-pur"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.910Z",
+  "usedAt": "2026-08-25T14:01:55.956Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

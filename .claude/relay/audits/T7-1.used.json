@@ -1,0 +1,20 @@
+{
+  "contractId": "T7",
+  "auditorRunId": "a6f87b64766bce4cb",
+  "headSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494",
+  "diffHash": "1ac085ada9f1a62cae6862a31f0c10d58661d16121721035271e219fb87db5b3",
+  "owns": [
+    "teknesyum/hooks/contract-guard.js",
+    "teknesyum/scripts/contract.js",
+    "test/run.js"
+  ],
+  "verification": [
+    "GEÇTİ  T7  · şartname ✓ · kalite ✓",
+    "✓ K1 canonical komut — contract.js:42-108 `tamamla()`: kayıt doğrular, `renameSync` (:93) ile atomik taşır; guard `doneCanonical` yönlendirmesi contract-guard.js:308-312; test run.js:4807-4817 T0 kanıtıyla (528/528) geçmiş",
+    "✓ K2 imzalanabilir tek kullanımlık kay"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T14:01:55.856Z",
+  "usedAt": "2026-08-25T14:01:55.903Z",
+  "completedSha": "8c1f7e4cdb3df3b730f4e97d8c5bceb505a35494"
+}

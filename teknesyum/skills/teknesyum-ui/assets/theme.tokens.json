@@ -1,0 +1,175 @@
+{
+  "_": [
+    "Teknesyum Neon — tema tokenlarının tek doğruluk kaynağı.",
+    "Bu dosyayı düzenle, sonra `node tema-uret.js` koş; theme.css, Theme.xaml,",
+    "Theme.axaml ve Palette.cs buradan üretilir. Üretilen dosyayı elle düzenleme:",
+    "bir sonraki koşu diff üretir ve test/u11-tema.js düşer.",
+    "Yeni tema: bu dosyanın kopyasını theme.<ad>.tokens.json adıyla doldur,",
+    "`node tema-uret.js theme.<ad>.tokens.json` koş. Tek dosya, tek komut.",
+    "Türetilmiş değerler bildirimseldir (ref + alpha); türetme kuralları",
+    "(alfa baytı, gradyan durakları, platform biçimleri) tema-uret.js içinde yaşar."
+  ],
+  "meta": {
+    "ad": "neon",
+    "karanlik": true,
+    "neden": "Standart yalnız karanlık — ikinci tema tanımlanana kadar (SKILL §1)."
+  },
+  "marka": {
+    "blue": {
+      "deger": "#00f3ff",
+      "neden": "Birincil marka rengi: birincil buton dolgusu, başlık, etiket, odak halkası."
+    },
+    "pink": {
+      "deger": "#ff00ea",
+      "neden": "İkincil marka renginin DOLGU kesiti; metinde 6.11:1 verir, metin işi pink-text'e gider."
+    },
+    "purple": {
+      "deger": "#b026ff",
+      "neden": "Üçüncül marka rengi: dekor, scrollbar, ghost buton."
+    },
+    "pink-text": {
+      "deger": "#ff54eb",
+      "neden": "Pembenin METİN kesiti: #08090a üstünde 7.33:1, §2'nin 7:1 eşiğini geçer."
+    },
+    "purple-text": {
+      "deger": "#c67eff",
+      "neden": "Morun METİN kesiti; dolgu moru metinde 7:1 eşiğini geçmez."
+    },
+    "surface": {
+      "deger": "#08090a",
+      "neden": "Zeminin koyu ucu ve panel tabanı; bütün kontrast ölçümleri bu zemine göre."
+    },
+    "black": {
+      "deger": "#000000",
+      "neden": "Zemin gradyanının açılış ucu ve odak halkasının iç katmanı."
+    },
+    "glass-base": {
+      "deger": "#0a0a0f",
+      "neden": "Cam yüzeyin taban rengi; tek başına kullanılmaz, glass türetmesiyle yaşar."
+    }
+  },
+  "rol": {
+    "success": {
+      "deger": "#34d399",
+      "neden": "Başarı rolü; marka üçlüsünde karşılığı yok, kendi hex'ini taşır. 23.08.2026'da NeonSuccess adından role çevrildi."
+    },
+    "danger": {
+      "ref": "pink",
+      "neden": "Rol markanın DEĞERİNİ izler, kopyasını değil; tehlike dolgusu ve tehlike butonu."
+    },
+    "danger-text": {
+      "ref": "pink-text",
+      "neden": "Hata metni dolgu pembesini değil metin pembesini yazar — 7:1 eşiği (7.33:1)."
+    },
+    "warning": {
+      "deger": "#fbbf24",
+      "neden": "YALNIZ uyarı yüzeyi: metin (12.58:1), çerçeve, ikon. Dolgu ve buton yok — amber dolgu üstünde beyaz metin 1.67:1. Hex U9 ΔE ölçümüne tabi."
+    },
+    "warning-border": {
+      "ref": "warning",
+      "alpha": 0.5,
+      "neden": "#08090a üstünde 3.59:1 — 1.4.11'in 3:1 eşiğini geçer; pembe /50 (2.17) ve mor /50 (1.82) geçmiyordu."
+    },
+    "text": {
+      "deger": "#ffffff",
+      "neden": "Gövde metni. Ara gri yok; ikincil metin için çözüm gri değil, metni silmektir (SKILL §2)."
+    },
+    "text-label": {
+      "ref": "blue",
+      "neden": "Etiket ve h3 rengi; maviye bağlı, kopyası değil."
+    },
+    "disabled": {
+      "deger": "#71717a",
+      "neden": "7:1'den muaf tek renk (SKILL §2); tek başına kullanılmaz — title/ToolTip zorunlu, yanına imleç ve mümkünse ikon."
+    }
+  },
+  "turetilmis": {
+    "panel": {
+      "ref": "surface",
+      "alpha": 0.95,
+      "neden": "Panel zemini; XAML Surface fırçası ve .tk-panel aynı değeri buradan alır."
+    },
+    "glass": {
+      "ref": "glass-base",
+      "alpha": 0.85,
+      "neden": "Cam yüzey (dark-glass); başlık çubuğu ve yarı saydam katmanlar."
+    },
+    "border": {
+      "ref": "blue",
+      "alpha": 0.5,
+      "neden": "Varsayılan çerçeve."
+    },
+    "border-strong": {
+      "ref": "blue",
+      "alpha": 0.6,
+      "neden": "Vurgulu çerçeve."
+    },
+    "border-decorative": {
+      "ref": "blue",
+      "alpha": 0.3,
+      "neden": "Dekoratif çizgi; bilgi taşımaz, 1.4.11 kapsamı dışında."
+    },
+    "ton-merdiveni": {
+      "tabanlar": ["blue", "pink", "purple"],
+      "adimlar": [10, 20, 30, 50, 60],
+      "neden": "XAML/Avalonia'da var() yok; alfa kesitleri adlandırılmış fırça olarak üretilir."
+    },
+    "metin-merdiveni": {
+      "tabanlar": ["pink-text", "purple-text"],
+      "adimlar": [50],
+      "neden": "Metin kesitlerinin yarı saydam fırçaları."
+    },
+    "glow": {
+      "tabanlar": ["blue", "pink", "purple"],
+      "alpha": 0.3,
+      "blur": 20,
+      "neden": "Kutu glow'u; metne glow verilmez, tek istisna hero (SKILL §2)."
+    },
+    "glow-hero": {
+      "ref": "blue",
+      "alpha": 0.8,
+      "blur": 8,
+      "neden": "Hero glow iki platformda aynı yoğunluk: blur 8, opaklık 0.8."
+    },
+    "glow-buton": {
+      "ref": "blue",
+      "alpha": 0.35,
+      "blur": 20,
+      "neden": "Birincil buton halesi; BoxShadow'da opaklık ayrı özellik değil renk alfasıdır (0.35 × 255 = 89 = 0x59)."
+    },
+    "bg-gradient": {
+      "from": "black",
+      "to": "surface",
+      "durak": 11,
+      "neden": "Düz renk değil 11 duraklı gradyan (SKILL §2); duraklar betikte doğrusal ara değerle hesaplanır, bantlaşmayı kapatır."
+    }
+  },
+  "sure": {
+    "instant": { "ms": 90, "neden": "Basma/bırakma tepkisi." },
+    "fast": { "ms": 160, "neden": "Hover ve küçük geçişler." },
+    "base": { "ms": 240, "neden": "Varsayılan geçiş." },
+    "slow": { "ms": 360, "neden": "Panel ve sahne geçişleri." },
+    "bg-donus": { "ms": 48000, "neden": "Zemin dönüşü — sonsuz döngü yasağının adı konmuş tek istisnası (SKILL §5.4)." }
+  },
+  "easing": {
+    "out": { "bezier": [0.2, 0, 0, 1], "neden": "Giren/duran öğe varsayılanı (§5.4)." },
+    "in": { "bezier": [0.4, 0, 1, 1], "neden": "Sahneden çıkan öğe." },
+    "spring": { "bezier": [0.34, 1.36, 0.64, 1], "neden": "Vurgu yayı; yalnız web tarafında kullanılır." }
+  },
+  "font": {
+    "sans": {
+      "zincir": ["Atkinson Hyperlegible Next", "Segoe UI"],
+      "css-yedek": "system-ui, -apple-system, sans-serif",
+      "css-govde-yedek": "system-ui, sans-serif",
+      "css-tirnak": true,
+      "neden": "Zincirin tek kaynağı SKILL §3; Atkinson Hyperlegible Next projeye gömülür, sistemde var sayılmaz."
+    },
+    "mono": {
+      "zincir": ["Cascadia Mono", "Consolas"],
+      "css-yedek": "ui-monospace, 'Courier New', monospace",
+      "css-govde-yedek": "monospace",
+      "css-tirnak": false,
+      "neden": "Her sayı, tuş, kod mono yazılır (SKILL §3)."
+    }
+  }
+}

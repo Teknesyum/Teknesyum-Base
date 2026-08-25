@@ -36,6 +36,24 @@ taşımıyor; `theme.css`'in `--tk-warning-border` yorumunda aynı ölçüm zate
 
 Ölçülmemiş sayılar aşağıda geçtikleri yerde **(varsayılan, ölçülmedi)** etiketi taşır.
 Etiketsiz sayı bu dosyada yoktur; bir sonraki ajan da etiketsiz sayı eklemeyecek.
+Etiket **ölçüye** aittir: `SKILL §5`'in **4 / 8 / 12 / 16 / 24** aralık merdiveninden ve
+tek yarıçaptan (`--tk-r`, 6px) gelen sayılar ölçülmemiş sayı değildir, merdiven
+basamağıdır — etiket almazlar ve bu dosyada geçtikleri her yerde merdivene atıf yapılır.
+
+### Bu dosyanın ürettiği tek ham değer
+
+Kalıpların hepsi tokenla yazılır. Tek istisna **modal perdesinin karartmasıdır**:
+`rgba(0, 0, 0, 0.6)` — `theme.css`te karşılığı yok, `(varsayılan, ölçülmedi)` etiketi
+taşıyor ve **tek kaynağı** `forms.css` §3'tür (`Forms.xaml` karşılığı `TkModalPerde`,
+`#99000000`). Tokena terfisi `U11`'e bırakıldı.
+
+Bunun dışında hiçbir renk, gölge ya da yüzey iki dosyada yeniden tanımlanmaz:
+
+| Kalıp | Kaynak | Nasıl kullanılır |
+|---|---|---|
+| modal gövdesi | `theme.css` `.tk-panel` / `Theme.xaml` `Panel` | `class="tk-panel tk-modal"` · `BasedOn="{StaticResource Panel}"` |
+| toast gövdesi | aynı | `class="tk-panel tk-toast"` · `BasedOn="{StaticResource Panel}"` |
+| seçim zemini (mavi `/30`) | `--tk-border-decorative` / `NeonBlue30` | `background: var(--tk-border-decorative)` · `SelectionBrush="{StaticResource NeonBlue30}"` |
 
 ---
 
@@ -60,8 +78,33 @@ Salt okunur giriş devre dışı değildir: çerçeve `--tk-border-decorative`, 
   metni + 12px×2 dikey dolgu. Buton 14px dikey dolgu kullanıyor; giriş bir kademe dar.
   Bu değer `SKILL §5.3`'ün **24 DIP hedef boyutu** tabanını aşar, onun yerini almaz.
 - Yatay dolgu 12px, yarıçap `--tk-r` (6px, tek yarıçap).
-- Yazı tipi `--font-sans`, boyut `--tk-fs-2`. **Sayı, kod, ID, anahtar taşıyan giriş
-  `--font-mono` yazar** (`SKILL §3`).
+- Alan içi aralık **8px**, alanlar arası **16px** — merdiven basamağı, `.tk-field`
+  sarmalının `gap` ve `margin-bottom` değerleri. WPF karşılığı hata şablonundaki
+  `Margin="0,8,0,0"`.
+- Yazı tipi `--font-sans`, boyut `--tk-fs-2`.
+
+### Mono giriş — çalışan sınıf `.tk-mono-input`
+
+**Sayı, kod, ID, anahtar taşıyan giriş `--font-mono` yazar** (`SKILL §3`). Web'de bunun
+sınıfı **`.tk-mono-input`**'tur:
+
+```html
+<input id="port" class="tk-input tk-mono-input">
+```
+
+`theme.css`'in genel `.tk-mono` sınıfı **girişe tek başına yetmez ve doğrudan doğru da
+değildir.** İki sebep:
+
+1. **Özgüllük.** `.tk-mono` (0,1,0) ile `.tk-input` (0,1,0) eşittir ve `forms.css` sonra
+   yüklenir; `class="tk-input tk-mono"` yazan bir örnek **sans verir**, mono değil.
+2. **Renk.** `.tk-mono` metni `--tk-pink-text` yapar; giriş metni her durumda `--tk-text`
+   kalır, yoksa beş durum tablosunun "metin" sütunu bozulur.
+
+`forms.css` yine de `.tk-input.tk-mono`'yu (0,2,0) güvenlik ağı olarak tanımlar: alışkanlıkla
+`tk-mono` yazan projede giriş mono olur ve metni beyaz kalır. Belgelenen ve tercih edilen
+sınıf `.tk-mono-input`'tur.
+
+WPF karşılığı ayrı bir stildir: `TkMonoTextBox` (`BasedOn` `TkTextBox`).
 
 ### Caret ve seçim
 
@@ -70,10 +113,12 @@ caret-color: var(--tk-blue);
 ```
 
 Seçim `::selection` ile mavi `/30` zemin, metin `--tk-text`. Varsayılan tarayıcı seçimi
-bu palette okunmuyor; bu satır süs değil.
+bu palette okunmuyor; bu satır süs değil. Mavi `/30`'un tek kaynağı
+`--tk-border-decorative`'tir; aynı rgba `forms.css`'e elden yazılmaz.
 
 WPF karşılığı: `CaretBrush="{StaticResource NeonBlue}"`,
-`SelectionBrush="{StaticResource NeonBlue30}"`, `SelectionOpacity="1"`.
+`SelectionBrush="{StaticResource NeonBlue30}"`, `SelectionOpacity="1"` — `Forms.xaml`
+birebir bu üçünü yazar, kendi seçim fırçasını tanımlamaz.
 
 ### Placeholder — kullanılmıyor
 
@@ -90,10 +135,15 @@ sokar. İkisi de yapılmaz.
    `aria-describedby` ile bağlanır, yazmaya başlayınca kaybolmaz.
 
 ```html
-<label class="tk-label" for="port">SUNUCU PORTU</label>
-<input id="port" class="tk-input tk-mono" aria-describedby="port-yardim">
-<p id="port-yardim" class="tk-hint">Örn: 8080</p>
+<div class="tk-field">
+  <label class="tk-label" for="port">SUNUCU PORTU</label>
+  <input id="port" class="tk-input tk-mono-input" aria-describedby="port-yardim">
+  <p id="port-yardim" class="tk-hint">Örn: 8080</p>
+</div>
 ```
+
+Sarmal `.tk-field`'dır: etiket, giriş, yardım metni ve hata mesajı tek dikey akışta
+durur, aralarını 8px `gap` verir, alanlar arası 16px. Tek tek `margin` yazılmaz.
 
 2. **`Örn:` kalıbı.** Bir projede placeholder'dan gerçekten vazgeçilemiyorsa metin düz
    `--tk-text` olur ve `Örn: ` önekiyle yazılır — soluk değil, tam beyaz. Bu durumda
@@ -110,7 +160,9 @@ kaybolan etiket, hata anında kullanıcının alanın ne olduğunu bilmemesi dem
 
 Hata mesajı alanın **altındadır**. Üstte olursa mesaj belirdiğinde alan aşağı iter ve
 odaklı alan gözün altından kayar; bu `SKILL §5.4`'ün "hareket tıklanacak şeyi kaçırmaz"
-maddesine (M12) aykırıdır. Alanla mesaj arası 6px, mesajla bir sonraki alan arası 16px.
+maddesine (M12) aykırıdır. Alanla mesaj arası **8px**, mesajla bir sonraki alan arası
+**16px**, ikon ile metin arası **8px** — üçü de merdiven basamağı (`SKILL §5`:
+4 / 8 / 12 / 16 / 24), ölçülmemiş sayı değil. WPF karşılığı `Margin="0,8,0,0"`.
 
 Alan için **yer baştan ayrılmaz**. Hata metni `--tk-t-fast` · `--tk-e-out` ile opaklıkla
 belirir; yüksekliği animasyonlanmaz.
@@ -118,22 +170,24 @@ belirir; yüksekliği animasyonlanmaz.
 ### Renk ve ikinci taşıyıcı
 
 - Metin `--tk-danger-text` (**7.33:1**) — dolgu tokenı `--tk-danger` değil. Dolgu hex'i
-  metinde 6.11:1 verir, 7:1'in altındadır.
+  metinde 6.11:1 verir, 7:1'in altındadır. İkonun rengi metinle aynıdır (`DangerText`).
 - Çerçeve `--tk-danger` **tam hex** (6.11:1).
 - **Renk tek başına anlam taşımaz.** Mesajın solunda uyarı ikonu durur, 16px, metinle
-  aynı renk, 6px boşluk. İkon `aria-hidden="true"` taşır; anlamı metin verir.
+  aynı renk, 8px boşluk. İkon `aria-hidden="true"` taşır; anlamı metin verir.
 - Hata metnine **glow verilmez**. Metne glow yasağının istisnası yalnız hero sayıdır.
 
 ### Web bağlantısı
 
 ```html
-<label class="tk-label" for="eposta">E-POSTA</label>
-<input id="eposta" class="tk-input tk-input-hata"
-       aria-invalid="true" aria-describedby="eposta-hata">
-<p id="eposta-hata" class="tk-error">
-  <svg class="tk-error-ikon" aria-hidden="true" viewBox="0 0 16 16">…</svg>
-  Adres bir @ işareti içermeli.
-</p>
+<div class="tk-field">
+  <label class="tk-label" for="eposta">E-POSTA</label>
+  <input id="eposta" class="tk-input tk-input-hata"
+         aria-invalid="true" aria-describedby="eposta-hata">
+  <p id="eposta-hata" class="tk-error">
+    <svg class="tk-error-ikon" aria-hidden="true" viewBox="0 0 16 16">…</svg>
+    Adres bir @ işareti içermeli.
+  </p>
+</div>
 ```
 
 `aria-invalid="true"` **ve** `aria-describedby` birlikte yazılır. Biri tek başına eksik:
@@ -193,14 +247,42 @@ Kalıpta ayrım tek bir öznitelikle taşınır: `data-tk-modal="onay"` / `data-
 
 | | Değer | Durum |
 |---|---|---|
-| karartma | `rgba(0, 0, 0, 0.6)` | **(varsayılan, ölçülmedi)** — ölçüt: arkadaki metin okunamaz ama panel sınırı seçilir |
-| genişlik | `min(560px, 90vw)` | 560 **(varsayılan, ölçülmedi)** |
+| karartma | `rgba(0, 0, 0, 0.6)` · XAML `#99000000` | **(varsayılan, ölçülmedi)** — ölçüt: arkadaki metin okunamaz ama panel sınırı seçilir |
+| genişlik | `min(560px, 90vw)` · XAML `Width="560"` | 560 **(varsayılan, ölçülmedi)** |
+| yükseklik tavanı | görüntü alanının **0.85**'i — web `max-height: 85vh`, WPF `MaxHeight = WorkArea.Height × TkModalMaxYukseklikOrani` | **(varsayılan, ölçülmedi)** — iki platformda tek sayı |
+| dış boşluk | perdenin dolgusu 24px | merdiven basamağı |
 | metin gövdesi | `--tk-measure` (65ch) | ölçülü, `SKILL §3.2` |
-| yüzey | `.tk-panel` (dolgu 24px, çerçeve `--tk-border`, yarıçap `--tk-r`) | ölçülü |
+| yüzey | `.tk-panel` / `Panel` — kopyalanmaz, sınıf/`BasedOn` olarak kullanılır | ölçülü |
 | başlık | `.tk-h3` | ölçülü |
 
-Karartma katmanı **tıklanabilir alanı kaplar ama içeriği bulanıklaştırmaz**; `backdrop-filter`
-kullanılmaz — arkadaki metnin okunmaması karartmanın işidir, bulanıklığın değil.
+WPF'te yükseklik tavanı **sabit bir sayı olarak yazılmaz**: `vh`nin masaüstü karşılığı
+yoktur, bu yüzden tavan `TkModalMaxYukseklikOrani` (`0.85`) oranı olarak durur ve pencere
+açılırken uygulama `MaxHeight`'i çalışma alanı yüksekliğiyle çarparak atar. Web ve WPF
+böylece aynı tek sayıyı yazar.
+
+**Karartma katmanı tıklanabilir alanı kaplar ama arkayı bulanıklaştırmaz**; perdede
+`backdrop-filter` kullanılmaz — arkadaki metnin okunmaması karartmanın işidir,
+bulanıklığın değil. Bu yasak **perdeye** aittir: modal gövdesi `.tk-panel` yüzeyidir ve
+panelin kendi `blur(16px)` cam etkisini diğer bütün paneller gibi taşır.
+
+### İşaretleme
+
+```html
+<div class="tk-modal-perde" data-tk-modal="onay" role="presentation">
+  <div class="tk-panel tk-modal" role="dialog" aria-modal="true"
+       aria-labelledby="sil-baslik" aria-describedby="sil-govde">
+    <h3 id="sil-baslik" class="tk-h3">KAYIT SİLİNECEK</h3>
+    <p id="sil-govde" class="tk-modal-govde">Bu işlem geri alınamaz.</p>
+    <div class="tk-modal-eylemler">
+      <button class="tk-btn" data-tk-iptal>Vazgeç</button>
+      <button class="tk-btn tk-btn-danger">Sil</button>
+    </div>
+  </div>
+</div>
+```
+
+Gövdenin sınıfı `tk-panel tk-modal`'dır — yüzey panelden gelir, `tk-modal` yalnız ölçü,
+kaydırma ve hareketi ekler. Açılışta odak **iptal düğmesine** taşınır, yıkıcı olana değil.
 
 ### Hareket
 
@@ -237,8 +319,19 @@ onu tamamlar.
 ### Yerleşim ve yığılma
 
 - Konum: **sağ alt**, kenarlardan 24px.
-- En fazla **3** toast görünür. Dördüncü gelince **en eski düşer**.
-- Yığın yukarı doğru büyür, aralık 12px.
+- **Yön iki platformda aynı:** yeni toast dizinin **sonuna** eklenir ve köşeye **en
+  yakın**, yani en altta görünür; yığın yukarı doğru büyür. Web'de `column-reverse`
+  **kullanılmaz** — WPF'in `StackPanel`inde karşılığı yok ve iki platform ters düşerdi.
+  Kap alt kenara sabit olduğu için `column` ile de yığın yukarı doğru büyür.
+- En fazla **3** toast görünür. Dördüncü gelince **en eski düşer**. Kuralın taşıyıcısı
+  her iki platformda yazılıdır, yoruma bırakılmaz:
+
+| Platform | Taşıyıcı |
+|---|---|
+| web | `.tk-toast-yigin > .tk-toast:nth-last-child(n + 4) { display: none }` — en yeni üçün dışındakini gizler, uygulama kodu gecikse de ekranda üçten fazlası görünmez |
+| WPF | `TkToastEnFazla` = `3`; yığını besleyen koleksiyon bu sayıyı aşınca `Index 0`'ı (en eskiyi) çıkarır |
+
+- Aralık 12px (merdiven basamağı).
 - Genişlik `min(360px, calc(100vw - 48px))` **(varsayılan, ölçülmedi)**.
 - Yığının kayması da animasyonlanır — `SKILL §5.4` "bildirim yığını" satırı üçünü birden
   istiyor: giriş, çıkış **ve** kayma.
@@ -260,6 +353,27 @@ ekranda karışır; ikisi de mavi olur, kullanıcı tıklanabilir olanı ayırt 
 
 Gövde metni her çeşitte `--tk-text` (19.93:1) kalır; renk **çerçeve, ikon ve başlıkta**
 taşınır. Renk tek başına anlam taşımaz: her toast ikon **ve** metin taşır.
+
+### İşaretleme
+
+```html
+<div class="tk-toast-yigin" aria-live="polite"></div>
+
+<div class="tk-panel tk-toast tk-toast-danger" role="alert">
+  <svg class="tk-toast-ikon" aria-hidden="true" viewBox="0 0 16 16">…</svg>
+  <div class="tk-toast-govde">
+    <div class="tk-toast-baslik">BAĞLANTI KESİLDİ</div>
+    Sunucuya ulaşılamıyor.
+  </div>
+  <button class="tk-toast-kapat" aria-label="Bildirimi kapat">
+    <svg aria-hidden="true" viewBox="0 0 14 14">…</svg>
+  </button>
+</div>
+```
+
+Gövdenin sınıfı `tk-panel tk-toast`'tır — yüzey panelden gelir. Yığın kabı sayfa
+yüklenirken **boş olarak** DOM'da durur. `role="alert"` yalnız bu kalıcı hata örneğinde
+vardır; `success` ve `warning` toast'ları onu taşımaz.
 
 ### Süre ve kapatma
 
@@ -295,3 +409,5 @@ Uygulama tarafındaki sabittir ve adı `TK_TOAST_OMUR_MS = 6000`'dir.
 | Ekran okuyucu doğrulaması — `aria-live`, `role="alert"`, Narrator `HelpText` | `U5` |
 | Beş-durum entegrasyonu — giriş kalıbının canlı uygulamada beş durumunun doğrulanması | `U6` |
 | Bu dosyanın `overlays.md` olarak ikiye ayrılması | `U10` |
+| Kalıpların `components.md`, `SKILL.md` ve `desktop.md` içine çapraz atıf olarak girmesi | `U10` |
+| Perde karartmasının ve seçim zemininin tokena terfisi | `U11` |

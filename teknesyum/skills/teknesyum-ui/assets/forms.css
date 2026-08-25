@@ -2,6 +2,13 @@
    `theme.css`ten SONRA import edilir; kendi token tanımı yoktur, hepsini oradan okur.
    Gerekçeler ve ölçümler: references/forms.md.
 
+   BU DOSYANIN ÜRETTİĞİ TEK HAM DEĞER MODAL PERDESİNİN KARARTMASIDIR
+   (`rgba(0, 0, 0, 0.6)`, §3). `theme.css`te karşılığı yok, etiketi taşıyor ve tek
+   kaynağı burasıdır; XAML karşılığı `TkModalPerde`. Tokena terfisi `U11`e bırakıldı.
+   Bunun dışında hiçbir renk, gölge ya da yüzey burada YENİDEN TANIMLANMAZ:
+   modal ve toast gövdesi `theme.css`in `.tk-panel` yüzeyini SINIF OLARAK kullanır
+   (`class="tk-panel tk-modal"`), zemin/gölge/çerçeve satırları buraya kopyalanmaz.
+
    ŞERH: modal ve toast form değildir; U10 birleştirmesinde overlays.css'e ayrılmaya
    adaydır. Dosya adı bilerek böyle bırakıldı (owns pazarlığı yapılmadı).
 
@@ -32,11 +39,21 @@
               background-color var(--tk-t-instant) var(--tk-e-out);
 }
 
-/* Sayı, kod, ID, anahtar taşıyan giriş mono yazar (SKILL §3). */
-.tk-input.tk-mono-input {
+/* Sayı, kod, ID, anahtar taşıyan giriş mono yazar (SKILL §3).
+   ÖZGÜLLÜK: `.tk-input` ile `theme.css`in `.tk-mono` sınıfı eşit özgüllüktedir (0,1,0) ve
+   `forms.css` sonra yüklenir — tek başına `class="tk-input tk-mono"` yazmak MONO VERMEZ,
+   `.tk-input`in sans satırı kazanır. İki seçici de (0,2,0) yazılarak bu çakışma kapatıldı.
+   Belgelenen sınıf `.tk-mono-input`tur; `.tk-mono` yalnız güvenlik ağı olarak duruyor ve
+   rengini geri alıyor, çünkü `theme.css`teki `.tk-mono` metni `--tk-pink-text` yapar —
+   giriş metni her durumda `--tk-text` kalır. */
+.tk-input.tk-mono-input,
+.tk-input.tk-mono {
   font-family: var(--font-mono, monospace);
   font-weight: 600;
   line-height: var(--tk-lh-mono);
+}
+.tk-input.tk-mono {
+  color: var(--tk-text);
 }
 
 .tk-input:hover:not(:disabled):not([readonly]) {
@@ -53,8 +70,12 @@
 .tk-input {
   caret-color: var(--tk-blue);
 }
+/* Seçim zemini mavi /30. Bu değerin deponun tek kaynağı `--tk-border-decorative`tir
+   (`theme.css`); aynı rgba burada ELDEN YAZILMAZ. Adı çerçeveyi söylüyor ama değeri
+   opaklık merdiveninin `/30` basamağıdır (SKILL §2) ve seçim de o basamağı yazar.
+   Ayrı bir `--tk-selection` tokenı açmak `U11`in işi; burada token üretilmez. */
 .tk-input::selection {
-  background: rgba(0, 243, 255, 0.3);
+  background: var(--tk-border-decorative);
   color: var(--tk-text);
 }
 
@@ -95,11 +116,15 @@
   opacity: 1;
 }
 
-/* Etiket her zaman görünür durur; placeholder etiketin yerini almaz. */
+/* Etiket her zaman görünür durur; placeholder etiketin yerini almaz.
+   HER GİRİŞ BU SARMALIN İÇİNDEDİR — etiket, giriş, yardım metni ve hata mesajı tek
+   dikey akışta durur; aralarını `gap` verir, tek tek `margin` yazılmaz.
+   Aralıklar SKILL §5'in 4 / 8 / 12 / 16 / 24 merdiveninden: alan içi 8, alanlar arası 16.
+   Ölçülmemiş sayı değil, merdiven basamağı. */
 .tk-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
@@ -113,7 +138,8 @@
 .tk-error {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  /* İkon ile metin arası 8 — merdivenin ikinci basamağı, `.tk-field` ile aynı. */
+  gap: 8px;
   margin: 0;
   font-size: var(--tk-fs-1);
   line-height: var(--tk-lh-body);
@@ -157,16 +183,19 @@
   transition: opacity var(--tk-t-fast) var(--tk-e-in);
 }
 
+/* YÜZEY `.tk-panel`DİR, KOPYASI DEĞİL. Zemin, çerçeve, yarıçap, dolgu ve gölge
+   `theme.css`in `.tk-panel` kuralından gelir; işaretleme `class="tk-panel tk-modal"`
+   yazar. Aşağıdaki kural yalnız modale ÖZGÜ olanı ekler: ölçü, kaydırma ve hareket.
+   `.tk-panel`in `backdrop-filter: blur(16px)` satırı da oradan gelir ve modal gövdesi
+   için doğrudur; BULANIKLIK YASAĞI PERDEYE aittir, gövdeye değil. */
 .tk-modal {
   /* 560 (varsayılan, ölçülmedi). */
   width: min(560px, 90vw);
+  /* Yükseklik tavanı görüntü alanının %85'i (varsayılan, ölçülmedi). WPF karşılığı
+     `TkModalMaxYukseklikOrani` = 0.85; iki platformda tek sayı, `vh`nin masaüstü
+     karşılığını uygulama `WorkArea.Height x 0.85` ile kurar. */
   max-height: 85vh;
   overflow: auto;
-  background: rgba(8, 9, 10, 0.95);
-  border: 1px solid var(--tk-border);
-  border-radius: var(--tk-r);
-  padding: 24px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
   /* Giriş: opaklık 0->1 + scale(0.98)->1 (SKILL §5.4 taban tablosu). Yalnız `opacity`
      ve `transform` animasyonlanır. Odak beklemez: öğe ilk kareden itibaren odaklanabilir. */
   transition: opacity var(--tk-t-base) var(--tk-e-out),
@@ -207,7 +236,15 @@
    Her iki türde de: Tab sırası görsel sıra, kapanışta odak açan öğeye döner, tuzakta
    odaklanabilir öğe kalmazsa modal kapanır (SKILL §5.3, dört madde). */
 .tk-modal-perde[data-tk-modal='onay'] {
+  /* Perde tıklanabilir değil: imleç bir şey vaat etmez. */
   cursor: default;
+}
+.tk-modal-perde[data-tk-modal='bilgi'] {
+  /* Perde tıklanabilir: imleç bunu söyler. */
+  cursor: pointer;
+}
+.tk-modal-perde[data-tk-modal='bilgi'] > .tk-modal {
+  cursor: auto;
 }
 
 /* ==========================================================================
@@ -216,16 +253,31 @@
 
 /* Kap sayfa yüklenirken BOŞ olarak DOM'da durur — sonradan eklenen canlı bölge okunmaz.
    `aria-live="polite"` kapta yazar. */
+/* YÖN İKİ PLATFORMDA AYNI: yeni toast DİZİNİN SONUNA eklenir ve köşeye EN YAKIN,
+   yani en altta görünür; yığın yukarı doğru büyür. `column-reverse` KULLANILMAZ —
+   WPF'in `StackPanel`inde karşılığı yok ve iki platform ters düşerdi (tur 1 bulgusu 5).
+   Kap alt kenara sabit olduğu için yığın `column` ile de yukarı doğru büyür. */
 .tk-toast-yigin {
   position: fixed;
   right: 24px;
   bottom: 24px;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 12px;
   pointer-events: none;
 }
 
+/* EN FAZLA 3, DÖRDÜNCÜ GELİNCE EN ESKİ DÜŞER — kuralın CSS tarafındaki taşıyıcısı.
+   Yeni sona eklendiği için en eskiler baştadır: sondan dördüncü ve öncesi gizlenir.
+   Uygulama kodu düşeni ayrıca DOM'dan kaldırır; bu kural o kod gecikse de ekranda
+   üçten fazla toast görünmemesini garanti eder. WPF karşılığı `TkToastEnFazla` = 3. */
+.tk-toast-yigin > .tk-toast:nth-last-child(n + 4) {
+  display: none;
+}
+
+/* YÜZEY `.tk-panel`DİR: işaretleme `class="tk-panel tk-toast"` yazar. Zemin, çerçeve,
+   yarıçap ve gölge `theme.css`ten gelir; buraya kopyalanmaz. Aşağısı toast'a özgü
+   olanı ekler ve panelin 24px dolgusunu 12'ye indirir (merdiven basamağı). */
 .tk-toast {
   pointer-events: auto;
   display: flex;
@@ -234,10 +286,6 @@
   /* (varsayılan, ölçülmedi) */
   width: min(360px, calc(100vw - 48px));
   padding: 12px;
-  background: rgba(8, 9, 10, 0.95);
-  border: 1px solid var(--tk-border);
-  border-radius: var(--tk-r);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
   /* Gövde metni her çeşitte beyaz kalır (19.93:1); renk çerçeve, ikon ve başlıkta. */
   color: var(--tk-text);
   font-size: var(--tk-fs-1);

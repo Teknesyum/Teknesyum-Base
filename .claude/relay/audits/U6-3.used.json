@@ -1,0 +1,21 @@
+{
+  "contractId": "U6",
+  "auditorRunId": "a6dcea2d18228e087",
+  "headSha": "d980ba8f5a0cb179af92bcee0e2f32e49b1a5e46",
+  "diffHash": "69911ebc5eb7104acb0783bbb3518f997022b95d2c4896aa2df878bf35bd3a87",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/references/durumlar.md",
+    "teknesyum/skills/teknesyum-ui/assets/durumlar.css",
+    "teknesyum/skills/teknesyum-ui/assets/Durumlar.xaml",
+    "test/u6-durum.js"
+  ],
+  "verification": [
+    "GEÇTİ  T2  · şartname ✓ · kalite ✓",
+    "✓ data-tk seçici sözleşmesi — durumlar.css:23-133 tamamı `[data-tk='…']`, tek `.tk-*` sınıf seçicisi yok; sözleşme+fikstür durumlar.md:77-122",
+    "✓ eşleşme fikstüre karşı sınanıyor — u6-durum.js:241-250 (tanımsız sınıf; theme.css'te `.tk-toggle/.tk-slider/.tk-cell/"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T19:21:06.849Z",
+  "usedAt": "2026-08-25T19:21:06.920Z",
+  "completedSha": "d980ba8f5a0cb179af92bcee0e2f32e49b1a5e46"
+}

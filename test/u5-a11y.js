@@ -97,7 +97,10 @@ function katmanA() {
   // etkileşimli öğeye verilmemiş.
   const fca = yorumsuz(CSS).match(/forced-color-adjust:\s*none/g) || [];
   onay('A5 forced-color-adjust tek yerde', fca.length === 1, `${fca.length} kez geçiyor`);
-  onay('A5 renk örneği sınıfında', /\.tk-renk-ornegi\s*\{[^}]*forced-color-adjust:\s*none/.test(CSS));
+  onay(
+    'A5 renk örneği sınıfında',
+    /\.tk-renk-ornegi\s*\{[^}]*forced-color-adjust:\s*none/.test(CSS)
+  );
 
   // A6. Ham değer yasağı: hex renk yok, ham süre yok — sistem renkleri ve
   // tokenlar dışında renk tanımı bu dosyaya girmez.
@@ -160,9 +163,15 @@ function katmanB() {
   // B6. forced-colors (K5): teslim kuralı, tek halka kabulü, tablo.
   onay('B6 teslim kuralı', /neon teslim edilir/i.test(MD));
   onay('B6 halka teke düşer kabulü', /teke düşer/.test(MD.replace(/\*\*/g, '')));
-  onay('B6 drop-shadow elle kapanır', /sistem silmez/.test(MD.replace(/\*\*/g, '')) && /filter: none/.test(MD));
+  onay(
+    'B6 drop-shadow elle kapanır',
+    /sistem silmez/.test(MD.replace(/\*\*/g, '')) && /filter: none/.test(MD)
+  );
   onay('B6 GrayText', MD.includes('GrayText'));
-  onay('B6 forced-color-adjust istisnası', /forced-color-adjust: none.[\s\S]{0,80}yalnız renk yutucusu/i.test(MD.replace(/\*\*/g, '')));
+  onay(
+    'B6 forced-color-adjust istisnası',
+    /forced-color-adjust: none.[\s\S]{0,80}yalnız renk yutucusu/i.test(MD.replace(/\*\*/g, ''))
+  );
   onay('B6 WPF HighContrast', MD.includes('SystemParameters.HighContrast'));
   onay('B6 WPF mod değişimi dinlenir', MD.includes('StaticPropertyChanged'));
 
@@ -177,7 +186,10 @@ function katmanB() {
   }
 
   // B8. CSS ile MD birbirini gösteriyor.
-  onay('B8 md, a11y.css işaret ediyor', MD.includes('assets/a11y.css') || MD.includes('`a11y.css`'));
+  onay(
+    'B8 md, a11y.css işaret ediyor',
+    MD.includes('assets/a11y.css') || MD.includes('`a11y.css`')
+  );
   onay('B8 md, §5.3 sınırını çiziyor', MD.includes('§5.3'));
 }
 

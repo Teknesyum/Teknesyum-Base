@@ -6,6 +6,51 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.63.0] - 2026-08-25
+
+### Added
+
+- **The installer can now uninstall.** `post-install.js --kaldir` removes only what the
+  plugin put there — the signed statusline block, an untouched `RULES.md` template, the
+  `@RULES.md` line in `CLAUDE.md` — through the same transaction discipline as install:
+  timestamped backups, temp-and-rename writes, rollback on failure. User content survives
+  byte for byte, and a smoke test in CI proves a clean install–uninstall cycle leaves no
+  trace beyond the backups.
+- **`/scan` gained a UI-standard gate.** Without a standard on the machine the UI scan
+  stops and points at `/uisetup`; profile certifications now report the UI verdict as
+  their own line and JSON field, and `--tamamla` runs in two phases with the second one
+  headless-first and read-only toward the screen gate.
+- **A screen-reader baseline for the UI standard.** New §5.8: unnamed interactive
+  elements are banned on web and WPF alike, with an `sr-only` clip pattern, an
+  `aria-live` table, and a forced-colors surrender rule shipped as `a11y.md` plus
+  `a11y.css`.
+- **Theme colors live in one file now.** `theme.tokens.json` holds every brand, role,
+  and derived token — each with a written reason — and `tema-uret.js` generates all four
+  platform files from it. The first generated output is byte-identical to what was in
+  the repository, so the migration itself changed nothing.
+
+### Fixed
+
+- **An unknown contract status is no longer waved through.** The guard silently ignored
+  any status it did not recognize, so writing a bogus status and then rewriting it to
+  `open` washed a contract straight past the regression gate in two moves. Both moves
+  are now blocked, the ladder tests run against every contract family rather than one
+  hard-coded name, and a sealed contract reopening has its own test.
+- **`/ozel` no longer writes outside the project.** Containment now covers every path
+  the mirror touches — the push target, the pull source, the manifest fields that come
+  from the repository — and the manifest name policy rejects UNC paths, separators, and
+  dot segments at the gate. A symlinked parent is resolved through the nearest existing
+  real directory before the check. Five failure modes that had no tests now do: UNC
+  paths, symlink escape, detached HEAD, a rejecting remote, diverged branches.
+- **A redirect chain can no longer stretch the download window.** Each request used to
+  get its own 30-second allowance; the whole download now draws from a single budget.
+
+### Changed
+
+- **The shared UI texts landed.** The wording that U3–U9 staged for the skill was merged
+  into `SKILL.md` and `references/desktop.md`, and the test runner now includes the
+  accessibility and theme-generator suites — eight suites in one `node test/all.js` run.
+
 ## [2.62.2] - 2026-08-25
 
 ### Fixed

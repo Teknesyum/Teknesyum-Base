@@ -7033,10 +7033,7 @@ function uiProje(secenek) {
     })
   );
   if (o.standart !== false)
-    yaz(
-      '.claude/teknesyum-ui.json',
-      JSON.stringify({ kapali: o.standart === 'kapali' })
-    );
+    yaz('.claude/teknesyum-ui.json', JSON.stringify({ kapali: o.standart === 'kapali' }));
   if (o.css !== false) yaz('src/app.css', o.css || UI_CSS);
   if (o.yabanci !== false) {
     yaz('src/gizli.ts', 'export const x = "transition: all 900ms";\n');
@@ -7421,7 +7418,9 @@ ol('ui --tamamla eski plani once kapatir ve ilk satira yazar', () => {
   yaz(
     'ui-plan.json',
     JSON.stringify({
-      findings: [{ file: 'src/app.css', line: 2, rule: 'motion', severity: 'error', suggestion: 'x' }],
+      findings: [
+        { file: 'src/app.css', line: 2, rule: 'motion', severity: 'error', suggestion: 'x' },
+      ],
     })
   );
   uiDepo(p);
@@ -7467,24 +7466,27 @@ ol('ui --tamamla faz 2 bassiz yolu kosar ve iki fazi ayri sayar', () => {
   icerir(uiCalistir(c.p, '--tamamla').out, 'görsel ihlal — KALDI');
 });
 
-ol('ui --tamamla faz 2 faz 1 temiz bitmeden baslamaz kapi devre disiyken ekran yolu ajana kalir', () => {
-  const kirliFaz1 = uiProje({
-    css: ['.kart {', '  transition: all 500ms ease;', '  color: #123456;', '}', ''].join('\n'),
-    testBetigi: 'node -e "process.exit(0)"',
-  });
-  uiDepo(kirliFaz1.p);
-  const j = uiJson(kirliFaz1.p, '--tamamla');
-  esit(j.faz2.kostu, false, 'acik ihlal varken faz 2 kosmamali');
-  icerir(j.faz2.sebep, 'Faz 1 temiz bitmedi');
-  const { p } = uiProje({ css: FAZ_CSS });
-  uiDepo(p);
-  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uiekran-'));
-  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), '{"ekran_kapisi":false}');
-  const r = uiCalistirCfg(p, cfg, '--tamamla');
-  icerir(r.out, 'KOŞMADI — başsız yol yok');
-  icerir(r.out, 'kapı açık');
-  icerir(r.out, 'betik program açmaz');
-});
+ol(
+  'ui --tamamla faz 2 faz 1 temiz bitmeden baslamaz kapi devre disiyken ekran yolu ajana kalir',
+  () => {
+    const kirliFaz1 = uiProje({
+      css: ['.kart {', '  transition: all 500ms ease;', '  color: #123456;', '}', ''].join('\n'),
+      testBetigi: 'node -e "process.exit(0)"',
+    });
+    uiDepo(kirliFaz1.p);
+    const j = uiJson(kirliFaz1.p, '--tamamla');
+    esit(j.faz2.kostu, false, 'acik ihlal varken faz 2 kosmamali');
+    icerir(j.faz2.sebep, 'Faz 1 temiz bitmedi');
+    const { p } = uiProje({ css: FAZ_CSS });
+    uiDepo(p);
+    const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uiekran-'));
+    fs.writeFileSync(path.join(cfg, 'teknesyum.json'), '{"ekran_kapisi":false}');
+    const r = uiCalistirCfg(p, cfg, '--tamamla');
+    icerir(r.out, 'KOŞMADI — başsız yol yok');
+    icerir(r.out, 'kapı açık');
+    icerir(r.out, 'betik program açmaz');
+  }
+);
 
 ol('ekran kapisi karari ve muafli kirli agac olcumu kurgu ile olculur', () => {
   const taramaMod = require(TARAMA);
@@ -7499,7 +7501,10 @@ ol('ekran kapisi karari ve muafli kirli agac olcumu kurgu ile olculur', () => {
     esit(taramaMod.ekranKapisiAcik().acik, false, 'dosya yokken kapali');
     fs.writeFileSync(kapiYolu, JSON.stringify({ acik: { ts: Date.now(), dakika: 10 } }));
     esit(taramaMod.ekranKapisiAcik().acik, true, 'sureli acilis gecerli');
-    fs.writeFileSync(kapiYolu, JSON.stringify({ acik: { ts: Date.now() - 11 * 60000, dakika: 10 } }));
+    fs.writeFileSync(
+      kapiYolu,
+      JSON.stringify({ acik: { ts: Date.now() - 11 * 60000, dakika: 10 } })
+    );
     esit(taramaMod.ekranKapisiAcik().acik, false, 'sure dolunca kapali');
   } finally {
     if (eskiCfg === undefined) delete process.env.CLAUDE_CONFIG_DIR;
@@ -10389,13 +10394,7 @@ ol('zil damgasi yazilamazsa ses yine calar', () => {
 
 console.log('\nUI suiteleri (U3-U9)');
 
-const UI_SUITE = [
-  'u3-forms.js',
-  'u4-renk.js',
-  'u7-avalonia.js',
-  'u8-glow.js',
-  'u9-renkkorlugu.js',
-];
+const UI_SUITE = ['u3-forms.js', 'u4-renk.js', 'u7-avalonia.js', 'u8-glow.js', 'u9-renkkorlugu.js'];
 
 for (const ad of UI_SUITE) {
   ol('suite ' + ad + ' tek başına geçiyor', () => {

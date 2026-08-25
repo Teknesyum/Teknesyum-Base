@@ -1547,7 +1547,9 @@ function uiMain(bayrak, bilinmeyen) {
   const plan = uiPlanBul(kok);
   const notlar = bilinmeyen.map((b) => 'bilinmeyen bayrak yok sayıldı: ' + b);
   if (plan && !tamamla)
-    notlar.push('eski scan ui planı duruyor: ' + gorece(kok, plan.yol) + ' — --tamamla önce onu kapatır');
+    notlar.push(
+      'eski scan ui planı duruyor: ' + gorece(kok, plan.yol) + ' — --tamamla önce onu kapatır'
+    );
   const { bulgular, tema, dosya, paket } = uiTara(kok, notlar);
   const duzeltilen = tamamla ? uiDuzelt(kok, bulgular, tema) : [];
   const planSonuc = tamamla && plan ? uiPlanKapat(kok, plan, bulgular) : null;

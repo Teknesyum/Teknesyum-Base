@@ -168,7 +168,7 @@ function icerideMi(hedef, kok) {
 // ayracı `/`'dir, hiçbir parçası boş, `.` ya da `..` olamaz.
 function manifestAlaniGecerli(d) {
   if (!d || typeof d.ad !== 'string' || typeof d.kaynak !== 'string') return false;
-  if (/[\x00-\x1f]/.test(d.ad + d.kaynak)) return false;
+  if ([...(d.ad + d.kaynak)].some((c) => c.charCodeAt(0) < 32)) return false;
   if (!d.kaynak.startsWith('~/') && !d.kaynak.startsWith('./')) return false;
   if (d.ad.includes('\\') || path.isAbsolute(d.ad) || /^[A-Za-z]:/.test(d.ad)) return false;
   return d.ad.split('/').every((p) => p && p !== '.' && p !== '..');

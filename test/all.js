@@ -8,9 +8,11 @@ const SUITE = [
   'run.js',
   'u3-forms.js',
   'u4-renk.js',
+  'u5-a11y.js',
   'u7-avalonia.js',
   'u8-glow.js',
   'u9-renkkorlugu.js',
+  'u11-tema.js',
 ];
 
 let kalan = 0;

@@ -130,20 +130,48 @@ function adDenetle(ad) {
 }
 
 // Çözülen yolun izinli kökün altında kaldığını kanıtlar. Metin karşılaştırması yetmez:
-// symlink ve junction başka yere bakabilir, `realpath` ikisini de açar. Kök yoksa
-// karşılaştırma yolun kendisiyle yapılır — henüz oluşmamış hedef de sınanabilsin.
-function icerideMi(hedef, kok) {
-  const ger = (p) => {
+// symlink ve junction başka yere bakabilir, `realpath` ikisini de açar. Hedef henüz
+// yoksa var olan en yakın üst dizin `realpath` ile açılır ve kalan parçalar üstüne
+// eklenir — symlink'li bir üst dizin üzerinden kaçış hedef oluşmadan da yakalanır.
+function enYakinGercek(p) {
+  let yol = path.resolve(p);
+  const kuyruk = [];
+  for (;;) {
     try {
-      return fs.realpathSync(p);
+      const g = fs.realpathSync(yol);
+      return kuyruk.length ? path.join.apply(path, [g].concat(kuyruk.reverse())) : g;
     } catch {
-      return path.resolve(p);
+      const ust = path.dirname(yol);
+      if (ust === yol)
+        return kuyruk.length ? path.join.apply(path, [yol].concat(kuyruk.reverse())) : yol;
+      kuyruk.push(path.basename(yol));
+      yol = ust;
     }
-  };
-  const h = ger(hedef);
-  const k = ger(kok);
+  }
+}
+
+function icerideMi(hedef, kok) {
+  const h = enYakinGercek(hedef);
+  const k = enYakinGercek(kok);
   const bagil = path.relative(k, h);
-  return Boolean(bagil) && !bagil.startsWith('..' + path.sep) && !path.isAbsolute(bagil);
+  return (
+    Boolean(bagil) &&
+    bagil !== '..' &&
+    !bagil.startsWith('..' + path.sep) &&
+    !path.isAbsolute(bagil)
+  );
+}
+
+// Manifest depodan gelir ve bozuk olabilir; alanları da ad politikası gibi kapıdan
+// geçer. `kaynak` yalnız `~/` ya da `./` önekiyle kabul edilir — mutlak ve UNC yol
+// izinli kök kavramının dışındadır. `ad` depo içi göreli yoldur: mutlak olamaz,
+// ayracı `/`'dir, hiçbir parçası boş, `.` ya da `..` olamaz.
+function manifestAlaniGecerli(d) {
+  if (!d || typeof d.ad !== 'string' || typeof d.kaynak !== 'string') return false;
+  if (/[\x00-\x1f]/.test(d.ad + d.kaynak)) return false;
+  if (!d.kaynak.startsWith('~/') && !d.kaynak.startsWith('./')) return false;
+  if (d.ad.includes('\\') || path.isAbsolute(d.ad) || /^[A-Za-z]:/.test(d.ad)) return false;
+  return d.ad.split('/').every((p) => p && p !== '.' && p !== '..');
 }
 
 // ÖLÇÜLDÜ: Windows'ta `os.tmpdir()` 8.3 kısa yol (`C:\Users\TEKNES~1\…`), `git rev-parse`
@@ -252,16 +280,23 @@ function ayni(a, b) {
 function fark(a, ad, kok) {
   const m = manifest(a, ad);
   const klon = klonYolu(a);
-  return m.dosyalar.map((d) => {
+  return m.dosyalar.map((girdi) => {
+    const d = girdi && typeof girdi === 'object' ? girdi : {};
+    const kaynak = typeof d.kaynak === 'string' ? d.kaynak : String(d.kaynak || '?');
+    if (!manifestAlaniGecerli(d))
+      return { ...d, kaynak, kaynakYol: null, depoYol: null, durum: 'disari', veri: null };
     const kaynakYol = coz(d.kaynak, kok);
     const depoYol = path.join(klon, ad, d.ad);
+    const izinliKok = d.kaynak.startsWith('~/') ? evi() : kok;
+    if (!icerideMi(depoYol, path.join(klon, ad)) || !icerideMi(kaynakYol, izinliKok))
+      return { ...d, kaynak, kaynakYol, depoYol, durum: 'disari', veri: null };
     const s = oku(kaynakYol);
     const h = oku(depoYol);
     let durum = 'ayni';
     if (!s) durum = 'eksik';
     else if (!h) durum = 'yeni';
     else if (!ayni(s, h)) durum = 'degisti';
-    return { ...d, kaynakYol, depoYol, durum, veri: s };
+    return { ...d, kaynak, kaynakYol, depoYol, durum, veri: s };
   });
 }
 
@@ -340,6 +375,12 @@ function ekle(argv) {
       atlanan.push(kaynak + ' — zaten kayıtlı');
       continue;
     }
+    if (!kaynak.startsWith('~/') && !kaynak.startsWith('./')) {
+      atlanan.push(
+        kaynak + ' — proje ve ev dizininin dışında; ayna yalnız bu ikisinin altını taşır'
+      );
+      continue;
+    }
     const tam = coz(kaynak, kok);
     if (!fs.existsSync(tam)) {
       atlanan.push(kaynak + ' — dosya yok');
@@ -400,7 +441,13 @@ function durum() {
     null,
     f.map((d) => d.kaynak.length)
   );
-  const ISARET = { ayni: 'aynı', degisti: 'değişti', yeni: 'yeni', eksik: 'kaynak yok' };
+  const ISARET = {
+    ayni: 'aynı',
+    degisti: 'değişti',
+    yeni: 'yeni',
+    eksik: 'kaynak yok',
+    disari: 'sınır dışı',
+  };
   for (const d of f) satir.push('  ' + d.kaynak.padEnd(en) + '   ' + ISARET[d.durum]);
   const bekleyen = f.filter((d) => d.durum === 'degisti' || d.durum === 'yeni').length;
   satir.push('');
@@ -436,7 +483,7 @@ function ac(argv) {
   if (!argv.length) dur('Proje adı gerekli:  /ozel ac <ad>');
   const klon = klonYolu(a);
   const mevcut = sparseListe(klon);
-  for (const g of argv) if (!mevcut.includes(g)) mevcut.push(g);
+  for (const g of argv) if (!mevcut.includes(adDenetle(g))) mevcut.push(g);
   sparseAyarla(klon, mevcut);
   bas(['İnen klasörler: ' + mevcut.join(', ')]);
 }
@@ -458,16 +505,25 @@ function cek(argv) {
   const yazilan = [];
   const korunan = [];
   const disari = [];
-  for (const d of m.dosyalar) {
-    const kaynakYol = coz(d.kaynak, kok);
+  for (const girdi of m.dosyalar) {
+    const d = girdi && typeof girdi === 'object' ? girdi : {};
+    const etiket = typeof d.kaynak === 'string' ? d.kaynak : String(d.kaynak || '?');
     // Manifest depodan gelir ve bozuk olabilir. `--zorla` ile birlikte sınırsız bir
-    // `kaynak` alanı proje ve ev dışına yazma sınıfı üretir; hedef ikisinden birinin
-    // altında değilse dosya yazılmaz, atlandığı söylenir.
-    if (!icerideMi(kaynakYol, kok) && !icerideMi(kaynakYol, evi())) {
-      disari.push(d.kaynak);
+    // `kaynak` alanı proje ve ev dışına yazma sınıfı üretir; alanlar politikadan
+    // geçmiyorsa ya da çözülen uçlardan biri izinli kökün altında değilse dosya
+    // yazılmaz, atlandığı söylenir.
+    if (!manifestAlaniGecerli(d)) {
+      disari.push(etiket);
       continue;
     }
-    const veri = oku(path.join(klon, ad, d.ad));
+    const kaynakYol = coz(d.kaynak, kok);
+    const depoYol = path.join(klon, ad, d.ad);
+    const izinliKok = d.kaynak.startsWith('~/') ? evi() : kok;
+    if (!icerideMi(depoYol, path.join(klon, ad)) || !icerideMi(kaynakYol, izinliKok)) {
+      disari.push(etiket);
+      continue;
+    }
+    const veri = oku(depoYol);
     if (!veri) continue;
     if (fs.existsSync(kaynakYol) && !zorla) {
       if (!ayni(oku(kaynakYol), veri)) korunan.push(d.kaynak);
@@ -505,9 +561,13 @@ function pusla(argv) {
   const f = fark(a, ad, kok);
   const yazilacak = f.filter((d) => d.durum === 'degisti' || d.durum === 'yeni');
   const eksik = f.filter((d) => d.durum === 'eksik');
+  const disari = f.filter((d) => d.durum === 'disari');
   if (!yazilacak.length) {
     if (argv.includes('--sessiz')) return;
-    return bas(['Özel ayna güncel — yazılacak değişiklik yok.']);
+    const satir = ['Özel ayna güncel — yazılacak değişiklik yok.'];
+    for (const d of disari)
+      satir.push('  atlandı  ' + d.kaynak + '  — izinli kökün dışına düşüyor, aynaya alınmadı');
+    return bas(satir);
   }
   for (const d of yazilacak) {
     fs.mkdirSync(path.dirname(d.depoYol), { recursive: true });
@@ -517,6 +577,8 @@ function pusla(argv) {
   const satir = ['Özel aynaya yazıldı — ' + yazilacak.length + ' dosya'];
   for (const d of yazilacak) satir.push('  ' + d.durum.padEnd(8) + d.kaynak);
   for (const d of eksik) satir.push('  atlandı  ' + d.kaynak + '  — kaynak dosya bulunamadı');
+  for (const d of disari)
+    satir.push('  atlandı  ' + d.kaynak + '  — izinli kökün dışına düşüyor, aynaya alınmadı');
   const sonuc = gonder(klon, ad + ': ' + yazilacak.length + ' özel dosya güncellendi');
   bas(satir.concat(sonuc.satir));
   if (!sonuc.ok) process.exitCode = 1;
@@ -538,6 +600,14 @@ function gonder(klon, mesaj) {
 
   const sha = (gitSonuc(klon, ['rev-parse', 'HEAD']).stdout || '').trim();
   const dal = (gitSonuc(klon, ['rev-parse', '--abbrev-ref', 'HEAD']).stdout || '').trim();
+  if (!dal || dal === 'HEAD')
+    return {
+      ok: false,
+      satir: [
+        'Push yapılamadı: klon detached HEAD durumunda, gönderilecek dal yok.',
+        '  git -C ' + klon + ' checkout main  ile düzeltip /ozel pusla ile yeniden dene.',
+      ],
+    };
   const ustAkim = gitSonuc(klon, ['rev-parse', '--abbrev-ref', '@{upstream}']).ok;
   const push = ustAkim
     ? gitSonuc(klon, ['push'])

@@ -1292,7 +1292,7 @@ function uiMain(bayrak, bilinmeyen) {
           ) + '\n'
         : kapsayiciRapor(UI_KIPI, kap)
     );
-    process.exit(2);
+    return bitir(2);
   }
   const tamamla = bayrak.includes('--tamamla');
   if (tamamla) {
@@ -1303,7 +1303,7 @@ function uiMain(bayrak, bilinmeyen) {
           ? JSON.stringify({ kip: UI_KIPI, durum: 'kirli', sebep: kirli.sebep }, null, 2) + '\n'
           : uiKirliRapor(kirli)
       );
-      process.exit(2);
+      return bitir(2);
     }
   }
   const notlar = bilinmeyen.map((b) => 'bilinmeyen bayrak yok sayıldı: ' + b);
@@ -1331,7 +1331,16 @@ function uiMain(bayrak, bilinmeyen) {
   process.stdout.write(
     bayrak.includes('--json') ? JSON.stringify(sonuc, null, 2) + '\n' : uiRapor(sonuc)
   );
-  process.exit(sonuc.gecti ? 0 : 1);
+  return bitir(sonuc.gecti ? 0 : 1);
+}
+
+// ÖLÇÜLDÜ (25.08.2026, macOS CI): borulanmış çıktıda `process.stdout.write` hemen
+// ardından `process.exit` gelince yazılmamış kuyruk düşüyordu — 121 dosyalık taramanın
+// JSON'u 8034. baytta kesiliyor ve okuyan taraf bunu ayrıştırma hatası sanıyordu. POSIX
+// borusunda stdout eşzamansızdır; kod yerine `exitCode` yazılır ve süreç kendi
+// akışını boşaltarak kapanır.
+function bitir(kod) {
+  process.exitCode = kod;
 }
 
 function kullanim() {
@@ -1386,7 +1395,7 @@ function main() {
   const profil = konum.find((x) => PROFILLER.includes(x));
   if (!profil) {
     process.stdout.write(kullanim());
-    process.exit(2);
+    return bitir(2);
   }
   const kok = path.resolve(arg('proje') || process.cwd());
   const kap = bayrak.includes('--kapsayici') ? null : kapsayici.kesin(kok);
@@ -1400,14 +1409,14 @@ function main() {
           ) + '\n'
         : kapsayiciRapor(profil, kap)
     );
-    process.exit(2);
+    return bitir(2);
   }
   const tablo = dugmeTablosu();
   if (!tablo) {
     process.stderr.write(
       'eşik tablosu okunamadı: ' + path.join(__dirname, 'premium.js') + ' içindeki DUGME\n'
     );
-    process.exit(2);
+    return bitir(2);
   }
   const dugme = tablo[profil];
   const notlar = bilinmeyen.map((b) => 'bilinmeyen bayrak yok sayıldı: ' + b);
@@ -1436,7 +1445,7 @@ function main() {
   process.stdout.write(
     bayrak.includes('--json') ? JSON.stringify(sonuc, null, 2) + '\n' : rapor(sonuc)
   );
-  process.exit(sonuc.gecti ? 0 : 1);
+  return bitir(sonuc.gecti ? 0 : 1);
 }
 
 if (require.main === module) main();

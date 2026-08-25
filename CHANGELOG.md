@@ -6,6 +6,16 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.59.1] - 2026-08-25
+
+### Fixed
+
+- **The UI scan could hand its reader truncated JSON.** It wrote the report and called
+  `process.exit` on the next line. On a pipe that write is asynchronous on POSIX, so
+  whatever had not flushed was discarded — a 121-file scan lost everything past byte 8034
+  and the caller saw a parse error rather than the buffer boundary it was. The scan now
+  sets an exit code and lets the process drain on its own.
+
 ## [2.59.0] - 2026-08-25
 
 ### Fixed

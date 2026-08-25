@@ -7,7 +7,12 @@ const skill = path.join(kok, 'teknesyum', 'skills', 'teknesyum-ui');
 const refs = path.join(skill, 'references');
 const assets = path.join(skill, 'assets');
 
-const oku = (p) => fs.readFileSync(p, 'utf8');
+// ÖLÇÜLDÜ (25.08.2026, tur 3): ayrıştırma satır sonuna duyarlıydı. `core.autocrlf` ile
+// dosyalar CRLF olarak açıldığında fikstür bloğu regex'i (```html\n…) eşleşmiyor, fikstür
+// boş çıkıyor ve denetim "ikon-buton fikstürde yok" gibi ilgisiz mesajlarla düşüyordu.
+// Worktree'de LF, ana depoda CRLF olduğu için sadece orada düşüyordu. Okurken normalize
+// etmek bütün katmanı satır sonu bağımsız yapar; \r'ye anlam yükleyen tek kural yok.
+const oku = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n?/g, '\n');
 const componentsMd = oku(path.join(refs, 'components.md'));
 const durumlarMd = oku(path.join(refs, 'durumlar.md'));
 const durumlarCss = oku(path.join(assets, 'durumlar.css'));

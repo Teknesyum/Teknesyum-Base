@@ -15,11 +15,32 @@ const DIL = path.join(KOK, 'hooks', 'dil.js');
 // `os.tmpdir()` altına açıyordu ve hiçbiri toplanmıyordu — ölçümde %TEMP% altında
 // 220.576 dizin birikmişti. Koşunun bütün geçici dizinleri tek bir kökün altında durur
 // ve koşu biterken kök silinir; test kodunda tek satırlık değişiklik, sızıntı sıfır.
+// ÖLÇÜLDÜ (25.08.2026): sızıntının kaynağı testler değil `git init`'ti. Windows'ta git
+// `core.symlinks` ayarlı değilse depo açarken `.git/tXXXXXX` adında bir sembolik bağ
+// deneme dosyası yaratıyor; ayrıcalık yoksa geriye `readdir`'ün gördüğü ama `lstat`'ın
+// ENOENT dediği bir hayalet girdi kalıyor ve o dizin bir daha silinemiyor. Ayarı açıkça
+// vermek denemeyi atlatır — 139 fikstürün 80'i bu yüzden kalıyordu.
+if (process.platform === 'win32') {
+  process.env.GIT_CONFIG_COUNT = '1';
+  process.env.GIT_CONFIG_KEY_0 = 'core.symlinks';
+  process.env.GIT_CONFIG_VALUE_0 = 'false';
+}
+
 const KOKTEMP = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-kosu-'));
 
 // Tek `rmSync` yetmiyor: bir çocuk direnirse kök `ENOTEMPTY` verip 138 dizini birden
 // bırakıyor. Önce tek tek, sonra kök denenir; direnen kalırsa sessiz geçilmez — sayısı
 // basılır ve `TEKNESYUM_TEMP_KATI=1` (CI) altında koşu bunun için düşer.
+// Windows'ta git, `.git` altında açtığı geçici dosyayı tutamağı kapanmadan siliyor:
+// `readdir` girdiyi hâlâ listeliyor, `lstat` ENOENT diyor, `rmSync` ENOTEMPTY veriyor.
+// Ölçüldü (25.08.2026, GitHub windows-latest): tek geçiş 1 dizin bırakıyor, tutamak
+// kapanınca girdi kayboluyor. Bu yüzden toplama birkaç kez, aralarında bekleyerek denenir.
+function bekle(ms) {
+  try {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  } catch {}
+}
+
 function tempTopla() {
   let kalan = 0;
   const sil = (p) => {
@@ -42,7 +63,11 @@ function tempTopla() {
 }
 
 process.on('exit', () => {
-  const kalan = tempTopla();
+  let kalan = tempTopla();
+  for (let i = 0; kalan && i < 30; i++) {
+    bekle(400);
+    kalan = tempTopla();
+  }
   if (!kalan) return;
   console.log('\n  ⚠ ' + kalan + ' geçici dizin silinemedi: ' + KOKTEMP);
   if (process.env.TEKNESYUM_TEMP_KATI === '1') process.exitCode = 1;

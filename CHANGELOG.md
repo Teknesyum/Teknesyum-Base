@@ -6,6 +6,19 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.62.2] - 2026-08-25
+
+### Fixed
+
+- **Found what was actually leaking the temp directories.** Not the tests — `git init`.
+  On Windows, with `core.symlinks` unset, git creates a `.git/tXXXXXX` probe file to test
+  whether the filesystem supports symbolic links; without the privilege to create one it
+  leaves a dangling reparse point that `readdir` lists, `lstat` reports as missing, and no
+  API can remove — so that directory can never be deleted again. 80 of the run's 139
+  fixtures were stranded this way. Setting the option explicitly skips the probe. What is
+  left is a handful of directories git still holds a handle on for a moment; cleanup now
+  retries until they are released. A full run leaves nothing behind.
+
 ## [2.62.1] - 2026-08-25
 
 ### Fixed

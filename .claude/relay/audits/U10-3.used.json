@@ -1,0 +1,20 @@
+{
+  "contractId": "U10",
+  "auditorRunId": "ae785d6202fd757dd",
+  "headSha": "2fe9fe0007e16a63458e3986612b1d30fe2b1390",
+  "diffHash": "514de0f27b57803c2171a819f1f5a9788392d2a2f1680ef1fd182ba4216187a8",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/SKILL.md",
+    "teknesyum/skills/teknesyum-ui/references/desktop.md",
+    "test/run.js"
+  ],
+  "verification": [
+    "GEÇTİ  T3  · şartname ✓ · kalite ✓",
+    "✓ K4 — `U10.md:145-152` main ağacı koşusu yapıştırıldı: `node test/run.js` → `✓ GEÇTİ 557/557`, exit=0; yedi suite listesi `test/run.js:10423-10431`, `/durum` kapısı kelime sınırıyla `test/run.js:270`",
+    "✓ K1 · K2/K6 (T0 kararı) · K3 · K5 — önceki turda ve bu tur"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T21:09:24.042Z",
+  "usedAt": "2026-08-25T21:09:24.161Z",
+  "completedSha": "2fe9fe0007e16a63458e3986612b1d30fe2b1390"
+}

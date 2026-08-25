@@ -6,6 +6,37 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.64.0] - 2026-08-26
+
+### Added
+
+- **Mandatory five-state template for every UI component.** `references/durumlar.md`
+  defines the contract — rest, hover, focus, pressed, disabled — where each cell either
+  carries a value or an explicit `uygulanmaz` with a reason. `durumlar.css` and
+  `Durumlar.xaml` fill the states that were missing (toggle, slider, cell, icon button),
+  selectors bind through a documented `data-tk` attribute contract, and `test/u6-durum.js`
+  enforces the whole thing against a fixture, including contrast ratios it recomputes
+  itself.
+
+- **The UI skill now reads as one system.** The remaining sub-standard bodies (forms,
+  motion, accessibility, states) moved verbatim into their `references/*.md` files;
+  `SKILL.md` keeps a marker plus a one-line summary for each and stays within 10% of its
+  baseline size. The full suite now runs seven UI suites.
+
+### Fixed
+
+- **Uninstall no longer deletes the user's own `@RULES.md` include.** Install records a
+  trace when it actually adds the line; removal only strips the line when that trace
+  exists, and leaves it in place — saying so — when the user had it before the plugin.
+
+- **Forms standard round two.** The mono input example now genuinely renders mono, every
+  color and measurement comes from theme tokens, docs and XAML name the same resources,
+  toast stacking is identical on both platforms, and the self-test's negative patterns
+  are fixture-backed — a built-in mutation run catches 30 of 30 seeded defects.
+
+- **State and theme test suites are line-ending independent**, so they pass on CRLF
+  working copies (Windows) and LF checkouts (CI runners) alike.
+
 ## [2.63.1] - 2026-08-25
 
 ### Fixed

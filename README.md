@@ -52,13 +52,13 @@ a project can be finished start to finish without typing any of them.
 ### Windows — one line
 
 ```powershell
-irm https://raw.githubusercontent.com/Teknesyum/teknesyum-base/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/Teknesyum/teknesyum-base/v2.62.0/install.ps1 | iex
 ```
 
 ### macOS / Linux — one line
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Teknesyum/teknesyum-base/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Teknesyum/teknesyum-base/v2.62.0/install.sh | bash
 ```
 
 ### From inside Claude Code
@@ -83,6 +83,15 @@ session start and offers to run it.
 **Required:** Claude Code. **Optional:** Node.js (statusline),
 `typescript-language-server` (type intelligence), `graphify` (large-codebase indexing).
 Whatever is missing is reported; none of it is mandatory.
+
+Both one-liners point at a tag, not at `main`, so the script you pipe into a shell is the
+one that was released rather than whatever the branch holds today. Each release publishes
+the SHA-256 of both installers in its notes; `npm run checksums` prints the same values
+from a checkout. The last step — linking the statusline and the habits file — runs from
+the plugin that was just installed and downloads nothing. It is also a transaction: every
+file it touches is backed up next to itself with a timestamp, written to a temporary name
+and renamed into place, and if any step fails the whole set is rolled back. A
+`settings.json` it cannot parse is a reason to stop, never a reason to overwrite.
 
 > **Language.** Command names, agent roles and contract fields are English. What the base
 > *writes back to you* — reports, explanations, agent output — follows the language you

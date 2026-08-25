@@ -2920,7 +2920,7 @@ ol('ajan dosyalarinda model alani yok, efor ve tur normal tabaninda', () => {
 });
 
 ol('autocompact tablosu premium.js ile post-install.js arasinda ayni', () => {
-  const kaynak = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'post-install.js'), 'utf8');
+  const kaynak = fs.readFileSync(path.join(KOK, 'scripts', 'post-install.js'), 'utf8');
   const m = kaynak.match(/const AUTOCOMPACT = (\{[^}]*\})/);
   if (!m) throw new Error('post-install.js AUTOCOMPACT tablosunu kaybetmis');
   const kurulum = JSON.parse(m[1].replace(/([a-z]+):/g, '"$1":').replace(/'/g, '"'));
@@ -4870,6 +4870,161 @@ ol('Stop turunda defter disi giris kullaniciya bildirilir', () => {
   });
   icerir(r.out + r.err, 'deftere işlenmemiş');
   icerir(fs.readFileSync(path.join(relay, 'live', '_sorun.log'), 'utf8'), 'defter dışı');
+});
+
+console.log('\nKurulum işlemi');
+
+const PI = path.join(KOK, 'scripts', 'post-install.js');
+const PIM = require(PI);
+
+function piEv(kur) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-pi-'));
+  if (kur) kur(d);
+  return d;
+}
+
+function piCalistir(d, ek) {
+  return spawnSync(process.execPath, [PI], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    env: { ...process.env, CLAUDE_CONFIG_DIR: d, TEKNESYUM_AUTOCOMPACT: '', ...(ek || {}) },
+  });
+}
+
+function piYedek(d) {
+  return fs.readdirSync(d).filter((f) => /teknesyum-yedek-/.test(f));
+}
+
+ol('kurulum temiz bir HOME uzerinde bastan sona yurur', () => {
+  const d = piEv();
+  const r = piCalistir(d);
+  esit(r.status, 0, 'temiz kurulum gecmeli: ' + r.stdout + r.stderr);
+  for (const f of ['settings.json', 'RULES.md', 'CLAUDE.md', 'teknesyum-statusline.js'])
+    esit(fs.existsSync(path.join(d, f)), true, f + ' yazilmali');
+  const s = JSON.parse(fs.readFileSync(path.join(d, 'settings.json'), 'utf8'));
+  icerir(s.statusLine.command, 'teknesyum-statusline');
+  esit(piYedek(d).length, 0, 'yeni kurulumda yedek olusmamali');
+  esit(
+    fs.readdirSync(d).filter((f) => /teknesyum-tmp-/.test(f)).length,
+    0,
+    'gecici dosya kalmamali'
+  );
+});
+
+ol('bozuk settings.json tek bayt degistirmez ve kurulum non-zero doner', () => {
+  const ham = '{bozuk json, kullanicinin ayarlari burada\n';
+  const d = piEv((p) => fs.writeFileSync(path.join(p, 'settings.json'), ham));
+  const r = piCalistir(d);
+  esit(r.status, 1, 'parse hatasinda non-zero donmeli');
+  icerir(r.stdout, 'DOKUNULMADI');
+  esit(fs.readFileSync(path.join(d, 'settings.json'), 'utf8'), ham, 'bayt bayt korunmali');
+  for (const f of ['RULES.md', 'CLAUDE.md', 'teknesyum-statusline.js'])
+    esit(fs.existsSync(path.join(d, f)), false, f + ' de yazilmamali — kurulum bir islemdir');
+});
+
+ol('mevcut ozel statusLine ve RULES.md korunur', () => {
+  const d = piEv((p) => {
+    fs.writeFileSync(
+      path.join(p, 'settings.json'),
+      JSON.stringify({ statusLine: { type: 'command', command: 'kendi-satirim.sh' }, x: 1 })
+    );
+    fs.writeFileSync(path.join(p, 'RULES.md'), 'kendi kurallarim\n');
+  });
+  const r = piCalistir(d);
+  esit(r.status, 0);
+  const s = JSON.parse(fs.readFileSync(path.join(d, 'settings.json'), 'utf8'));
+  esit(s.statusLine.command, 'kendi-satirim.sh', 'ozel statusLine ezilmemeli');
+  esit(s.x, 1, 'kullanicinin diger alanlari durmali');
+  esit(fs.readFileSync(path.join(d, 'RULES.md'), 'utf8'), 'kendi kurallarim\n');
+  icerir(r.stdout, 'statusLine zaten tanımlı');
+});
+
+ol('her mutasyondan once damgali yedek alinir, mevcut CLAUDE.md kaybolmaz', () => {
+  const d = piEv((p) => fs.writeFileSync(path.join(p, 'CLAUDE.md'), 'benim huylarim\n'));
+  const r = piCalistir(d);
+  esit(r.status, 0);
+  icerir(fs.readFileSync(path.join(d, 'CLAUDE.md'), 'utf8'), 'benim huylarim');
+  icerir(fs.readFileSync(path.join(d, 'CLAUDE.md'), 'utf8'), '@RULES.md');
+  const y = piYedek(d);
+  esit(y.length > 0, true, 'yedek alinmali');
+  esit(
+    fs.readFileSync(
+      path.join(
+        d,
+        y.find((f) => /^CLAUDE\.md/.test(f))
+      ),
+      'utf8'
+    ),
+    'benim huylarim\n',
+    'yedek eski icerigi tutmali'
+  );
+});
+
+ol('yarida kalan kurulum geri alinir, yarim iz birakmaz', () => {
+  const d = piEv((p) => fs.writeFileSync(path.join(p, 'CLAUDE.md'), 'benim huylarim\n'));
+  const r = piCalistir(d, { TEKNESYUM_KURULUM_COK: '4' });
+  esit(r.status, 1, 'yarida kalan kurulum non-zero donmeli');
+  icerir(r.stdout, 'geri alınıyor');
+  for (const f of ['settings.json', 'RULES.md', 'teknesyum-statusline.js'])
+    esit(fs.existsSync(path.join(d, f)), false, f + ' geri alinmali');
+  esit(fs.readFileSync(path.join(d, 'CLAUDE.md'), 'utf8'), 'benim huylarim\n', 'dokunulmamali');
+  esit(
+    fs.readdirSync(d).filter((f) => /teknesyum-tmp-/.test(f)).length,
+    0,
+    'gecici dosya kalmamali'
+  );
+});
+
+ol('hedef normal dosya degilse hicbir sey yazilmaz', () => {
+  const d = piEv((p) => fs.mkdirSync(path.join(p, 'CLAUDE.md')));
+  const r = piCalistir(d);
+  esit(r.status, 1, 'non-zero donmeli');
+  icerir(r.stdout, 'CLAUDE.md okunamadı');
+  for (const f of ['settings.json', 'RULES.md', 'teknesyum-statusline.js'])
+    esit(fs.existsSync(path.join(d, f)), false, f + ' yazilmamali');
+});
+
+ol('ikinci kosu ayni sonucu verir, @RULES.md iki kere eklenmez', () => {
+  const d = piEv();
+  piCalistir(d);
+  const r = piCalistir(d);
+  esit(r.status, 0);
+  const c = fs.readFileSync(path.join(d, 'CLAUDE.md'), 'utf8');
+  esit(c.split('@RULES.md').length - 1, 1, 'tek satir kalmali');
+});
+
+const IYI = 'https://raw.githubusercontent.com/Teknesyum/teknesyum-base/v1.0.0/x.js';
+
+ol('indirme yalniz https ve alan listesindeki sunucuyu kabul eder', () => {
+  esit(PIM.adresDenetle('http://raw.githubusercontent.com/x'), 'yalnız https kabul edilir');
+  icerir(PIM.adresDenetle('https://evil.example.com/x'), 'alan listede yok');
+  esit(PIM.adresDenetle('bu adres degil'), 'adres çözülemedi');
+  esit(PIM.adresDenetle(IYI), null, 'gecerli adres gecmeli');
+  esit(PIM.adresDenetle(IYI, PIM.YON_TAVANI + 1), 'yönlendirme tavanı aşıldı');
+});
+
+ol('yonlendirme dongusu, cevapsiz sunucu ve dev govde durdurulur', () => {
+  const r = spawnSync(process.execPath, [path.join(__dirname, 'indir-kapilari.js')], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  esit(r.status, 0, String(r.stdout) + String(r.stderr));
+});
+
+ol('kurulum betikleri post-install indirmez, kurulu paketten calistirir', () => {
+  for (const f of ['install.ps1', 'install.sh']) {
+    const k = fs.readFileSync(path.join(path.dirname(KOK), f), 'utf8');
+    esit(
+      /post-install\.js["']?\s*-OutFile|curl[^\n]*post-install/i.test(k),
+      false,
+      f + ' indirmemeli'
+    );
+    icerir(k, 'plugins', f + ' kurulu paketi aramali');
+    icerir(k, 'post-install.js');
+    esit(/teknesyum-base\/main\//.test(k), false, f + ' main yerine surum sabitlemeli');
+  }
+  const r = fs.readFileSync(path.join(path.dirname(KOK), 'README.md'), 'utf8');
+  esit(/teknesyum-base\/main\/install\./.test(r), false, 'README surum sabitli URL vermeli');
 });
 
 console.log('\nAjan sağlığı');
@@ -7423,7 +7578,7 @@ ol('beep dinle uc sesi sirayla bildirir', () => {
 // Tarafsizlik: depoyu indiren kisi eklentiyi yazan kisinin kurallarini ve zevkini
 // devralmaz. Sifir kural, sifir arayuz ayari ile karsilanir; neon standardi bir sablon
 // olarak sunulur, sessizce yururluge girmez.
-const KURULUM = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'post-install.js'), 'utf8');
+const KURULUM = fs.readFileSync(PI, 'utf8');
 
 ol('kurulum kural defterini bos acar, hazir kural yazmaz', () => {
   const m = KURULUM.match(/const RULES = `([\s\S]*?)`;/);

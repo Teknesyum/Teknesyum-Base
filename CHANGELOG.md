@@ -6,6 +6,35 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.62.0] - 2026-08-25
+
+### Fixed
+
+- **A `settings.json` the installer could not parse was overwritten instead of left
+  alone.** It caught the parse error, added a warning line, and carried on with an empty
+  object — then wrote that object back over the file, taking every recoverable setting
+  with it. A parse failure is now a reason to stop: nothing is written, the path is
+  printed, and the run exits non-zero. `CLAUDE.md` was rewritten in place with no backup;
+  it is not any more.
+
+### Changed
+
+- **The install is a transaction.** Every change is planned first, the whole plan is
+  validated — target reachable, writable, an actual file — and only then applied. Each
+  file is backed up beside itself with a timestamp and a nonce, written under a temporary
+  name and renamed into place. If any step fails, everything already applied is rolled
+  back and the run reports what happened rather than leaving a half-installed machine.
+- **The post-install step no longer downloads itself.** `install.ps1` and `install.sh`
+  used to fetch it from `main` and run it with Node — so someone installing a tagged
+  plugin got whatever the branch happened to hold that day, over a fetch that followed
+  redirects without limit and verified nothing. They now locate the package that was just
+  installed and run the copy inside it. Both one-liners point at a release tag rather than
+  `main`, and each release publishes the SHA-256 of both installers (`npm run checksums`
+  prints the same values from a checkout).
+- **The remaining download path is bounded.** It is used only when an expected SHA-256 is
+  supplied, and it enforces HTTPS, a host allow-list, at most three redirects, a total
+  time limit, a body ceiling, and a hash check before anything reaches disk.
+
 ## [2.61.0] - 2026-08-25
 
 ### Changed

@@ -6270,6 +6270,7 @@ function taramaCalistir(p, ...arg) {
   const r = spawnSync(process.execPath, [TARAMA, ...arg, '--proje', p], {
     maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: BOS_CFG },
   });
   return { out: r.stdout || '', err: r.stderr || '', kod: r.status };
 }
@@ -6907,9 +6908,15 @@ function uiProje(secenek) {
     JSON.stringify({
       name: 'uikip',
       version: '1.0.0',
+      scripts: o.testBetigi ? { test: o.testBetigi } : undefined,
       dependencies: o.bagimlilik || { motion: '^13.1.1' },
     })
   );
+  if (o.standart !== false)
+    yaz(
+      '.claude/teknesyum-ui.json',
+      JSON.stringify({ kapali: o.standart === 'kapali' })
+    );
   if (o.css !== false) yaz('src/app.css', o.css || UI_CSS);
   if (o.yabanci !== false) {
     yaz('src/gizli.ts', 'export const x = "transition: all 900ms";\n');
@@ -6918,12 +6925,17 @@ function uiProje(secenek) {
   return { p, yaz, css: path.join(p, 'src', 'app.css') };
 }
 
-function uiCalistir(p, ...arg) {
+function uiCalistirCfg(p, cfg, ...arg) {
   const r = spawnSync(process.execPath, [TARAMA, 'ui', ...arg, '--proje', p], {
     maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
+    env: { ...process.env, CLAUDE_CONFIG_DIR: cfg },
   });
   return { out: r.stdout || '', err: r.stderr || '', kod: r.status };
+}
+
+function uiCalistir(p, ...arg) {
+  return uiCalistirCfg(p, BOS_CFG, ...arg);
 }
 
 function uiJson(p, ...arg) {
@@ -7140,6 +7152,8 @@ ol('ui --tamamla yalniz mekanik olani duzeltir', () => {
   icerir(r.out, '[düzeltildi]');
   icerir(r.out, 'karar gerektirdiği için düzeltilmedi');
   icerir(r.out, '- yazıldı: src/app.css:2');
+  icerir(r.out, 'Faz 1 — teorik:');
+  icerir(r.out, 'Faz 2 — uçtan uca: KOŞMADI — Faz 1 temiz bitmedi');
   esit(
     vcs('status', '--porcelain').stdout.trim().length > 0,
     true,
@@ -7179,7 +7193,9 @@ ol('ui kipinde kapsayici kapisi gecerli', () => {
   const j = uiJson(kap);
   esit(j.durum, 'kapsayici', 'durum alani');
   esit(j.kip, 'ui', 'kip alani');
-  icermez(uiCalistir(kap, '--kapsayici').out, 'DURDU');
+  const stdCfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uikapstd-'));
+  fs.writeFileSync(path.join(stdCfg, 'teknesyum-ui.json'), '{"kapali": false}');
+  icermez(uiCalistirCfg(kap, stdCfg, '--kapsayici').out, 'DURDU');
 });
 
 ol('ui kipi uc profil kipini bozmaz', () => {
@@ -7231,6 +7247,151 @@ ol('ui olculeri teknesyum-ui theme.css dosyasindan okur, kopyalamaz', () => {
     '380 ms tavanin ustunde sayilmali'
   );
   icerir(uiCalistir(p).out, '360 ms tavanının üstünde');
+});
+
+ol('ui kipi standart kurulu degilken calismaz profil kipleri etkilenmez', () => {
+  const { p } = uiProje({ standart: false });
+  const r = uiCalistir(p);
+  esit(r.kod, 2, 'standartsiz ui kullanim hatasidir');
+  icerir(r.out, 'DURDU');
+  icerir(r.out, '/uisetup');
+  icermez(r.out, 'SONUÇ:');
+  esit(uiJson(p).durum, 'standart-yok', 'json durum alani');
+  const kapali = uiProje({ standart: 'kapali' });
+  esit(uiCalistir(kapali.p).kod, 2, 'kapali: true da kapidir');
+  esit(uiJson(kapali.p).durum, 'standart-kapali', 'kapali durum alani');
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uicfg-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum-ui.json'), '{"kapali": false}');
+  const m = uiCalistirCfg(uiProje({ standart: false }).p, cfg);
+  esit(m.kod === 2, false, 'makine katmani da kurulu sayilmali');
+  icerir(m.out, 'SONUÇ:');
+  const pp = taramaProje(1);
+  const rp = taramaCalistir(pp, 'eco');
+  esit(rp.kod === 2, false, 'profil kipi standart kapisina tabi degil');
+  icerir(rp.out, 'tarama: eco');
+});
+
+ol('profil kipi arayuz standardi bilgi satirini basar sertifikayi etkilemez', () => {
+  const p = taramaProje(1);
+  fs.writeFileSync(path.join(p, 'src', 'app.css'), '.a { color: #ff0000; }\n');
+  const j = JSON.parse(taramaCalistir(p, 'eco', '--json').out);
+  esit(j.ui.kurulu, false, 'standart yok');
+  esit(j.ui.dosya, 1, 'tek arayuz dosyasi');
+  esit(j.ui.ihlal >= 1, true, 'palet disi renk ihlal sayilmali');
+  esit(
+    j.gecti,
+    j.maddeler.every((m) => m.gecti),
+    'ui satiri kapi degildir, sertifika maddelerden okunur'
+  );
+  const r = taramaCalistir(p, 'eco');
+  icerir(r.out, 'arayüz standardı: kurulu değil');
+  icerir(r.out, 'bilgi satırı, sertifikayı etkilemez');
+  fs.writeFileSync(path.join(p, '.claude', 'teknesyum-ui.json'), '{"kapali": true}');
+  const j2 = JSON.parse(taramaCalistir(p, 'eco', '--json').out);
+  esit(j2.ui.kurulu, true, 'proje katmani gorulmeli');
+  esit(j2.ui.kapali, true, 'kapali alani okunmali');
+  esit(j2.ui.katman, 'proje', 'katman alani');
+  icerir(taramaCalistir(p, 'eco').out, 'kapalı (kapali: true');
+});
+
+const FAZ_CSS = ['.kart {', '  transition: all 500ms ease;', '}', ''].join('\n');
+
+ol('ui --tamamla eski plani once kapatir ve ilk satira yazar', () => {
+  const { p, yaz } = uiProje({ css: FAZ_CSS });
+  yaz(
+    'ui-plan.json',
+    JSON.stringify({
+      findings: [{ file: 'src/app.css', line: 2, rule: 'motion', severity: 'error', suggestion: 'x' }],
+    })
+  );
+  uiDepo(p);
+  const r = uiCalistir(p, '--tamamla');
+  const ilk = r.out.split('\n')[0];
+  icerir(ilk, 'eski plan: ui-plan.json');
+  icerir(ilk, '1 açıktan 1 kapatıldı');
+  esit(fs.existsSync(path.join(p, 'ui-plan.json')), false, 'tam kapanan plan kaldirilir');
+  const b = uiProje();
+  uiDepo(b.p);
+  icermez(uiCalistir(b.p, '--tamamla').out, 'eski plan');
+});
+
+ol('ui --tamamla faz 2 bassiz yol yokken kosmaz ve /ekran ister', () => {
+  const { p } = uiProje({ css: FAZ_CSS });
+  uiDepo(p);
+  const r = uiCalistir(p, '--tamamla');
+  icerir(r.out, 'Faz 1 — teorik:');
+  icerir(r.out, 'ihlal açık');
+  icerir(r.out, 'Faz 2 — uçtan uca: KOŞMADI — başsız yol yok');
+  icerir(r.out, '/ekran gerekli');
+  icerir(r.out, 'SONUÇ:', 'faz 1 sonucu yine raporlanmali');
+  icerir(r.out, '[düzeltildi]');
+});
+
+ol('ui --tamamla faz 2 bassiz yolu kosar ve iki fazi ayri sayar', () => {
+  const { p } = uiProje({ css: FAZ_CSS, testBetigi: 'node -e "process.exit(0)"' });
+  uiDepo(p);
+  const r = uiCalistir(p, '--tamamla');
+  icerir(r.out, 'Faz 2 — uçtan uca: koştu (başsız:');
+  icerir(r.out, 'çıkış 0');
+  icerir(r.out, '0 ekran · 0 görsel ihlal — GEÇTİ');
+  const b = uiProje({ css: FAZ_CSS, testBetigi: 'node -e "process.exit(3)"' });
+  uiDepo(b.p);
+  const j = uiJson(b.p, '--tamamla');
+  esit(typeof j.faz1.bulgu, 'number', 'faz1 bulgu sayisi');
+  esit(j.faz1.acikIhlal, 0, 'mekanik ihlaller kapanmis olmali');
+  esit(j.faz2.kostu, true, 'bassiz yol kosmali');
+  esit(j.faz2.kod, 3, 'cikis kodu tasinmali');
+  esit(j.faz2.gecti, false, 'kalan kosu gecmis sayilmamali');
+  const c = uiProje({ css: FAZ_CSS, testBetigi: 'node -e "process.exit(3)"' });
+  uiDepo(c.p);
+  icerir(uiCalistir(c.p, '--tamamla').out, 'görsel ihlal — KALDI');
+});
+
+ol('ui --tamamla faz 2 faz 1 temiz bitmeden baslamaz kapi devre disiyken ekran yolu ajana kalir', () => {
+  const kirliFaz1 = uiProje({
+    css: ['.kart {', '  transition: all 500ms ease;', '  color: #123456;', '}', ''].join('\n'),
+    testBetigi: 'node -e "process.exit(0)"',
+  });
+  uiDepo(kirliFaz1.p);
+  const j = uiJson(kirliFaz1.p, '--tamamla');
+  esit(j.faz2.kostu, false, 'acik ihlal varken faz 2 kosmamali');
+  icerir(j.faz2.sebep, 'Faz 1 temiz bitmedi');
+  const { p } = uiProje({ css: FAZ_CSS });
+  uiDepo(p);
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uiekran-'));
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), '{"ekran_kapisi":false}');
+  const r = uiCalistirCfg(p, cfg, '--tamamla');
+  icerir(r.out, 'KOŞMADI — başsız yol yok');
+  icerir(r.out, 'kapı açık');
+  icerir(r.out, 'betik program açmaz');
+});
+
+ol('ekran kapisi karari ve muafli kirli agac olcumu kurgu ile olculur', () => {
+  const taramaMod = require(TARAMA);
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-uikapi-'));
+  fs.mkdirSync(path.join(cfg, 'teknesyum', 'live'), { recursive: true });
+  const eskiCfg = process.env.CLAUDE_CONFIG_DIR;
+  const eskiSid = process.env.CLAUDE_CODE_SESSION_ID;
+  process.env.CLAUDE_CONFIG_DIR = cfg;
+  process.env.CLAUDE_CODE_SESSION_ID = 'oturum-ui';
+  const kapiYolu = path.join(cfg, 'teknesyum', 'live', 'oturum-ui.ekran.json');
+  try {
+    esit(taramaMod.ekranKapisiAcik().acik, false, 'dosya yokken kapali');
+    fs.writeFileSync(kapiYolu, JSON.stringify({ acik: { ts: Date.now(), dakika: 10 } }));
+    esit(taramaMod.ekranKapisiAcik().acik, true, 'sureli acilis gecerli');
+    fs.writeFileSync(kapiYolu, JSON.stringify({ acik: { ts: Date.now() - 11 * 60000, dakika: 10 } }));
+    esit(taramaMod.ekranKapisiAcik().acik, false, 'sure dolunca kapali');
+  } finally {
+    if (eskiCfg === undefined) delete process.env.CLAUDE_CONFIG_DIR;
+    else process.env.CLAUDE_CONFIG_DIR = eskiCfg;
+    if (eskiSid === undefined) delete process.env.CLAUDE_CODE_SESSION_ID;
+    else process.env.CLAUDE_CODE_SESSION_ID = eskiSid;
+  }
+  const { p, css } = uiProje();
+  uiDepo(p);
+  fs.writeFileSync(css, fs.readFileSync(css, 'utf8') + '.ek { opacity: 1; }\n');
+  esit(taramaMod.uiKirli(p) !== null, true, 'kirli agac gorulmeli');
+  esit(taramaMod.uiKirli(p, new Set(['src/app.css'])), null, 'faz 1 yazdigi dosya muaftir');
 });
 
 ol('scan.md ui kipini anlatir', () => {
@@ -7684,9 +7845,17 @@ ol('ui-builder standart kapaliyken renk dayatmaz', () => {
   icerir(k, 'standart yürürlükteyken istisnasız');
 });
 
-ol('scan ui standart kurulu degilken bulgulari ihlal saymaz', () => {
+ol('scan.md ui standart kapisini ve iki fazi anlatir', () => {
   const k = fs.readFileSync(path.join(KOK, 'commands', 'scan.md'), 'utf8');
-  icerir(k, 'standart kurulu değil, bulgular ihlal değil öneri');
+  icerir(k, 'standart kurulu değilken çalışmaz');
+  icerir(k, '/uisetup');
+  icerir(k, 'Profil kipleri bu kapıdan etkilenmez');
+  icerir(k, 'Faz 1 — teorik');
+  icerir(k, 'Faz 2 — uçtan uca');
+  icerir(k, 'önce başsız yolu');
+  icerir(k, 'ekran kapısının kapsamındadır');
+  icerir(k, 'Kirli çalışma ağacında iki faz da çalışmaz');
+  icerir(k, 'raporun ilk satırındadır');
 });
 
 // Ozel dosya aynasi: kisisel dosyalar tek private depoda, projeye gore bolunmus.

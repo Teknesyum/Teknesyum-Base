@@ -881,6 +881,23 @@ const S = {
           : []
       ),
   },
+  rcAdKotu: {
+    tr: (ad) => [
+      'Oturum adı kabul edilmedi: ' + JSON.stringify(ad),
+      '',
+      'Ad harf ya da rakamla başlamalı; harf, rakam, boşluk, nokta, alt çizgi ve tire ' +
+        'içerebilir; en çok 64 karakter.',
+      'Kabuk için özel karakterler adda geçemez — komut satırında çalışırlar.',
+    ],
+    en: (ad) => [
+      'Session name rejected: ' + JSON.stringify(ad),
+      '',
+      'A name starts with a letter or digit and may contain letters, digits, spaces, ' +
+        'dots, underscores and hyphens; 64 characters at most.',
+      'Shell metacharacters are not allowed in a name — they execute on a command line.',
+    ],
+  },
+
   rcElle: {
     tr: (komut, ad) => [
       'Uzak denetimi açmak için bir terminal penceresinde şunu çalıştır:',

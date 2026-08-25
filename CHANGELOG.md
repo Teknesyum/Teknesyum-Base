@@ -6,6 +6,36 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.60.0] - 2026-08-25
+
+### Security
+
+- **A session name could run commands.** `/rc` built one shell string and pasted the name
+  and the project path into it, escaping only the double quote. Inside a double-quoted
+  bash string `$(...)` and backticks still expand, and on Windows `%VAR%`, `&`, `|`, `^`
+  and `!` are live in the same position — so a folder called `A$(...)` executed on the
+  way to opening a window. The launch no longer goes through a shell at all: the client
+  path, the name, the project directory and the flags are written to a plan file and
+  read back by a small launcher that spawns the client with a real argument vector. The
+  terminal only ever sees two paths this package produced itself. A name policy is the
+  second layer — a name now starts with a letter or digit and may carry letters, digits,
+  spaces, dots, underscores and hyphens, at most 64 characters — so the line printed for
+  the user to paste is safe as well. `/rcall` skips a folder whose name fails the policy
+  and reports it among the folders left out instead of opening it.
+
+### Added
+
+- **`/ozel pusla` now tells you whether the push landed.** It used to report success as
+  soon as the command returned. It now stages, commits, pushes — setting the upstream on
+  a first push — and then reads back `origin/<branch>` to confirm the remote actually
+  carries the commit it just made, naming the branch and the short SHA. A failure at any
+  step says which step and stops calling it done.
+- **`/ozel kur` refuses a project name it cannot vouch for**, using the same policy as
+  the session name above, and **`/ozel çek` no longer writes outside the project.** Every
+  manifest entry is resolved through its real path and has to land inside both the
+  project root and the home directory; anything else is skipped and listed. A failed
+  `pull --ff-only` is now reported instead of being swallowed.
+
 ## [2.59.1] - 2026-08-25
 
 ### Fixed

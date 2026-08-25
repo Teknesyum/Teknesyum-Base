@@ -3862,6 +3862,89 @@ ol('rc surum esigini bilir', () => {
   esit(eski(null), false, 'okunamayan surum engel degil');
 });
 
+const RC_KOTU_AD = [
+  'A$(touch sentinel)',
+  'A`touch sentinel`',
+  'A%USERPROFILE%',
+  'A&calc',
+  'A|calc',
+  'A^B',
+  'A!VAR!',
+  'A;rm -rf .',
+  'A>out.txt',
+  "A'B",
+  'A"B',
+  'A\nB',
+  '-BasaTire',
+  '.gizli',
+  'A'.repeat(65),
+];
+
+ol('rc kabuk icin ozel karakter tasiyan oturum adini reddeder', () => {
+  const ort = rcEv();
+  for (const ad of RC_KOTU_AD) {
+    const r = rcCalistir(['--metin', '--ad', ad], ort);
+    esit(r.status, 4, 'kotu ad reddedilmeli: ' + JSON.stringify(ad));
+    icerir(r.stdout, 'Oturum adı kabul edilmedi');
+    esit(/remote-control/.test(r.stdout), false, 'reddedilen ad komut satirina girmemeli');
+  }
+});
+
+ol('rc bosluklu ve turkce adi oldugu gibi gecirir', () => {
+  const ort = rcEv();
+  for (const ad of ['Teknesyum Base', 'Ölçüm 2.0', 'proje_adi-3']) {
+    const r = rcCalistir(['--metin', '--ad', ad], ort);
+    esit(r.status, 0, 'gecerli ad kabul edilmeli: ' + ad);
+    icerir(r.stdout, ad);
+  }
+});
+
+ol('rcall politikaya uymayan klasoru acmaz, elenenlere yazar', () => {
+  const dip = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rcall4-'));
+  for (const ad of ['Duzgun', 'kotu&ad']) {
+    fs.mkdirSync(path.join(dip, ad, '.git'), { recursive: true });
+  }
+  const r = rcCalistir(['--hepsi', '--metin', '--kok', dip], rcEv());
+  esit(r.status, 0, 'metin kipi calismali');
+  icerir(r.stdout, 'Duzgun');
+  icerir(r.stdout, 'Dışarıda kalan klasörler');
+  esit(/remote-control --name "kotu&ad"/.test(r.stdout), false, 'kotu ad komuta girmemeli');
+});
+
+ol('rc baslatici kullanici degerini kabuktan gecirmez', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'teknesyum-rclaunch-'));
+  const cikti = path.join(d, 'argv.json');
+  const nisan = path.join(d, 'sentinel');
+  const yuk = [
+    '$(node -e "require(\'fs\').writeFileSync(' + JSON.stringify(nisan) + ",'x')\")",
+    '`' + nisan + '`',
+    '%USERPROFILE% & echo x > ' + nisan,
+    "tek'tirnak \"cift\" |^!",
+  ];
+  const plan = path.join(d, 'plan.json');
+  fs.writeFileSync(
+    plan,
+    JSON.stringify({
+      exe: process.execPath,
+      args: [
+        '-e',
+        'require("fs").writeFileSync(process.argv[1], JSON.stringify(process.argv.slice(2)))',
+        cikti,
+      ].concat(yuk),
+      cwd: d,
+    })
+  );
+  const r = spawnSync(process.execPath, [path.join(KOK, 'scripts', 'rc-launch.js'), plan], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+  });
+  esit(r.status, 0, 'baslatici calismali: ' + String(r.stderr));
+  esit(fs.existsSync(nisan), false, 'kabuk yuku calismamali');
+  esit(fs.existsSync(plan), false, 'plan dosyasi okunduktan sonra silinmeli');
+  const gelen = JSON.parse(fs.readFileSync(cikti, 'utf8'));
+  esit(JSON.stringify(gelen), JSON.stringify(yuk), 'argv oldugu gibi gecmeli');
+});
+
 ol('rc komutu betigi cagirir ve pencere acmayi kendine birakmaz', () => {
   const k = fs.readFileSync(path.join(KOK, 'commands', 'rc.md'), 'utf8');
   icerir(k, 'scripts/rc.js');
@@ -7241,7 +7324,7 @@ ol('ozel ekle-pusla-cek dongusu dosyayi tasir', () => {
 
   const p = ozelCalistir(['pusla'], s.cfg, s.proje);
   esit(p.kod, 0, 'pusla cikis kodu');
-  icerir(p.out, 'Push tamam.');
+  icerir(p.out, 'Push tamam');
   const uzakAgac = gitCalistir(s.uzak, ['ls-tree', '-r', '--name-only', 'main']).stdout || '';
   icerir(uzakAgac, 'alfa/proje/.claude/yerel.json', 'dosya uzak depoya gitmeli');
   icerir(uzakAgac, 'alfa/ozel.json', 'manifest depoda durmali');
@@ -7250,7 +7333,7 @@ ol('ozel ekle-pusla-cek dongusu dosyayi tasir', () => {
 
   fs.writeFileSync(path.join(s.proje, '.claude', 'yerel.json'), '{"a":2}');
   icerir(ozelCalistir([], s.cfg, s.proje).out, 'değişti');
-  icerir(ozelCalistir(['pusla'], s.cfg, s.proje).out, 'Push tamam.');
+  icerir(ozelCalistir(['pusla'], s.cfg, s.proje).out, 'Push tamam');
 
   fs.writeFileSync(path.join(s.proje, '.claude', 'yerel.json'), '{"a":3}');
   const c = ozelCalistir(['cek'], s.cfg, s.proje);
@@ -7330,6 +7413,67 @@ ol('ozel kaynak dosya silinince aynadaki kopyayi dusurmez', () => {
     true,
     'aynadaki kopya durmali'
   );
+});
+
+ol('ozel commit acilmadiysa push tamam demez', () => {
+  // ÖLÇÜLDÜ (25.08.2026, dış denetim TB-007): add ve commit sonucu atılıyordu.
+  // Git kimliği yoksa commit düşer, push "Everything up-to-date" ile 0 döner ve
+  // komut dosya hiç gitmemişken başarı yazardı.
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.mkdirSync(path.join(s.proje, '.claude'), { recursive: true });
+  fs.writeFileSync(path.join(s.proje, '.claude', 'yerel.json'), '{"a":1}');
+  ozelCalistir(['ekle', './.claude/yerel.json'], s.cfg, s.proje);
+  const r = spawnSync(process.execPath, [OZEL, 'pusla'], {
+    maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+    cwd: s.proje,
+    timeout: 120000,
+    env: {
+      ...process.env,
+      CLAUDE_CONFIG_DIR: s.cfg,
+      GIT_AUTHOR_NAME: '',
+      GIT_AUTHOR_EMAIL: '',
+      GIT_COMMITTER_NAME: '',
+      GIT_COMMITTER_EMAIL: '',
+      GIT_CONFIG_GLOBAL: path.join(s.kok, 'yok.gitconfig'),
+      GIT_CONFIG_SYSTEM: path.join(s.kok, 'yok.gitconfig'),
+    },
+  });
+  const cikti = (r.stdout || '') + (r.stderr || '');
+  icermez(cikti, 'Push tamam', 'kimliksiz commit basari sayilmis');
+  esit(r.status !== 0, true, 'basarisiz gonderim sifir donmemeli');
+});
+
+ol('ozel kur politikaya uymayan proje adini reddeder', () => {
+  const s = ozelSahne();
+  // Bos ad listede yok: ad verilmediginde klasor adindan turetilir, bu mesru yol.
+  for (const kotu of ['..', '../kacis', 'a/b', 'C:' + String.fromCharCode(92) + 'x', '.gizli']) {
+    const r = ozelCalistir(['kur', s.uzak, kotu], s.cfg, s.proje);
+    esit(r.kod !== 0, true, 'kabul edilmemeliydi: ' + JSON.stringify(kotu));
+  }
+  esit(ozelCalistir(['kur', s.uzak, 'alfa-2.1_x'], s.cfg, s.proje).kod, 0, 'gecerli ad kabul');
+});
+
+ol('ozel cek proje ve ev disina yazmaz', () => {
+  const s = ozelSahne();
+  ozelCalistir(['kur', s.uzak, 'alfa'], s.cfg, s.proje);
+  fs.mkdirSync(path.join(s.proje, '.claude'), { recursive: true });
+  fs.writeFileSync(path.join(s.proje, '.claude', 'yerel.json'), '{"a":1}');
+  ozelCalistir(['ekle', './.claude/yerel.json'], s.cfg, s.proje);
+  ozelCalistir(['pusla'], s.cfg, s.proje);
+  // Manifest depodan gelir; bozuk bir kaynak alani proje disina isaret edebilir.
+  const disari = path.join(s.kok, 'disarida.json');
+  const mYol = path.join(s.cfg, 'teknesyum-ozel');
+  const klon = JSON.parse(fs.readFileSync(path.join(s.cfg, 'teknesyum-ozel.json'), 'utf8')).klon;
+  const man = path.join(klon, 'alfa', 'ozel.json');
+  const m = JSON.parse(fs.readFileSync(man, 'utf8'));
+  m.dosyalar[0].kaynak = disari;
+  fs.writeFileSync(man, JSON.stringify(m));
+  const r = ozelCalistir(['cek', '--zorla'], s.cfg, s.proje);
+  esit(fs.existsSync(disari), false, 'proje disina yazilmis');
+  icerir(r.out, 'dışına düşüyor', 'atlandigi soylenmeli');
+  void mYol;
 });
 
 ol('ozel projeler listesi icerik indirmeden okunur', () => {

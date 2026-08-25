@@ -151,30 +151,90 @@ function sorulariAc(kok) {
   });
 }
 
+function argvUret(exe, ad, ekler) {
+  void exe;
+  return ['remote-control', '--name', String(ad)].concat(ekler);
+}
+
+// Ekrana basılan satır da güvenli olmalı: kullanıcı onu kendi kabuğuna yapıştırıyor.
+// Güvence kaçış katmanından değil `adDenetle`'den geliyor — politikadan geçen ad kabuk
+// için özel hiçbir karakter taşımaz, bu yüzden gösterim biçimi olduğu gibi kalabiliyor.
 function komutSatiri(exe, ad, ekler) {
   return [tirnak(exe), 'remote-control', '--name', tirnak(ad)].concat(ekler).join(' ');
 }
 
-function baslat(satir, kok) {
+// ÖLÇÜLDÜ (25.08.2026, dış denetim TB-002): `tirnak()` yalnız çift tırnağı siliyordu ve
+// sonuç bir kabuk metnine gömülüyordu. Bash çift tırnağı içinde `$()` ve backtick
+// çalışır; Windows'ta `%VAR%`, `&`, `|`, `^`, `!` aynı sınıftadır. Başlatma artık argv
+// ile yapılıyor; bu liste ikinci katman ve ekrana basılan satırı da güvenceye alıyor.
+const AD_POLITIKASI = /^[A-Za-z0-9À-ɏ][A-Za-z0-9À-ɏ ._-]{0,63}$/;
+
+function adUygun(ad) {
+  return AD_POLITIKASI.test(String(ad));
+}
+
+function adDenetle(ad) {
+  if (adUygun(ad)) return String(ad);
+  bas(ceviri('rcAdKotu', String(ad)), 4);
+  return null;
+}
+
+// Plan diske yazılır ve terminale yalnız iki sabit yol verilir: node ve bu paketteki
+// başlatıcı. Kullanıcının adı ve proje yolu kabuk metnine hiç girmez.
+function planYaz(exe, argv, kok) {
+  const yol = path.join(
+    os.tmpdir(),
+    'teknesyum-rc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.json'
+  );
+  fs.writeFileSync(yol, JSON.stringify({ exe, args: argv, cwd: kok }), 'utf8');
+  return yol;
+}
+
+// AppleScript dizesinin içine yalnız kendi ürettiğimiz yollar giriyor; yine de ters
+// bölü ve tırnak kaçırılır — bir yol boşluk ya da tırnak taşırsa betik bozulmasın.
+function asKacir(s) {
+  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function baslat(exe, argv, kok) {
   try {
+    const plan = planYaz(exe, argv, kok);
+    const baslatici = path.join(__dirname, 'rc-launch.js');
+    const node = process.execPath;
     if (process.platform === 'win32') {
-      // Tırnaklı komutu `start` argümanı olarak geçirmek kabuk katmanlarında bozuluyor;
-      // tek satırlık bir toplu iş dosyası aradaki bütün kaçış katmanlarını siliyor.
+      // Toplu iş dosyasının gövdesi tümüyle bizim: node yolu, başlatıcı yolu, plan yolu.
+      // `%VAR%`, `&`, `^`, `!` taşıyan bir proje adı buraya hiç ulaşmaz.
       const bat = path.join(
         os.tmpdir(),
         'teknesyum-rc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.cmd'
       );
-      fs.writeFileSync(bat, ['@echo off', 'cd /d ' + tirnak(kok), satir, 'pause'].join('\r\n'));
+      fs.writeFileSync(
+        bat,
+        ['@echo off', '"' + node + '" "' + baslatici + '" "' + plan + '"', 'pause'].join('\r\n')
+      );
       const r = spawnSync('cmd', ['/c', 'start', '', bat], { cwd: kok });
       return r.status === 0;
     }
     if (process.platform === 'darwin') {
       const betik =
-        'tell application "Terminal" to do script "cd ' + tirnak(kok) + ' && ' + satir + '"';
+        'tell application "Terminal" to do script "' +
+        asKacir('"' + node + '" "' + baslatici + '" "' + plan + '"') +
+        '"';
       return spawnSync('osascript', ['-e', betik]).status === 0;
     }
+    // Kabuk gövdesi sabit; değerler positional argüman olarak geçer ve `bash` onları
+    // yeniden ayrıştırmaz.
     for (const terminal of ['x-terminal-emulator', 'gnome-terminal', 'konsole', 'xterm']) {
-      const r = spawnSync(terminal, ['-e', 'bash', '-lc', 'cd ' + tirnak(kok) + ' && ' + satir]);
+      const r = spawnSync(terminal, [
+        '-e',
+        'bash',
+        '-lc',
+        'exec "$1" "$2" "$3"',
+        '_',
+        node,
+        baslatici,
+        plan,
+      ]);
       if (r.status === 0) return true;
     }
   } catch {}
@@ -263,16 +323,20 @@ function hepsi(satirlar, exe) {
     bas(satirlar, 6);
     return;
   }
-  const secilen = alinan.slice(0, tavan);
+  const uygun = alinan.filter((p) => adUygun(p.ad));
+  for (const p of alinan) if (!adUygun(p.ad)) elenen.push(p.ad);
+  const secilen = uygun.slice(0, tavan);
   const acilan = [];
   const kalan = [];
   for (const p of secilen) {
     sorulariSustur(p.yol);
-    const satir = komutSatiri(exe, p.ad, ['--spawn', 'same-dir']);
-    if (bayrak('metin') || !baslat(satir, p.yol)) kalan.push(p.ad + ' → ' + satir);
+    const ek = ['--spawn', 'same-dir'];
+    const satir = komutSatiri(exe, p.ad, ek);
+    if (bayrak('metin') || !baslat(exe, argvUret(exe, p.ad, ek), p.yol))
+      kalan.push(p.ad + ' → ' + satir);
     else acilan.push(p.ad);
   }
-  satirlar.push(...ceviri('rcHepsiOzet', acilan, elenen, kalan, alinan.length - secilen.length));
+  satirlar.push(...ceviri('rcHepsiOzet', acilan, elenen, kalan, uygun.length - secilen.length));
   bas(satirlar, kalan.length && !bayrak('metin') ? 5 : 0);
 }
 
@@ -284,8 +348,10 @@ function main() {
   if (bayrak('hepsi')) return hepsi(satirlar, exe);
 
   const kok = path.resolve(arg('kok') || process.cwd());
-  const ad =
-    arg('ad') || process.argv.slice(2).find((x) => !x.startsWith('--')) || path.basename(kok);
+  const ad = adDenetle(
+    arg('ad') || process.argv.slice(2).find((x) => !x.startsWith('--')) || path.basename(kok)
+  );
+  if (ad === null) return;
   const gelismis = bayrak('gelismis');
 
   const ekler = [];
@@ -310,7 +376,7 @@ function main() {
   }
 
   const kayit = bayrak('kaydetme') ? null : kaydet(kok);
-  if (!baslat(satir, kok)) {
+  if (!baslat(exe, argvUret(exe, ad, ekler), kok)) {
     satirlar.push(...ceviri('rcAcilamadi', satir, ad));
     bas(satirlar, 5);
     return;

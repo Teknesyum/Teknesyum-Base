@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 const { konfigKok, read, yaz } = require('../hooks/ortak.js');
 
 const SURUM = '1.0.0';
@@ -92,6 +92,58 @@ function git(klon, arg, sessiz) {
     if (sessiz) return null;
     throw e;
   }
+}
+
+// ÖLÇÜLDÜ (25.08.2026, dış denetim TB-007): `git(..., true)` her hatayı `null` yapıyordu
+// ve `pusla` yalnız push'un sonucuna bakıyordu. Git kimliği yoksa commit sessizce
+// başarısız oluyor, push "Everything up-to-date" dönüyor ve komut **"Push tamam."**
+// yazıyordu — dosya depoya hiç gitmemişken. Aşama başına sonuç okunur.
+function gitSonuc(klon, arg) {
+  const r = spawnSync('git', ['-C', klon].concat(arg), {
+    encoding: 'utf8',
+    timeout: 120000,
+    windowsHide: true,
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  return {
+    ok: !r.error && r.status === 0,
+    status: r.status,
+    stdout: String(r.stdout || ''),
+    stderr: String(r.stderr || '') + (r.error ? String(r.error.message) : ''),
+  };
+}
+
+// Ad depo içinde bir klasör adı olarak kullanılıyor (`path.join(klon, ad, ...)`).
+// Politikadan geçmeyen ad reddedilir: `.` ve `..`, sürücü harfi, UNC, ayraç ve
+// denetim karakteri klon dışına yazma sınıfı üretir.
+const AD_POLITIKASI = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+
+function adDenetle(ad) {
+  if (!AD_POLITIKASI.test(String(ad)) || ad === '.' || ad === '..') {
+    dur(
+      'Proje adı kabul edilmedi: ' +
+        JSON.stringify(ad) +
+        '\nHarf ya da rakamla başlamalı; harf, rakam, nokta, alt çizgi ve tire içerebilir; en çok 64 karakter.'
+    );
+  }
+  return ad;
+}
+
+// Çözülen yolun izinli kökün altında kaldığını kanıtlar. Metin karşılaştırması yetmez:
+// symlink ve junction başka yere bakabilir, `realpath` ikisini de açar. Kök yoksa
+// karşılaştırma yolun kendisiyle yapılır — henüz oluşmamış hedef de sınanabilsin.
+function icerideMi(hedef, kok) {
+  const ger = (p) => {
+    try {
+      return fs.realpathSync(p);
+    } catch {
+      return path.resolve(p);
+    }
+  };
+  const h = ger(hedef);
+  const k = ger(kok);
+  const bagil = path.relative(k, h);
+  return Boolean(bagil) && !bagil.startsWith('..' + path.sep) && !path.isAbsolute(bagil);
 }
 
 // ÖLÇÜLDÜ: Windows'ta `os.tmpdir()` 8.3 kısa yol (`C:\Users\TEKNES~1\…`), `git rev-parse`
@@ -242,7 +294,7 @@ function kur(argv) {
   const a = ayar() || {};
   a.depo = url;
   a.klon = klonYolu(a);
-  const ad = argv[1] || projeAdi(a, kok);
+  const ad = adDenetle(argv[1] || projeAdi(a, kok));
   a.projeler = a.projeler || {};
   a.projeler[gercekYol(kok)] = ad;
 
@@ -398,13 +450,23 @@ function cek(argv) {
   const kok = projeKoku();
   const ad = projeAdi(a, kok);
   const klon = klonYolu(a);
-  git(klon, ['pull', '--ff-only'], true);
+  // Sonucu yok saymak bayat cache'i taze göstermekti: pull düşerse çekilen dosyalar
+  // aynanın son hali değil, en son başarılı çekimin halidir. Uyarı yazılır, akış durmaz.
+  const cekildi = gitSonuc(klon, ['pull', '--ff-only']);
   sparseAyarla(klon, sparseListe(klon));
   const m = manifest(a, ad);
   const yazilan = [];
   const korunan = [];
+  const disari = [];
   for (const d of m.dosyalar) {
     const kaynakYol = coz(d.kaynak, kok);
+    // Manifest depodan gelir ve bozuk olabilir. `--zorla` ile birlikte sınırsız bir
+    // `kaynak` alanı proje ve ev dışına yazma sınıfı üretir; hedef ikisinden birinin
+    // altında değilse dosya yazılmaz, atlandığı söylenir.
+    if (!icerideMi(kaynakYol, kok) && !icerideMi(kaynakYol, evi())) {
+      disari.push(d.kaynak);
+      continue;
+    }
     const veri = oku(path.join(klon, ad, d.ad));
     if (!veri) continue;
     if (fs.existsSync(kaynakYol) && !zorla) {
@@ -416,9 +478,15 @@ function cek(argv) {
     yazilan.push(d.kaynak);
   }
   const satir = ['Aynadan çekildi: ' + yazilan.length + ' dosya'];
+  if (!cekildi.ok)
+    satir.push(
+      '  uyarı    uzaktan güncellenemedi, yerel kopya kullanıldı: ' + tekSatir(cekildi.stderr)
+    );
   for (const y of yazilan) satir.push('  yazıldı  ' + y);
   for (const y of korunan)
     satir.push('  korundu  ' + y + '  — yereldeki farklı, üzerine yazılmadı');
+  for (const y of disari)
+    satir.push('  atlandı  ' + y + '  — hedef proje ve ev dizininin dışına düşüyor');
   if (korunan.length) satir.push('', 'Yereli aynadakiyle ezmek için:  /ozel cek --zorla');
   bas(satir);
 }
@@ -446,15 +514,57 @@ function pusla(argv) {
     fs.writeFileSync(d.depoYol, d.veri);
   }
   manifestYaz(a, ad, manifest(a, ad));
-  git(klon, ['add', '--', ad], true);
-  const mesaj = ad + ': ' + yazilacak.length + ' özel dosya güncellendi';
-  git(klon, ['commit', '-m', mesaj], true);
-  const p = git(klon, ['push'], true);
   const satir = ['Özel aynaya yazıldı — ' + yazilacak.length + ' dosya'];
   for (const d of yazilacak) satir.push('  ' + d.durum.padEnd(8) + d.kaynak);
   for (const d of eksik) satir.push('  atlandı  ' + d.kaynak + '  — kaynak dosya bulunamadı');
-  satir.push(p === null ? 'Push başarısız — /ozel pusla ile yeniden dene.' : 'Push tamam.');
-  bas(satir);
+  const sonuc = gonder(klon, ad + ': ' + yazilacak.length + ' özel dosya güncellendi');
+  bas(satir.concat(sonuc.satir));
+  if (!sonuc.ok) process.exitCode = 1;
+}
+
+// Her aşama ayrı ayrı okunur ve başarı cümlesi ancak uzak dalın beklenen commit'i
+// taşıdığı görüldükten sonra yazılır. "Değişiklik yok" ile gerçek commit hatası ayrı
+// şeylerdir; ilki sessizce geçilir, ikincisi sebebiyle birlikte söylenir.
+function gonder(klon, mesaj) {
+  const ekle = gitSonuc(klon, ['add', '--all', '--']);
+  if (!ekle.ok) return { ok: false, satir: ['Kaydedilemedi (git add): ' + tekSatir(ekle.stderr)] };
+
+  const commit = gitSonuc(klon, ['commit', '-m', mesaj]);
+  const degisiklikYok = /nothing to commit|working tree clean|no changes added/i.test(
+    commit.stdout + commit.stderr
+  );
+  if (!commit.ok && !degisiklikYok)
+    return { ok: false, satir: ['Commit açılamadı: ' + tekSatir(commit.stderr || commit.stdout)] };
+
+  const sha = (gitSonuc(klon, ['rev-parse', 'HEAD']).stdout || '').trim();
+  const dal = (gitSonuc(klon, ['rev-parse', '--abbrev-ref', 'HEAD']).stdout || '').trim();
+  const ustAkim = gitSonuc(klon, ['rev-parse', '--abbrev-ref', '@{upstream}']).ok;
+  const push = ustAkim
+    ? gitSonuc(klon, ['push'])
+    : gitSonuc(klon, ['push', '--set-upstream', 'origin', dal]);
+  if (!push.ok)
+    return {
+      ok: false,
+      satir: ['Push başarısız: ' + tekSatir(push.stderr), '/ozel pusla ile yeniden dene.'],
+    };
+
+  // Push'un çıkış kodu 0 olması yetmez: commit hiç açılmamışsa "Everything up-to-date"
+  // de 0 döner. Uzak ucun gerçekten bu commit'te olduğu sorulur.
+  const uzak = gitSonuc(klon, ['rev-parse', 'origin/' + dal]);
+  if (!uzak.ok || uzak.stdout.trim() !== sha)
+    return {
+      ok: false,
+      satir: [
+        'Push sonrası uzak uç beklenen commit’te değil — dosya depoya gitmemiş olabilir.',
+        '  beklenen: ' + (sha.slice(0, 8) || '?') + '  ·  uzak: ' + (uzak.stdout.trim().slice(0, 8) || '?'),
+      ],
+    };
+  return { ok: true, satir: ['Push tamam — ' + dal + ' @ ' + sha.slice(0, 8)] };
+}
+
+function tekSatir(s) {
+  const t = String(s).replace(/\s+/g, ' ').trim();
+  return t.length > 200 ? t.slice(0, 199) + '…' : t || 'sebep bildirilmedi';
 }
 
 function yardim() {

@@ -1,7 +1,13 @@
 <!-- Teknesyum Neon — WPF giris, dogrulama, modal, toast.
      App.xaml > Application.Resources > MergedDictionaries icine Theme.xaml'DAN SONRA
-     eklenir; butun firca, sure ve font kaynaklarini oradan okur, kendi rengi yoktur.
+     eklenir; butun firca, sure ve font kaynaklarini oradan okur.
      Gerekceler ve olcumler: references/forms.md.
+
+     BU DOSYANIN URETTIGI TEK RENK MODAL PERDESIDIR (TkModalPerde, #99000000).
+     Theme.xaml'da karsiligi yok, etiketi tasiyor ve tek kaynagi burasidir; CSS karsiligi
+     rgba(0, 0, 0, 0.6). Tokena terfisi U11'e birakildi. Bunun disinda hicbir firca,
+     yuzey ya da golge burada YENIDEN TANIMLANMAZ: modal ve toast govdesi Theme.xaml'in
+     Panel stilinden TUREVLENIR (BasedOn), zemin/cerceve/yaricap satirlari kopyalanmaz.
 
      SERH: modal ve toast form degildir; U10 birlestirmesinde Overlays.xaml'e ayrilmaya
      adaydir. Dosya adi bilerek boyle birakildi (owns pazarligi yapilmadi).
@@ -11,9 +17,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
-
-  <!-- Secim fircasi: varsayilan Windows secimi bu palette okunmuyor. Mavi /30. -->
-  <SolidColorBrush x:Key="TkSelection" Color="#4D00F3FF"/>
 
   <!-- ======================================================================
        1 · Metin girisi - bes durum
@@ -34,9 +37,10 @@
     <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
-    <!-- Caret ve secim. -->
+    <!-- Caret ve secim. Secim fircasi Theme.xaml'in NeonBlue30'udur (mavi /30);
+         forms.md de ayni adi yazar. Burada ikinci bir firca TANIMLANMAZ. -->
     <Setter Property="CaretBrush" Value="{StaticResource NeonBlue}"/>
-    <Setter Property="SelectionBrush" Value="{StaticResource TkSelection}"/>
+    <Setter Property="SelectionBrush" Value="{StaticResource NeonBlue30}"/>
     <Setter Property="SelectionOpacity" Value="1"/>
     <!-- Varsayilan WPF hata anahati (kirmizi Adorner) KAPATILIR; palet disidir.
          Yerine asagidaki TkErrorTemplate cizer. -->
@@ -120,10 +124,13 @@
   <ControlTemplate x:Key="TkErrorTemplate">
     <StackPanel Orientation="Vertical">
       <AdornedElementPlaceholder x:Name="ph"/>
-      <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+      <!-- Alan ile mesaj arasi 8, ikon ile metin arasi 8 - SKILL §5'in
+           4 / 8 / 12 / 16 / 24 merdiveninden. CSS karsiligi .tk-field ve .tk-error
+           gap degerleri; iki platformda ayni sayi. -->
+      <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
         <!-- Ikon anlam tasimaz; anlami metin verir. Ekran okuyucudan gizlenir. -->
         <Path Width="16" Height="16" Stretch="Uniform"
-              Margin="0,1,6,0"
+              Margin="0,1,8,0"
               AutomationProperties.IsOffscreenBehavior="Offscreen"
               Fill="{StaticResource DangerText}"
               Data="M8 1 L15 14 L1 14 Z M8 5.5 L8 10 M8 11.5 L8 12.5"/>
@@ -167,10 +174,17 @@
        kapanmayi (IsCancel="True" dugmesi) ve kapanista odagin acan ogeye donmesini
        pencere yoneticisi ustlenir. Asagidaki stil o pencereyi giydirir.
        (varsayilan, olculmedi): genislik 560. -->
+
+  <!-- Yukseklik tavani: CSS'teki max-height 85vh'nin masaustu karsiligi. WPF'te vh yok,
+       bu yuzden tavan bir SAYI degil bir ORAN olarak duruyor ve iki platformda ayni tek
+       sayidir: 0.85 (varsayilan, olculmedi). Pencere acilirken uygulama
+       MaxHeight = SystemParameters.WorkArea.Height * TkModalMaxYukseklikOrani atar;
+       stile sabit bir MaxHeight yazilmaz, cunku ekran yuksekligini bilmez. -->
+  <sys:Double x:Key="TkModalMaxYukseklikOrani">0.85</sys:Double>
+
   <Style x:Key="TkModalWindow" TargetType="Window">
     <Setter Property="Width" Value="560"/>
     <Setter Property="SizeToContent" Value="Height"/>
-    <Setter Property="MaxHeight" Value="720"/>
     <Setter Property="WindowStartupLocation" Value="CenterOwner"/>
     <Setter Property="ShowInTaskbar" Value="False"/>
     <Setter Property="ResizeMode" Value="NoResize"/>
@@ -263,8 +277,16 @@
        4 · Toast
        ====================================================================== -->
 
-  <!-- Yigin: sag alt, kenarlardan 24. En fazla 3 gorunur; dorduncu gelince en eski
-       duser. Yigin yukari dogru buyur, aralik 12. -->
+  <!-- Yigin: sag alt, kenarlardan 24. Aralik 12 (Margin, asagida).
+       YON IKI PLATFORMDA AYNI: yeni toast koleksiyonun SONUNA eklenir ve koseye EN
+       YAKIN, yani en altta gorunur; yigin yukari dogru buyur. StackPanel'in dogal
+       sirasi budur, CSS tarafi da bu yuzden column-reverse degil column yazar.
+       EN FAZLA 3, DORDUNCU GELINCE EN ESKI DUSER - kuralin WPF tarafindaki tasiyicisi
+       asagidaki TkToastEnFazla sabitidir; yigini besleyen ObservableCollection bu sayiyi
+       asinca Index 0'i (en eskiyi) cikarir. CSS karsiligi
+       .tk-toast-yigin > .tk-toast:nth-last-child(n + 4) kuralidir. -->
+  <sys:Int32 x:Key="TkToastEnFazla">3</sys:Int32>
+
   <Style x:Key="TkToastYigin" TargetType="ItemsControl">
     <Setter Property="HorizontalAlignment" Value="Right"/>
     <Setter Property="VerticalAlignment" Value="Bottom"/>
@@ -280,15 +302,14 @@
   </Style>
 
   <!-- Govde metni her cesitte beyaz kalir (19.93:1); renk cerceve, ikon ve baslikta.
-       Genislik 360 (varsayilan, olculmedi). -->
-  <Style x:Key="TkToast" TargetType="Border">
+       Genislik 360 (varsayilan, olculmedi).
+       YUZEY PANEL'DIR: zemin, cerceve, kalinlik ve yaricap Theme.xaml'in Panel
+       stilinden TUREVLENIR; buraya kopyalanmaz. Panel'in 24 dolgusu 12'ye iner
+       (merdiven basamagi), CSS tarafi da ayni indirmeyi yapar. -->
+  <Style x:Key="TkToast" TargetType="Border" BasedOn="{StaticResource Panel}">
     <Setter Property="Width" Value="360"/>
     <Setter Property="Margin" Value="0,12,0,0"/>
     <Setter Property="Padding" Value="12"/>
-    <Setter Property="Background" Value="{StaticResource Surface}"/>
-    <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
-    <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="6"/>
     <Setter Property="TextElement.Foreground" Value="{StaticResource TextBody}"/>
     <Setter Property="TextElement.FontFamily" Value="{StaticResource FontSans}"/>
     <Setter Property="TextElement.FontSize" Value="14"/>

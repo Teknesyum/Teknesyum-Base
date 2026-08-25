@@ -13,9 +13,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 const { tara, kur } = require('./harita.js');
-const { roleKoku, norm } = require('../hooks/ortak.js');
+const { roleKoku, norm, konfigKok, izKoku, oturumKimligi, safe } = require('../hooks/ortak.js');
 const kapsayici = require('../hooks/kapsayici.js');
 
 const PROFILLER = ['eco', 'normal', 'premium'];
@@ -588,6 +588,24 @@ function rapor(sonuc) {
     }
     if (!m.gecti) L.push('   yapılacak: ' + YAPILACAK[m.ad](m, sonuc.dugme));
   });
+  if (sonuc.ui) {
+    const u = sonuc.ui;
+    const durum = !u.kurulu
+      ? 'kurulu değil (/uisetup)'
+      : u.kapali
+        ? 'kapalı (kapali: true, ' + u.katman + ')'
+        : 'kurulu (' + u.katman + ', kapali: false)';
+    L.push('');
+    L.push(
+      'arayüz standardı: ' +
+        durum +
+        ' · ' +
+        u.dosya +
+        ' arayüz dosyası · ' +
+        u.ihlal +
+        ' ihlal — bilgi satırı, sertifikayı etkilemez'
+    );
+  }
   if (sonuc.maddeler[0].atlandi) {
     L.push('');
     L.push('not: docs/taramalar/ATLANDI.md var — atlama gerekçesi yazılmış, eşik yine de aranır.');
@@ -1187,14 +1205,164 @@ function uiDuzelt(kok, bulgular, tema) {
 
 // `--tamamla` dosyaya yazar. Kullanıcı yazılanı geri alabilmeli; kirli ağaçta yazılan
 // satır kendi değişikliğine karışır ve `git checkout` ikisini birden götürür.
-function uiKirli(kok) {
+function uiKirli(kok, muaf) {
   const durum = git(kok, 'status', '--porcelain');
   if (durum === null)
     return { sebep: 'git sorulamadı — çalışma ağacının temiz olduğu doğrulanamadı' };
-  const satir = durum.split('\n').filter((s) => s.trim());
+  const m = muaf || new Set();
+  const satir = durum
+    .split('\n')
+    .filter((s) => s.trim())
+    .filter((s) => !m.has(s.slice(3).trim().split(' -> ').pop().replace(/^"|"$/g, '')));
   return satir.length
     ? { sebep: satir.length + ' dosyada bekleyen değişiklik var', liste: satir.slice(0, 10) }
     : null;
+}
+
+// `teknesyum-ui.json` iki katmanlı okunur: proje dosyası makine dosyasını alan bazında
+// ezer. `ui` kipi standarda karşı ölçer; standart yoksa ölçülen şey uygunluk değil bir
+// şablona uzaklıktır, o yüzden kip hiç başlamaz. Profil kipleri bu kapıya tabi değildir —
+// standart kurmamış birinin `/scan premium` çalıştırması engellenmez, yalnız bilgi basılır.
+function uiStandart(kok) {
+  const projeYol = path.join(kok, '.claude', 'teknesyum-ui.json');
+  const makineYol = path.join(konfigKok(), 'teknesyum-ui.json');
+  const projeVar = fs.existsSync(projeYol);
+  const makineVar = fs.existsSync(makineYol);
+  const proje = projeVar ? jsonOku(projeYol) : null;
+  const makine = makineVar ? jsonOku(makineYol) : null;
+  const kapali =
+    proje && typeof proje.kapali === 'boolean'
+      ? proje.kapali
+      : !!(makine && makine.kapali === true);
+  return {
+    kurulu: projeVar || makineVar,
+    kapali,
+    katman: projeVar ? 'proje' : makineVar ? 'makine' : null,
+  };
+}
+
+// Eski `scan ui` planı: `--tamamla` verilmeden üretilmiş bulgu listesi (uicheckup biçimi).
+// Yeni tarama koşmadan önce aranır; bulunursa açıkları yeni koşuya karşı sayılır ve
+// tamamı kapandıysa dosya kaldırılır. Plan yoksa akış aynen sürer, uyarı basılmaz.
+function uiPlanBul(kok) {
+  for (const aday of [path.join(kok, 'ui-plan.json'), path.join(kok, '.claude', 'ui-plan.json')]) {
+    const j = jsonOku(aday);
+    if (j && Array.isArray(j.findings)) return { yol: aday, findings: j.findings };
+  }
+  return null;
+}
+
+function uiPlanKapat(kok, plan, bulgular) {
+  const kalanKume = new Set(
+    bulgular.filter((b) => !b.duzeltildi).map((b) => b.dosya + ':' + b.satir)
+  );
+  const acikKalan = plan.findings.filter((f) =>
+    kalanKume.has(String(f.file) + ':' + Number(f.line))
+  ).length;
+  const kapatilan = plan.findings.length - acikKalan;
+  let silindi = false;
+  if (!acikKalan) {
+    try {
+      fs.unlinkSync(plan.yol);
+      silindi = true;
+    } catch {}
+  }
+  return {
+    yol: gorece(kok, plan.yol),
+    toplam: plan.findings.length,
+    kapatilan,
+    kalan: acikKalan,
+    silindi,
+  };
+}
+
+// Faz 2'nin başsız yolu: proje kendi doğrulamasını pencere açmadan koşabiliyor mu.
+// `standartlar.md` uygulama doğrulamasının başsız yapılmasını ister; ekran son çaredir.
+function bassizYol(kok) {
+  const pj = jsonOku(path.join(kok, 'package.json'));
+  const t = pj && pj.scripts && pj.scripts.test;
+  if (t && !/no test specified/i.test(String(t)))
+    return { komut: String(t), kaynak: 'package.json test betiği' };
+  const adaylar = [kok];
+  for (const ad of dosyalar(kok)) {
+    if (ad.startsWith('.') || UI_ATLA.has(ad)) continue;
+    try {
+      if (fs.statSync(path.join(kok, ad)).isDirectory()) adaylar.push(path.join(kok, ad));
+    } catch {}
+  }
+  for (const d of adaylar)
+    for (const f of dosyalar(d))
+      if (/test/i.test(f) && /\.csproj$/i.test(f)) return { komut: 'dotnet test', kaynak: f };
+  return null;
+}
+
+// Ekran kapısının durumu `ekran-kapisi.js` ile aynı dosyalardan okunur; kapı buradan
+// açılmaz, yalnız bakılır. Program açmak o kapının kapsamındadır (K5) — kapalıysa Faz 2
+// ekran yoluna hiç girmez.
+function ekranKapisiAcik() {
+  const cfg = jsonOku(path.join(konfigKok(), 'teknesyum.json'));
+  if (cfg && cfg.ekran_kapisi === false) return { acik: true };
+  const kim = safe(oturumKimligi() || 'oturum');
+  const iz = izKoku(path.join(konfigKok(), 'teknesyum'));
+  const a = (jsonOku(path.join(iz, kim + '.ekran.json')) || {}).acik;
+  if (!a || !Number.isFinite(Number(a.ts))) return { acik: false };
+  const gecen = Date.now() - Number(a.ts);
+  if (gecen < 0) return { acik: false };
+  if (Number(a.dakika) > 0) return { acik: gecen < Number(a.dakika) * 60000 };
+  const tur = jsonOku(path.join(iz, kim + '.tur'));
+  const t = tur && Number(tur.t);
+  return {
+    acik: Number.isFinite(t) && t > 0 && a.tur === String(t) && gecen < 15 * 60 * 1000,
+  };
+}
+
+// Faz 2 — uçtan uca doğrulama. Yalnız Faz 1 temiz bittiğinde (açık ihlal sıfır) koşar.
+// Sıra: kirli ağaç kapısı (Faz 1'in kendi yazdıkları muaf) → başsız yol → ekran yolu.
+// Başsız yol yoksa betik programı kendisi açmaz; ekran yolu `/scan` akışına kalır ve
+// o yol ekran kapısına tabidir. Koşmayan faz sessiz geçilmez, sebebi döner.
+function faz2Kos(kok, faz1) {
+  if (faz1.acikIhlal)
+    return { kostu: false, sebep: 'Faz 1 temiz bitmedi — ' + faz1.acikIhlal + ' ihlal açık' };
+  const kirli = uiKirli(kok, faz1.yazilan);
+  if (kirli)
+    return { kostu: false, sebep: 'çalışma ağacı Faz 1 dışı değişiklikle kirli — ' + kirli.sebep };
+  const yol = bassizYol(kok);
+  if (!yol) {
+    const kapi = ekranKapisiAcik();
+    return {
+      kostu: false,
+      sebep: 'başsız yol yok — package.json test betiği ve test csproj bulunamadı',
+      ekranKapisi: kapi.acik ? 'açık' : 'kapalı',
+      devam: kapi.acik
+        ? 'kapı açık — ekran doğrulamasını /scan akışı yürütür, betik program açmaz'
+        : 'ekran kapısı kapalı — /ekran gerekli',
+    };
+  }
+  let r;
+  try {
+    r = spawnSync(yol.komut, {
+      cwd: kok,
+      shell: true,
+      encoding: 'utf8',
+      timeout: 240000,
+      windowsHide: true,
+      maxBuffer: 16 * 1024 * 1024,
+    });
+  } catch (e) {
+    r = { error: e };
+  }
+  if (!r || r.error || r.status === null)
+    return { kostu: false, sebep: 'program açılamadı — `' + yol.komut + '` koşamadı' };
+  return {
+    kostu: true,
+    yolAdi: 'bassiz',
+    komut: yol.komut,
+    kaynak: yol.kaynak,
+    kod: r.status,
+    gecti: r.status === 0,
+    ekran: 0,
+    gorselIhlal: 0,
+  };
 }
 
 function uiBaslik(bulgular) {
@@ -1225,6 +1393,20 @@ function uiKirliRapor(kirli) {
 
 function uiRapor(sonuc) {
   const L = [];
+  if (sonuc.plan) {
+    L.push(
+      'eski plan: ' +
+        sonuc.plan.yol +
+        ' — ' +
+        sonuc.plan.toplam +
+        ' açıktan ' +
+        sonuc.plan.kapatilan +
+        ' kapatıldı' +
+        (sonuc.plan.kalan
+          ? ', ' + sonuc.plan.kalan + ' açık kaldı (aşağıdaki bulgularda)'
+          : ', plan dosyası kaldırıldı')
+    );
+  }
   L.push('tarama: ui · proje: ' + sonuc.proje + (sonuc.surum ? ' ' + sonuc.surum : ''));
   L.push(
     sonuc.bulgular.length
@@ -1262,18 +1444,47 @@ function uiRapor(sonuc) {
   L.push('süre: ' + (sonuc.sure_ms / 1000).toFixed(2) + ' sn · ' + sonuc.dosya + ' arayüz dosyası');
   for (const n of sonuc.notlar) L.push('not: ' + n);
   if (sonuc.tamamla) {
-    L.push('');
     const kalan = sonuc.bulgular.filter((b) => !b.duzeltildi);
+    L.push('');
+    L.push('--tamamla · iki faz');
     L.push(
-      '--tamamla · ' +
-        sonuc.duzeltilen.length +
-        ' düzeltme yazıldı, ' +
-        kalan.length +
-        ' bulgu bırakıldı'
+      'Faz 1 — teorik: ' +
+        sonuc.faz1.bulgu +
+        ' bulgu · ' +
+        sonuc.faz1.duzeltme +
+        ' düzeltme yazıldı · ' +
+        sonuc.faz1.acikIhlal +
+        ' ihlal açık · ' +
+        sonuc.faz1.acikDurgunluk +
+        ' durgunluk açık'
     );
     for (const b of sonuc.duzeltilen) L.push('- yazıldı: ' + uiYer(b) + ' ' + b.mesaj);
     if (kalan.length) L.push('karar gerektirdiği için düzeltilmedi:');
     for (const b of kalan.slice(0, UI_BULGU_TAVANI)) L.push('- ' + uiYer(b) + ' ' + b.mesaj);
+    const f2 = sonuc.faz2;
+    if (f2.kostu) {
+      L.push(
+        'Faz 2 — uçtan uca: koştu (başsız: `' +
+          f2.komut +
+          '` · ' +
+          f2.kaynak +
+          ') · çıkış ' +
+          f2.kod +
+          ' · ' +
+          f2.ekran +
+          ' ekran · ' +
+          f2.gorselIhlal +
+          ' görsel ihlal — ' +
+          (f2.gecti ? 'GEÇTİ' : 'KALDI')
+      );
+    } else {
+      L.push(
+        'Faz 2 — uçtan uca: KOŞMADI — ' +
+          f2.sebep +
+          (f2.devam ? ' · ' + f2.devam : '') +
+          '. Faz 1 sonucu yukarıda geçerlidir.'
+      );
+    }
   }
   return L.join('\n') + '\n';
 }
@@ -1294,6 +1505,33 @@ function uiMain(bayrak, bilinmeyen) {
     );
     return bitir(2);
   }
+  const std = uiStandart(kok);
+  if (!std.kurulu || std.kapali) {
+    const sebep = std.kurulu
+      ? 'standart kapalı (kapali: true, ' + std.katman + ' katmanı)'
+      : 'standart kurulu değil — ne <proje>/.claude/teknesyum-ui.json ne ~/.claude/teknesyum-ui.json var';
+    process.stdout.write(
+      bayrak.includes('--json')
+        ? JSON.stringify(
+            {
+              kip: UI_KIPI,
+              durum: std.kurulu ? 'standart-kapali' : 'standart-yok',
+              sebep,
+            },
+            null,
+            2
+          ) + '\n'
+        : [
+            'tarama: ui',
+            'DURDU — ' + sebep,
+            '',
+            'ui kipi standarda karşı ölçer; standart yokken ölçüm uygunluk değil şablona',
+            'uzaklıktır, o yüzden tarama başlamaz. Kurmak için: /uisetup',
+            'Profil kipleri (eco/normal/premium) bu kapıdan etkilenmez.',
+          ].join('\n') + '\n'
+    );
+    return bitir(2);
+  }
   const tamamla = bayrak.includes('--tamamla');
   if (tamamla) {
     const kirli = uiKirli(kok);
@@ -1306,9 +1544,28 @@ function uiMain(bayrak, bilinmeyen) {
       return bitir(2);
     }
   }
+  const plan = uiPlanBul(kok);
   const notlar = bilinmeyen.map((b) => 'bilinmeyen bayrak yok sayıldı: ' + b);
+  if (plan && !tamamla)
+    notlar.push('eski scan ui planı duruyor: ' + gorece(kok, plan.yol) + ' — --tamamla önce onu kapatır');
   const { bulgular, tema, dosya, paket } = uiTara(kok, notlar);
   const duzeltilen = tamamla ? uiDuzelt(kok, bulgular, tema) : [];
+  const planSonuc = tamamla && plan ? uiPlanKapat(kok, plan, bulgular) : null;
+  const faz1 = tamamla
+    ? {
+        bulgu: bulgular.length,
+        duzeltme: duzeltilen.length,
+        acikIhlal: bulgular.filter((b) => b.kol === 'ihlal' && !b.duzeltildi).length,
+        acikDurgunluk: bulgular.filter((b) => b.kol === 'durgunluk' && !b.duzeltildi).length,
+        yazilan: new Set(
+          duzeltilen
+            .map((b) => b.dosya)
+            .filter(Boolean)
+            .concat(planSonuc && planSonuc.silindi ? [planSonuc.yol] : [])
+        ),
+      }
+    : null;
+  const faz2 = tamamla ? faz2Kos(kok, faz1) : null;
   const sonuc = {
     kip: UI_KIPI,
     proje: path.basename(kok),
@@ -1327,6 +1584,23 @@ function uiMain(bayrak, bilinmeyen) {
     duzeltilen,
     notlar,
   };
+  if (planSonuc) {
+    sonuc.plan = {
+      yol: planSonuc.yol,
+      toplam: planSonuc.toplam,
+      kapatilan: planSonuc.kapatilan,
+      kalan: planSonuc.kalan,
+    };
+  }
+  if (tamamla) {
+    sonuc.faz1 = {
+      bulgu: faz1.bulgu,
+      duzeltme: faz1.duzeltme,
+      acikIhlal: faz1.acikIhlal,
+      acikDurgunluk: faz1.acikDurgunluk,
+    };
+    sonuc.faz2 = faz2;
+  }
   sonuc.gecti = !bulgular.some((b) => !b.duzeltildi);
   process.stdout.write(
     bayrak.includes('--json') ? JSON.stringify(sonuc, null, 2) + '\n' : uiRapor(sonuc)
@@ -1355,9 +1629,12 @@ function kullanim() {
       '  normal   10 depo · sonnet+ · değişen dosyalar + komşuları · her sözleşme denetlenir · README',
       '  premium  50 depo · opus/high+ · baştan sona her kaynak dosya · her sözleşme · README + CHANGELOG + skill',
       '  ui       profilden bağımsız · yalnız arayüz dosyaları · ihlal + durgunluk · beş saniyenin altında',
+      '           teknesyum-ui.json (proje ya da makine) yoksa veya kapali: true ise çalışmaz — /uisetup.',
       '',
       '  --tamamla  eco/normal/premium: çıktının sonuna "ne yapılmalı" bölümü ekler, dosya yazmaz.',
-      '             ui: mekanik olanı düzeltir, karar gerektireni rapor eder; kirli ağaçta çalışmaz.',
+      '             ui: iki faz. Faz 1 mekanik olanı kaynakta düzeltir, karar gerektireni rapor eder;',
+      '             Faz 2 uçtan uca doğrulamayı önce başsız yolla dener, ekran yolu ekran kapısına',
+      '             tabidir. Kirli ağaçta iki faz da çalışmaz.',
       '  --json     ayrıştırılabilir çıktı.',
       '  --proje    denetlenecek kök (varsayılan: bulunulan dizin).',
       '  --kapsayici  kapsayıcı kapısını aş — üst klasörü tek projeymiş gibi denetle.',
@@ -1431,6 +1708,15 @@ function main() {
     belge(kok, profil),
     lisans(kok),
   ];
+  const std = uiStandart(kok);
+  const uiOlcum = uiTara(kok, []);
+  const ui = {
+    kurulu: std.kurulu,
+    kapali: std.kapali,
+    katman: std.katman,
+    dosya: uiOlcum.dosya,
+    ihlal: uiOlcum.bulgular.filter((b) => b.kol === 'ihlal').length,
+  };
   const sonuc = {
     profil,
     proje: path.basename(kok),
@@ -1440,6 +1726,7 @@ function main() {
     tamamla: bayrak.includes('--tamamla'),
     gecti: maddeler.every((m) => m.gecti),
     maddeler,
+    ui,
     notlar,
   };
   process.stdout.write(
@@ -1449,4 +1736,14 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { dugmeTablosu, OLCUT, modelSirasi, eforSirasi };
+module.exports = {
+  dugmeTablosu,
+  OLCUT,
+  modelSirasi,
+  eforSirasi,
+  uiStandart,
+  uiKirli,
+  bassizYol,
+  ekranKapisiAcik,
+  uiPlanBul,
+};

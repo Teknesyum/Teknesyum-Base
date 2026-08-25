@@ -103,15 +103,28 @@ başlık odur.
 Ölçüler (palet, süre ölçeği, 360 ms tavanı) `skills/teknesyum-ui/assets/theme.css`
 dosyasından okunur, komuta kopyalanmaz.
 
-**Bu kip `teknesyum-ui` standardına göre ölçer.** Standart kurulu değilse — ne
-`<proje>/.claude/teknesyum-ui.json` ne `~/.claude/teknesyum-ui.json` var — ölçüm bir
-uygunluk denetimi değil, bir şablona uzaklık ölçümüdür. Rapordan önce tek satır söyle:
-standart kurulu değil, bulgular ihlal değil öneri; kurmak isterse `/uisetup`.
+**Bu kip `teknesyum-ui` standardına göre ölçer ve standart kurulu değilken çalışmaz.**
+Ne `<proje>/.claude/teknesyum-ui.json` ne `~/.claude/teknesyum-ui.json` varsa, ya da
+yürürlükteki dosya `"kapali": true` diyorsa betik `DURDU` basar ve çıkış kodu 2 verir:
+standart yokken ölçüm uygunluk denetimi değil şablona uzaklık ölçümüdür. O çıktıyı
+aldığında taramayı kendin yapmaya girişme — tek satırla sebebini ve `/uisetup` yolunu
+göster. Profil kipleri bu kapıdan etkilenmez; onlar sadece bilgi satırı basar:
+`arayüz standardı: <kurulu mu> · <kaç arayüz dosyası> · <kaç ihlal>` — bu satır kapı
+değildir, sertifika onsuz da verilir.
 
-### `ui --tamamla` gerçekten yazar
+**Eski plan önce kapanır.** `--tamamla` verilmişse betik tarama koşmadan önce
+`--tamamla` olmadan yazılmış eski bir `scan ui` planı arar (`ui-plan.json`,
+`.claude/ui-plan.json`). Bulursa açıklarını yeni koşuya karşı sayar, tamamı kapandıysa
+dosyayı kaldırır; planın yolu ve kaç açığın kapatıldığı raporun ilk satırındadır.
+Plan yoksa akış aynen sürer, uyarı basılmaz.
 
-Öteki üç kipte `--tamamla` dosyaya dokunmaz. `ui` kipinde **mekanik ve geri alınabilir**
-olanı düzeltir:
+### `ui --tamamla` iki fazlı bir dönüşümdür
+
+Öteki üç kipte `--tamamla` dosyaya dokunmaz. `ui` kipinde gerçek bir Teknesyum UI
+dönüşümü koşar ve **sıra bozulmaz**: önce Faz 1, o temiz bitmeden Faz 2 başlamaz.
+
+**Faz 1 — teorik.** Kaynak üstünde: token dışı renk, süre, geçiş, yarıçap, tipografi,
+eksik durum. Mekanik ve geri alınabilir olan yazılır, karar gerektiren rapor edilir:
 
 | Düzeltilir | Düzeltilmez — rapor edilir |
 |---|---|
@@ -120,9 +133,23 @@ olanı düzeltir:
 | Eksik `prefers-reduced-motion` bloğu | 7:1 altı kontrast — yeni ton türetmek gerekir |
 |  | Eksik `MotionConfig` — kök nerede, bilinmiyor |
 
-**Kirli çalışma ağacında çalışmaz.** `DURDU` basar ve çıkış kodu 2 verir; kullanıcı
-yazılanı geri alabilsin diye. O çıktıyı aldığında kendin düzeltmeye girişme — kullanıcıya
-commit ya da stash gerektiğini tek satırla söyle.
+**Faz 2 — uçtan uca.** Program açılır, görülen arayüz standarda karşı denetlenir.
+Faz 2 yalnız Faz 1 temiz bittiğinde (açık ihlal sıfır) koşar ve **önce başsız yolu
+dener** (`standartlar.md` doğrulamayı başsız ister): package.json test betiği ya da
+test csproj varsa betik onu kendisi koşar, pencere açılmaz. Başsız yol yoksa gerekçesi
+rapora yazılır ve ekran yolu kalır — **program açmak ekran kapısının kapsamındadır.**
+Kapı kapalıysa Faz 2 koşmaz, raporda `/ekran` gerektiği tek satırla söylenir ve Faz 1
+sonucu yine geçerlidir; kapıyı kendin açma, kullanıcıdan iste. Kapı açıksa ekran
+doğrulamasını sen yürütürsün: programı aç, ekran görüntüsü al, gördüğünü `teknesyum-ui`
+standardına karşı denetle.
+
+Rapor iki fazı ayrı sayar — Faz 1'de kaç bulgu / kaç düzeltme, Faz 2'de kaç ekran /
+kaç görsel ihlal — ve Faz 2 hiç koşmadıysa bunu `KOŞMADI` satırıyla açıkça söyler.
+Sessizce atlanan faz yok; raporda görünmeyen fazı koşmuş sayma.
+
+**Kirli çalışma ağacında iki faz da çalışmaz.** `DURDU` basar ve çıkış kodu 2 verir;
+kullanıcı yazılanı geri alabilsin diye. O çıktıyı aldığında kendin düzeltmeye girişme —
+kullanıcıya commit ya da stash gerektiğini tek satırla söyle.
 
 Düzeltilmeyen bulgular karar ister. Onları kendin kapatacaksan **`teknesyum-ui` standardını
 oku**, token uydurma.

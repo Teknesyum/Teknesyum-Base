@@ -1,0 +1,20 @@
+{
+  "contractId": "T3",
+  "auditorRunId": "a0d958e3c4aa5017c",
+  "headSha": "600d792ff76bd78e277597865b78e0f71741c2a6",
+  "diffHash": "d827301ac4ec66e33c6e31d49a7f7ecbc986d19b21eed898ad444b1810192f70",
+  "owns": [
+    "teknesyum/hooks/contract-schema.js",
+    "teknesyum/hooks/contract-guard.js",
+    "teknesyum/hooks/relay-watch.js",
+    "test/run.js"
+  ],
+  "verification": [
+    "GEÇTİ  T3  · şartname ✓ · kalite ✓",
+    "✓ 1 — `contract-schema.js` tek kaynak: KIMLIK `schema:9`, SIRA `schema:16`, DURUMLAR `schema:21`, `durum()` `schema:27`, export `schema:36`; ikinci bir kimlik regex'i ya da durum tablosu depoda yok (grep: yalnız `guard:5`, `relay-watch:7`, `contract.js:7` içe alı"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T17:59:07.143Z",
+  "usedAt": "2026-08-25T17:59:07.211Z",
+  "completedSha": "600d792ff76bd78e277597865b78e0f71741c2a6"
+}

@@ -1,0 +1,20 @@
+{
+  "contractId": "T6",
+  "auditorRunId": "a1ec98e6a19ef7082",
+  "headSha": "600d792ff76bd78e277597865b78e0f71741c2a6",
+  "diffHash": "90f6ce8cb2b1c5f4679e0cb76f4703ed22d6ce2f16e87ccd779578935d3148dc",
+  "owns": [
+    "teknesyum/scripts/ozel.js",
+    "test/run.js"
+  ],
+  "verification": [
+    "`Teknesyum ▸ Debug ▸ Grep aracı hata verdi — auditor ajanı · a1ec98e6a19ef7082`",
+    "```",
+    "GEÇTİ  T6  · şartname ✓ · kalite ✓",
+    "✓ Kriter 1 (ad politikası) — AD_POLITIKASI ozel.js:119, adDenetle ozel.js:121-130; çağrılar kur ozel.js:332 ve ac ozel.js:486; test run.js:8209-8217 (`..`, `../kacis`, `a/b`, `C:"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T17:58:47.286Z",
+  "usedAt": "2026-08-25T17:58:47.354Z",
+  "completedSha": "600d792ff76bd78e277597865b78e0f71741c2a6"
+}

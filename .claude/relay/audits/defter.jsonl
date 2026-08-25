@@ -19,3 +19,7 @@
 {"id":"T2","kaynak":"devralindi","at":"2026-08-25T13:58:57.436Z"}
 {"id":"T2","kaynak":"devralindi","at":"2026-08-25T14:00:30.110Z"}
 {"id":"T2","kaynak":"devralindi","at":"2026-08-25T13:57:36.393Z"}
+{"id":"T6","round":"2","auditorRunId":"a1ec98e6a19ef7082","headSha":"600d792ff76bd78e277597865b78e0f71741c2a6","diffHash":"90f6ce8cb2b1c5f4679e0cb76f4703ed22d6ce2f16e87ccd779578935d3148dc","at":"2026-08-25T17:58:47.355Z"}
+{"id":"U11","round":"1","auditorRunId":"aead065029b7cee23","headSha":"600d792ff76bd78e277597865b78e0f71741c2a6","diffHash":"5406ef844b633a49ddd5b097d2562e32de977868d2dadc4c4463b240974208d3","at":"2026-08-25T17:58:47.431Z"}
+{"id":"U5","round":"1","auditorRunId":"aec82593fc4198550","headSha":"600d792ff76bd78e277597865b78e0f71741c2a6","diffHash":"734649d7f799b3f3576e0724ded8bb978e526d6803ecf27c35cf02c0dfd856d6","at":"2026-08-25T17:59:07.134Z"}
+{"id":"T3","round":"2","auditorRunId":"a0d958e3c4aa5017c","headSha":"600d792ff76bd78e277597865b78e0f71741c2a6","diffHash":"d827301ac4ec66e33c6e31d49a7f7ecbc986d19b21eed898ad444b1810192f70","at":"2026-08-25T17:59:07.212Z"}

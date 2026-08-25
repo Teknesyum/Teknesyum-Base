@@ -1,0 +1,25 @@
+{
+  "contractId": "U11",
+  "auditorRunId": "aead065029b7cee23",
+  "headSha": "600d792ff76bd78e277597865b78e0f71741c2a6",
+  "diffHash": "5406ef844b633a49ddd5b097d2562e32de977868d2dadc4c4463b240974208d3",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/assets/theme.tokens.json",
+    "teknesyum/skills/teknesyum-ui/assets/tema-uret.js",
+    "teknesyum/skills/teknesyum-ui/assets/theme.css",
+    "teknesyum/skills/teknesyum-ui/assets/Theme.xaml",
+    "teknesyum/skills/teknesyum-ui/assets/Theme.axaml",
+    "teknesyum/skills/teknesyum-ui/assets/Palette.cs",
+    "test/u11-tema.js"
+  ],
+  "verification": [
+    "```",
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 tek kaynak, hiyerarşik, her token `neden`li, türetilmişler bildirimsel — theme.tokens.json:12-174 (marka/rol/turetilmis/sure/easing/font; `warning-border` ref+alpha:68-72, `bg-gradient` from/to/durak:140-145); şema kontrolü test/u11-tema.js:19-48",
+    "✓ K2"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T17:58:47.366Z",
+  "usedAt": "2026-08-25T17:58:47.430Z",
+  "completedSha": "600d792ff76bd78e277597865b78e0f71741c2a6"
+}

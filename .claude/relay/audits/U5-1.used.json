@@ -1,0 +1,20 @@
+{
+  "contractId": "U5",
+  "auditorRunId": "aec82593fc4198550",
+  "headSha": "600d792ff76bd78e277597865b78e0f71741c2a6",
+  "diffHash": "734649d7f799b3f3576e0724ded8bb978e526d6803ecf27c35cf02c0dfd856d6",
+  "owns": [
+    "teknesyum/skills/teknesyum-ui/references/a11y.md",
+    "teknesyum/skills/teknesyum-ui/assets/a11y.css",
+    "test/u5-a11y.js"
+  ],
+  "verification": [
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ K1 §5.8 bölümü — `teknesyum/skills/teknesyum-ui/references/a11y.md:1-6` tam metin; SKILL'e girecek birebir bölüm `.claude/relay/contracts/U5.md:118-141` (dalga kuralı, U10 ekler)",
+    "✓ K2 isimsiz interaktif öğe yasağı, kural olarak — `a11y.md:10-14` (\"Yasak, öner"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-25T17:59:07.072Z",
+  "usedAt": "2026-08-25T17:59:07.133Z",
+  "completedSha": "600d792ff76bd78e277597865b78e0f71741c2a6"
+}

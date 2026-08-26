@@ -1,5 +1,9 @@
 # Dalga 3 — Ne sunuyoruz, ne bedelle
 
+**Not:** Dalga 3 sozlesmeleri **Y** on ekiyle numaralanir (Y1-Y5). Dalga 1 zaten
+D1-D4 kullanmisti ve `contract.js complete` cakismayi sessizce "zaten done/ altinda"
+diye gecti — mühür yanlis dosyaya bakti. Kimlikler dalga basina benzersiz olmali.
+
 Konsey: fable + opus, bagimsiz iki plan, 26.08.2026. Bu belge sentezdir.
 Onceki: `docs/PLAN-ONARIM.md` (Dalga 1-2), `docs/BRIFING-ONARIM.md` (teshis).
 
@@ -58,17 +62,17 @@ Kullanicinin direktifi: "ozellikle her mesajda devreye giren konulara odaklanaca
 
 | # | Is | Kalem | Beklenen kazanc |
 |---|---|---|---|
-| D1 | Her-tur enjeksiyonu kosullu yap | 3.488 tok | acik sozlesme yoksa **0** |
-| D2 | Yuklenen yuzeyi Ingilizceye cevir | 2.979 tok | **-%47** (~1.400 tok) |
-| D3 | Kullanim envanteri + surgun | 31 satir | olculecek |
-| D4 | Fayda bench'i (kacan kusur) | — | bilancoun eksik yarisi |
-| D5 | Konum belgesi | — | iddia = rakam |
+| Y1 | Her-tur enjeksiyonu kosullu yap | 3.488 tok | acik sozlesme yoksa **0** |
+| Y2 | Yuklenen yuzeyi Ingilizceye cevir | 2.979 tok | **-%47** (~1.400 tok) |
+| Y3 | Kullanim envanteri + surgun | 31 satir | olculecek |
+| Y4 | Fayda bench'i (kacan kusur) | — | bilancoun eksik yarisi |
+| Y5 | Konum belgesi | — | iddia = rakam |
 
-D1 ve D2 birlikte pasif yuku **6.722 → ~1.600** yapar: %76 dusus. Ikisi de davranis
-kaybettirmez, cunku D1 relay kullanilmiyorken calisan metni susturur, D2 dili
+Y1 ve Y2 birlikte pasif yuku **6.722 → ~1.600** yapar: %76 dusus. Ikisi de davranis
+kaybettirmez, cunku Y1 relay kullanilmiyorken calisan metni susturur, Y2 dili
 degistirir icerigi degil.
 
-## 4. D1 — her-tur enjeksiyonu
+## 4. Y1 — her-tur enjeksiyonu
 
 Bugun `hatirlat()` ilk iki turda 3.317 karakter yaziyor (`sayacGecti(j, eko ? 1 : 2)`).
 Acik sozlesme olmayan bir oturumda bu metin **hicbir ise yaramiyor** — relay zaten
@@ -78,10 +82,10 @@ Kural: `.claude/relay/live/*.json` bos ve acik sozlesme yoksa enjeksiyon **sifir
 Sozlesme acilinca devreye girer.
 
 Risk: relay'in tek tetikleyicisi bu metin olabilir; giderse hic acilmaz. Kapi:
-D4'un tam kolunda relay acilmiyorsa geri alinir ve tetikleyici skill description'a
+Y4'un tam kolunda relay acilmiyorsa geri alinir ve tetikleyici skill description'a
 tasinir (o zaten aciliste yukleniyor, ek maliyeti yok).
 
-## 5. D2 — yuzey cevirisi
+## 5. Y2 — yuzey cevirisi
 
 Cevrilecek: 31 `description` alani + `hooks/dil.js` icindeki `olcu`, `dilTalimati`,
 `premiumNotu`, `ecoNotu`.
@@ -91,7 +95,7 @@ Kabul: katsayi ≥3,2; sabit yuk ≤1.700 token.
 Risk kapisi: en cok kullanilan 5 senaryo tekrar kosulur; skill/relay cagri sayisi
 dusmemeli. Duserse geri alinir — tetikleyici aciklamanin dilinden besleniyordur.
 
-## 6. D3 — kullanim envanteri ve surgun
+## 6. Y3 — kullanim envanteri ve surgun
 
 `scripts/olcum/kullanim.js`: `~/.claude/projects/**/*.jsonl` taranir; slash komut
 cagrilari, `Skill` yuklemeleri, `Task` `subagent_type` alanlari sayilir. Model
@@ -105,7 +109,7 @@ Yapisal adaylar (envanter onaylarsa): `rc`/`rcall`/`rcadvanced`, `ozel`, `pusla`
 `saveall`, `loadall`, `beep`, `ekran`. `autocompact` → `premium` alt komutu.
 `uicheckup` + `scan ui` birlesir.
 
-## 7. D4 — fayda bench'i
+## 7. Y4 — fayda bench'i
 
 Birincil metrik **kacan kusur sayisi**: fixture'a gorunur testi *gecen* 6 kusur
 ekilir (sinir kosulu, yaris, yanlis varsayilan), teslimde kac tanesi kaldigi sayilir.
@@ -120,13 +124,13 @@ Blok: sinif D icin 12 eslestirilmis. Gecerlilik onkosulu: `tam` kolunda ≥1 `Ag
 cagrisi yoksa kosu gecersiz.
 
 **Erken cikis:** `tam` kolunda kacan kusur `native`'den az degilse urunun olculmus
-faydasi yoktur. O durumda D5 dogrudan yazilir, sinif K ve C hic kosulmaz.
+faydasi yoktur. O durumda Y5 dogrudan yazilir, sinif K ve C hic kosulmaz.
 
-## 8. D5 — konum
+## 8. Y5 — konum
 
 Bugunku veriyle "herkes yuklemeli" savunulamaz: urun Turkce, kancalar Windows'a
 bagli, komutlarin ucte biri tek kullanicinin altyapisi, faydasi hic olculmemis.
-D2 ve D3 bunlardan ikisini kaldirir, D4 ucuncusune rakam uretir.
+Y2 ve Y3 bunlardan ikisini kaldirir, Y4 ucuncusune rakam uretir.
 
 Savunulabilir cumle bir olcumdur, bir sifat degil: "tek oturuma sigmayan, cok
 modullu, kesintiye ugrayan iste kusur kacirma oranini su kadar dusuruyor, su kadar
@@ -214,12 +218,12 @@ biri kapinin dogrulugunu, digeri sureklilik iddiasini olcer. Eksen uyeninki.
 
 ## E4. Sira — iki uye de plani duzeltti
 
-**Once kes, sonra cevir.** D2 cevirisi atilacak satirlara da uygulandi, o emek gitti.
+**Once kes, sonra cevir.** Y2 cevirisi atilacak satirlara da uygulandi, o emek gitti.
 
 | # | is | kabul olcutu |
 |---|---|---|
 | A1 | yuzey kesimi: rc/rcall/rcadvanced/ozel/pusla/autocompact/beep/saveall/loadall | acilis sabiti 2.979 → ≤1.400 |
-| A2 | enjeksiyon kesimi: `olcu`, `seviye2`, `premiumNotu`, `yonlendirmeYonerge` | rolesiz oturumda 0 karakter (D1 bunu yapti) |
+| A2 | enjeksiyon kesimi: `olcu`, `seviye2`, `premiumNotu`, `yonlendirmeYonerge` | rolesiz oturumda 0 karakter (Y1 bunu yapti) |
 | B1 | muhur sarti: `submitted → done` gecisi auditor muhru olmadan yazilamaz | 10 sentetik muhursuz deneme %100 engellenir |
 | B2 | rolenin kosuda devre disi kalmasi — kok neden `roleKoku()` mu | headless `SessionStart` ciktisinda role durumu gorunur |
 | C | olcum duzenegi (E3) | once eksen spike'i, sonra guc |

@@ -1,0 +1,24 @@
+{
+  "contractId": "Y1",
+  "auditorRunId": "a90a23330db9ef51b",
+  "headSha": "b6bda4bc4c3322baafae6c77a85d84b661599781",
+  "diffHash": "3f046e1b4c47d5cc80f273db33ec3fe0e29b9344a7da3c7e6fd363a00854d1ba",
+  "owns": [
+    "teknesyum/hooks/relay-watch.js",
+    "test/run.js",
+    "scripts/olcum/istem-yuku.js"
+  ],
+  "verification": [
+    "Kapi relay-watch.js:997, hatirlat() govdesinin ilk icra satiri — dogrulandi",
+    "Kapi testli: kaldirilinca test/run.js:340-350 kirmizi",
+    "Pasif olcum: enjeksiyon 0 kar, oturum 3.084 token, cikis 0, uyari yok",
+    "Aktif olcum: 3.747 kar x 2 tur, oturum 7.113 token, cikis 0",
+    "node test/all.js — 10 suite gecti",
+    "istem-yuku.js --dogrula — iki kip ayni toplami uretiyor"
+  ],
+  "result": "GECTI",
+  "createdAt": "2026-08-26T21:00:00+03:00",
+  "note": "Denetci ilk turda KALDI verdi: uc kriterin ham ciktisi verilmemisti. T0 olcumu kendi kostu. Denetcinin buldugu gercek kusur olcum aracindaydi (istem-yuku.js:154 sifir enjeksiyonda cikis 1), duzeltildi. Bes borc Y1.md §4te acik.",
+  "usedAt": "2026-08-26T20:54:48.596Z",
+  "completedSha": "b6bda4bc4c3322baafae6c77a85d84b661599781"
+}

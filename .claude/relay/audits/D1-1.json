@@ -1,9 +1,0 @@
-{
-  "id": "D1",
-  "round": 1,
-  "verdict": "GECTI",
-  "auditor": "opus-auditor + T0 olcumu",
-  "date": "2026-08-26",
-  "diffHash": "3f046e1b4c47d5cc80f273db33ec3fe0e29b9344a7da3c7e6fd363a00854d1ba",
-  "note": "Denetci KALDI verdi (uc kriter kanitsiz). T0 ham olcumu kostu: pasif 0 kar/3.084 token, aktif 3.747x2/7.113 token, cikis 0, uyari yok. test/all.js 10 suite. Bes borc D1.md §4te."
-}

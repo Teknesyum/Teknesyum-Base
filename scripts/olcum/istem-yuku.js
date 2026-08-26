@@ -9,16 +9,19 @@ const ONEK = 'teknesyum';
 
 // Katsayi kontrollu A/B deneyiyle olculdu, tahmin degil: ayni istem iki kez kosuldu,
 // ikincisine olculen metnin tamami eklendi, fark o metnin gercek token sayisi.
-// Iki bagimsiz kosu: 8.726 kar / 4.588 tok -> 1,902 · 9.188 kar / 4.852 tok -> 1,894.
-// Iki olcum arasi fark %0,4; asagidaki deger ikincisi. `--deney` yeniden uretir.
-const KATSAYI = 1.894;
+// Turkce yuzeyde 1,894-1,902 olculmustu (26.08). Yuzey Ingilizceye cevrilince (Y2)
+// 27.08'de 2,492'ye cikti — ayni karakter, %32 daha az token.
+// Alet duzeltildi: alt kosu `--max-turns 1` ile tek tura kilitli ve yayilim
+// kontrolu var. Onceki hali sicak onbellekte 0,037 ile 2,494 arasi deger uretiyordu;
+// cache_read istemin kendisiyle ilgisiz sekilde yuz binlerce token oynuyordu.
+const KATSAYI = 2.492;
 const ESKI_KATSAYI = 3.6;
 const DENEY = {
-  karakter: 9188,
-  token: 4852,
-  a: [50981, 50980, 50975],
-  b: [55832, 55836, 55832],
-  tarih: '2026-08-26',
+  karakter: 9726,
+  token: 3903,
+  a: [54883, null, 54876],
+  b: [null, 58784, 58786],
+  tarih: '2026-08-27',
 };
 
 const uyarilar = [];
@@ -234,7 +237,7 @@ function deneyKos() {
   const kos = (istem) => {
     let ham;
     try {
-      ham = execFileSync('claude', ['-p', istem, '--output-format', 'json'], {
+      ham = execFileSync('claude', ['-p', istem, '--max-turns', '1', '--output-format', 'json'], {
         encoding: 'utf8',
         timeout: 240000,
         maxBuffer: 1 << 26,
@@ -265,6 +268,22 @@ function deneyKos() {
     const t = x.filter(Number).sort((p, q) => p - q);
     return t.length ? t[Math.floor(t.length / 2)] : null;
   };
+  const dagilim = (x) => {
+    const g = x.filter(Number);
+    if (g.length < 2) return null;
+    return Math.max(...g) / Math.min(...g);
+  };
+  const dagA = dagilim(a);
+  const dagB = dagilim(b);
+  if (dagA === null || dagB === null || dagA > 1.15 || dagB > 1.15) {
+    uyarilar.push(
+      `deney: kosular tutarsiz (A yayilim ${dagA === null ? '?' : dagA.toFixed(2)}, ` +
+        `B yayilim ${dagB === null ? '?' : dagB.toFixed(2)}) — katsayi uretilmedi. ` +
+        'Sebep genellikle sicak onbellek: cache_read istemin kendisiyle ilgisiz sekilde ' +
+        'yuz binlerce token oynuyor. Yeniden kos, duzelmezse olcum tasarimi gozden gecirilmeli.'
+    );
+    return null;
+  }
   const dA = orta(a);
   const dB = orta(b);
   if (!dA || !dB || dB <= dA) {

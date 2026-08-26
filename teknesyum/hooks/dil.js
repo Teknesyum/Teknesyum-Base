@@ -785,9 +785,16 @@ const S = {
     ],
   },
   sorunBirikim: {
-    tr: (n) =>
-      n + ' ajan sorunu kayıtlı · `live/_sorun.log` dosyasını aç, sebebi gör, sessiz geçme',
-    en: (n) => n + ' agent problems recorded · open `live/_sorun.log`, read why, do not skip it',
+    tr: (n, yol) =>
+      n +
+      ' ajan sorunu kayıtlı · `' +
+      (yol || 'live/_sorun.log') +
+      '` dosyasını aç, sebebi gör, sessiz geçme',
+    en: (n, yol) =>
+      n +
+      ' agent problems recorded · open `' +
+      (yol || 'live/_sorun.log') +
+      '`, read why, do not skip it',
   },
 
   aynaBos: {

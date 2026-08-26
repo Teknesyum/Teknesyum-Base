@@ -331,3 +331,52 @@ deposuna ait PR taşıması."* Böyle bir tarama bu turda yapılmadı; yapılmı
 
 Kalan tek iş kod değil **gözlem**: bir sonraki gerçek `scout` taramasından sonra günlüğün
 kontrol komutu koşulur. Temiz çıkarsa kapanır.
+
+
+---
+
+## 5. Kaynak koddan doğrulama — 2026-08-25
+
+Uygulama yeniden başlatıldı, Runly'nin iki rozeti yine geldi. Bu kez tahmin
+yerine uygulamanın kendi kodu okundu (`app.asar` içindeki `GitHubPrManager`).
+
+### Bağlayıcı ne eşliyor — kesinleşti
+
+`bindPrFromUrl` adresi `new URL()` ile ayrıştırıyor ve yol tam olarak dört
+parça + üçüncü parça `pull` olmalı. Yani **yalnız tam
+`https://github.com/<sahip>/<depo>/pull/<n>` adresi bağ kurar.** Kısa biçim
+`<sahip>/<depo>#<n>` bağ kurmaz — scout kuralı ve `p-ll` etkisizleştirmesi
+doğru, yeni bağ artık oluşamaz.
+
+### "Her açılışta transkriptten yeniden üretiliyor" teşhisi eksikti
+
+Bağ bir kez kurulunca uygulamanın kendi oturum durumunda kalıcı yaşıyor ve
+`local_*.json`'dan silmek işe yaramıyor — durum geri yazılıyor. Bölüm 3'teki
+"transkript tek kalıcı kaynak" cümlesi bu yüzden yanlıştı: transkript bağın
+**kuruluş** kaynağı, ama kurulmuş bağın **yaşama** yeri uygulama durumu.
+
+### Kalıcı kapatma: dismissed
+
+Kodda `dismissBoundPr` API'si var — arayüzdeki `×` düğmesi. Kanıt:
+Teknesyum-Base, VideoEdit ve CodeXray bağları `dismissed=True` taşıyor ve
+yeniden başlatmalardan sağ çıkıyor; kullanıcı o rozetleri görmüyor. Silmek
+yerine `dismissed: true` yazmak uygulamanın kendi diline konuşmaktır.
+
+Runly'nin iki bağına `dismissed=true` yazıldı; kalıcılık ölçümü bekleniyor.
+
+### Kapanma ölçüsü (güncel)
+
+1. Runly rozetleri arayüzden kalkacak ve yeniden başlatmada dönmeyecek.
+2. Yeni bir `research_repos` taramasından sonra oturum kaydında yabancı bağ
+   oluşmayacak (scout kuralı + bağlayıcının yalnız tam adres eşlediği bilgisi).
+
+### Kalıcılık ölçümü
+
+`dismissed=true` yazıldıktan 2,5 dakika sonra tekrar okundu: iki kayıt da
+işaretli duruyor, uygulama geri almadı. Silme dakikalar içinde geri geliyordu;
+işaretleme kalıyor — çünkü işaret, uygulamanın `×` düğmesinin kendi yazdığı
+durumla aynı.
+
+Ölçü 1 sağlandı sayılır: bağlar bastırıldı, transkript temiz, bağlayıcı yalnız
+tam adres eşliyor. Ölçü 2 (yeni taramada yabancı bağ oluşmaması) ilk
+`research_repos` taramasında doğrulanacak; o zamana kadar günlük açık.

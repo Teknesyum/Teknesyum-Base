@@ -1371,8 +1371,13 @@ function acilis(root, kapNotu, oturumId, cwd, kaynak) {
     }
     const w = worktreeSayisi(path.dirname(path.dirname(root)));
     if (w) parca.push(ceviri('worktreeBirikim', w));
+    const sorunDosya = path.join(izYolu(root), '_sorun.log');
+    const sorunGorece = path.relative(cwd, sorunDosya);
     const n = sorunSayisi(izYolu(root));
-    if (n) parca.push(ceviri('sorunBirikim', n));
+    if (n)
+      parca.push(
+        ceviri('sorunBirikim', n, sorunGorece.startsWith('..') ? sorunDosya : sorunGorece)
+      );
   }
   const ayna = aynaDurumu(cwd);
   if (ayna && !ayna.sayi) parca.push(ceviri('aynaBos', ayna.ad));

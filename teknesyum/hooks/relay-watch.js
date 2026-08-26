@@ -34,10 +34,11 @@ if (require.main === module) {
   });
 }
 
-// Yürürlükteki kanca olayı. `duyur` kanalını buna göre seçiyor: tur içi olaylar modele,
-// `Stop`/`StopFailure` kullanıcıya. Üstte duruyor çünkü `run` ilk satırında yazıyor.
+// Yürürlükteki kanca olayı. Üstte duruyor çünkü `run` ilk satırında yazıyor.
+// `_liveYol` duyuruyu statusline'a taşıyan dosyanın dizini; röle kurulu değilse boş.
 let _olay = null;
 let _cikti = null;
+let _liveYol = null;
 
 function ciktiEkle(alan) {
   _cikti = Object.assign(_cikti || {}, alan);
@@ -67,6 +68,7 @@ function ciktiBas() {
 function run(j) {
   _olay = j.hook_event_name;
   const root = findRelay(j.cwd || process.cwd());
+  _liveYol = root ? izYolu(root) : null;
   const kap = kapsayici.kok(j.cwd || process.cwd());
   const kapDurum = kap
     ? path.join(genelKok(), safe(j.session_id || 'oturum') + '.kapsayici')
@@ -94,7 +96,7 @@ function run(j) {
     if (k) kullanimSay('komut:' + k[1].toLowerCase());
     turBasla(j, root);
     puslaHatirlat(j);
-    return hatirlat(j, root, kap && kapsayici.etkin(kapDurum));
+    return hatirlat(j, root);
   }
   if (j.hook_event_name === 'Stop') {
     if (kap) kapsayiciTopla(kap, kapDurum);
@@ -128,7 +130,7 @@ function run(j) {
   } catch {
     return;
   }
-  supur();
+  supur(root);
   saglikTara(live, root);
 
   if (debugAcik()) iz(live, j);
@@ -507,7 +509,7 @@ function ajanTranskripti(j) {
 function altTranskript(live) {
   let toplam = 0;
   for (const f of dosyalar(live)) {
-    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    if (!izKaydi(f)) continue;
     const a = read(path.join(live, f));
     if (a && a.transcript) toplam += transkriptBoyu(a.transcript);
   }
@@ -602,7 +604,7 @@ function saglikTara(live, root) {
   } catch {}
   const sinir = ayarSayi(root, 'agent_stall', SESSIZLIK_DK) * 60 * 1000;
   for (const f of dosyalar(live)) {
-    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    if (!izKaydi(f)) continue;
     const yol = path.join(live, f);
     const a = read(yol);
     if (!a || a.ended || a.stop_reason || a.sessiz_bildirildi) continue;
@@ -853,6 +855,18 @@ function sureMetni(sn) {
 
 const CALISAN = '_running.json';
 
+// ÖLÇÜLDÜ 27.08 (Y3 §6): `live/` hiç budanmıyordu — beş günde 363 ajan kaydı birikti,
+// 361'i bitmişti ve her istemde hepsi okunuyordu. Bitmiş kayıt silinmez, `arsiv/`
+// altına iner: `calisanKapat` süre eşlemesi ve `_sorun.log` soruşturması için gerekiyor.
+// Okuyan her yer bu süzgeçten geçer; `arsiv` bir dizin olduğu için `readdirSync` onu
+// tek giriş olarak görür, içindeki kayıt sayısı taramaya karışmaz.
+const ARSIV = 'arsiv';
+
+function izKaydi(f) {
+  if (f === ARSIV) return false;
+  return f.endsWith('.json') && !f.startsWith('_');
+}
+
 function calisanEkle(live, j) {
   const f = path.join(live, CALISAN);
   const l = read(f) || [];
@@ -939,13 +953,11 @@ let _ekMesaj = '';
 // `Stop says:`, `PreToolUse:Agent says:`. Önek hiçbir ayarla kaldırılamıyor (ölçüldü,
 // 23.08.2026) ve kullanıcı o metni istemiyor.
 //
-// Makbuz statusline'a taşındı ama yönlendirme satırları burada kalmıştı. Onların çözümü
-// ayrı: `PreToolUse`, `PostToolUse`, `SubagentStart` ve `SessionStart` **tur içinde**
-// ateşleniyor. Yani satır modele **cevap yazılmadan önce** ulaşıyor ve model onu kendi
-// cevabının içine basabiliyor; önek doğmuyor.
-//
-// `Stop`'ta bu yol kapalıydı ve sebebi başkaydı: `Stop` cevap yazıldıktan sonra çalışır,
-// modelin elindeki tek yol yeni bir mesaj yazmaktır, o da cevabı tekrarlatır.
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `yonlendirmeYonerge` kaldırıldı. Tur içi
+// olaylarda modele "aşağıdaki satırları aynen bas" diyordu — 154 karakter girdi, artı
+// satırları yeniden yazdıran çıktı tokenı. Duyuru artık her olayda `systemMessage` ile
+// kullanıcıya gider ve aynı metin `live/_duyuru.json` üzerinden statusline'da görünür;
+// modele hiç uğramaz.
 //
 // ÖLÇÜLDÜ (24.08.2026): `SubagentStop` yanlışlıkla tur içi sayılmıştı. O da cevap
 // yazıldıktan sonra çalışır; `additionalContext` alt ajanın turunu yeniden açar, ajan
@@ -959,17 +971,22 @@ function duyur(mesaj, min, tam) {
   if (seviye() < (min || 1)) return;
   _duyuru.push(tam ? mesaj : 'Teknesyum ▸ ' + mesaj);
   const govde = _duyuru.join('\n');
-  if (KAPANIS_OLAYI[_olay]) {
-    const bas = BILDIRIM_BICIMI === 'blok' ? '\n' : '';
-    ciktiEkle({ systemMessage: bas + govde + (_ekMesaj ? '\n' + _ekMesaj : '') });
-    return;
-  }
-  ciktiEkle({
-    hookSpecificOutput: {
-      hookEventName: _olay || 'PostToolUse',
-      additionalContext: ceviri('yonlendirmeYonerge', govde),
-    },
-  });
+  const bas = BILDIRIM_BICIMI === 'blok' ? '\n' : '';
+  ciktiEkle({ systemMessage: bas + govde + (_ekMesaj ? '\n' + _ekMesaj : '') });
+  duyuruYaz(govde);
+}
+
+// Makbuzla aynı desen: kanca hesaplar, dosyaya yazar, statusline okur. `systemMessage`
+// kanalı satırın önüne `<olay> says:` koyuyor ve o önek kaldırılamıyor; statusline bizim
+// betiğimiz, önek üretmiyor ve aynı bilgi orada temiz görünüyor.
+const DUYURU = '_duyuru.json';
+
+function duyuruYaz(metin) {
+  if (!_liveYol || !metin) return;
+  try {
+    fs.mkdirSync(_liveYol, { recursive: true });
+    yaz(path.join(_liveYol, DUYURU), { metin, ts: Date.now() });
+  } catch {}
 }
 
 // Ajan açılmayan oturumda eklenti baştan sona sessizdi: kullanıcı devrede olup olmadığını
@@ -991,24 +1008,20 @@ function relayKullaniliyor(root) {
   if (acikIs(root)) return true;
   const live = izYolu(root);
   for (const f of dosyalar(live)) {
-    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    if (!izKaydi(f)) continue;
     const a = read(path.join(live, f));
     if (a && !a.ended) return true;
   }
   return false;
 }
 
-function hatirlat(j, root, etkinProje) {
-  // Kayıt, röle ve harita oturumun açıldığı klasörü değil projeyi bekliyor; modele
-  // hangi projede olduğunu söylemezsek `--proje` parametresini boş geçer. Bu satır
-  // ölçü hatırlatması susmuş olsa da yazılır.
-  const kapMetin = etkinProje ? ceviri('kapsayiciEtkin', etkinProje.ad, etkinProje.yol) : '';
-  // Kapsayıcı notu kapının dışında kalır: kapsayıcı klasörde `.claude` bulunmaz, orada
-  // röle kökü de olamaz — kapıya bağlansaydı üst klasör oturumunda hiç yazılamazdı.
-  // Röle kullanılmayan normal proje oturumunda etkin proje yok, dolayısıyla bu satır
-  // boştur ve enjeksiyon yine 0 karakterdir.
-  if (!relayKullaniliyor(root)) return kapEkle(kapMetin);
-  if (seviye() === 0) return kapEkle(kapMetin);
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `kapsayiciEtkin` satırı kaldırıldı — 298
+// karakter, kapının dışında kaldığı için röle kullanılmayan oturumda bile yazılıyordu.
+// Çözdüğü şey kendi kuralımızın ihlali: oturum proje kökünde açılır. Kapsayıcı izleme
+// ve tur sonu hafıza taşıma yerinde duruyor, yalnız modele yazılan not düştü.
+function hatirlat(j, root) {
+  if (!relayKullaniliyor(root)) return;
+  if (seviye() === 0) return;
   // ÖLÇÜLDÜ: metin her istekte ~90 token yazıyordu ve geçmişte kalıcı. 60 mesajlık
   // oturumda 5000+ token, hepsi aynı cümlenin kopyası. Kural bir kez okunduğunda
   // geçmişte duruyor; ikinci kopyası bilgi taşımıyor. İlk iki istekte yazılır.
@@ -1016,32 +1029,50 @@ function hatirlat(j, root, etkinProje) {
   // satırları olmadan gidiyor. Oturum başına enjeksiyon 1286 karakterden 778'e iniyor;
   // steering 2 ayarlıyken 2450 karakterden yine 778'e.
   const eko = profil() === 'eco';
-  if (sayacGecti(j, eko ? 1 : 2)) return kapEkle(kapMetin);
-  let metin =
-    (kapMetin ? kapMetin + ' ' : '') +
-    ceviri(eko ? 'olcuKisa' : 'olcu') +
-    ' ' +
-    ceviri(eko ? 'dilTalimatiKisa' : 'dilTalimati');
-  if (premium()) metin += ' ' + ceviri('premiumNotu');
-  else if (eko) metin += ' ' + ceviri('ecoNotu');
-  const sapma = sapmaSatiri(profil());
-  if (sapma) metin += ' ' + ceviri('dugmeSapma', sapma);
+  // Profil notu oturumda bir kez. `sayacGecti` sayacı profil degisince sifirliyor,
+  // dolayisiyla "bu profille ilk tur mu" sorusu ayni dosyadan okunur — yeni durum
+  // dosyasi gerekmiyor. Okuma yazmadan once yapilmali, sayaci `sayacGecti` artiriyor.
+  const profilIlk = profilIlkTur(j);
+  if (sayacGecti(j, eko ? 1 : 2)) return;
+  // ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): tur basina 3.747 karakter yaziliyordu ve
+  // %70'i tek seferlik bilgiydi. Kullanici karari: "tek seferlik bedel odeyebiliriz,
+  // surekli tokenimizi eriten hicbir sey istemiyoruz". Kesilenler ve nedenleri:
+  //   olcu (653)          -> statusline'a tasindi, baglam maliyeti sifir
+  //   premiumNotu (2.088) -> yalniz profil gecisinde, oturumda bir kez
+  //   ecoNotu (263)       -> ayni
+  //   seviye2 (581)       -> ozellik silindi, hic kullanilmadi
+  //   kapsayiciEtkin(298) -> proje kokunde acilir varsayiliyor
+  //   platformNotu (248)  -> tek soru icin her oturum odeniyordu
+  //   gunlukProseduru(205)-> silindi, yordam SKILL.md'de yaziyor
+  //   dilTalimati (91)    -> SessionStart'a indi, oturumda bir kez
+  // Kalanlar kosullu: hicbiri sıradan bir turda yazilmaz.
+  const parcalar = [];
+  // ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md, T0 duzeltmesi): `dugmeSapma` raporda 26
+  // karakter yaziliyordu; o rakam sahte argumanla olculmus sablon uzunluguydu. Gercek
+  // yuk premium profilde 249 karakter ve her turda odeniyordu. Bilgi ayrica tekrar:
+  // `premiumNotu` ayni dugmeleri duzyaziyla anlatiyor. Profil notuyla ayni bloga girdi —
+  // profil degisince yeniden yazilir, disinda yazilmaz.
+  if (profilIlk) {
+    if (premium()) parcalar.push(ceviri('premiumNotu'));
+    else if (eko) parcalar.push(ceviri('ecoNotu'));
+    const sapma = sapmaSatiri(profil());
+    if (sapma) parcalar.push(ceviri('dugmeSapma', sapma));
+  }
   // Dördüncü tura girmiş ve denetimi hâlâ geçmemiş sözleşme varsa görüş hatırlatılır.
-  // Bloklamaz; §1.5.1 madde 2'nin ölçülebilir yarısı budur.
+  // Bloklamaz; §1.5.1 madde 2'nin tek ölçülebilir yaptırımı bu. Koşullu ve nadir:
+  // fable'ın kesim listesine tek itirazı buydu, kabul edildi.
   if (root) {
     const g = gorusGerekenler(root);
     if (g.length)
-      metin +=
-        ' ' + ceviri('gorusHatirlat', g.map((x) => x.id + ' (tur ' + x.tur + ')').join(', '));
+      parcalar.push(ceviri('gorusHatirlat', g.map((x) => x.id + ' (tur ' + x.tur + ')').join(', ')));
   }
   const rota = yeniIsRotasi(root, j.prompt);
-  if (rota) metin += ' ' + rota;
-  if (platformNotuYok(j.cwd)) metin += ' ' + ceviri('platformNotu');
-  if (yeniProjeIstegi(j)) metin += ' ' + ceviri('onArastirmaHatirlatma');
-  // Seviye 2'de kullanıcı her dokunuşu görmek istiyor: base olmasaydı olmayacak her
-  // kararın kendi satırı olur. Biçim relay SKILL 7.2'de.
-  if (!eko && seviye() === 2) metin += ' ' + ceviri('seviye2');
-  baglamEkle(metin);
+  if (rota) parcalar.push(rota);
+  // Ön araştırma hatırlatması yalnız yeni projenin ilk turunda. Öncesinde `docs/taramalar`
+  // doğana kadar her turda yazılabiliyordu.
+  if (profilIlk && yeniProjeIstegi(j)) parcalar.push(ceviri('onArastirmaHatirlatma'));
+  if (!parcalar.length) return;
+  baglamEkle(parcalar.join(' '));
 }
 
 // Kullanıcı "puşla" diyor, `/pusla` yazmıyor. İki depoyu birden göndermek modelin o anki
@@ -1091,13 +1122,26 @@ function baglamEkle(metin) {
   });
 }
 
-function kapEkle(metin) {
-  return baglamEkle(metin);
-}
 
 // Oturum başına kaç kez yazdığımızı sayar. Sayaç dosyası oturuma özel; `supur()`
 // bir günü geçenleri zaten atıyor.
 //
+// Sayaç dosyası profil adını da taşıyor (`<profil> <sayı>`); profil değişince
+// `sayacGecti` sayacı sıfırlıyor. Profil notunun "oturumda bir kez" koşulu bu yüzden
+// ayrı bir dosya istemiyor — aynı dosyada yazılı profil bugünkünden farklıysa bu tur
+// o profilin ilk turudur. Yazmadan okur; artırma `sayacGecti`nin işi.
+function profilIlkTur(j) {
+  const id = safe((j && j.session_id) || 'oturum');
+  try {
+    const [eski] = String(
+      fs.readFileSync(path.join(genelKok(), id + '.hatirlatma'), 'utf8')
+    ).trim().split(' ');
+    return eski !== profil();
+  } catch {
+    return true;
+  }
+}
+
 function sayacGecti(j, tavan) {
   const id = safe((j && j.session_id) || 'oturum');
   const dosya = path.join(genelKok(), id + '.hatirlatma');
@@ -1193,18 +1237,9 @@ function yeniProjeIstegi(j) {
   }
 }
 
-// Proje hangi platformlar için yazılıyor? Not yoksa model uygun bir anda tek soru sorar.
-// Kanca yalnız gerçek bir proje kökünde konuşur — geçici klasörde soru sordurmak gürültüdür.
-function platformNotuYok(cwd) {
-  const kok = path.resolve(cwd || '.');
-  try {
-    if (!fs.existsSync(path.join(kok, '.git'))) return false;
-  } catch {
-    return false;
-  }
-  const c = read(path.join(kok, '.claude', 'teknesyum.json'));
-  return !(c && c.platformlar);
-}
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): platform notu kapısı ve metni kaldırıldı.
+// Tek seferlik bir soru için her oturum 248 karakter ödeniyordu; cevap zaten
+// `.claude/teknesyum.json` içinde kalıcı, hatırlatmanın kalıcı bir bedeli yoktu.
 
 function acikIs(root) {
   return acikSozlesmeler(root).some((s) => s.durum === 'active' || s.durum === 'submitted');
@@ -1484,8 +1519,11 @@ function acilis(root, kapNotu, oturumId, cwd, kaynak) {
     ciktiEkle({
       hookSpecificOutput: {
         hookEventName: 'SessionStart',
+        // Dil talimatı buraya indi: her turda yazılıyordu, oturumda bir kez yeter.
+        // Günlük prosedürü kaldırıldı — bozuk davranışı kaydediyordu ama maliyeti
+        // hiç kaydetmedi; `premiumNotu` tam da bu yüzden aylarca göze batmadan yandı.
         additionalContext:
-          ceviri('gunlukProseduru') + (gunluk ? ' ' + ceviri('acikGunluk', gunluk) : ''),
+          ceviri('dilTalimati') + (gunluk ? ' ' + ceviri('acikGunluk', gunluk) : ''),
       },
     });
   // Parçalar tek satırda birleştirilmiyor. `duyur` çağrı başına bir satır biriktirir ve
@@ -1833,8 +1871,9 @@ function genelKok() {
   return izKoku(path.join(konfigKok(), 'teknesyum'));
 }
 
-// Genel kökteki izler kalıcı değil; bir günü geçeni at. Röle kurulu projede de
-// çalışır — orada proje `live/` dizini ayrıdır, süpürme ona hiç dokunmaz.
+// Genel kökteki izler kalıcı değil; bir günü geçeni at. Röle kurulu projede proje
+// `live/` dizini ayrıdır ve orada kayıt silinmez, `arsiv/` altına iner — aynı damga
+// ikisini birden kapsar.
 // Süpürme her araç çağrısında bir readdir ve giriş başına bir stat demek; damga
 // dosyası bunu saat başına bir kereye indirir.
 const SUPUR_DAMGA = '_supur';
@@ -1842,12 +1881,52 @@ const SUPUR_ARA = 60 * 60 * 1000;
 // Kullanım sayacı birikimli: süpürülürse özelliğin geçmişi silinir, ölçü kaybolur.
 const SUPUR_MUAF = { 'kullanim.json': 1, [SUPUR_DAMGA]: 1 };
 
-function supur() {
+// ÖLÇÜLDÜ 27.08 (Y3 §6): bitmiş ajan kaydı `live/` içinde sonsuza kadar duruyordu;
+// beş günde 363 kayıt birikti ve her istemde hepsi okundu. Bir günü geçmiş **bitmiş**
+// kayıt `arsiv/` altına taşınır — silinmez, çünkü `_sorun.log` soruşturması geriye
+// bakabilmeli. Canlı kayıt ve `_` önekli durum dosyaları yerinde kalır.
+function arsivle(root) {
+  if (!root) return;
+  const live = izYolu(root);
+  let l = [];
+  try {
+    l = fs.readdirSync(live);
+  } catch {
+    return;
+  }
+  const sinir = Date.now() - 24 * 60 * 60 * 1000;
+  let hedef = null;
+  for (const f of l) {
+    if (!izKaydi(f)) continue;
+    const p = path.join(live, f);
+    try {
+      if (fs.statSync(p).mtimeMs >= sinir) continue;
+    } catch {
+      continue;
+    }
+    const a = read(p);
+    if (!a || !a.ended) continue;
+    if (!hedef) {
+      hedef = path.join(live, ARSIV);
+      try {
+        fs.mkdirSync(hedef, { recursive: true });
+      } catch {
+        return;
+      }
+    }
+    try {
+      fs.renameSync(p, path.join(hedef, f));
+    } catch {}
+  }
+}
+
+function supur(root) {
   const kok = genelKok();
   const damga = path.join(kok, SUPUR_DAMGA);
   try {
     if (Date.now() - fs.statSync(damga).mtimeMs < SUPUR_ARA) return;
   } catch {}
+  arsivle(root);
   let l = [];
   try {
     l = fs.readdirSync(kok);
@@ -1887,7 +1966,7 @@ function sikismaSonrasi(root) {
     const m = govde && govde.match(/^\*\*Kaldığım yer:\*\*(.*)$/m);
     satir.push(ceviri('sikismaRota', f, m ? m[1].trim() : ''));
   }
-  const canli = dosyalar(izYolu(root)).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+  const canli = dosyalar(izYolu(root)).filter(izKaydi);
   const yasayan = canli.map((f) => read(path.join(izYolu(root), f))).filter((a) => a && !a.ended);
   if (yasayan.length) {
     satir.push(ceviri('sikismaAjan', yasayan.map((a) => a.agent_type).join(', ')));
@@ -1903,7 +1982,7 @@ function oturumKapat(root, j) {
     fs.unlinkSync(path.join(live, CALISAN));
   } catch {}
   for (const f of dosyalar(live)) {
-    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    if (!izKaydi(f)) continue;
     const a = read(path.join(live, f));
     if (!a || a.ended) continue;
     a.ended = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -2067,7 +2146,7 @@ function steeredKayit(live, hedef) {
     if (read(f)) return f;
   }
   for (const d of dosyalar(live)) {
-    if (!d.endsWith('.json') || d.startsWith('_')) continue;
+    if (!izKaydi(d)) continue;
     const f = path.join(live, d);
     const k = read(f);
     if (k && (k.agent_id === hedef || k.agent_id === ad || k.ad === ad)) return f;

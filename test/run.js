@@ -321,17 +321,24 @@ ol('SessionStart röle durumunu ve sözleşme sayacını bildirir', () => {
   icerir(m, 'sürdürüyorum');
 });
 
-ol('UserPromptSubmit açık sözleşme varken ölçü satırını zorunlu kılar', () => {
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `olcu` (653 kar) bağlamdan kalktı. Kural
+// `skills/relay/SKILL.md` §1'de duruyor ve skill sözleşme açılınca bir kez okunuyor —
+// her turda tekrarlanan kopyası bilgi taşımıyordu.
+ol('UserPromptSubmit ölçü satırını artık enjekte etmez', () => {
   const { p } = proje(1, 0);
   const r = calistir(
     IZLE,
     { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'şunu yap' },
     konfig(true)
   );
-  const o = JSON.parse(r.out);
-  esit(o.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
-  icerir(o.hookSpecificOutput.additionalContext, 'Ölçüm ▸');
-  icerir(o.hookSpecificOutput.additionalContext, 'ters tırnak içinde');
+  const ek = (JSON.parse(r.out || '{}').hookSpecificOutput || {}).additionalContext || '';
+  icermez(ek, 'Ölçüm ▸');
+  icermez(ek, 'ters tırnak içinde');
+  icerir(
+    fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SKILL.md'), 'utf8'),
+    'işi relay §1 ile boyutlandır',
+    'kural skill dosyasında yaşamalı'
+  );
 });
 
 // D1 — ölçüldü: enjeksiyon ilk iki turda 3.317 karakter yazıyordu ve röle kullanılmayan
@@ -359,20 +366,30 @@ ol('D1 · röle kurulu olmayan klasörde de UserPromptSubmit hiç yazmaz', () =>
   esit(r.out, '');
 });
 
+// Kapının açık olduğunu gösteren ölçüt değişti: `olcu` kesildiği için sıradan turda
+// yazılan koşulsuz bir metin kalmadı. Kapının ardındaki tek sağlam kalem profil notu —
+// premium profilde ilk tur onu yazar, kapı kapalıysa hiç yazmaz.
+function premiumKonfig() {
+  const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-d1-'));
+  fs.writeFileSync(path.join(c, 'teknesyum.json'), JSON.stringify({ dil: 'tr', profil: 'premium' }));
+  return { CLAUDE_CONFIG_DIR: c, TEKNESYUM_PREMIUM: '', TEKNESYUM_STEERING: '' };
+}
+
 ol('D1 · sözleşme kapanınca kapı yeniden susar', () => {
   const { p } = proje(1, 0);
   const dosya = path.join(p, '.claude', 'relay', 'contracts', 'T0.md');
+  const ek = premiumKonfig();
   const acik = calistir(
     IZLE,
     { ...ort(p), session_id: 'd1-kapi-a', hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
-    konfig(true)
+    ek
   ).out;
-  icerir(acik, 'Ölçüm ▸', 'açık sözleşmede yazmalı');
+  icerir(acik, 'Premium mode is on', 'açık sözleşmede yazmalı');
   fs.writeFileSync(dosya, '---\nid: T0\nstatus: done\n---\n');
   const kapali = calistir(
     IZLE,
     { ...ort(p), session_id: 'd1-kapi-b', hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
-    konfig(true)
+    ek
   ).out;
   esit(kapali, '', 'sözleşme kapandıktan sonra susmalı');
 });
@@ -384,9 +401,9 @@ ol('D1 · sözleşme yokken canlı ajan kaydı kapıyı açık tutar', () => {
   const r = calistir(
     IZLE,
     { ...ort(p), session_id: 'd1-ajan', hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
-    konfig(true)
+    premiumKonfig()
   ).out;
-  icerir(r, 'Ölçüm ▸');
+  icerir(r, 'Premium mode is on');
 });
 
 ol('UserPromptSubmit röle kurulu olmayan klasörde iz bırakmaz', () => {
@@ -614,8 +631,10 @@ ol('Stop döngüye girmez (stop_hook_active)', () => {
   );
 });
 
-// "Susar" kullaniciya bir sey basmaz demek. Gunluk bildirme yordami modele giden baglamdir
-// ve rolesiz projede de yazilir — bozukluk cogunlukla rolesiz bir projede gorulur.
+// "Susar" kullaniciya bir sey basmaz demek.
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `gunlukProseduru` (205 kar) açılış bağlamından
+// kalktı — yordam `/log` komutunda ve relay SKILL.md'de yazılı, her oturum ödenen bir
+// kopyası gerekmiyor. Açılışta modele giden tek şey dil talimatı.
 ol('röle kurulu değilse ve makine bağlıysa açılışta kullanıcıya bir şey basmaz', () => {
   const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const m = JSON.parse(
@@ -623,15 +642,19 @@ ol('röle kurulu değilse ve makine bağlıysa açılışta kullanıcıya bir ş
   );
   esit(m.systemMessage, undefined, 'kullaniciya satir cikmamali');
   esit(Object.keys(m).join(','), 'hookSpecificOutput', 'baska alan olmamali');
-  icerir(m.hookSpecificOutput.additionalContext, 'bozuk davranırsa');
+  icermez(m.hookSpecificOutput.additionalContext, 'bozuk davranırsa', 'yordam artik yazilmiyor');
+  icerir(m.hookSpecificOutput.additionalContext, 'in Turkish');
 });
 
+// Uyarı `duyur()` ile gidiyor ve o kanal artık her olayda `systemMessage`: yönlendirme
+// yönergesi kalktığı için modele "şu satırı bas" denmiyor (ölçüldü 27.08).
 ol('statusline bağlı değilse açılışta kurulumu hatırlatır', () => {
   const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const m = JSON.parse(
     calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, konfig(false)).out
   );
-  icerir(m.hookSpecificOutput.additionalContext, 'kurulum eksik');
+  icerir(m.systemMessage, 'kurulum eksik');
+  icermez(JSON.stringify(m.hookSpecificOutput || {}), 'kurulum eksik', 'uyari modele gitmemeli');
 });
 
 ol('açılışta iki uyarı olsa da stdout tek JSON kalır', () => {
@@ -732,28 +755,24 @@ ol('steering=0 bütün Teknesyum satırlarını susturur', () => {
   );
 });
 
-ol('varsayılan seviye 1: temel yönlenme var, fark satırı yok', () => {
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `seviye2` (581 kar) silindi — özellik hiç
+// kullanılmadı — ve `olcu` (653 kar) SKILL.md'ye taşındı. Steering 2 artık ayrı bir
+// metin enjekte etmiyor, dolayısıyla eski iki test ("seviye 1 temel yönlenme var" ve
+// "seviye 2 fark satırlarını ister") bu tek iddiaya indi.
+ol('seviye 2 artık ayrı bir şey enjekte etmez', () => {
   const { p } = proje(2, 1);
-  const r = calistir(IZLE, {
-    ...ort(p),
-    hook_event_name: 'UserPromptSubmit',
-    prompt: 'yeni bir modül yaz ve testlerini kur',
-  }).out;
-  icerir(r, 'Teknesyum Base');
-  if (r.includes('Fark ▸')) throw new Error('seviye 1 fark satırı istemiyor: ' + r);
-});
-
-ol('steering=2 fark satırlarını ister', () => {
-  const { p } = proje(2, 1);
+  const yuk = { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'yeni bir modül yaz' };
+  const bir = calistir(IZLE, { ...yuk, session_id: 'sv-1' }).out;
   const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-cfg2-'));
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ steering: 2 }));
-  const r = calistir(
-    IZLE,
-    { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'yeni bir modül yaz' },
-    { CLAUDE_CONFIG_DIR: cfg }
-  ).out;
-  icerir(r, 'Fark ▸');
-  icerir(r, 'seviyesi 2');
+  const iki = calistir(IZLE, { ...yuk, session_id: 'sv-2' }, { CLAUDE_CONFIG_DIR: cfg }).out;
+  for (const r of [bir, iki]) {
+    icermez(r, 'Teknesyum Base', 'olcu metni artik enjekte edilmiyor');
+    icermez(r, 'Fark ▸', 'seviye 2 metni silindi');
+    icermez(r, 'seviyesi 2');
+  }
+  esit(enjeksiyonBoyu(bir), enjeksiyonBoyu(iki), 'seviye 2 fazladan karakter yazmamali');
+  icermez(fs.readFileSync(DIL, 'utf8'), 'seviye2:', 'dil.js girdisi silinmeli');
 });
 
 ol('TEKNESYUM_STEERING ortam değişkeni dosyayı ezer', () => {
@@ -907,9 +926,13 @@ ol('gecersiz dil degeri ingilizceye duser', () => {
   icerir(r.out, 'relay ready');
 });
 
-ol('ingilizce kurulumda ajan yonergesi de ingilizce', () => {
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `dilTalimati` (91 kar) her turda yazılıyordu;
+// oturumda bir kez yeter, `SessionStart`'a indi. Talimatın kendisi kalktı değil — yeri
+// değişti; test de artık iki olayı birden ölçüyor.
+ol('ingilizce kurulumda ajan yonergesi acilista ingilizce', () => {
   const { p } = proje(2, 1);
-  const r = calistir(
+  const ek = { TEKNESYUM_DIL: 'en' };
+  const istek = calistir(
     IZLE,
     {
       ...ort(p),
@@ -917,21 +940,33 @@ ol('ingilizce kurulumda ajan yonergesi de ingilizce', () => {
       hook_event_name: 'UserPromptSubmit',
       prompt: 'yeni bir modül yaz',
     },
-    { TEKNESYUM_DIL: 'en' }
+    ek
   );
-  icerir(r.out, 'to other agents in English');
-  if (r.out.includes('in Turkish')) throw new Error('karisik dil');
+  icermez(istek.out, 'to other agents', 'dil talimati her turda yazilmamali');
+  const acilis = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'dil-en', hook_event_name: 'SessionStart' },
+    ek
+  );
+  icerir(acilis.out, 'to other agents in English');
+  if (acilis.out.includes('in Turkish')) throw new Error('karisik dil');
 });
 
-ol('turkce kurulumda ajanlara turkce yazma talimati gider', () => {
+ol('turkce kurulumda ajanlara turkce yazma talimati acilista gider', () => {
   const { p } = proje(2, 1);
-  const r = calistir(IZLE, {
+  const istek = calistir(IZLE, {
     ...ort(p),
     session_id: 'dil-tr',
     hook_event_name: 'UserPromptSubmit',
     prompt: 'yeni bir modül yaz',
   });
-  icerir(r.out, 'in Turkish');
+  icermez(istek.out, 'in Turkish', 'dil talimati her turda yazilmamali');
+  const acilis = calistir(IZLE, {
+    ...ort(p),
+    session_id: 'dil-tr',
+    hook_event_name: 'SessionStart',
+  });
+  icerir(acilis.out, 'in Turkish');
 });
 
 ol('birikmis worktree acilista bir kez bildirilir', () => {
@@ -948,7 +983,10 @@ ol('worktree yoksa birikim uyarisi cikmaz', () => {
   if (r.out.includes('worktree')) throw new Error('gereksiz uyari');
 });
 
-ol('platform notu olmayan depoda model tek soru sormaya yonlendirilir', () => {
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `platformNotu` (248 kar) kaldırıldı. Tek
+// seferlik bir soru için her oturum ödeniyordu; cevap `.claude/teknesyum.json` içinde
+// zaten kalıcı. `platformNotuYok` kapısı da kancadan silindi.
+ol('platform notu olmayan depoda enjeksiyon yazilmaz', () => {
   const { p } = proje(1, 0);
   fs.mkdirSync(path.join(p, '.git'), { recursive: true });
   const r = calistir(IZLE, {
@@ -957,7 +995,9 @@ ol('platform notu olmayan depoda model tek soru sormaya yonlendirilir', () => {
     hook_event_name: 'UserPromptSubmit',
     prompt: 'bir modul yaz',
   });
-  icerir(r.out, 'platform notu yok');
+  icermez(r.out, 'platform notu yok');
+  icermez(fs.readFileSync(IZLE, 'utf8'), 'platformNotuYok', 'olu fonksiyon kalmamali');
+  icermez(fs.readFileSync(DIL, 'utf8'), 'platformNotu:', 'dil.js girdisi kalmamali');
 });
 
 ol('platform notu yazilmissa soru tekrarlanmaz', () => {
@@ -3794,6 +3834,38 @@ function enjeksiyonBoyu(cikti) {
   return h && h.additionalContext ? h.additionalContext.length : 0;
 }
 
+function enjeksiyonMetni(cikti) {
+  if (!cikti) return '';
+  const h = JSON.parse(cikti).hookSpecificOutput;
+  return (h && h.additionalContext) || '';
+}
+
+// Enjeksiyon parçalarının sınırı metinden değil kaynağından okunur: `dil.js` çocuk
+// süreçte çalıştırılır (dil seçimi süreç başında bir kez donuyor), sapma satırı
+// `premium.js` sabitlerinden üretilir. Komşu cümle değişse de ölçülen şey aynı kalır.
+function dilMetni(anahtar, ...arg) {
+  const r = spawnSync(
+    process.execPath,
+    [
+      '-e',
+      'const m=require(process.argv[1]);process.stdout.write(m.s(...JSON.parse(process.argv[2])))',
+      DIL,
+      JSON.stringify([anahtar, ...arg]),
+    ],
+    {
+      maxBuffer: 64 * 1024 * 1024,
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_CONFIG_DIR: BOS_CFG, TEKNESYUM_DIL: 'tr' },
+    }
+  );
+  if (r.status !== 0) throw new Error('dil.js okunamadi: ' + (r.stderr || ''));
+  return r.stdout || '';
+}
+
+function sapmaSatiri(ad) {
+  return require(path.join(KOK, 'scripts', 'premium.js')).sapmaSatiri(ad);
+}
+
 ol('eco notu yalnizca eco profilinde enjekte edilir', () => {
   const { p } = proje(1, 0);
   const eco = profilIstek(p, profilKonfig({ profil: 'eco' }));
@@ -3807,17 +3879,17 @@ ol('eco notu yalnizca eco profilinde enjekte edilir', () => {
   icerir(prem, 'Premium mode is on');
 });
 
+// `Teknesyum Base` metni (`olcu`) kesildi; tavanin yerinde durdugunu gosteren olcut
+// artik rota satiri ve tavan sonrasi bos cikti (olculdu 27.08).
 ol('eco enjeksiyonu tek istekte biter, normal ikinci istekte de yazar', () => {
   const { p } = proje(1, 0);
   const eco = profilKonfig({ profil: 'eco' });
   icerir(profilIstek(p, eco), 'Eco mode is on');
-  if (profilIstek(p, eco).includes('Teknesyum Base'))
-    throw new Error('eco ikinci istekte de enjekte etti');
+  esit(profilIstek(p, eco), '', 'eco ikinci istekte de enjekte etti');
   const std = profilKonfig({ profil: 'normal' });
-  icerir(profilIstek(p, std), 'Teknesyum Base', 'normal ilk istek');
-  icerir(profilIstek(p, std), 'Teknesyum Base', 'normal ikinci istek');
-  if (profilIstek(p, std).includes('Teknesyum Base'))
-    throw new Error('normal ucuncu istekte enjeksiyon durmali');
+  icerir(profilIstek(p, std), 'Yeni iş öncelikli', 'normal ilk istek');
+  icerir(profilIstek(p, std), 'Yeni iş öncelikli', 'normal ikinci istek');
+  esit(profilIstek(p, std), '', 'normal ucuncu istekte enjeksiyon durmali');
 });
 
 ol('profil degisince enjeksiyon sayaci sifirlanir', () => {
@@ -3826,33 +3898,39 @@ ol('profil degisince enjeksiyon sayaci sifirlanir', () => {
   const profilYaz = (ad) =>
     fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr', profil: ad }));
   icerir(profilIstek(p, cfg), 'Premium mode is on', 'premium ilk istek');
-  icerir(profilIstek(p, cfg), 'Premium mode is on', 'premium ikinci istek');
-  if (profilIstek(p, cfg).includes('Premium mode is on'))
-    throw new Error('premium ucuncu istekte tavan calismali');
+  // Profil notu ve dugme satiri artik yalniz ilk turda; ikinci tur rota satirinda kalir.
+  const ikinci = profilIstek(p, cfg);
+  icerir(ikinci, 'Yeni iş öncelikli', 'premium ikinci istek');
+  icermez(ikinci, 'Premium mode is on', 'profil notu ikinci turda tekrarlanmamali');
+  esit(profilIstek(p, cfg), '', 'premium ucuncu istekte tavan calismali');
   profilYaz('eco');
   const ilk = profilIstek(p, cfg);
   icerir(ilk, 'Eco mode is on', 'profil degisince yeni blok ilk istekte gelmeli');
   icerir(ilk, 'Tabandan sapan düğmeler: ');
   if (ilk.includes('Premium mode is on')) throw new Error('eski profilin metni hâlâ geliyor');
-  if (profilIstek(p, cfg).includes('Eco mode is on'))
-    throw new Error('sifirlanan sayac eco tavanini da uygulamali');
+  esit(profilIstek(p, cfg), '', 'sifirlanan sayac eco tavanini da uygulamali');
 });
 
 ol('profil degismediyse sayac sifirlanmaz, tavan yerinde durur', () => {
   const { p } = proje(1, 0);
   const cfg = profilKonfig({ profil: 'normal' });
-  icerir(profilIstek(p, cfg), 'Teknesyum Base', 'ilk istek');
-  icerir(profilIstek(p, cfg), 'Teknesyum Base', 'ikinci istek');
-  if (profilIstek(p, cfg).includes('Teknesyum Base'))
-    throw new Error('ayni profilde tavan asildi, sayac sifirlanmis');
+  icerir(profilIstek(p, cfg), 'Yeni iş öncelikli', 'ilk istek');
+  icerir(profilIstek(p, cfg), 'Yeni iş öncelikli', 'ikinci istek');
+  esit(profilIstek(p, cfg), '', 'ayni profilde tavan asildi, sayac sifirlanmis');
 });
 
-ol('eco fark satirlarini enjekte etmez, steering 2 ayarliyken bile', () => {
+// `seviye2` silindi (olculdu 27.08); iddia "eco'da yazilmaz"dan "hicbir profilde
+// yazilmaz"a genisledi.
+ol('steering 2 hicbir profilde fark satiri enjekte etmez', () => {
   const { p } = proje(1, 0);
   const eco = profilIstek(p, profilKonfig({ profil: 'eco', steering: 2 }));
   icerir(eco, 'Eco mode is on');
-  if (eco.includes('Fark ▸')) throw new Error('eco profilinde seviye 2 metni enjekte edildi');
-  icerir(profilIstek(p, profilKonfig({ profil: 'normal', steering: 2 })), 'Fark ▸');
+  icermez(eco, 'Fark ▸', 'eco profilinde seviye 2 metni enjekte edildi');
+  icermez(
+    profilIstek(p, profilKonfig({ profil: 'normal', steering: 2 })),
+    'Fark ▸',
+    'seviye 2 metni silinmis olmali'
+  );
 });
 
 function enjeksiyonOlcu(p, ayar) {
@@ -3863,11 +3941,17 @@ function enjeksiyonOlcu(p, ayar) {
   return { tek, toplam };
 }
 
-ol('eco oturum basina normalden az karakter enjekte eder', () => {
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): eco/normal karakter karşılaştırması anlamını
+// yitirdi. `olcu` kesildikten sonra normal profil oturum başına yalnız rota satırını
+// yazıyor; eco'nun tek isteği profil notunu taşıdığı için daha uzun. Ölçülen şey artık
+// "eco daha kısa" değil, "her profil kendi tavanında bitiyor ve sonrası 0".
+ol('enjeksiyon her profilde kendi tavaninda biter', () => {
   const { p } = proje(1, 0);
-  const e = enjeksiyonOlcu(p, { profil: 'eco' }).toplam;
-  const s = enjeksiyonOlcu(p, { profil: 'normal' }).toplam;
-  if (!(e < s * 0.75)) throw new Error('eco enjeksiyonu kisalmadi: ' + e + ' / ' + s);
+  const e = enjeksiyonOlcu(p, { profil: 'eco' });
+  const s = enjeksiyonOlcu(p, { profil: 'normal' });
+  if (!(e.tek > 0 && s.tek > 0)) throw new Error('enjeksiyon olculemedi: ' + e.tek + ' / ' + s.tek);
+  esit(e.toplam, e.tek, 'eco tavani 1: ikinci istekten sonra 0 olmali');
+  esit(s.toplam, s.tek * 2, 'normal tavani 2: ucuncu istekten sonra 0 olmali');
 });
 
 function ayarOku(cfg, sid, anahtar, root) {
@@ -3936,27 +4020,41 @@ ol('enjeksiyona yalniz tabandan sapan dugmeler girer', () => {
 ol('taban profil enjeksiyona dugme satiri yazmaz', () => {
   const { p } = proje(1, 0);
   const std = profilIstek(p, profilKonfig({ profil: 'normal' }));
-  icerir(std, 'Teknesyum Base');
+  icerir(std, 'Yeni iş öncelikli');
   if (std.includes('Tabandan sapan düğmeler'))
     throw new Error('normal profil kendi tabanindan sapti');
 });
 
-ol('eco istek basina da normalden az bayt tutar', () => {
+// ÖLÇÜLDÜ 27.08 (Y3 §5): `dugmeSapma` premium profilde 249 karakter ve **her turda**
+// yazılıyordu; rapordaki 26 karakterlik rakam sahte argümanla ölçülmüş şablon
+// uzunluğuydu. Bilgi ayrıca tekrar — `premiumNotu` aynı düğmeleri düzyazıyla anlatıyor.
+// Profil notuyla aynı bloğa girdi: profil değişince yazılır, dışında yazılmaz.
+ol('dugme sapmasi yalniz profil gecisinde yazilir', () => {
   const { p } = proje(1, 0);
-  const e = enjeksiyonOlcu(p, { profil: 'eco' });
-  const s = enjeksiyonOlcu(p, { profil: 'normal' });
-  if (!(e.tek > 0 && s.tek > 0)) throw new Error('enjeksiyon olculemedi: ' + e.tek + ' / ' + s.tek);
-  if (!(e.tek < s.tek))
-    throw new Error('eco istek basina normalden buyuk: ' + e.tek + ' / ' + s.tek);
-  if (!(e.toplam < s.toplam))
-    throw new Error('eco oturum basina normalden buyuk: ' + e.toplam + ' / ' + s.toplam);
-  // Sapma satırından sonra rota satırı geliyor (fikstürde açık sözleşme var); ölçülen
-  // sadece sapma satırı olmalı, yoksa uzunluk kapısı komşu cümleyi de sayar.
-  const satir = (profilIstek(p, profilKonfig({ profil: 'eco' })).match(
-    /Tabandan sapan düğmeler: [^"]*?(?= Yeni iş| Owns eşleşmesi| Aynı dosya|\\n|")/
-  ) || [''])[0];
-  if (!satir) throw new Error('eco sapma satiri bulunamadi');
-  if (satir.length > 200) throw new Error('eco sapmasi 3-4 satiri asti: ' + satir.length);
+  const cfg = profilKonfig({ profil: 'premium' });
+  icerir(profilIstek(p, cfg), 'Tabandan sapan düğmeler: ', 'profil ilk turu');
+  const ikinci = profilIstek(p, cfg);
+  icermez(ikinci, 'Tabandan sapan düğmeler', 'ikinci turda tekrarlanmamali');
+  const boy = enjeksiyonBoyu(ikinci);
+  if (boy > 100) throw new Error('tur 2 enjeksiyonu 100 karakteri asti: ' + boy);
+});
+
+// Eco'nun tavanı `enjeksiyon her profilde kendi tavaninda biter` testinde ölçülüyor;
+// burada tekrar edilmiyordu — aynı iddia iki testte iki kez ölçülüyordu, kopya kaldırıldı
+// (Y3 tur 2). Kalan iddia sapma satırının uzunluğu.
+//
+// Sınır metne bağlanmaz: satır enjeksiyona komşularıyla tek boşlukla ekleniyor ve eski
+// regex komşu cümlelerin metnine bakıyordu — o cümleler değişince test sessizce yanlış
+// ölçerdi. Beklenen satır kaynağından (`premium.js` + `dil.js`) üretilip birebir aranır.
+ol('eco sapma satiri uc dort satiri asmaz', () => {
+  const { p } = proje(1, 0);
+  const beklenen = dilMetni('dugmeSapma', sapmaSatiri('eco'));
+  icerir(
+    enjeksiyonMetni(profilIstek(p, profilKonfig({ profil: 'eco' }))),
+    beklenen,
+    'eco sapma satiri'
+  );
+  if (beklenen.length > 200) throw new Error('eco sapmasi 3-4 satiri asti: ' + beklenen.length);
 });
 
 ol('eco notu premium notunun yarisini gecmez', () => {
@@ -4460,7 +4558,12 @@ ol('kanca ust klasorde acilan oturumda projeyi izler ve tur sonunda tasir', () =
     { ...oturum, hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
     cfg
   );
-  icerir(JSON.parse(b.out).hookSpecificOutput.additionalContext, 'Alfa');
+  // ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `kapsayiciEtkin` (298 kar) kaldırıldı —
+  // kapının dışında kaldığı için röle kullanılmayan oturumda bile yazılıyordu ve
+  // çözdüğü şey kendi kuralımızın ihlaliydi (oturum proje kökünde açılır). İzleme ve
+  // tur sonu hafıza taşıma yerinde; düşen tek şey modele yazılan not.
+  icermez(b.out, 'çalışılan proje', 'kapsayici notu artik enjekte edilmiyor');
+  icermez(fs.readFileSync(DIL, 'utf8'), 'kapsayiciEtkin:', 'dil.js girdisi kalmamali');
   const kaynak = path.join(dip, '.claude', 'agent-memory', 'teknesyum-builder');
   fs.mkdirSync(kaynak, { recursive: true });
   fs.writeFileSync(path.join(kaynak, 'not.md'), 'x\n');
@@ -5823,26 +5926,24 @@ ol('acilis uyarilari ayri satirlara duser, marka oneki bir kez yazilir', () => {
   }
 });
 
-// Tur içi olaylar `systemMessage` kullanmıyor: o kanal render katmanında
-// `<olay> says:` öneki alıyor ve önek kaldırılamıyor. Yönlendirme satırları modele
-// gidiyor, model onları kendi cevabının içinde basıyor — önek doğmuyor.
-// `BILDIRIM_BICIMI` artık yalnız `Stop`/`StopFailure` kanalını yönetiyor.
-ol('tur ici olaylar kullanici kanalini hic kullanmaz', () => {
-  const { p } = proje(1, 0);
-  for (const yuk of [
-    AJAN_YUK(p),
-    { ...ort(p), hook_event_name: 'SessionStart' },
-    { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'x' },
-  ]) {
-    const r = calistir(IZLE, yuk);
-    if (!r.out) continue;
-    const o = JSON.parse(r.out);
-    if (o.systemMessage)
-      throw new Error(yuk.hook_event_name + ' systemMessage kullanmis: ' + o.systemMessage);
-  }
-  const m = duyuruMetni(calistir(IZLE, AJAN_YUK(p)));
-  icerir(m, 'Teknesyum ▸ Görev ▸ ');
-  icerir(m, 'olduğu gibi', 'satirin harfiyen basilmasi istenmeli');
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `yonlendirmeYonerge` (154 kar) kaldırıldı.
+// Modele "aşağıdaki satırları aynen bas" diyordu; hem girdi hem çıktı tokenı ödetiyordu
+// ve satırları model yeniden yazıyordu. Duyuru artık her olayda `systemMessage` ile
+// kullanıcıya gidiyor — render öneki (`<olay> says:`) kabul edildi — ve aynı metin
+// `live/_duyuru.json` üzerinden statusline'da öneksiz görünüyor.
+ol('tur ici duyuru modele degil kullaniciya gider', () => {
+  const { p, live } = proje(1, 0);
+  const r = calistir(IZLE, AJAN_YUK(p));
+  const o = JSON.parse(r.out);
+  icerir(o.systemMessage, 'Teknesyum ▸ Görev ▸ ');
+  icermez(r.out, 'olduğu gibi', 'yonerge metni kalkmali');
+  icermez(r.out, 'additionalContext', 'duyuru baglama yazilmamali');
+  icermez(fs.readFileSync(DIL, 'utf8'), 'yonlendirmeYonerge:', 'dil.js girdisi kalmamali');
+  icerir(
+    fs.readFileSync(path.join(live, '_duyuru.json'), 'utf8'),
+    'Teknesyum ▸ Görev ▸ ',
+    'duyuru statusline dosyasina yazilmali'
+  );
 });
 
 ol('sabit satir yapilinca icerik onekle ayni satirda kalir', () => {
@@ -5860,7 +5961,10 @@ ol('yururlukteki bildirim bicimi satir ve makbuzda ters tirnak yok', () => {
   const k = fs.readFileSync(path.join(KOK, 'hooks', 'relay-watch.js'), 'utf8');
   icerir(k, "const BILDIRIM_BICIMI = 'satir';");
   const d = fs.readFileSync(path.join(KOK, 'hooks', 'dil.js'), 'utf8');
-  const blok = d.slice(d.indexOf('turOzeti: {'), d.indexOf('turOzetiYonerge'));
+  // Blok sınırı komşu anahtarın adına değil girdinin kendi kapanış satırına bağlı:
+  // `turOzetiYonerge` silindi (Y3 §4) ve ada bağlı sınır sessizce kayıyordu.
+  const bas = d.indexOf('turOzeti: {');
+  const blok = d.slice(bas, d.indexOf('\n  },', bas));
   icermez(blok, '`', 'makbuz metninde ters tırnak kalmamalı');
   const { p, ek, live } = turProje();
   calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit' }, ek);
@@ -8628,12 +8732,15 @@ ol('log gunlugu makaraya yazar, listeler ve iki turlu kapatir', () => {
   esit(cb(['oku', 'ikinci']).status, 1, 'olmayan gunluk hata vermeli');
 });
 
-ol('acilis acik gunlugu ve bildirme yordamini soyler', () => {
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `gunlukProseduru` (205 kar) silindi. Açık
+// günlük sayısı kaldı — o duruma bağlı ve iki oturum arasında değişiyor; yordam
+// cümlesi ise sabit metindi ve `/log` komutunda zaten yazılı.
+ol('acilis acik gunlugu soyler, bildirme yordamini artik enjekte etmez', () => {
   const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-logacilis-'));
   const ek = konfig(true);
   const sor = () => calistir(IZLE, { ...ort(p), hook_event_name: 'SessionStart' }, ek);
   const bos = sor();
-  icerir(bos.out, 'bozuk davranırsa', 'yordam her oturumda bir kez yazilmali');
+  icermez(bos.out, 'bozuk davranırsa', 'yordam artik enjekte edilmiyor');
   icermez(bos.out, 'açık hata günlüğü', 'gunluk yokken sayi satiri cikmamali');
   const d = path.join(ek.CLAUDE_CONFIG_DIR, 'teknesyum', 'openlogs');
   fs.mkdirSync(d, { recursive: true });
@@ -9820,17 +9927,18 @@ ol('acik is listesi hicbir turda baglama enjekte edilmez', () => {
 
 ol('yonlendirme tavani ve kuyruk satiri dil.js ten gelir, tr ve en var', () => {
   const kaynak = fs.readFileSync(DIL, 'utf8');
-  const blok = kaynak.slice(
-    kaynak.indexOf('aciktaKuyruk: {'),
-    kaynak.indexOf('yonlendirmeYonerge')
-  );
+  // Sınır komşu anahtarın adına bağlanmaz: `yonlendirmeYonerge` (27.08) ve `siradaAlindi`
+  // (Y3 §4, öksüzdü) silinince ada bağlı sınır sessizce kayıyordu. Blok ilk girdiden
+  // `yonlendirmeTavan` girdisinin kendi kapanış satırına kadardır.
+  const bas = kaynak.indexOf('aciktaKuyruk: {');
+  const son = kaynak.indexOf('yonlendirmeTavan:', bas);
+  const blok = kaynak.slice(bas, kaynak.indexOf('\n  },', son) + 5);
   icerir(blok, 'aciktaKuyruk');
-  icerir(blok, 'siradaAlindi');
   icerir(blok, 'aciktaEngel');
   icerir(blok, 'aciktaValf');
   icerir(blok, 'yonlendirmeTavan');
-  esit((blok.match(/\btr:/g) || []).length, 5, 'tr karsiligi eksik');
-  esit((blok.match(/\ben:/g) || []).length, 5, 'en karsiligi eksik');
+  esit((blok.match(/\btr:/g) || []).length, 4, 'tr karsiligi eksik');
+  esit((blok.match(/\ben:/g) || []).length, 4, 'en karsiligi eksik');
   const { p, live } = kuyrukKur(1, { simdi: '', acikta: ['a'], sirada: '' });
   fs.writeFileSync(path.join(live, 'a1.json'), JSON.stringify({ agent_id: 'a1' }));
   const en = calistir(IZLE, { ...ort(p), hook_event_name: 'Stop' }, { TEKNESYUM_DIL: 'en' });
@@ -10524,6 +10632,86 @@ for (const ad of UI_SUITE) {
     );
   });
 }
+
+// ÖLÇÜLDÜ 27.08.2026: konsey protokolü bir belgeydi, yürütücüsü yoktu. Akışın 2., 3. ve
+// 4. adımı bugüne kadar hiç koşmadı — kimse kontrol etmediği için. Aşağıdaki testler
+// belgeyi değil, belgeyi zorlayan makineyi tutar.
+const KONSEY_JS = path.join(__dirname, '..', 'teknesyum', 'scripts', 'konsey.js');
+
+function konseyKok() {
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-konsey-'));
+  fs.mkdirSync(path.join(d, '.claude', 'relay', 'live'), { recursive: true });
+  fs.mkdirSync(path.join(d, '.claude', 'relay', 'contracts'), { recursive: true });
+  return d;
+}
+
+function konsey(kok, args) {
+  const r = spawnSync(process.execPath, [KONSEY_JS, ...args, '--kok', kok], {
+    encoding: 'utf8',
+    maxBuffer: 8 * 1024 * 1024,
+  });
+  return { cikti: String(r.stdout) + String(r.stderr), kod: r.status };
+}
+
+function metinYaz(kok, ad) {
+  const p = path.join(kok, ad);
+  fs.mkdirSync(path.dirname(p), { recursive: true });
+  fs.writeFileSync(p, 'x'.repeat(400), 'utf8');
+  return ad;
+}
+
+ol('baskan uyenin metnini gormeden karar veremez', () => {
+  const kok = konseyKok();
+  konsey(kok, ['ac', '--konu', 'deneme']);
+  const b = metinYaz(kok, 'baskan.md');
+  const r = konsey(kok, ['karar', '--karar', 'yeterli', '--uye-yonu', 'ayni', '--dosya', b]);
+  esit(r.kod, 2, 'uye metni yokken karar kabul edildi');
+  icerir(r.cikti, 'gormeden karar veremez');
+});
+
+ol('baskanin iki dugmesi vardir, ucuncu deger reddedilir', () => {
+  const kok = konseyKok();
+  konsey(kok, ['ac', '--konu', 'deneme']);
+  konsey(kok, ['uye', '--dosya', metinYaz(kok, 'uye.md')]);
+  const b = metinYaz(kok, 'baskan.md');
+  const r = konsey(kok, ['karar', '--karar', 'ayrisma-uzat', '--uye-yonu', 'ayri', '--dosya', b]);
+  esit(r.kod, 2, 'uc degerli eski enum hala kabul ediliyor');
+  icerir(r.cikti, 'ucuncu deger yok');
+});
+
+ol('nesnesiz uzatma sayilmaz', () => {
+  const kok = konseyKok();
+  konsey(kok, ['ac', '--konu', 'deneme']);
+  konsey(kok, ['uye', '--dosya', metinYaz(kok, 'uye.md')]);
+  const b = metinYaz(kok, 'baskan.md');
+  const r = konsey(kok, ['karar', '--karar', 'uzat', '--uye-yonu', 'ayri', '--dosya', b]);
+  esit(r.kod, 2, 'nesnesiz uzatma gecti');
+  icerir(r.cikti, 'Nesnesiz uzatma sayilmaz'.toLowerCase().slice(0, 7));
+});
+
+ol('tavan 3 turdur, dorduncu tur acilmaz', () => {
+  const kok = konseyKok();
+  konsey(kok, ['ac', '--konu', 'deneme']);
+  let son = null;
+  for (let i = 1; i <= 3; i++) {
+    konsey(kok, ['uye', '--dosya', metinYaz(kok, 'uye' + i + '.md')]);
+    son = konsey(kok, [
+      'karar', '--karar', 'uzat', '--uye-yonu', 'ayri',
+      '--dosya', metinYaz(kok, 'baskan' + i + '.md'), '--nesne', 'devam',
+    ]);
+  }
+  esit(son.kod, 2, 'tavan asildi');
+  icerir(son.cikti, 'tavan 3 tur');
+});
+
+ol('baskan kendi metnini arsivlemeden karar veremez — T0 sentez yazmaz', () => {
+  const kok = konseyKok();
+  konsey(kok, ['ac', '--konu', 'deneme']);
+  konsey(kok, ['uye', '--dosya', metinYaz(kok, 'uye.md')]);
+  const r = konsey(kok, ['karar', '--karar', 'yeterli', '--uye-yonu', 'ayni']);
+  esit(r.kod, 2, 'baskan metinsiz karar verebildi');
+  icerir(r.cikti, 'T0 sentez yazmaz');
+});
 
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)

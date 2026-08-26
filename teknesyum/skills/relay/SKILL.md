@@ -111,6 +111,11 @@ Teknesyum ▸ Ölçüm ▸ Altı dosyalık tek alan işi — oturum içi röle k
 **Bu satır iş talebinde zorunlu — ajan açmadığında da yaz.** Kullanıcı eklentinin ölçtüğünü
 görmeli; sessizlik "devrede değil" demektir.
 
+Kural burada duruyor, her turda bağlama enjekte edilmiyor: **işi relay §1 ile boyutlandır**
+ve ölçüm satırını tek kod parçası olarak bas. Skill sözleşme açılınca zaten bir kez
+okunuyor; hatırlatmanın her mesajda tekrarlanmasının bilgi değeri yok (ölçüldü 27.08,
+`docs/HER-MESAJ-YUKU.md`).
+
 ```
 Teknesyum ▸ Ölçüm ▸ Tek dosyalık, gözle doğrulanabilir iş — ajan açmadım, kendim yapıyorum
 Teknesyum ▸ Ölçüm ▸ Sıfırdan proje, üç ayrı yetenek alanı — görev paketi kurdum, sekiz sözleşme açtım

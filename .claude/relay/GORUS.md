@@ -10,3 +10,4 @@
 2026-08-26 17:03 | advisor | Fable stratejik görüşü | bekleyen: —
 2026-08-26 17:51 | advisor | Fable-görüş model yaptırımı | bekleyen: —
 2026-08-26 18:08 | advisor | Fable-görüş sapma bloklaması | bekleyen: —
+2026-08-26 22:04 | advisor | Fable kesim kararı | bekleyen: —

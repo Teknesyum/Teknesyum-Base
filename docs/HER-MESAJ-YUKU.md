@@ -36,7 +36,7 @@ tavanı susturuyor. Ama iki nokta bu tabloyu bozuyor:
 | 9 | `gunlukProseduru` | 205 | 82 | **6** | `SessionStart`'ta bir kez. 27.08'de `compact`/`resume` tekrarından çıkarıldı. Kalan tek koşu savunulabilir ama metin uzun. |
 | 10 | `yonlendirmeYonerge` | 154 | 62 | **8** | "Aşağıdaki satırları aynen bas" talimatı. Hem girdi hem **çıktı** token'ı ödetiyor: model satırları yeniden yazıyor. Aynı bilgi statusline'a gider. |
 | 11 | `dilTalimati` | 91 | 37 | **2** | Oturumda bir kez yeterken her turda yazılıyordu. Ucuz ve gerçek davranış üretiyor. |
-| 12 | `dugmeSapma` | 26 | 10 | **1** | Tabandan sapan düğme sayısı. Neredeyse bedava, gerçek durum bildiriyor. |
+| 12 | `dugmeSapma` | 249 | 100 | **7** | Tabandan sapan düğme sayısı. **DÜZELTİLDİ 27.08:** buradaki 26/10 yanlıştı — şablon sahte kısa argümanla çağrılmıştı, premium gerçek yükü 249 karakter/100 token ve her turda basılıyordu. Fable'ın "gürültü seviyesi, kalsın" hükmü bu yanlış rakama dayanıyordu. Y3 §5 ile tek seferliğe indirildi (`profilIlkTur` kapısı). |
 | | **toplam** | **5.384** | **2.160** | | |
 
 Tek turda hepsi birden yazılmaz; koşullar farklı. Ölçülen gerçek tur 1 yükü

@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 
 const { gecerlilik } = require('./topla.js');
 
@@ -98,6 +98,23 @@ function ozet(metin) {
   return crypto.createHash('sha256').update(metin).digest('hex').slice(0, 16);
 }
 
+// OLCULDU 27.08.2026 (konsey tur 2, uye bulgusu - defter B1): `c.kill()` Windows'ta
+// yalniz tutamac sahibini olduruyor. `claude`'un dogurdugu rg/git/hook node surecleri
+// oksuz kalip kendi konfiglerine yazmaya devam ediyor - kota yiyor, transkripti kirletiyor.
+function agaciOldur(c) {
+  if (!c.pid) return false;
+  const r = spawnSync('taskkill', ['/PID', String(c.pid), '/T', '/F'], {
+    windowsHide: true,
+    timeout: 15000,
+    encoding: 'utf8',
+  });
+  if (!r.error && (r.status === 0 || r.status === 128)) return true;
+  try {
+    c.kill();
+  } catch {}
+  return false;
+}
+
 function kos(cmd, args, opt = {}) {
   return new Promise((cozum) => {
     const c = spawn(cmd, args, {
@@ -110,9 +127,10 @@ function kos(cmd, args, opt = {}) {
     let out = '';
     let err = '';
     let kesildi = false;
+    let agacOldu = null;
     const t = setTimeout(() => {
       kesildi = true;
-      c.kill();
+      agacOldu = agaciOldur(c);
     }, opt.tavan || TAVAN_MS);
     c.stdout.on('data', (d) => {
       out += d;
@@ -122,11 +140,11 @@ function kos(cmd, args, opt = {}) {
     });
     c.on('close', (kod) => {
       clearTimeout(t);
-      cozum({ kod, out, err, kesildi });
+      cozum({ kod, out, err, kesildi, agacOldu, planli: !!(opt.planliKesinti && kesildi) });
     });
     c.on('error', (e) => {
       clearTimeout(t);
-      cozum({ kod: -1, out, err: String(e), kesildi });
+      cozum({ kod: -1, out, err: String(e), kesildi, agacOldu, planli: !!(opt.planliKesinti && kesildi) });
     });
   });
 }
@@ -336,13 +354,16 @@ function transkriptBul(konfig, fixture, sid) {
 }
 
 function transkriptOzeti(dosya) {
-  const o = { modelId: null, asistanTuru: 0, aracCagrisi: 0 };
+  // OLCULDU 27.08.2026: `taskkill /F` transkriptin son satirini yarim birakiyor. Bozuk
+  // satiri sessizce atlamak tam da olculmek istenen turu (kesme ani) kayip ediyordu.
+  const o = { modelId: null, asistanTuru: 0, aracCagrisi: 0, bozukSatir: 0 };
   for (const satir of fs.readFileSync(dosya, 'utf8').split('\n')) {
     if (!satir.trim()) continue;
     let k;
     try {
       k = JSON.parse(satir);
     } catch {
+      o.bozukSatir++;
       continue;
     }
     if (k.type !== 'assistant' || !k.message) continue;
@@ -461,6 +482,10 @@ async function kosu(gorev, durum, tekrar, benchKok, kimlikDosyasi, kuru, tohumBi
     sonuc.sureMs = Date.now() - t0;
     sonuc.cikisKodu = r.kod;
     sonuc.tavanAsildi = r.kesildi;
+    // Tasarim geregi kesilen kosu tavan asmis sayilmaz: yoksa kesinti kolundaki her kosu
+    // gecerlilik kapisinda elenir ve birincil metrik n=0 cikar.
+    sonuc.planliKesinti = !!r.planli;
+    sonuc.agacOldu = r.agacOldu;
     gunluk.push(
       'claude -p → kod ' +
         r.kod +
@@ -488,6 +513,8 @@ async function kosu(gorev, durum, tekrar, benchKok, kimlikDosyasi, kuru, tohumBi
       sonuc.modelId = t.modelId;
       sonuc.asistanTuru = t.asistanTuru;
       sonuc.aracCagrisi = t.aracCagrisi;
+      sonuc.bozukSatir = t.bozukSatir;
+      if (t.bozukSatir) gunluk.push('transkriptte ' + t.bozukSatir + ' bozuk satir (kesme izi)');
     } else {
       gunluk.push('transkript bulunamadi: ' + path.join(konfig, 'projects'));
     }
@@ -620,6 +647,22 @@ async function kendiTesti() {
   const temiz = damgala({ cikisKodu: 0, tavanAsildi: false, kurulumGunlugu: ['claude -p → kod 0'], kusurSayisi: 0 });
   onay('temiz kosu gecerli', temiz.gecerli === true, temiz.gecerli);
   onay('temiz kosuda kusur korunuyor', temiz.kusurSayisi === 0, temiz.kusurSayisi);
+
+  // OLCULDU 27.08.2026: kesinti yamasi sentetik uzun surecle kosturulmadan benche
+  // girmez (konsey tur 2 serhi). Cocuk kendi cocugunu doguruyor; agac oldurulmezse
+  // torun hayatta kalir ve damgasini diske yazar.
+  {
+    const damga = path.join(os.tmpdir(), 'tbench-torun-' + Date.now() + '.txt');
+    const torun = 'setTimeout(()=>require("fs").writeFileSync(process.argv[1],"yasiyor"),4000)';
+    const ebeveyn = 'require("child_process").spawn(process.execPath,["-e",' + JSON.stringify(torun) + ',process.argv[1]],{stdio:"ignore"});setTimeout(()=>{},20000)';
+    const r = await kos(process.execPath, ['-e', ebeveyn, damga], { tavan: 1200, planliKesinti: true });
+    onay('kesinti damgalandi', r.kesildi === true, r.kesildi);
+    onay('planli kesinti isaretlendi', r.planli === true, r.planli);
+    onay('surec agaci olduruldu', r.agacOldu === true, r.agacOldu);
+    await new Promise((c) => setTimeout(c, 5000));
+    onay('torun hayatta kalmadi', fs.existsSync(damga) === false, fs.existsSync(damga));
+    try { fs.unlinkSync(damga); } catch {}
+  }
 
   const blok = DURUMLAR.map((d) => ({ gorev: 'sentetik', durum: d, tekrar: 1, ad: 'sentetik__' + d }));
   const sentetik = (limitDenemeleri) => {

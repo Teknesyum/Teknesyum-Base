@@ -102,6 +102,23 @@ function makbuz(live) {
   }
 }
 
+// ÖLÇÜLDÜ 27.08 (docs/HER-MESAJ-YUKU.md): `yonlendirmeYonerge` kalktı — kanca artık
+// modelden satırları bastırmıyor. Duyuru `systemMessage` ile kullanıcıya gidiyor ve
+// aynısı burada öneksiz görünüyor. Makbuzla aynı tavan: iki saati geçen düşer.
+function duyuru(live) {
+  if (!live) return '';
+  try {
+    const d = JSON.parse(fs.readFileSync(path.join(live, '_duyuru.json'), 'utf8'));
+    if (!d || !d.metin) return '';
+    if (Date.now() - (Number(d.ts) || 0) > MAKBUZ_TAVANI) return '';
+    return String(d.metin);
+  } catch {
+    return '';
+  }
+}
+
+// Ölçüm satırı modele yazdırılmıyor artık; ölçünün kendisi (hangi sözleşme yürüyor,
+// kaç ajan açık, kaçı bitti) zaten aşağıdaki röle ve ajan satırlarında duruyor.
 function aciktaSayisi(live) {
   if (!live) return 0;
   try {
@@ -133,7 +150,10 @@ function ajanlar(live) {
   if (!live) return [];
   let out = [];
   try {
+    // `arsiv/` bir dizin, `.json` süzgecine takılmaz; yine de açıkça atlanır — kayıtlar
+    // oraya taşındıktan sonra her render'da yalnız o tek giriş görülür (Y3 §6).
     for (const f of fs.readdirSync(live)) {
+      if (f === 'arsiv') continue;
       if (!f.endsWith('.json') || f.startsWith('_')) continue;
       try {
         out.push(JSON.parse(fs.readFileSync(path.join(live, f), 'utf8')));
@@ -334,6 +354,8 @@ process.stdin.on('end', () => {
   // `hint` ayraç rengidir; makbuz onunla basılınca satır ayraç gibi okunuyor ve
   // "makbuz yok" diye rapor ediliyordu. Bir kademe yukarı, `dim`e alındı.
   if (mk) satirlar.push('  ' + C.dim + mk + C.r);
+  const dy = duyuru(live);
+  if (dy) satirlar.push('  ' + C.blue + '▸ ' + C.r + C.dim + kisalt(dy, 90) + C.r);
   for (const c of cs.slice(0, 3)) satirlar.push('  ' + calisanSatiri(c));
   if (cs.length > 3) satirlar.push('  ' + C.hint + '+' + (cs.length - 3) + ' ajan çalışıyor' + C.r);
 

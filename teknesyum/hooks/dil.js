@@ -120,7 +120,9 @@ const S = {
   },
   // Ters tırnak yok: bu satır `systemMessage` ile basılıyor ve o kanal markdown
   // işlemiyor — tırnaklar ekranda harfiyen görünüyordu (ölçüldü 23.08.2026).
-  // Model kanalına dönülürse tırnakları `turOzetiYonerge` ekler.
+  // Makbuz artık `_makbuz.json` üzerinden statusline'a gidiyor; modele hiç yazılmıyor.
+  // Modele yazan `turOzetiYonerge` girdisi bu yüzden silindi (Y3 §4, 27.08) — kaldırılma
+  // gerekçesi `docs/HATA-tur-makbuzu-tekrari.md`: talimat cevabın tamamını tekrarlatıyordu.
   turOzeti: {
     tr: (sure, ana, alt) =>
       'Total Süre: ' + sure + ' <> Ana Oturum: ' + ana + ' Token <> Alt Ajanlar: ' + alt + ' Token',
@@ -133,27 +135,9 @@ const S = {
       alt +
       ' Tokens',
   },
-  turOzetiYonerge: {
-    tr: (satir) =>
-      'Turu kapatırken cevabının en altına şu satırı **ters tırnak içinde** yaz, tek satır ' +
-      'olarak: `' +
-      satir +
-      '`',
-    en: (satir) =>
-      'When you close the turn write this line at the very bottom of your answer, on one ' +
-      'line and wrapped in backticks: `' +
-      satir +
-      '`',
-  },
-
   aciktaKuyruk: {
     tr: (n) => 'Açıkta ' + n + ' madde — listesi `/report` ile açılır.',
     en: (n) => n + ' item(s) still open — list them with `/report`.',
-  },
-
-  siradaAlindi: {
-    tr: (madde) => 'Teknesyum ▸ Sıraya alındı ▸ ' + madde,
-    en: (madde) => 'Teknesyum ▸ Queued ▸ ' + madde,
   },
 
   aciktaEngel: {
@@ -207,20 +191,6 @@ const S = {
       'The contract is what gets read, not the message.',
   },
 
-  // Yönlendirme satırları modele veriliyor ki kullanıcıya öneksiz ulaşsın; kanca
-  // `systemMessage` kullansa render katmanı başına `<olay> says:` koyuyor ve o önek
-  // hiçbir ayarla kaldırılamıyor (ölçüldü 23.08.2026).
-  yonlendirmeYonerge: {
-    tr: (satir) =>
-      'Aşağıdaki satır(lar)ı cevabının en üstüne, olduğu gibi, her biri kendi satırında ve ' +
-      'ters tırnak içinde bas. Kendin yeniden yazma, kısaltma, birleştirme:\n' +
-      satir,
-    en: (satir) =>
-      'Print the line(s) below at the top of your answer, verbatim, each on its own line ' +
-      'and wrapped in backticks. Do not rewrite, shorten or merge them:\n' +
-      satir,
-  },
-
   // §1.5.1 madde 2'nin kancadan görülebilen yarısı. Liste vardı, bakma anı yoktu ve
   // tetikleyici beş tur boyunca hiç ateşlenmedi.
   gorusHatirlat: {
@@ -242,17 +212,6 @@ const S = {
     en: (n) =>
       n +
       ' open bug log(s) — read them with `/log`, then close with `/log kapat` or `/log arsivle`',
-  },
-
-  gunlukProseduru: {
-    tr: () =>
-      "Teknesyum'un bir işlevi bozuk davranırsa sohbeti kesme, günlük bırak: " +
-      '`/log yaz --baslik "..." --belirti "..." --kaynak "<dosya>"` — günlük makine geneli ' +
-      'makaraya düşer, Teknesyum Base açıldığında çözülür.',
-    en: () =>
-      'If a Teknesyum feature misbehaves, do not derail the chat — leave a log: ' +
-      '`/log yaz --baslik "..." --belirti "..." --kaynak "<file>"`. It lands in the ' +
-      'machine-wide spool and gets solved next time Teknesyum Base is open.',
   },
 
   puslaAkisi: {
@@ -336,10 +295,6 @@ const S = {
   },
   debugAjanDurdu: { tr: 'bir ajan durdu', en: 'an agent stopped' },
 
-  kurulumEksik: {
-    tr: 'kurulum eksik · /setup çalıştır, gerekeni sorarım',
-    en: 'setup incomplete · run /setup, I will ask for what is missing',
-  },
   roleSozlesmeYok: { tr: 'röle kurulu · sözleşme yok', en: 'relay ready · no contracts' },
   roleDurum: {
     tr: (biten, toplam, acik) =>
@@ -372,36 +327,6 @@ const S = {
     en: () => 'repo is behind the remote — `git pull` first, then work',
   },
 
-  olcu: {
-    tr:
-      'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
-      'line **ters tırnak içinde** (inside backticks) — `Teknesyum ▸ Ölçüm ▸ <iş ne kadar> — ' +
-      '<ne yaptım>`. Label and sentence stay Turkish. The whole line is one code span so it ' +
-      'reads as a block; no heading marks, bold or bullets. The label is capitalised, the ' +
-      'separator is ▸, and the rest is ordinary sentence case: first letter capital, the rest ' +
-      'lower. Plain everyday Turkish, no shorthand, no arrows inside the sentence: ' +
-      '`Teknesyum ▸ Ölçüm ▸ Tek dosyalık iş — ajan açmadım, kendim yaptım`. Write it even when ' +
-      'no agent is opened. Skip the line entirely for plain questions.',
-    en:
-      'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
-      'line **inside backticks** — `Teknesyum ▸ Measure ▸ <how big> — <what I did>`. The whole ' +
-      'line is one code span so it reads as a block; no heading marks, bold or bullets. ' +
-      'The label is capitalised, the separator is ▸, and the rest is ordinary sentence ' +
-      'case: first letter capital, the rest lower. Use plain words, no shorthand, and no ' +
-      'arrows inside the sentence: ' +
-      '`Teknesyum ▸ Measure ▸ One file — no agent needed, I did it myself`. Write it even when ' +
-      'no agent is opened. Skip the line entirely for plain questions.',
-  },
-  olcuKisa: {
-    tr:
-      'Teknesyum Base: iş talebiyse relay §1 ile ölç ve ilk satırı tek kod parçası olarak ' +
-      'bas — `Teknesyum ▸ Ölçüm ▸ <iş ne kadar> — <ne yaptım>`. Başlık işareti, kalın yazı ' +
-      've madde imi yok. Salt soru/sohbette yazma.',
-    en:
-      'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
-      'line as one code span — `Teknesyum ▸ Measure ▸ <how big> — <what I did>`. No heading ' +
-      'marks, bold or bullets. Skip it for plain questions.',
-  },
   premiumAcik: {
     tr: () =>
       'premium mod · her ajan opus · 20 paralele kadar · plan konseyi ' +
@@ -494,41 +419,6 @@ const S = {
     tr: 'Write to the user and to other agents in Turkish — contracts, packets and reports included.',
     en: 'Write to the user and to other agents in English — contracts, packets and reports included.',
   },
-  dilTalimatiKisa: {
-    tr: 'Kullanıcıya ve ajanlara Türkçe yaz.',
-    en: 'Write to the user and to agents in English.',
-  },
-  seviye2: {
-    tr:
-      'Yönlendirme seviyesi 2: base devreye giren her kararı kendi satırında, yine ters ' +
-      'tırnak içinde yaz — `Teknesyum ▸ Fark ▸ <ne yaptım> — <base olmasaydı ne olurdu>`. ' +
-      'Etiket büyük harfle başlar, ayraç ▸ işaretidir, kalan cümle sıradan tümce düzeninde ' +
-      'yazılır. Cümle günlük Türkçe olsun; kısaltma, cümle içi ok ve terim yığını yok. Kural ' +
-      'uygulandığında, model yerine deterministik araç seçildiğinde, harita/denetim/araştırma ' +
-      'devreye girdiğinde, model yükseltilip düşürüldüğünde, kanca engellediğinde yaz. Sıradan ' +
-      'araç çağrısına satır açma; base olmasaydı farklı sonuçlanacak anlara aç.',
-    en:
-      'Steering level 2: give every decision the base drove its own line, also inside ' +
-      'backticks — `Teknesyum ▸ Diff ▸ <what I did> — <what would have happened without it>`. ' +
-      'The label is capitalised, the separator is ▸, and the rest is ordinary sentence case. ' +
-      'Everyday words only; no arrows inside the sentence, no shorthand, no stacked jargon. Write one when a ' +
-      'rule applies, when a deterministic tool replaces a model call, when the ' +
-      'map/audit/prior-art gate fires, when a model is escalated or dropped, when a hook ' +
-      'blocks something. No line for ordinary tool calls — only where a plain session ' +
-      'would have ended up elsewhere.',
-  },
-  platformNotu: {
-    tr:
-      'Bu projede platform notu yok. Uygun bir anda tek soru sor — "bu program hangi ' +
-      'platformlar için?" — ve cevabı `.claude/teknesyum.json` içine `platformlar` + ' +
-      '`platformNeden` olarak yaz. Cevap gelmeden varsayma; yeni projede varsayılan üç platformdur.',
-    en:
-      'This project has no platform note. At a natural moment ask one question — "which ' +
-      'platforms is this program for?" — and record the answer in `.claude/teknesyum.json` ' +
-      'as `platformlar` + `platformNeden`. Do not assume before the answer; a new project ' +
-      'defaults to all three.',
-  },
-
   rotaEslesme: {
     tr: (id) => 'Owns eşleşmesi · ' + id + ' sürdürülür.',
     en: (id) => 'Ownership match · continue ' + id + '.',
@@ -846,26 +736,6 @@ const S = {
       ad +
       '` parent folder · I track which project you are in and move agent memory there at the end of each turn',
   },
-  kapsayiciEtkin: {
-    tr: (ad, yol) =>
-      'Bu oturum projelerin üst klasöründe açıldı; çalışılan proje **' +
-      ad +
-      '** (`' +
-      yol +
-      '`). Proje kökü isteyen her şeyi oraya yönlendir — `/save`, `/rc`, harita, röle ' +
-      've sözleşmeler `--proje` parametresini bu yolla alır, dosya yollarını da bu ' +
-      'kökten kur. Kullanıcıya klasörü değiştirmesini söyleme, iş burada yürür.',
-    en: (ad, yol) =>
-      'This session was opened in the parent folder of the projects; the project being ' +
-      'worked on is **' +
-      ad +
-      '** (`' +
-      yol +
-      '`). Point everything that needs a project root there — `/save`, `/rc`, the map, ' +
-      'the relay and contracts take `--proje` with this path, and file paths start from ' +
-      'this root. Do not ask the user to switch folders; the work runs here.',
-  },
-
   rcKuruluyor: {
     tr: 'Claude terminal istemcisi kurulu değil, kuruyorum.',
     en: 'The Claude terminal client is not installed; installing it now.',

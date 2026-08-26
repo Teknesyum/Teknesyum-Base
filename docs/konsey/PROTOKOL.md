@@ -12,11 +12,27 @@ Koşu metinleri: `docs/konsey/arsiv/`.
 
 1. **İki üye de bağımsız yazar.** Aynı soru, aynı anda, birbirini görmeden. Paralel
    açılır — süre tur sayısına bağlıdır, üye sayısına değil.
-2. **Birinci üyenin metni ikinciye verilir.** Ters yön yoktur.
-3. **Uzatma kararı ikinci üye ile yöneticinindir.**
-4. **Oturumlar kapatılmaz.** Üye yeniden çağrılmaz, sürdürülür — brifing tekrarlanmaz,
-   bağlam durur.
-5. Tavan 4, arka-durdurucu olarak. Efor **medium**.
+2. **Üyenin metni başkana verilir.** Ortak dosyaya konur (`docs/konsey/arsiv/`),
+   birebir; başkan özetini değil kaynağı okur.
+3. **Uzatma kararı başkanındır.** Başkan üyenin metnini okuduktan sonra `uzat` ya da
+   `kapat` der. Uzatırsa **nesnesini** yazar (hangi madde, neden bir tur daha) ve üyeye
+   iletilecek soruyu kendisi verir.
+4. **Başkan kendi tur 1 kararını revize edebilir.** Asıl yetkisi budur: ilk turda
+   kapatmak isterken üyenin metnini duyup fikir değiştirebilir. Revizyon `bulgu` olarak
+   loglanır, `yakinsama` değil — nesnesi yazılmışsa.
+5. **Oturumlar kapatılmaz.** Üye yeniden çağrılmaz, sürdürülür — brifing tekrarlanmaz,
+   bağlam durur. Kapanış onayını başkan verince ikisi birden sonlandırılır.
+6. Tavan **3 tur**. Efor **medium**.
+
+**Ölçüldü 27.08.2026 — bu akış bugüne kadar hiç işletilmedi.** Yönetici (T0) iki üyeyi
+paralel açıp cevaplarını kendi sentezledi; 2., 3. ve 4. adım hiç koşmadı. Bu yüzden
+`uzatma_karari` alanı boş, `ayrisma-uzat` hiç görünmedi ve defterin "yöneticinin katılımı
+biçimseldir" dedektörü ateşlenemedi — dedektör doğruydu, ölçtüğü şey yoktu.
+
+**Başkan kimdir.** Başkan **fable**, üye **opus**. Önceki metin yöneticiyi "soruyu yazan
+taraf" diye tanımlıyordu, yani T0'ı; kullanıcının kararıyla bu ayrıldı: T0 soruyu yazar
+ve masayı kurar, **kararı fable verir**. T0 içerik üretmez, sentez yazmaz — üyelerin
+metinleri ve başkanın kararı kayda geçer.
 
 ## Ayrışma kuralı
 
@@ -24,17 +40,40 @@ Koşu metinleri: `docs/konsey/arsiv/`.
 
 | Durum | Sonuç |
 |---|---|
-| Biri uzat, öteki kapat | **Uzatma geçerlidir** |
+| Başkan uzat, üye kapat | **Uzatma geçerlidir** |
 | Uzatma nesnesizse | Uzatma sayılmaz, kapatma geçerlidir |
 | İkisi de uzatıyorsa | Kapsamlar **birleşir** — kesişim almak sessiz bir kapatmadır |
 
 Gerekçe defterde yazılı: *"ters yön önerilmez, hata maliyeti sınırsız olan o yöndür."*
-Gereksiz tur sonlu ve ölçülüdür (tavan 4 ile üstten bağlı), erken kapanış sınırsızdır.
+Gereksiz tur sonlu ve ölçülüdür (tavan 3 ile üstten bağlı), erken kapanış sınırsızdır.
 Nesne şartı, "uzat kazanır" kuralının lastik damgaya dönmesini engelleyen tek frendir.
 
-Karar `uzatma_karari` alanına yazılır: `ortak-uzat` · `ortak-kapat` · `ayrisma-uzat`.
-**`ayrisma-uzat` hiç görünmüyorsa yöneticinin katılımı biçimseldir** — alan bunun
-dedektörüdür.
+## Başkanın önünde iki düğme vardır
+
+`uzat` ve `yeterli`. Üçüncüsü yoktur.
+
+**Düzeltildi 27.08.2026.** Önceki metin karar alanını `ortak-uzat · ortak-kapat ·
+ayrisma-uzat` diye üç değerli yazıyordu. Bu iki ayrı şeyi tek alana yığmaktı: başkanın
+*kararı* ile üyenin o karara *katılıp katılmadığı*. Başkana üç düğme göstermek kararı
+bulandırır — "ortak" olup olmadığı başkanın seçeceği bir şey değil, sonradan okunan bir
+gözlemdir. Alan ikiye ayrıldı:
+
+| Alan | Değerler | Kimin |
+|---|---|---|
+| `karar` | `uzat` · `yeterli` | başkanın seçimi |
+| `uye_yonu` | `ayni` · `ayri` | üyenin metninden okunur, seçilmez |
+
+Defterin çapa dedektörü korunuyor: **`karar: uzat` + `uye_yonu: ayri` hiç görünmüyorsa
+başkanın katılımı biçimseldir** — eskiden `ayrisma-uzat` denen şey artık bu iki alanın
+kesişimi. Ayrışma kuralı değişmedi: bu kesişimde uzatma geçerlidir.
+
+## Başkan üyenin metnini görmeden karar veremez
+
+Kapatmak isteyeceğinden emin olsa bile. Tur 1'de iki metin bağımsız yazılır, sonra
+üyenin metni **birebir** başkana verilir, başkan ancak ondan sonra düğmeye basar. "Zaten
+kapatacaktım" bu adımı atlatmaz — başkanın asıl yetkisi olan **kendi tur-1 kararını
+revize etme** gücü yalnız bu adım koşarsa kullanılabilir. Adım atlanırsa oturum konsey
+değil, iki paralel görüştür.
 
 **İki çapa zıt yönlüdür, yönetici tarafsız değildir.** İkinci üye karşı metni okumuş
 olmanın çapasını ve uzatmanın maliyetini taşır; ikisi de kapatma yönüne iter. Yönetici
@@ -77,9 +116,9 @@ birine çıkar: gözlemi yönetici adlandırır ve madde `devredildi`ye geçer, 
 açık kalır ve koşu `kapanis_nedeni = uzlasi` ile kapanamaz. Aksi halde "loglandı" ile
 "kesinliğe döndü" arasında fark kalmaz.
 
-## Tavan 4 — arka-durdurucu
+## Tavan 3 — arka-durdurucu
 
-Tavan bir **durak koşulu değildir**: nesne taşıyan uzatmayı susturmaz, yalnız beşinci turun
+Tavan bir **durak koşulu değildir**: nesne taşıyan uzatmayı susturmaz, yalnız dördüncü turun
 açılışını yöneticiye devreder. Bağladığında kapanış nedeni `tavan` yazılır.
 
 Bağlaması **kendi başına sinyaldir**. `kapanis_nedeni = tavan` seyrek olmalı; ayrışma
@@ -215,6 +254,13 @@ uzat ayrışmasında uzatan, kapsayan ve birinci koltuk aynı soy olur) engellen
 
 **Kalibrasyon koşusu artı gerçek işte iki koşu loglanmadan bu protokolde değişiklik
 yapılmaz.**
+
+**Dondurma 27.08.2026'da bir kez delindi, kullanıcı kararıyla.** Delinen şey mekaniğin
+ayarı değil, mekaniğin **hiç koşmadığının** tespitiydi: akışın 2-4. adımları bugüne kadar
+uygulanmamıştı, dolayısıyla dondurmanın koruduğu "karşılaştırılabilir gözlem" zaten
+yoktu. Değişiklikler: başkanlık fable'a verildi, tavan 4'ten 3'e indi, akış maddeleri
+uygulanabilir biçimde yeniden yazıldı. Bundan sonraki koşular dondurmaya tabidir ve
+kalibrasyon borcu **kapanmadı**.
 
 Gerekçe: koşu 2 *"ortalamaya girmez, emsal"* damgalıydı; koşu 3'te beş değişken birden
 oynadı (efor, anonimlik, koltuk takası, uzatma yetkisinin kişi sayısı, sorunun kendisi) ve

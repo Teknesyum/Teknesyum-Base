@@ -153,8 +153,13 @@ function say(x) {
 function gecerlilik(ham) {
   const nedenler = [];
   if (ham.hata) nedenler.push('kurulum hatasi: ' + ham.hata);
-  if (ham.tavanAsildi) nedenler.push('tavan asildi');
-  if (say(ham.cikisKodu) !== null && ham.cikisKodu !== 0) nedenler.push('cikis kodu ' + ham.cikisKodu);
+  if (ham.tavanAsildi && !ham.planliKesinti) nedenler.push('tavan asildi');
+  // Planli kesinti cikis kodunu da bozar (taskkill /F -> 1). Kesinti kolunda bu ariza
+  // degil olcunun kendisi; yalniz kesinti aninda gecerli sayilir.
+  if (say(ham.cikisKodu) !== null && ham.cikisKodu !== 0 && !ham.planliKesinti)
+    nedenler.push('cikis kodu ' + ham.cikisKodu);
+  if (ham.planliKesinti && ham.agacOldu === false)
+    nedenler.push('surec agaci oldurulemedi (oksuz surec kalmis olabilir)');
   if (ham.isError) nedenler.push('json is_error');
   if (ham.kimlikBozuk) nedenler.push('ana kimlik dosyasi bozuk (kosu boyunca)');
   const yakin = [(ham.kurulumGunlugu || []).join('\n'), ham.ciktiOzeti || ''].join('\n');
@@ -283,8 +288,12 @@ async function kosuOzeti(dosya) {
 
   const alt = { input: 0, cc: 0, cr: 0, out: 0, tur: 0, dosya: 0 };
   const projeKoku = path.join(s.konfig, 'projects');
+  // OLCULDU 27.08.2026: iki oturumlu kosuda ikinci oturumun transkripti "alt ajan"
+  // sayiliyordu, ajan sayisi sutunu siserek okunuyordu. Alt ajan yalniz subagents/
+  // altinda yasar.
   for (const t of transkriptleriTopla(projeKoku)) {
     if (path.resolve(t) === path.resolve(s.transkript)) continue;
+    if (!t.includes(path.sep + 'subagents' + path.sep) && !t.includes('/subagents/')) continue;
     const a = await ozetle(t);
     alt.input += a.input;
     alt.cc += a.cc;

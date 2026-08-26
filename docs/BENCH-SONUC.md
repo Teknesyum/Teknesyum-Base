@@ -1,212 +1,87 @@
-# Bench sonucu — Chess960 hamle üreteci
+# Bench sonucu — dört görev × dört koşul
 
-> ## Bu tur geçersizdir
->
-> Aşama 0 ölçümü (`docs/OLCUM-TABAN.md`, `docs/OLCUM-CAGRI.md`) iki kusur buldu ve
-> ikisi de tabloyu kullanılamaz kılıyor. Rapor silinmedi — hangi hatanın nasıl
-> yapıldığı kaydın kendisidir.
->
-> **1. eco koşusu eco'yu ölçmedi.** `UserPromptSubmit` istem başına bir kez çalışıyor ve
-> `/teknesyum:premium eco` görev isteminden **sonra** uygulandı. Bağlamdaki profil metni
-> 72 tur boyunca premium kaldı. Aynı kusur öteki profiller için de geçerli olabilir.
->
-> **2. Token sütunu dayanaksız.** Aşağıdaki ~157.709 ve 226.856 rakamları transkriptin
-> hiçbir `usage` toplamına denk gelmiyor; `yalin`'in 113.257'si hiç doğrulanamadı,
-> transkripti başka makinede kaldı.
->
-> Geçerli kalan tek bulgu §"Denetim iki kez perft'in kör noktasını buldu" — o iki bulgu
-> koşuların çıktısında, ölçümünde değil.
->
-> Yeniden koşum `docs/BENCH-YONTEM.md` standardıyla yapılacak (plan Aşama 7).
+Üretim: `node scripts/bench/topla.js` — ham koşu dosyaları `bench/sonuc/*.json`, bu dosya ve `bench/sonuc/toplam.json` o komutla yeniden yazılır.
 
+Koşu sayısı: **16** · görevler: ozellik, hata, rapor, teksatir · koşullar: premium, normal, eco, native.
 
-Dört durum tamamlandı, premium iki kez koşuldu — beşinci sütun varyansı gösteriyor. `yalin` başka bir makinede koşuldu (base kurulu değil, aynı
-model ve efor); kodu buraya alınıp **bütün ölçümler tek makinede** yapıldı, yani CPU farkı
-tabloya girmiyor.
+## 1. Tablo — satır görev, sütun koşul
 
-Görev: Chess960 hamle üreteci, TypeScript, dış bağımlılık yok, 45 dakika tavan.
-Ana oturum dört koşuda da `opus` + `high` — profil yalnız ajanların modelini değiştirir.
+Hücre: başarı (1/0) · dört token kalemi (input / cache-create / cache-read / output) · duvar saati · tur · ajan sayısı. Tek toplam token yazılmaz (BENCH-YONTEM.md §5).
 
----
+| görev | premium | normal | eco | native |
+|---|---|---|---|---|
+| **ozellik** | **1**<br>in 8 · cc 15.137<br>cr 120.609 · out 1.555<br>39 sn · 4 tur · 1 ajan | **1**<br>in 8 · cc 13.994<br>cr 118.025 · out 1.360<br>36 sn · 4 tur · 1 ajan | **1**<br>in 6 · cc 13.841<br>cr 85.332 · out 1.154<br>31 sn · 3 tur · 1 ajan | **1**<br>in 8 · cc 11.499<br>cr 109.460 · out 1.300<br>32 sn · 4 tur · 1 ajan |
+| **hata** | **1**<br>in 8 · cc 14.358<br>cr 119.985 · out 926<br>33 sn · 4 tur · 1 ajan | **1**<br>in 8 · cc 13.641<br>cr 118.095 · out 730<br>32 sn · 4 tur · 1 ajan | **1**<br>in 8 · cc 13.812<br>cr 118.094 · out 645<br>30 sn · 4 tur · 1 ajan | **1**<br>in 8 · cc 10.782<br>cr 108.901 · out 643<br>29 sn · 4 tur · 1 ajan |
+| **rapor** | **1**<br>in 8 · cc 17.362<br>cr 121.103 · out 3.610<br>63 sn · 4 tur · 1 ajan | **1**<br>in 8 · cc 15.820<br>cr 118.780 · out 2.656<br>67 sn · 4 tur · 1 ajan | **1**<br>in 8 · cc 16.115<br>cr 119.368 · out 2.684<br>65 sn · 4 tur · 1 ajan | **1**<br>in 8 · cc 13.204<br>cr 110.074 · out 2.584<br>57 sn · 4 tur · 1 ajan |
+| **teksatir** | **1**<br>in 6 · cc 13.791<br>cr 86.246 · out 402<br>24 sn · 3 tur · 1 ajan | **1**<br>in 6 · cc 12.742<br>cr 84.298 · out 312<br>22 sn · 3 tur · 1 ajan | **1**<br>in 6 · cc 12.922<br>cr 84.658 · out 277<br>21 sn · 3 tur · 1 ajan | **1**<br>in 6 · cc 10.142<br>cr 78.323 · out 297<br>20 sn · 3 tur · 1 ajan |
 
-## Doğruluk — üçü de geçti
+## 2. Koşu dökümü
 
-| Konum | Derinlik | Beklenen | yalin | eco | normal | premium |
-|---|---:|---:|---|---|---|---|
-| startpos | 5 | 4.865.609 | ✓ | ✓ | ✓ | ✓ |
-| kiwipete | 5 | 193.690.690 | ✓ | ✓ | ✓ | ✓ |
-| pos3 · pos4 · pos5 · pos6 | 4 | yayınlanmış | ✓ | ✓ | ✓ | ✓ |
+| koşu | başarı | input | cache-create | cache-read | output | süre | tur | ajan | kusur | model | harness sapma |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|
+| hata__eco | 1 | 8 | 13.812 | 118.094 | 645 | 30 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| hata__native | 1 | 8 | 10.782 | 108.901 | 643 | 29 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| hata__normal | 1 | 8 | 13.641 | 118.095 | 730 | 32 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| hata__premium | 1 | 8 | 14.358 | 119.985 | 926 | 33 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| ozellik__eco | 1 | 6 | 13.841 | 85.332 | 1.154 | 31 sn | 3 | 1 | 0 | claude-opus-5 | %0 |
+| ozellik__native | 1 | 8 | 11.499 | 109.460 | 1.300 | 32 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| ozellik__normal | 1 | 8 | 13.994 | 118.025 | 1.360 | 36 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| ozellik__premium | 1 | 8 | 15.137 | 120.609 | 1.555 | 39 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| rapor__eco | 1 | 8 | 16.115 | 119.368 | 2.684 | 65 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| rapor__native | 1 | 8 | 13.204 | 110.074 | 2.584 | 57 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| rapor__normal | 1 | 8 | 15.820 | 118.780 | 2.656 | 67 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| rapor__premium | 1 | 8 | 17.362 | 121.103 | 3.610 | 63 sn | 4 | 1 | 0 | claude-opus-5 | %0 |
+| teksatir__eco | 1 | 6 | 12.922 | 84.658 | 277 | 21 sn | 3 | 1 | 0 | claude-opus-5 | %0 |
+| teksatir__native | 1 | 6 | 10.142 | 78.323 | 297 | 20 sn | 3 | 1 | 0 | claude-opus-5 | %0 |
+| teksatir__normal | 1 | 6 | 12.742 | 84.298 | 312 | 22 sn | 3 | 1 | 0 | claude-opus-5 | %0 |
+| teksatir__premium | 1 | 6 | 13.791 | 86.246 | 402 | 24 sn | 3 | 1 | 0 | claude-opus-5 | %0 |
 
-Chess960 tarafında dört koşu birbirine karşı doğrulandı: dört konum, üç derinlik,
-**hiç ayrışma yok**.
+Alt ajan transkriptleri de gezildi (`konfig/projects` altındaki tüm `.jsonl`): hiçbir koşuda alt ajan açılmadı, ajan sayısı her hücrede 1.
 
-**Doğruluk bu bench'i ayırmadı.** Dördü de çalışan bir üreteç çıkardı — base'li üçü de,
-base'siz olan da. Bench'in ana skoru olarak koyduğum "en derin doğru perft" hiçbir şey
-ayırt etmedi.
+## 3. Toplayıcı doğrulaması — harness sayacı
 
----
+Harness'ın `total_tokens` sayacı bağlam işgalini ölçer: son hatırlatıcı anındaki bağlam (input + cache-create + cache-read) artı o turun çıktısı. Aynı büyüklük transkriptten okunan tur dizisinden yeniden kuruldu; iki sayının farkı toplayıcının doğruluk ölçüsü.
 
-## Ayrışma — hız, boyut, yöntem
+| koşu | harness sayacı | transkriptten yeniden | sapma |
+|---|---:|---:|---:|
+| hata__eco | 33.646 | 33.646 | %0 |
+| hata__native | 30.609 | 30.609 | %0 |
+| hata__normal | 33.459 | 33.459 | %0 |
+| hata__premium | 34.176 | 34.176 | %0 |
+| ozellik__eco | 33.670 | 33.670 | %0 |
+| ozellik__native | 31.283 | 31.283 | %0 |
+| ozellik__normal | 33.783 | 33.783 | %0 |
+| ozellik__premium | 34.886 | 34.886 | %0 |
+| rapor__eco | 35.972 | 35.972 | %0 |
+| rapor__native | 33.103 | 33.103 | %0 |
+| rapor__normal | 35.713 | 35.713 | %0 |
+| rapor__premium | 37.255 | 37.255 | %0 |
+| teksatir__eco | 32.580 | 32.580 | %0 |
+| teksatir__native | 29.802 | 29.802 | %0 |
+| teksatir__normal | 32.400 | 32.400 | %0 |
+| teksatir__premium | 33.449 | 33.449 | %0 |
 
-Hız ölçümü beşi için de bu makinede, arka arkaya yapıldı.
+En büyük sapma **%0** — kabul eşiği %5.
 
-| | yalin | eco | normal | premium | premium-2 |
-|---|---|---|---|---|---|
-| kiwipete d5 | 23,2 sn | 19,8 sn | 20,3 sn | 14,0 sn | **12,2 sn** |
-| Kod | **750 / 4** | 786 / 6 | 1008 / 7 | 2825 / 18 | 1411 / 10 |
-| Kendi testi | **1268** | — | 47 | — | 73 |
-| Ajan | 0 (base yok) | **0 (kendi kararı)** | 4 | sayı kayıp | 5 |
-| Token | **~113.000** | ~157.709 | 226.856 | ölçüm eksik | ~350.000 |
-| Süre | 37 dk | 27 dk | 28 dk | ~45 dk (kesintili) | 27 dk |
-| En derin perft | d8 | d7 | d7 | — | **d8** |
+## 4. Verim
 
-Premium iki turda da en hızlı üreteci yazdı; ikinci tur yalın koşunun **iki katı** hızlı.
+| koşul | başarı | iş/dakika | görev başına in / cc / cr / out | kusur/görev | toplam süre | bildirilen maliyet |
+|---|---:|---:|---:|---:|---:|---:|
+| premium | 4/4 (%100) | 1.5 | 8 / 15.162 / 111.986 / 1.623 | 0 | 160 sn | $0.9929 |
+| normal | 4/4 (%100) | 1.52 | 8 / 14.049 / 109.800 / 1.265 | 0 | 157 sn | $0.9082 |
+| eco | 4/4 (%100) | 1.63 | 7 / 14.173 / 101.863 / 1.190 | 0 | 147 sn | $0.8898 |
+| native | 4/4 (%100) | 1.73 | 8 / 11.407 / 101.690 / 1.206 | 0 | 138 sn | $0.7849 |
 
-**Varyans büyük.** Aynı profil iki kez koştu ve kod boyutu iki katına yakın ayrıştı:
-2825 satıra karşı 1411. İkinci tur hem daha küçük hem daha hızlı. Tek koşunun neden kanıt
-sayılmadığı burada görünüyor — profil sabitken bile çıktı bu kadar oynuyor.
+Bug oranı `dogrula.js`in bulduğu kusur sayısından gelir: geçen koşu 0 kusur, kalan koşuda `KIRMIZI ·` satırındaki `|` ile ayrılmış madde sayısı.
 
----
+## 5. n=1 şerhi
 
-## Profillerin kendi kurallarını uygulaması
+Her hücre tek koşudur. Aynı istem iki kez koşulduğunda model farklı sayıda araç çağırabilir, dolayısıyla küçük aralıklar gürültüdür. Burada bir aralık ancak **%20**'yi aşarsa "fark" diye yazılır.
 
-Üç koşu da profilinin felsefesine göre davrandı ve gerekçesini yazdı.
-
-**eco hiç ajan açmadı.** Gerekçesi kendi kuralından geliyor: paralel tavanı 1, ve
-*"haiku'ya perft doğruluğu gerektiren iş vermek eco felsefesinin 'doğruluk feda edilemez'
-maddesine aykırı"*. Yani profil, ucuz modeli doğruluk gerektiren işe sürmek yerine işi
-ana oturumda tuttu. Bu, eco'nun tasarlandığı gibi çalıştığının kanıtı.
-
-**normal dört ajan açtı ve ikisi denetçiydi** — profilinde `audit: every-contract` yazdığı
-için. Denetim dört bulgu çıkardı, dördü de gerçekti.
-
-**premium en fazla kodu ve en hızlı üreteci çıkardı**, ama koşusu iki kesintiye uğradı.
-
-**yalin hiçbir base mekanizması olmadan koştu** — ajan yok, sözleşme yok, denetçi yok, ölçü
-satırı yok. En az token harcayan koşu bu oldu, ki beklenen bir sonuç: base'in kendisi de
-token yakıyor.
+- Taze token (input+cc+out), görev başına: en az **native** 12.621, en çok **premium** 16.793 — aralık %33.1. **Fark var.**
+- Cache-read, görev başına: en az **native** 101.690, en çok **premium** 111.986 — aralık %10.1. Ayırt edilemedi.
+- Başarı: dört koşulun tamamı dört görevi de geçti — bu görev seti koşulları başarı ekseninde ayırmıyor, ayrım yalnız token ve sürede.
 
 ---
 
-## Bench'in en değerli bulgusu
-
-`normal` koşusunun denetçisi şunu buldu:
-
-> `@types/node` depoda yok, üst klasörden çözülüyordu — **temiz bir klonda `tsc` çökerdi.**
-
-Motorun kendisi doğruydu. Bütün perft testleri geçiyordu. Ama depo başka bir makinede
-derlenmezdi.
-
-**Perft testleri bunu asla yakalayamazdı** — doğruluk ölçümü ile denetim farklı şeylere
-bakıyor. Bench'in ana skoru (en derin doğru perft) üç profili ayırt etmedi; ayırt eden
-şey, bir profilin denetçi açıp açmadığı oldu.
-
-Denetçinin bulduğu diğer üçü de aynı sınıftan: bozuk FEN'in sessizce başka bir konuma
-dönüşmesi, test koşucusunun import hatasını yutması, ve adını taşıdığı senaryoyu hiç
-kurmayan bir test.
-
----
-
-## Denetim iki kez perft'in kör noktasını buldu
-
-Bu bench'in en sağlam sonucu bu, çünkü **iki bağımsız koşuda tekrarlandı.**
-
-`premium-2`'nin denetçisi motoru satır satır okudu ve şunu buldu:
-
-> Sahte en passant alanı — FEN'den gelen ep karesi doğrulanmıyordu. Arkasında düşman piyonu
-> olmayan bir ep alanı verildiğinde `makeMove` hiçbir şey almıyor ama `unmakeMove` koşulsuz
-> piyon yazıyordu; **tahtaya yoktan taş geliyordu.**
-
-Ajanın kendi gerekçesi meselenin özü:
-
-> *"Referans perft bunu yakalamaz, çünkü referans FEN'lerin hepsinde ep alanı tutarlı."*
-
-Aynı denetim iki hata daha buldu: 512 yarım hamleden sonra sessiz `MAX_PLY` taşması, ve
-README'nin "test dosyası yok" demesi — oysa dört dosya ve 66 test vardı.
-
-`normal` koşusunda da aynı sınıftan bir bulgu çıkmıştı: `@types/node` eksikliği, temiz
-klonda derlenmeyen depo. İkisi de perft yeşilken bulundu.
-
-**Örüntü şu: denetçi açan koşular, doğruluk testinin göremediği kusurları buldu; açmayanlar
-bulamadı.** Bir kez olsa tesadüf sayılırdı, iki kez oldu.
-
----
-
-## Base'in aleyhine çıkan bulgu
-
-Yalın koşu, referans perft sayılarını **web'den çekti** ve kendi hatırladığının yanlış
-olduğunu buldu:
-
-> *"Published table fetched — my recall of position 4 was wrong, the real values differ."*
-
-Sonra elli Chess960 konumunu yayınlanmış tabloya karşı doğruladı ve 1268 test yazdı.
-
-Eco koşusu aynı yerde ters yönde davrandı: referansları **modelin kendi bilgisinden** yazdı
-ve yalnız koda karşı doğruladı. Tutmayan bir referansı da testten çıkardı — kendi ifadesiyle
-*"hatırlanan sayı yanlış olabileceği için"*. Bu savunulabilir bir karar ama doğrulanmamış
-bir temele dayanıyor, ve web araması token yakacağı için eco felsefesiyle de uyumlu.
-
-**Yani tasarruf profili, doğrulama titizliğini düşürdü.** Eco'nun kendi kuralı "doğruluktan
-feda edilmez" diyor; bu koşuda doğruluk *çıktıda* korundu (perft sayıları doğru), ama
-*doğrulama yönteminde* feda edildi. Kural ihlali değil, kuralın kör noktası.
-
-Bench'in en dürüst cümlesi bu: base'li bir profil, base'siz koşudan daha az titiz davrandı.
-
----
-
-## Ölçümün bilinen sınırları
-
-**Paralel koşu profilleri karıştırdı — ama üretimi bozmadı.** Üç koşu aynı anda
-başlatıldı ve `/teknesyum:premium` makine geneline yazıyor; eco penceresi profili değiştirince
-premium koşusu bunu gördü.
-
-Etkisi sonradan ölçüldü ve sanılandan küçük çıktı. Ajanların hangi modelle açıldığı
-profilin o an ne olduğunu ele veriyor:
-
-- **normal geçerli.** Dört ajanın dördü de sonnet (2 builder `sonnet/medium`, 2 auditor
-  `sonnet/high`). Auditor'lar koşunun sonlarına doğru açılıyor; profil ortada eco'ya
-  kaysaydı onlar haiku çıkardı. Çıkmadı.
-- **premium'un üretimi geçerli.** İşin tamamı ilk oturumda premium profille üretildi;
-  profilin eco göründüğü ikinci oturumda hiç ajan açılmadı, yalnız doğrulama koşuldu.
-
-Yine de bu bir tasarım kusuru: paralel koşu önerisi bana ait ve makine geneli anahtarı
-hesaba katmıyordu. Bir sonraki turda profiller sıralı koşuluyor.
-
-**Premium'un token ölçümü eksik.** Oturum düştü, ara turların `Total Süre` / `Tahmini
-Token` satırları bağlamla birlikte gitti. Bu koşunun token sütunu kullanılamaz — premium
-ikinci kez koşuluyor ve karşılaştırma o turla yapılacak.
-
-**Ana oturum eco felsefesine aykırı koştu.** Dört koşuda da `opus` + `high` sabitlendi —
-tek değişken kuralı için doğru, ama eco kullanıcısının gerçek deneyimi bu değil. Ölçülen
-şey "eco profilinin katkısı", "eco ile çalışmanın maliyeti" değil.
-
-**Tek koşu kanıt değildir.** Üç profil birer kez koştu. Aynı profil iki kez koşsa farklı
-sonuç verir; bu tablo eğilim gösterir, kanıt değil.
-
----
-
-## Base'e değer mi — bu koşunun cevabı
-
-Tek turluk bir ölçüm, ve cevabı tek yönlü değil.
-
-**Base'in lehine:** denetçi açan iki koşu da, perft'in yakalayamayacağı gerçek kusurlar
-buldu — biri temiz klonda derlenmeyen depo, öteki tahtaya yoktan taş koyan bir unmake.
-İkisi de bütün testler yeşilken bulundu ve bu iki bağımsız koşuda tekrarlandı. Premium iki
-turda da en hızlı kodu yazdı, ikincisi yalın koşunun iki katı.
-
-**Base'in aleyhine:** yalın koşu en az token harcadı (~113.000, normal'in yarısı) ve en çok
-testi yazdı (1268'e karşı 47). Referans doğrulamasında da en titiz o davrandı.
-
-**Ayırt etmeyen:** doğruluk. Dördü de aynı perft sayılarını üretti.
-
-**Ölçülemeyen:** varyans. Premium iki turda 2825 ve 1411 satır yazdı — aynı profil, aynı
-görev, iki kat fark. Tek turluk her satır bu kadar oynayabilir.
-
-Dürüst özet: base bu görevde **hız ve denetim** kattı, **token ve test yoğunluğu** açısından
-maliyet getirdi. Görev tek başına bir modelin bitirebileceği boyuttaydı — 750 satırlık bir
-üreteç için dört ajan açmak, sözleşme yazmak ve denetim turu koşmak kendi ağırlığını taşıdı.
-Base'in tasarlandığı yer bu değil: bağlamın dolduğu, işin bölünmesi gereken, tek oturumun
-yetmediği işler.
-
-Bunu ölçmek için görevin **bench'in kendisinden büyük** olması gerekirdi. Bir sonraki tur
-için not: 45 dakikada tek modelin bitirebildiği bir iş, çok ajanlı bir sistemi sınamaz.
+Bu dosya üretilir; elle düzenlenmez. Bir önceki (geçersiz sayılan Chess960) tur raporu git geçmişinde durur.

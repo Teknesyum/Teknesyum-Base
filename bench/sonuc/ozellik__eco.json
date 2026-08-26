@@ -2,20 +2,20 @@
   "anahtar": "ozellik__eco",
   "gorev": "ozellik",
   "durum": "eco",
-  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__eco\\konfig",
-  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__eco\\calisma",
-  "fixtureOzeti": "4914f236e0acf871",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\ozellik__eco\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\ozellik__eco\\calisma",
+  "fixtureOzeti": "c2ed4c49e2208766",
   "kurulumImzasi": "30e32677c9af636a",
-  "baslangic": "2026-08-26T10:51:57.558Z",
-  "bitis": "2026-08-26T10:52:26.272Z",
-  "sureMs": 28714,
+  "baslangic": "2026-08-26T11:01:53.222Z",
+  "bitis": "2026-08-26T11:02:23.764Z",
+  "sureMs": 30542,
   "cikisKodu": 0,
   "tavanAsildi": false,
-  "oturumId": "b65dffc2-1ee0-46bc-bacb-9ec16e87b538",
+  "oturumId": "5538c158-6c28-4d37-abf0-e85568b8d953",
   "modelId": "claude-opus-5",
-  "asistanTuru": 5,
+  "asistanTuru": 6,
   "aracCagrisi": 2,
-  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__eco\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-ozellik--eco-calisma\\b65dffc2-1ee0-46bc-bacb-9ec16e87b538.jsonl",
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\ozellik__eco\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826110151-ozellik--eco-calisma\\5538c158-6c28-4d37-abf0-e85568b8d953.jsonl",
   "dogrulama": {
     "gecti": true,
     "cikti": "YESIL · ozellik"
@@ -24,9 +24,9 @@
     "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
     "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
     "premium.js eco → kod 0 · profil: eco",
-    "claude -p → kod 0 · 29 sn"
+    "claude -p → kod 0 · 31 sn"
   ],
   "hata": null,
-  "maliyetUsd": 0.2070325,
+  "maliyetUsd": 0.209956,
   "bildirilenTur": 3
 }

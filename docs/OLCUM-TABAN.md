@@ -192,7 +192,7 @@ Ajan açmaması modelin kendi kararıydı, profilin değil. **Bu koşu eco profi
 
 **2. Tur 1 tabanı eco ile normal arasında hiç değişmiyor.** eco 60.498, normal 60.490 —
 8 token fark. Profil değiştirmek sistem promptundan **tek bayt** silmiyor. eco yalnız
-model ve ajan ayarlarını değiştiriyor, bağlamı değiştirmiyor. Dalga 1'in en somut hedefi
+model ve ajan ayarlarını değiştiriyor, bağlamı değiştirmiyor. Aşama 1'in en somut hedefi
 bu: eco'da skill listesi, ajan listesi ve MCP yönergeleri kısaltılabilir mi.
 
 **3. `edited_text_file` yankısı — 6.882 token, base'in tüm ayak izinden büyük.**
@@ -210,7 +210,7 @@ sayıları; RTK'nın net etkisi.
 
 ## 6. Kapı
 
-> `Ö4` farkın en az %80'ini kalemlemezse Dalga 2 ve 3 başlamaz.
+> `Ö4` farkın en az %80'ini kalemlemezse Aşama 2 ve 3 başlamaz.
 
 **Kalemlenen: %10,9. KAPI GEÇİLMEDİ.**
 
@@ -220,7 +220,7 @@ hacminden geliyor: 72 tur, 67.814 token çıktı, ve bu çıktının her turda b
 yazılması.
 
 Plan baskın kaleme yeniden hedeflenmeli. Baskın kalem **enjeksiyon değil, tur sayısı ve
-çıktı uzunluğu**. Dalga 1 için üç somut hedef, pahalıdan ucuza:
+çıktı uzunluğu**. Aşama 1 için üç somut hedef, pahalıdan ucuza:
 
 1. Tur ve çıktı hacmini kısan davranış kuralları (eco'da kısa cevap, az tur).
 2. `edited_text_file` yankısının eco'da kapatılması — 6.882 token.

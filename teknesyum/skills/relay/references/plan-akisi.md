@@ -9,7 +9,7 @@ yapılan sıradan iş buraya hiç uğramaz.
 Ölçü **sıfırdan proje** çıktıysa, tek kod satırı yazılmadan önce **bir tur** netleştirme
 yapılır. Sadece o ölçüde; küçük işte yapılmaz.
 
-Sebebi token ekonomisi: yanlış anlaşılmış bir mimariyi üç dalga sonra sökmek, baştan dört
+Sebebi token ekonomisi: yanlış anlaşılmış bir mimariyi üç aşama sonra sökmek, baştan dört
 soru sormaktan kat kat pahalıdır.
 
 Kural, kullanıcının "rutin onay sorma" tercihini çiğnememek için sıkı:
@@ -26,7 +26,7 @@ Netleştirme turu bittiğinde kararlar `docs/PLAN.md` başına yazılır; bir da
 
 Netleştirme turu bitince, **tek sözleşme yazılmadan önce** aynı problemi çözmüş projeler
 taranır. Amaç kopyalamak değil: inşa edilmişin nerede doğru, nerede yanlış yaptığını
-görüp onun üstüne çıkmak. Sıfırdan tasarlanan mimari, üçüncü dalgada sökülür.
+görüp onun üstüne çıkmak. Sıfırdan tasarlanan mimari, üçüncü aşamada sökülür.
 
 **Kaç depo:** `SETTINGS.md` içindeki `research_repos` söyler — eco profilinde **1**,
 normal profilde **10**, premium profilde **50**. Sayı profille değişir, kural değişmez.
@@ -52,7 +52,7 @@ Teknesyum ▸ araştırma bitti · <n> depo · 6 fikir alındı · 3 şüpheli �
    neyi yapmayacağını bilmek de kazançtır.
 2. **Dağıt.** Her `scout` ajanına 2-3 depo, paralel. Bütün listeyi tek ajana verme —
    sonuncuya geldiğinde ilkini unutur. Elli depoda bu, `parallel_width` tavanına kadar
-   ajan ve birkaç dalga demektir; dalga aralarında biriken raporu okuyup kalan adayları
+   ajan ve birkaç aşama demektir; aşama aralarında biriken raporu okuyup kalan adayları
    ele — ilk yirmi depo neyin zaten çözülmüş olduğunu gösterir, sonraki otuzun bir kısmı
    gereksizleşir. Eleme gerekçesi `RAPOR.md` içinde tek satır olarak yazılır.
 3. **Depo başına tek dosya:** `docs/taramalar/<kisa-ad>.md`, sabit altı başlıkla
@@ -358,7 +358,7 @@ Kökte `NOTLAR.md`, `plan-v2.md`, `todo.txt`, `ayarlar.json`, dağınık betikle
 **Ajanlar arası iletişim ve belgeler `docs/` altındadır.** Sözleşmenin canlı durumu
 (`status`, izler, mühür) `.claude/relay/` içinde kalır çünkü orayı hook denetliyor ve
 yol değişirse koruma çalışmaz; ama insanın okuyacağı her şey — paket, plan, karar
-gerekçesi, dalga raporu — `docs/` altına yazılır ve orada kalır. Ölçüt: **kullanıcı
+gerekçesi, aşama raporu — `docs/` altına yazılır ve orada kalır. Ölçüt: **kullanıcı
 projeyi altı ay sonra açtığında `docs/`'u okuyarak ne olduğunu anlayabilmeli.**
 
 Mevcut projede kök zaten dağınıksa kendiliğinden toplama — tek satırla bildir, kullanıcı

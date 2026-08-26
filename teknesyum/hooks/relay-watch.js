@@ -1835,7 +1835,7 @@ function acikBildir(root) {
 }
 
 // Kuyruk `D3`'te T0'ın disiplinine bağlıydı ve sıfır kez yazıldı. Boşaltma da öyleydi:
-// "dalga sonu `acikta` boşalmadan kapanmaz" yazılıydı, kimse bakmıyordu. `Stop` kancası
+// "aşama sonu `acikta` boşalmadan kapanmaz" yazılıydı, kimse bakmıyordu. `Stop` kancası
 // artık dosyaya kendisi bakar — madde varken tur bitmez.
 const ACIK_ENGEL = '_acik-engel.json';
 

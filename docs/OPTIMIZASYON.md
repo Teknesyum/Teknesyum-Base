@@ -57,11 +57,11 @@ Kancalar oturum başına 57,6 saniye yiyor ve bunun **33,4 saniyesi** (%58) boş
 
 **fable:** plandan çıkardı. *"Süre yakıyor, token yakmıyor; kullanıcının hedefi token."*
 
-**opus:** Dalga 5 olarak ekledi — `PostToolUse` eşleyicisini durum değiştiren araçlara
+**opus:** Aşama 5 olarak ekledi — `PostToolUse` eşleyicisini durum değiştiren araçlara
 indir, `sozdizim`'i ayrı `node --check` süreci yerine süreç içi `vm.Script` ile çalıştır.
 Hedef 57,6 sn → ≤25 sn.
 
-**Karar: opus. Ama en son dalga olarak.** Kullanıcının cümlesi *"hem token tüketimini
+**Karar: opus. Ama en son aşama olarak.** Kullanıcının cümlesi *"hem token tüketimini
 azaltalım hem verimliliği artıralım"* — verimlilik süreyi de kapsıyor. Fable'ın önceliklendirmesi
 doğru, kapsam dışı bırakması değil. Sona konuyor çünkü token hedefine katkısı sıfır.
 
@@ -83,7 +83,7 @@ pozitifte bir tur yakıyor.
 **fable:** ölçüme indirdi. *"`cache_control` harness'ın elinde, bizim eylem alanımız değil;
 muhtemelen zaten çalışıyor."*
 
-**opus:** eylem dalgası yapmadı, `cache_creation`/`cache_read` ayrımını ölçüme koydu.
+**opus:** eylem aşaması yapmadı, `cache_creation`/`cache_read` ayrımını ölçüme koydu.
 
 **Karar: ikisi de aynı yere varmış.** Fable opus'un ayrışacağını tahmin etmiş, ayrışmamış.
 Cache ölçümü `Ö1`'in içinde — ve tam da doğru soruyu soruyor: *ikinci çağrı gövdeyi yeniden
@@ -103,12 +103,12 @@ Fable'ın görmemesi kusur değil; opus bench raporunu farklı okumuş.
 
 ---
 
-## Dalgalar
+## Aşamalar
 
-Dalga 0 koştu ve planın gerekçesini çürüttü. Aşağıdaki dalgalar **ölçüm sonrası** halidir;
+Aşama 0 koştu ve planın gerekçesini çürüttü. Aşağıdaki aşamalar **ölçüm sonrası** halidir;
 ölçüm öncesi sıralama git geçmişinde duruyor.
 
-### Dalga 0 — ölçüm · TAMAMLANDI
+### Aşama 0 — ölçüm · TAMAMLANDI
 
 Hiçbir dosya değişmedi. Üç ajan paralel koştu (`Ö1` ve `Ö2` aynı veriye baktığı için birleşti).
 
@@ -121,7 +121,7 @@ Hiçbir dosya değişmedi. Üç ajan paralel koştu (`Ö1` ve `Ö2` aynı veriye
 
 #### Kapı: GEÇİLMEDİ
 
-> `Ö4` farkın en az %80'ini kalemlemezse Dalga 2 ve 3 başlamaz — hipotez yanlış demektir
+> `Ö4` farkın en az %80'ini kalemlemezse Aşama 2 ve 3 başlamaz — hipotez yanlış demektir
 > ve plan baskın kaleme yeniden hedeflenir.
 
 Kalemlenen %10,9, eşik %80'di. **Üç hipotezin üçü de çürüdü:**
@@ -151,7 +151,7 @@ varsayılandır."* Ajan açmaması modelin kendi kararıydı, profilin değil.
 
 ---
 
-### Dalga 1 — tur ve çıktı hacmi · yeni baskın kalem
+### Aşama 1 — tur ve çıktı hacmi · yeni baskın kalem
 
 Ölçümün gösterdiği tek büyük kalem. Kazanç ölçüme bağlı değil.
 
@@ -164,11 +164,11 @@ varsayılandır."* Ajan açmaması modelin kendi kararıydı, profilin değil.
 
 **Kabul:** aynı görevde tur sayısı ≥%40 düşer · 271 test geçer · doğruluk düşmez.
 
-### Dalga 2 — eco'yu gerçekten eco yapmak · konsey sentezi
+### Aşama 2 — eco'yu gerçekten eco yapmak · konsey sentezi
 
 `Ö4`'ün bulduğu iki hatanın kapatılması. Bunlar optimizasyon değil **düzeltme**.
 
-Plan konseyi (fable + opus) bu dalga için açıldı. Sorulan tek soru: profil makine geneli
+Plan konseyi (fable + opus) bu aşama için açıldı. Sorulan tek soru: profil makine geneli
 yazdığı için iki oturum birbirini eziyor, hangi yol.
 
 #### Konseyin ortaklaştığı
@@ -213,7 +213,7 @@ dayanan bir dolambaç önerdi. **Gerek yok:** `CLAUDE_CODE_SESSION_ID` bash orta
 ve ana oturumun transkript dosya adıyla birebir aynı. İkisi de `CLAUDE_SESSION_ID`
 aramıştı — ad yanlıştı.
 
-opus "çağrı anındaki `model` frontmatter'ı ezerse Dalga 2 sessizce çöker" diye risk yazdı.
+opus "çağrı anındaki `model` frontmatter'ı ezerse Aşama 2 sessizce çöker" diye risk yazdı.
 **Ezmiyor, eziliyor:** tek bir `teknesyum:planner` tanımıyla aynı anda `claude-fable-5` ve
 `claude-opus-5` açıldı; kayıtlar `.claude/relay/live/` altında duruyor. Risk kapandı.
 
@@ -249,7 +249,7 @@ profilini der · `/teknesyum:premium premium` sonrası `git status` temiz · eco
 tabanı normal'inkinden ölçülebilir biçimde küçük.
 
 
-### Dalga 3 — alt ajan başına relay yüklemesi
+### Aşama 3 — alt ajan başına relay yüklemesi
 
 `Ö1`'in bulduğu asıl çarpan. Bench farkını açıklamıyor ama **gerçek oturumlarda** en pahalı
 tek mekanizma bu.
@@ -264,7 +264,7 @@ okuması yeter. Ajan brifingine gömülecek olan bu; protokolün tamamı değil.
 **Kabul:** builder/auditor açılan bir oturumda alt ajan başına relay yüklemesi sıfıra iner ·
 mühür ve denetim bağımsızlığı testleri geçer.
 
-### Dalga 4 — gövdeyi böl · `Ö2` onay verdi
+### Aşama 4 — gövdeyi böl · `Ö2` onay verdi
 
 `Ö2` "çoğu çağrıda kullanılmıyor" tarafında çıktı: en yaygın bölüm (§3.1 görev paketi)
 relaylı oturumların 8/15'inde, §1.6 ürün standardı 87 oturum grubunun **tamamında sıfır**,
@@ -279,7 +279,7 @@ Hedef 53.147 B → ≤33.000 B, ≤500 satır.
 `Ö2` bir uyarı da yazdı: bu bir vekil ölçüm, bölümün okunduğunu değil sonucunun görüldüğünü
 sayıyor. Bölüm okunup "gerekmiyor" denerek atlandıysa bu tabloda kullanılmamış görünür.
 
-### Dalga 5 — description kısaltma · İPTAL, yerine pencere koruması
+### Aşama 5 — description kısaltma · İPTAL, yerine pencere koruması
 
 `Ö3` bütçenin aşılmadığını ölçtü. Kısaltma matematik olarak da çözüm değil: Base'in bütün
 payı 1.842 karakter, 200k senaryosundaki açık 3.635. **Base'i sıfıra indirsen bile liste
@@ -297,7 +297,7 @@ girdiler dokunulmaz sayılıp tabana yazılıyor, kalan bütçe negatife düşü
 
 **Kabul:** 200k pencereli bir oturumda `/scan` uyarıyı basar.
 
-### Dalga 6 — süreç maliyeti (token değil, saniye)
+### Aşama 6 — süreç maliyeti (token değil, saniye)
 
 Ölçümden etkilenmedi, olduğu gibi duruyor.
 
@@ -312,7 +312,7 @@ koşuda aynı sonuç.
 **Geri alma şartı:** ajan takılma uyarısı beş dakikadan geç gelirse eşleyiciye `Bash` geri
 eklenir.
 
-### Dalga 7 — bench yeniden koşulur
+### Aşama 7 — bench yeniden koşulur
 
 Mevcut bench sonucu iki sebeple kullanılamaz:
 
@@ -349,7 +349,7 @@ modelin bitiremeyeceği boyutta.
 
 ## Eksik ölçümler
 
-Planın dayandığı ama henüz bilinmeyenler. Hepsi Dalga 0'da kapatılıyor.
+Planın dayandığı ama henüz bilinmeyenler. Hepsi Aşama 0'da kapatılıyor.
 
 - eco ile yalın arasındaki ~42.000 tokenin kalem dökümü
 - Relay'in oturum başına gerçek çağrı sayısı ve ikinci çağrının cache davranışı
@@ -367,7 +367,7 @@ Opus planlanan kazancı ~38.000 token diye verdi ve kalan ~7.000 için *"emin de
 dökümü olmadan bu boşluğu kapatacak adımı yazamam; yazsam uydurma olur"* dedi.
 
 Bu rapor da aynı yerde duruyor. Hedef ölçülebilir, adımlar ölçülmüş veriye dayanıyor, ama
-sonuç ancak Dalga 0 bittiğinde söylenebilir.
+sonuç ancak Aşama 0 bittiğinde söylenebilir.
 
 Bir şey kesin: bench'in bir sonraki turu **sıralı ve profil başına en az iki koşu** olacak.
 Paralel koşu profilleri karıştırdı, tek koşu ise varyansı gizledi.

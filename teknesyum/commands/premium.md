@@ -162,7 +162,7 @@ tek dosyada dururken aynı eforu paylaşıyordu. Ayrılınca `advisor` premiumda
 eforda kalabiliyor — tetikleyici sayısı arttıkça danışmanın ucuz olması önem kazanır.
 
 **Ön araştırma tavanı** profille değişir: eco 1, normal 10, premium 50 depo (SKILL `references/plan-akisi.md` §1.4).
-Derinlik değişmez, kapsam değişir: elli depo dalgalar hâlinde okunur ve her dalga bir
+Derinlik değişmez, kapsam değişir: elli depo aşamalar hâlinde okunur ve her aşama bir
 sonrakinin aday listesini eler.
 
 **Paralel tavanı** premiumda 20'dir. Tavan token için değil: `worktree_isolation` açıkken

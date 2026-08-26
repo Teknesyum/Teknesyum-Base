@@ -15,7 +15,7 @@ altıncı tur da aynı yöntemle koşacaktı.
 
 ## 1. Ne oldu
 
-VideoEdit'te on bir sözleşmelik bir dalga koştu. Onu bir ya da iki turda geçti.
+VideoEdit'te on bir sözleşmelik bir aşama koştu. Onu bir ya da iki turda geçti.
 T3 tek başına ayrıştı:
 
 | Tur | Denetim | Bulgu |

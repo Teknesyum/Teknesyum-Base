@@ -907,7 +907,7 @@ Derlemenin geçmesi arayüzün doğru olduğunu göstermez. Arayüz işi **gözl
 
 **Ama gözle doğrulama kullanıcıya yük bindirir.** Uygulamayı açmak ekranı devralır ve
 kullanıcının işini böler. Bu yüzden seyrek ve **toplu** yapılır: tek tek her değişiklikten
-sonra değil, bir dalga bittiğinde bir kez açılır ve aşağıdaki listenin tamamı o tek
+sonra değil, bir aşama bittiğinde bir kez açılır ve aşağıdaki listenin tamamı o tek
 geçişte gezilir. Ara adımlar statik denetimle (`/scan ui`, `uicheckup`, testler)
 doğrulanır. Kullanıcı "aç ve göster" derse elbette hemen açılır.
 

@@ -21,7 +21,7 @@ alınabilir olanları standarda katmak, kurulması gerekenleri kullanıcıya bil
 | D10 | Paketleme ve dağıtım | bitti | tarama-bulgulari.md §D10 |
 | D11 | Bağlantılı not / bilgi tabanı (Obsidian sorusu) | bitti | tarama-bulgulari.md §D11 |
 | D12 | Statik analiz: ölü kod, bağımlılık, güvenlik | bitti | tarama-bulgulari.md §D12 |
-| D13 | Claude Code eklenti ekosistemi — ikinci dalga | bitti | tarama-bulgulari.md §D13 |
+| D13 | Claude Code eklenti ekosistemi — ikinci aşama | bitti | tarama-bulgulari.md §D13 |
 | D14 | Sürüm, değişiklik günlüğü, yayın otomasyonu | bitti | tarama-bulgulari.md §D14 |
 | D15 | Bağlam mühendisliği ve token ölçümü | bitti | tarama-bulgulari.md §D15 |
 

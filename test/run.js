@@ -8612,7 +8612,7 @@ ol('ozel.md ve pusla.md akisi anlatir', () => {
   icerir(h, '/pusla');
 });
 
-// U2 · tipografi dalgasi (docs/KARARLAR-ui-2026-08-23.md). Ayni degerler BES ayri elle
+// U2 · tipografi asamasi (docs/KARARLAR-ui-2026-08-23.md). Ayni degerler BES ayri elle
 // yazilmis kopyada durur: SKILL §3 · theme.css · Theme.xaml · Palette.cs · ve
 // references/components.md (Tailwind karsiliklari). Asagidaki testler kopyalarin
 // ayrismasini yakalar — biri guncellenip otekiler unutulursa duserler.

@@ -49,7 +49,7 @@ kesintilerin kuyruğu. Dizi boşsa bölümü hiç basma. Dosyadaki `simdi` ve `s
 alanları tek satırdır; `simdi` boş değilse `SON` satırının üstüne
 `ŞİMDİ    <simdi>`, `sirada` boş değilse `KALAN`ın altına `SIRADA   <sirada>` yaz.
 
-**Dalga sonu ve kapanış raporu `acikta` boşalmadan kapanmaz.** Açık madde varken
+**Aşama sonu ve kapanış raporu `acikta` boşalmadan kapanmaz.** Açık madde varken
 "bitti" deme: her maddeyi ya cevapla, ya bir sözleşmeye işle, ya kullanıcıya neden
 düştüğünü söyle — sonra `acikta`'dan çıkar.
 

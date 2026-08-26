@@ -2,7 +2,7 @@
 
 > ## Bu tur geçersizdir
 >
-> Dalga 0 ölçümü (`docs/OLCUM-TABAN.md`, `docs/OLCUM-CAGRI.md`) iki kusur buldu ve
+> Aşama 0 ölçümü (`docs/OLCUM-TABAN.md`, `docs/OLCUM-CAGRI.md`) iki kusur buldu ve
 > ikisi de tabloyu kullanılamaz kılıyor. Rapor silinmedi — hangi hatanın nasıl
 > yapıldığı kaydın kendisidir.
 >
@@ -17,7 +17,7 @@
 > Geçerli kalan tek bulgu §"Denetim iki kez perft'in kör noktasını buldu" — o iki bulgu
 > koşuların çıktısında, ölçümünde değil.
 >
-> Yeniden koşum `docs/BENCH-YONTEM.md` standardıyla yapılacak (plan Dalga 7).
+> Yeniden koşum `docs/BENCH-YONTEM.md` standardıyla yapılacak (plan Aşama 7).
 
 
 Dört durum tamamlandı, premium iki kez koşuldu — beşinci sütun varyansı gösteriyor. `yalin` başka bir makinede koşuldu (base kurulu değil, aynı

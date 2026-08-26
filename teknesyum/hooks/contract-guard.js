@@ -237,7 +237,7 @@ function kayitBayat(hedef) {
   return BITIS_IZI.test(son === -1 ? kalan : kalan.slice(0, son));
 }
 
-// ÖLÇÜLDÜ: sıfırdan projede mimari, benzerleri görülmeden kuruluyordu; üçüncü dalgada
+// ÖLÇÜLDÜ: sıfırdan projede mimari, benzerleri görülmeden kuruluyordu; üçüncü aşamada
 // sökülüyordu. Ön araştırma bir kere yapılır, kalıcıdır. Kapı yalnızca hiç iş yapılmamış
 // ve gerçekten yeni olan projede kapalıdır — atlamak serbest, sessizce atlamak değil.
 function yeniProje(kok) {

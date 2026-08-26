@@ -60,14 +60,14 @@ Kalan **yedi** açık günlük. `/log` ile listelenir.
 **Otomatik rapor.** Kullanıcının 24.08.2026'daki sözü: *"artık projeler rapor vermeleri
 gereken yerlerde otomatik rapor versinler, benim yazmamı beklemesinler."*
 
-Rapor anları `relay/references/protocol.md` §8'de zaten yazılı — açılış brifingi, dalga
-başlangıcı, sözleşme kapanışı, dalga sonu ara raporu, sapma anı, kapanış raporu. Eksik
+Rapor anları `relay/references/protocol.md` §8'de zaten yazılı — açılış brifingi, aşama
+başlangıcı, sözleşme kapanışı, aşama sonu ara raporu, sapma anı, kapanış raporu. Eksik
 olan onların kendiliğinden çıkması. Yani bu, yukarıdaki desenin bir örneği daha: kural
 yazılı, tetikleyen an yok. `relay-watch` sözleşme `status` geçişlerini zaten görüyor.
 
 Hafızada da duruyor: `otomatik-rapor-istegi`.
 
-### 2.3 Arayüz dalgası — yarım kalan yer
+### 2.3 Arayüz aşaması — yarım kalan yer
 
 Sözleşmelerin son durumu:
 
@@ -84,7 +84,7 @@ Sözleşmelerin son durumu:
 Yani masaüstünde ilk `UserPromptSubmit`'te bunlar için `advisor` hatırlatması çıkacak —
 bu bir arıza değil, bu oturumda kurulan kapının kendisi.
 
-Sıradaki iş: U3 tur 2 → U6 yapıcı → U5 (dalga D) → U10 birleştirme → U11 → S2.
+Sıradaki iş: U3 tur 2 → U6 yapıcı → U5 (aşama D) → U10 birleştirme → U11 → S2.
 
 ### 2.4 Bekleyen kararlar
 

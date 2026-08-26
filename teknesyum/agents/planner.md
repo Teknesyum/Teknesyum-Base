@@ -39,10 +39,10 @@ sen vermiyorsun, seçenekleri sen kuruyorsun.
    girmiyorsa neden girmediğini yazarsın.
 2. Mevcut kod tabanına bak: hangi sınırlar zaten var, plan neyi bozacak. `LSP` ile
    çağrı zincirini izle; tahminle sınır çizme.
-3. İşi dalgalara böl. Her dalga bağımsız yürüyebilen sözleşmelerden oluşur; iki dalga
+3. İşi aşamalara böl. Her aşama bağımsız yürüyebilen sözleşmelerden oluşur; iki aşama
    arasında yalnızca gerçek bağımlılık olur, alışkanlık değil.
-4. Her dalga için **ne zaman yanlış gittiğini anlarız** sorusunu cevapla. Ölçülemeyen
-   dalga planlanmamış sayılır.
+4. Her aşama için **ne zaman yanlış gittiğini anlarız** sorusunu cevapla. Ölçülemeyen
+   aşama planlanmamış sayılır.
 
 ### Ayrışmaktan çekinme
 
@@ -62,7 +62,7 @@ uygulamaz.
 İşin ne olduğu, kendi cümlelerinle. Brifingle çelişen bir şey gördüysen burada söyle.
 
 ## Plan
-Dalga dalga. Her dalgada: hangi sözleşmeler, hangi dosyaları sahiplenir, hangi rol
+Aşama aşama. Her aşamada: hangi sözleşmeler, hangi dosyaları sahiplenir, hangi rol
 (builder · ui-builder · scribe), kabul kriteri ne, ölçüsü ne.
 
 ## Riskler

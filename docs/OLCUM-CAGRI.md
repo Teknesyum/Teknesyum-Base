@@ -1,7 +1,7 @@
 # Ölçüm — relay çağrı defteri ve bölüm kullanımı
 
 Salt ölçüm. Hiçbir dosya değiştirilmedi, hiçbir şey optimize edilmedi. `docs/OPTIMIZASYON.md`
-planının Dalga 0'ı: Ö1 (çağrı defteri) ve Ö2 (bölüm kullanım sayımı).
+planının Aşama 0'ı: Ö1 (çağrı defteri) ve Ö2 (bölüm kullanım sayımı).
 
 Ölçüm tarihi 22.08.2026. Kaynak: `~/.claude/projects/**` altındaki bütün transkriptler —
 14 proje klasörü, **405 `.jsonl` dosyası**, 87 oturum grubu (ana oturum + kendi
@@ -26,7 +26,7 @@ Normal koşu (`71b22475-…`, `Durum: normal`) da aynı: 66 araç çağrısı, t
 `teknesyum:premium`, relay sıfır.
 
 Yani eco ile yalın koşu arasındaki ~45.000 tokenin **hiçbiri relay gövdesi değil.**
-Dalga 1'in gerekçesi bu farksa, gerekçe düşmüştür; relay gövdesini küçültmek bench
+Aşama 1'in gerekçesi bu farksa, gerekçe düşmüştür; relay gövdesini küçültmek bench
 farkını kapatmaz. (Relay gövdesi gerçek oturumlarda pahalı — §2 — ama bench koşularında
 hiç yüklenmemiş.)
 
@@ -179,7 +179,7 @@ Payda seçimi önemli. İki payda birden veriliyor:
 tamamında sıfır), §3.2 rota (0/15, bütün transkriptlerde toplam 1 yazım), §1.5.1 ikinci
 görüş (0/15).
 
-**Dalga 4 için okuma:** en yaygın bölüm bile relaylı oturumların ancak yarısında iz
+**Aşama 4 için okuma:** en yaygın bölüm bile relaylı oturumların ancak yarısında iz
 bırakıyor; beş bölümden üçü relaylı oturumlarda hiç iz bırakmıyor. Tablo "çoğu çağrıda
 kullanılmıyor" tarafında. `references/`'a taşıma bu veriye göre yükü artırmaz —
 ama bu **bir vekil ölçümü**, bölümün okunduğunu değil, sonucunun görüldüğünü sayıyor

@@ -5,7 +5,7 @@ kararlaştırıldı, hiçbir yere yazılmadı, bağlam uzayınca düştü.**
 
 | Ne kayboldu | Nasıl ortaya çıktı |
 |---|---|
-| `/scan` komutu — "dalga 2'de yapacağım" denildi | Kullanıcı iki saat sonra "scan kodumuz nerede" diye sordu |
+| `/scan` komutu — "aşama 2'de yapacağım" denildi | Kullanıcı iki saat sonra "scan kodumuz nerede" diye sordu |
 | `Senden istediklerim` başlığı — dört tur üst üste | Kullanıcı fark etti |
 | Bir düzeltmenin ikinci yarısı — reddedilen kabuk çağrısında kaldı | İki tur sonra denetimde çıktı |
 | Bir ajanın "şu satır da düzeltilmeli" notu | T0 bekletti, unutulma sınırındaydı |
@@ -51,7 +51,7 @@ Kapanması bir satır silme. Sözleşmenin maliyetini yaratan şablon ve tur yü
 
 **Adım 2 — `Stop` uyarısı.** Sinyal **regex değil kesişim**:
 
-> Erteleme kalıbı geçti (`sonra`, `dalga 2`, `sıraya aldım`, `bir sonraki turda`)
+> Erteleme kalıbı geçti (`sonra`, `aşama 2`, `sıraya aldım`, `bir sonraki turda`)
 > **ve** `_acik.md` bu turda değişmedi (mtime kontrolü).
 
 Regex tek başına kirli bir sinyal — "daha sonra bakılabilir" gibi öneri cümleleri de

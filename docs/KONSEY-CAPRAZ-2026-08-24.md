@@ -42,7 +42,7 @@ kancada hazır: `acikIs(root)` artı `BITIS`/`DURAKLAMA` kalıplarından biri.
 
 **Başlık kapanış turunda her zaman açılır**, boşsa tek satır. Ara turda açılmaz.
 
-**`Stop` kancasını genişletme dalgası düştü** — fable kendi planından çıkardı, çünkü
+**`Stop` kancasını genişletme aşaması düştü** — fable kendi planından çıkardı, çünkü
 teşhis değişti.
 
 ## Ayrışan tek madde — T0 kararı
@@ -58,7 +58,7 @@ savundu ve gerekçesi ikna edici:
 haftalık bakılır.
 
 Fable'ın şerhi de korunur: profil tek başına daha önce battı (`GELISIM.md`, dört tur
-unutulan kural). Ölçüm dalgası bu yüzden zorunlu — profil işliyorsa kapı sıfıra yakın
+unutulan kural). Ölçüm aşaması bu yüzden zorunlu — profil işliyorsa kapı sıfıra yakın
 ateşler; ateşlemeye devam ediyorsa **kapı değil profil metni** düzeltilir.
 
 ## Mekaniğin kendi değerlendirmesi

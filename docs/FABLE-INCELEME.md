@@ -6,7 +6,7 @@
 
 ## 1 · Gereksiz iş
 
-- **`hooks.json:32-41` — PostToolUse matchersız.** Read/Grep/Glob olaylarında `relay-watch` yalnız `turDamga`+`supur`+`saglikTara` yapıyor; karar üretmiyor. Duraklama ölçümü (`DURAK_ESIGI` 120 sn, `relay-watch.js:591`) seyrek damgayla da çalışır — matcher `Write|Edit|NotebookEdit|Bash|Skill|Task|Agent`e inebilir. Opus'un Dalga 5'i doğruydu; "token kazandırmıyor" diye sona atıldı ama süreç sayısını ~yarıya indirir, riski sıfır.
+- **`hooks.json:32-41` — PostToolUse matchersız.** Read/Grep/Glob olaylarında `relay-watch` yalnız `turDamga`+`supur`+`saglikTara` yapıyor; karar üretmiyor. Duraklama ölçümü (`DURAK_ESIGI` 120 sn, `relay-watch.js:591`) seyrek damgayla da çalışır — matcher `Write|Edit|NotebookEdit|Bash|Skill|Task|Agent`e inebilir. Opus'un Aşama 5'i doğruydu; "token kazandırmıyor" diye sona atıldı ama süreç sayısını ~yarıya indirir, riski sıfır.
 - **`relay-watch.js:298` — `sozdizim` her .js yazımında ikinci bir `node --check` süreci** (senkron, 5 sn tavan). Süreç içi `new vm.Script(kod)` aynı hatayı verir, ESM yanılgı listesi de sadeleşir.
 - **`SKILL.md:445-469` (§1.6)** — 87 oturum grubunun tamamında sıfır iz (OLCUM-CAGRI Ö2) ve içerik zaten `references/standartlar.md`'de. SKILL'deki 25 satır dublaj, her yüklemede taşınıyor.
 - **Çift anlatım:** §1.7 ↔ `commands/scan.md` (136 satır), §4 premium bloğu ↔ `commands/premium.md` (181 satır). Komut dosyası çağrılınca zaten yükleniyor; SKILL'de tek işaretçi satırı yeter.
@@ -45,7 +45,7 @@ Emin olmadığım yer: 570k rakamı kaba çarpım; alt ajan çağrılarının ka
 
 ## 1 · Gereksiz iş
 
-- **`hooks.json:32-41` — PostToolUse matchersız.** Read/Grep/Glob olaylarında `relay-watch` yalnız `turDamga`+`supur`+`saglikTara` yapıyor, karar üretmiyor. Duraklama ölçümü (`DURAK_ESIGI` 120 sn, `relay-watch.js:591`) seyrek damgayla da çalışır — matcher `Write|Edit|NotebookEdit|Bash|Skill|Task|Agent`e inebilir. Opus'un Dalga 5'i doğruydu; süreç sayısı ~yarıya iner, risk sıfır.
+- **`hooks.json:32-41` — PostToolUse matchersız.** Read/Grep/Glob olaylarında `relay-watch` yalnız `turDamga`+`supur`+`saglikTara` yapıyor, karar üretmiyor. Duraklama ölçümü (`DURAK_ESIGI` 120 sn, `relay-watch.js:591`) seyrek damgayla da çalışır — matcher `Write|Edit|NotebookEdit|Bash|Skill|Task|Agent`e inebilir. Opus'un Aşama 5'i doğruydu; süreç sayısı ~yarıya iner, risk sıfır.
 - **`relay-watch.js:298` — `sozdizim` her .js yazımında ikinci bir `node --check` süreci** (senkron, 5 sn tavan). Süreç içi `new vm.Script(kod)` aynı hatayı verir; `ESM_YANILGISI` listesi de sadeleşir.
 - **`SKILL.md:445-469` (§1.6)** — 87 oturum grubunun tamamında sıfır iz (Ö2) ve içerik zaten `references/standartlar.md`'de. 25 satır dublaj her yüklemede taşınıyor.
 - **Çift anlatım:** SKILL §1.7 ↔ `commands/scan.md` (136 satır); SKILL §4 premium bloğu ↔ `commands/premium.md` (181 satır). Komut dosyası çağrılınca zaten yükleniyor; SKILL'de tek işaretçi yeter.

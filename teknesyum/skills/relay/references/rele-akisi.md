@@ -54,7 +54,7 @@ Kural seti ve paket formatı: **`references/multi-session.md`**. Bu yola girecek
 ## 3.2 Rota — uzun iş kaldığı yerden devam eder
 
 Tek istekte bitmeyecek her iş **önce rotasını çizer, sonra başlar.** Uzun araştırma, çok
-dalgalı taşıma, sürüm yükseltme, büyük yeniden düzenleme — hepsi buraya girer.
+aşamalı taşıma, sürüm yükseltme, büyük yeniden düzenleme — hepsi buraya girer.
 
 Rota `docs/ROTA-<is-adi>.md` dosyasıdır. İşe başlamadan yazılır, boş bırakılmaz.
 
@@ -89,7 +89,7 @@ Kullanıcıya tek satır: hangi duraktasın, kaç durak kaldı.
 
 **Rota ile sözleşme farklı şeylerdir.** Sözleşme işi *dağıtmak* içindir; rota tek bir
 tarafın *uzun yürüyüşü* içindir. İkisi birlikte de kullanılır: rotanın bir durağı bir
-sözleşme dalgası olabilir.
+sözleşme aşaması olabilir.
 
 İş bittiğinde rota silinmez; son hâli `docs/` altında kalır — altı ay sonra neyin neden
 incelendiğini o anlatır.
@@ -158,7 +158,7 @@ Tavan yine de duruyor ve sebebi token değil. `worktree_isolation` açıkken her
 repo kopyası ve bir süreç demektir; makinenin de bir sınırı var. İkincisi, T0 hatalı bir
 döngüye girerse tavan güvenlik ağıdır — sınırsız bir sayı, yanlış bir kararı yirmi kat
 değil bin kat büyütür. Yirmi, "ne kadar lazımsa o kadar"ı fiilen karşılar: pratikte bir
-dalgada yirmi bağımsız sözleşme çıkmaz, çıkıyorsa plan fazla parçalanmıştır.
+aşamada yirmi bağımsız sözleşme çıkmaz, çıkıyorsa plan fazla parçalanmıştır.
 
 eco profilinde tavan 1'dir, normalde 2. eco'da paralellik ilk kesilen şeydir: her ajan
 bağımsız bir bağlam yükü taşır ve orada kısıt tam olarak odur.

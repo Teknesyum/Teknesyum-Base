@@ -92,7 +92,7 @@ borcu** olarak yazılır ve sözleşme mühürlenir.
 Bunun dışındaki her şey — pinlenmemiş koruma, ölü savunma, yanıltıcı yorum,
 envanter boşluğu, fixture'ın kapsamadığı dal — borçtur.
 
-**Kural bu dalgadaki gerçek kusurları kaçırmazdı.** Dördü de birinci maddeye
+**Kural bu aşamadaki gerçek kusurları kaçırmazdı.** Dördü de birinci maddeye
 giriyor: hattın hiç render edememesi, `final.mp4`in tümden sessiz çıkması,
 `--no-part` ile resume'un kalıcı kırılması, katalogun uygulanmayan bir geçişi
 "uygulandı" diye beyan etmesi.
@@ -111,7 +111,7 @@ giriyor: hattın hiç render edememesi, `final.mp4`in tümden sessiz çıkması,
    bırakılırsa üçüncü kez olacak.
 4. **Kalite borcu için yer aç.** Mühür notu bugün serbest metin; borç maddeleri
    yapılandırılmış olsa (`borc:` listesi) bir sonraki sözleşme onları
-   `depends` gibi okuyabilirdi. Bu dalgada borçlar T11'e elle taşındı.
+   `depends` gibi okuyabilirdi. Bu aşamada borçlar T11'e elle taşındı.
 
 ## 6. Ölçü
 
@@ -163,7 +163,7 @@ açılmazdı.
 
 **Öneri 4 — borç için yer.** Sözleşme frontmatter'ına `borc: []` alanı eklendi
 (`assets/contract.template.md` ve protokoldeki format). Borçlar artık serbest metin
-değil; bir sonraki sözleşme onları `depends` gibi okuyabilir. Bu dalgada borçlar T11'e
+değil; bir sonraki sözleşme onları `depends` gibi okuyabilir. Bu aşamada borçlar T11'e
 elle taşınmıştı.
 
 **Kilit.** `test/run.js` → `denetim turunun durdurma kurali yazili ve olculebilir`:

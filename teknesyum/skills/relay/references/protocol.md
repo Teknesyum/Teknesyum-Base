@@ -395,7 +395,7 @@ Tablonun altına üç satır: **paralel çalışacaklar**, **bilerek kapsam dı�
 **gördüğüm risk**. Sonra tek satır: neyi şimdi değiştirebileceği (sıralama, kapsam,
 `parallel_width`). `approval_gate: yok` ise beklemeden başla — ama brifingi yaz.
 
-### 8.2 Dalga başlarken
+### 8.2 Aşama başlarken
 
 Aynı anda başlayan ajanlar tek satırda: `▸ T3 ui-builder · T4 builder — paralel, owns kesişmiyor`.
 
@@ -405,7 +405,7 @@ Dört satır, fazlası değil: **ne yapıldı** · **değişen dosyalar** · **d
 (geçti / kaldı + kaç tur) · **sırada ne açıldı**. Ajanın Çıktı metnini olduğu gibi
 yapıştırma, kendi cümlenle yaz.
 
-### 8.4 Dalga sonunda ara rapor
+### 8.4 Aşama sonunda ara rapor
 
 İlerleme `x/y`, harcanan düzeltme turu, açık risk, kalan iş ve **plandan sapma varsa
 sapmanın kendisi**. Kullanıcı en çok burada müdahale eder; ara raporu atlama.

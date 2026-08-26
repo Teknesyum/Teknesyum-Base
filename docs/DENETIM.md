@@ -9,7 +9,7 @@ Her bulgu dosya ve satırla kanıtlanmıştır. Kanıtlanamayan hiçbir şey yaz
 Sürüm: 2.37.0 · denetim anındaki HEAD `b9c8a3d` · 164/164 test geçiyordu.
 
 **Onarım durumu** — Faz 1 kapandı, 187/187 test geçiyor. Bütün bulgular düştü. Kapanan bulgular başlıklarında
-işaretli. Kapanmayanlar dalga 2 ve 3'te.
+işaretli. Kapanmayanlar aşama 2 ve 3'te.
 
 ---
 
@@ -438,7 +438,7 @@ de girecekse etiketi ondan sonra at.
 `memory: project` açık; ajan hafıza yazdığı anda dosya takipsiz olarak beliriyor ve ilk
 `git add -A` ile depoya giriyor.
 
-Onarım dalgasının ilk turunda üç ajandan biri gerçekten hafıza yazdı ve worktree'de
+Onarım aşamasının ilk turunda üç ajandan biri gerçekten hafıza yazdı ve worktree'de
 takipsiz `.claude/agent-memory/` klasörü olarak göründü.
 
 Hafıza ajan başına yerel öğrenmedir, üretilen içeriktir ve okuduğu dosyalardan alıntı

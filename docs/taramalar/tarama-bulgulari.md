@@ -507,7 +507,7 @@ araç: `Inno Setup` veya tek dosya yayını.
 
 ---
 
-# İkinci dalga (D11-D15)
+# İkinci aşama (D11-D15)
 
 İlk on durak bittikten sonra kullanıcının "bu 10 tanesinde kalmalı mıyız" sorusu üzerine
 açıldı. Durma ölçütü rotaya yazıldı: art arda iki durak standarda tek satır eklemezse dal
@@ -554,7 +554,7 @@ Alınacak: `relay` §2 madde 8 — ~30+ kaynak dosyalı JS/TS projesinde çalı�
 
 Alınmayacak: küçük projeye kurulması, CI zorunluluğu hâline getirilmesi.
 
-## D13 — Claude Code eklenti ekosistemi, ikinci dalga
+## D13 — Claude Code eklenti ekosistemi, ikinci aşama
 
 Ekosistem 2026'da 400+ eklenti / 3000+ skill ölçeğine çıkmış. Tarama sonucu: **kurulacak
 yeni bir eklenti yok**, ama bir ölçü alındı.

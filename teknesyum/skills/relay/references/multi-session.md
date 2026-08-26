@@ -223,7 +223,7 @@ Kullanıcı "bitti" diye döndüğünde ayrı bir komut bekleme, sen topla:
    yazılır ve satır yeniden verilir.
 4. Rapordaki imzaları bağımlı paketlerin `## Bağlam` bölümüne taşı. Atlanırsa sonraki
    paket imzayı uydurur.
-5. Dalga raporu ver (`protocol.md` §8.4) ve açılabilir paketlerin satırlarını bas.
+5. Aşama raporu ver (`protocol.md` §8.4) ve açılabilir paketlerin satırlarını bas.
 
 ## 7. Kesinti
 

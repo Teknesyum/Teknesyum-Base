@@ -183,7 +183,7 @@ tura basılan liste o kalemi büyütür. Kuyruk diskte durur; `Stop` kancası tu
 **tek satır** hatırlatır, statusline `açıkta N` gösterir, listeyi kullanıcı `/report` ile
 açar.
 
-**Boşaltmayı `Stop` kancası zorlar.** Dalga sonu ve kapanış raporu `acikta` boşalmadan
+**Boşaltmayı `Stop` kancası zorlar.** Aşama sonu ve kapanış raporu `acikta` boşalmadan
 kapanmaz — ve bu artık bir hatırlatma değil: `acikta` doluyken kanca turu bitirmez,
 kalan maddeyi söyler ve işi sürdürtür. Boşalınca serbest bırakır.
 
@@ -243,7 +243,7 @@ Yazma işine başlamadan önce, sırayla kontrol et:
    export ve bağımlılığı tek geçişte bulur, `--fix` ile temizler. Ölü kodu modele
    aratmak token israfıdır. Küçük projede kurma.
 
-9. **Sözleşme dalgası mı açıyorsun?** Dal adı sözleşme adıyla aynı olsun: `T3-makro-motoru`.
+9. **Sözleşme aşaması mı açıyorsun?** Dal adı sözleşme adıyla aynı olsun: `T3-makro-motoru`.
    Böylece `git log` ile sözleşme izi elle eşleştirilmeden hizalanır; hangi commit hangi
    sözleşmeye ait, sormaya gerek kalmaz.
 
@@ -417,7 +417,7 @@ ama körlemede bırakma. Zorunlu anlar (tam biçimi `references/protocol.md` §8
 |---|---|
 | Dağıtmadan önce | Plan tek cümle + sözleşme tablosu (ne, kim, hangi model, hangi dosyalar) + kapsam dışı bıraktıkların + risk |
 | Her sözleşme kapanınca | Ne yapıldı · değişen dosyalar · denetim kararı · sırada ne açıldı |
-| Her dalga sonunda | İlerleme `x/y`, harcanan düzeltme turu, açık risk, plandan sapma |
+| Her aşama sonunda | İlerleme `x/y`, harcanan düzeltme turu, açık risk, plandan sapma |
 | Sapma anında | Plan/kapsam/model değişimi, ölen ajan, sahipsiz dosya — beklemeden, sebebiyle |
 | Bitince | Sözleşme tablosu, toplam değişiklik, denetimde yakalananlar, yapılmayanlar ve sebebi |
 

@@ -85,7 +85,7 @@ kopyası maliyeti çıkarır. Sadece 3 paralel ajanda ve büyük projede aç.
 Bu düğme **ajan→T0** trafiğini ayarlar, sana gösterileni değil.
 
 **briefing** — T0'ın **sana** ne sıklıkta rapor verdiği (`protocol.md` §8).
-`milestone` varsayılan: açılış brifingi, her sözleşme kapanışı, her dalga sonu ara
+`milestone` varsayılan: açılış brifingi, her sözleşme kapanışı, her aşama sonu ara
 raporu, sapma anı, kapanış raporu · `every-step` ajan başlangıçlarını ve düzeltme turlarını
 da ekler, uzun işte gürültü yapar · `quiet` yalnızca brifing, sapma ve kapanış; gerisini
 `/report` ile sen istersin. Hiçbir değerde sapma bildirimi kapanmaz.

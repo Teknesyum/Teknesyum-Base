@@ -1,0 +1,10 @@
+# satis kayitlari — 2026 ilk ceyrek ve nisan
+satisId, tarih, urunKodu, adet, birimFiyat, aciklama
+S1,2026-01-15,U1,3,"19,90","Kirmizi, buyuk boy"
+S2,2026-01-28,U2,12,"4,50",Standart
+S3,2026-02-03,U1,100,"19,90","Toptan, indirimli"
+S4,2026-02-19,U3,9,"120,00",Sergi
+S5,2026-03-07,U2,7,"4,50",Ikinci parti
+S6,2026-03-22,U4,25,"8,25",Kampanya
+S7,2026-03-31,U1,2,"19,90","Numune ""A"" seti"
+S8,2026-04-01,U5,40,"1,75",Dokme

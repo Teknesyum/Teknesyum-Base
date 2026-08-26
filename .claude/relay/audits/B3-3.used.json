@@ -1,0 +1,22 @@
+{
+  "contractId": "B3",
+  "auditorRunId": "a5a38270b3e192af0",
+  "headSha": "51262070d3da010eeda2cda310255661fda8c15e",
+  "diffHash": "4c7e1018fbca54af56a2c88be7102fe64969de332e23f33b1a62914d5c181a3d",
+  "owns": [
+    "bench/fixtures/proje/",
+    "bench/gorevler/proje.md",
+    "scripts/bench/kos.js",
+    "scripts/bench/istatistik.js"
+  ],
+  "verification": [
+    "Tur 3 durumunu koddan yeniden doğruladım: kos.js sabitleri, fixture ağacı, dogrula.js sayımı, istem sayımı, referans çözümün ince kuralları (yuvarlama örneği dahil) ve istatistik.js'in değişmediği kontrol edildi.",
+    "```",
+    "GEÇTİ  T3  · şartname ✓ · kalite ✓",
+    "✓ Kabul 1 fixture testi — verilen koşum: 5 gö"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-26T15:53:33.541Z",
+  "usedAt": "2026-08-26T15:53:33.588Z",
+  "completedSha": "51262070d3da010eeda2cda310255661fda8c15e"
+}

@@ -1,0 +1,34 @@
+{
+  "anahtar": "proje__native",
+  "dosyaAdi": "proje__native__r1",
+  "gorev": "proje",
+  "durum": "native",
+  "tekrar": 1,
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826130816\\proje__native__r1\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826130816\\proje__native__r1\\calisma",
+  "fixtureOzeti": "89c15a2400839c54",
+  "kurulumImzasi": "39c7f6ed32b093d0",
+  "baslangic": "2026-08-26T13:08:17.627Z",
+  "bitis": "2026-08-26T13:15:43.357Z",
+  "sureMs": 445730,
+  "cikisKodu": 1,
+  "tavanAsildi": false,
+  "oturumId": "63c031f6-74d7-44df-aaa0-4464d0515fb5",
+  "modelId": "<synthetic>",
+  "asistanTuru": 23,
+  "aracCagrisi": 12,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826130816\\proje__native__r1\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826130816-proje--native--r1-calisma\\63c031f6-74d7-44df-aaa0-4464d0515fb5.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · proje"
+  },
+  "kusurSayisi": 0,
+  "kurulumGunlugu": [
+    "eklenti kurulmadi, profil yazilmadi",
+    "claude -p → kod 1 · 446 sn",
+    "sonuc: You've hit your session limit · resets 6:30pm (Europe/Istanbul)"
+  ],
+  "hata": null,
+  "maliyetUsd": 2.0407414999999998,
+  "bildirilenTur": 13
+}

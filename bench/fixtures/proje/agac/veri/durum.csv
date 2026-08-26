@@ -1,0 +1,12 @@
+# siparis durum olaylari
+siparisId,sira,olay
+O1,1,olustur
+O1,3,gonder
+O1,2,onayla
+O1,4,teslim
+O2,1,olustur
+O2,2,onayla
+O2,3,iptal
+O3,1,olustur
+O3,2,gonder
+O4,1,onayla

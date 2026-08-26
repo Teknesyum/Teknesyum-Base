@@ -6,6 +6,21 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.66.0] - 2026-08-26
+
+### Added
+
+- **A heavy-project benchmark task with repeats and real statistics.** The new `proje`
+  fixture is a 63-requirement, 15-seeded-bug Node project graded by 230 independent
+  behavioral checks, sized so a headless Opus session works on it for around eight
+  minutes. `kos.js` gained per-task ceilings and `--tekrar=N` randomized blocks (four
+  conditions run simultaneously inside each block), and the new `istatistik.js`
+  produces descriptives, block-paired permutation tests with a Bonferroni note,
+  Cliff's delta effect sizes, and an honesty section that refuses to call anything
+  a difference the sample size cannot support. First full experiment (4 conditions
+  × 3 blocks) is analyzed in `docs/BENCH-PROJE.md` with the raw JSON kept in
+  `bench/sonuc/`.
+
 ## [2.65.0] - 2026-08-26
 
 ### Added

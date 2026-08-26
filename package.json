@@ -1,8 +1,8 @@
-{
+﻿{
   "name": "teknesyum-base",
-  "version": "2.65.0",
+  "version": "2.66.0",
   "private": true,
-  "description": "Test harness for the Teknesyum Base plugin — hooks, statusline, packaging",
+  "description": "Test harness for the Teknesyum Base plugin â€” hooks, statusline, packaging",
   "scripts": {
     "test": "node test/all.js",
     "fmt": "npx --yes @biomejs/biome@2 format --write .",

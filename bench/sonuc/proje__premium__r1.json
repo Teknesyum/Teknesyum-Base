@@ -1,0 +1,36 @@
+{
+  "anahtar": "proje__premium",
+  "dosyaAdi": "proje__premium__r1",
+  "gorev": "proje",
+  "durum": "premium",
+  "tekrar": 1,
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826130816\\proje__premium__r1\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826130816\\proje__premium__r1\\calisma",
+  "fixtureOzeti": "89c15a2400839c54",
+  "kurulumImzasi": "f0458d9c1e926a0e",
+  "baslangic": "2026-08-26T13:08:17.549Z",
+  "bitis": "2026-08-26T13:15:14.334Z",
+  "sureMs": 416785,
+  "cikisKodu": 1,
+  "tavanAsildi": false,
+  "oturumId": "25582305-5698-476b-99d3-e03e63ceed34",
+  "modelId": "<synthetic>",
+  "asistanTuru": 25,
+  "aracCagrisi": 13,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826130816\\proje__premium__r1\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826130816-proje--premium--r1-calisma\\25582305-5698-476b-99d3-e03e63ceed34.jsonl",
+  "dogrulama": {
+    "gecti": false,
+    "cikti": "KIRMIZI · cli rapor ciktisi: cikti beklenenden farkli | cli komutsuz cagri rapor: cikti beklenenden farkli | cli bayrakla baslayan cagri rapor: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli rapor kategori suzgeci: cikti beklenenden farkli | cli rapor enAz suzgeci: cikti beklenenden farkli | cli rapor donem ay: cikti beklenenden farkli | cli rapor donem ceyrek: cikti beklenenden farkli | cli rapor donem ay ve siralama: cikti beklenenden farkli | cli rapor sayisal siralama: cikti beklenenden farkli | cli rapor csv bicimi: cikti beklenenden farkli | cli mutabakat ciktisi: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli durum ciktisi: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli hareket ciktisi: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli ozet ciktisi: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli ozet bicim bayragindan etkilenmez: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli cikti bayragi: stdout bos degil | cli mutabakat cikti bayragi: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli denetim capraz hata ve cikis kodu: cikti \"\" kod 1 | cli json kaynak sayilari: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli json kategoriler: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli json donemler ve birikim: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli json enCokSatan: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli json iadeliSatislar: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli json mutabakat bolumu: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli json siparisler bolumu: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | cli json alan sirasi: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202 | uctan uca senaryo: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\202"
+  },
+  "kusurSayisi": 27,
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js premium → kod 0 · profil: premium",
+    "claude -p → kod 1 · 417 sn",
+    "sonuc: You've hit your session limit · resets 6:30pm (Europe/Istanbul)"
+  ],
+  "hata": null,
+  "maliyetUsd": 1.950515,
+  "bildirilenTur": 14
+}

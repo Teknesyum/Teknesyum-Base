@@ -1,0 +1,35 @@
+{
+  "anahtar": "proje__premium",
+  "dosyaAdi": "proje__premium__r2",
+  "gorev": "proje",
+  "durum": "premium",
+  "tekrar": 2,
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826153100\\proje__premium__r2\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826153100\\proje__premium__r2\\calisma",
+  "fixtureOzeti": "89c15a2400839c54",
+  "kurulumImzasi": "f0458d9c1e926a0e",
+  "baslangic": "2026-08-26T15:31:01.215Z",
+  "bitis": "2026-08-26T15:39:45.444Z",
+  "sureMs": 524229,
+  "cikisKodu": 0,
+  "tavanAsildi": false,
+  "oturumId": "fa552ac6-fd2b-4195-85e7-dad29edbc7ad",
+  "modelId": "claude-opus-5",
+  "asistanTuru": 32,
+  "aracCagrisi": 18,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826153100\\proje__premium__r2\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826153100-proje--premium--r2-calisma\\fa552ac6-fd2b-4195-85e7-dad29edbc7ad.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · proje"
+  },
+  "kusurSayisi": 0,
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js premium → kod 0 · profil: premium",
+    "claude -p → kod 0 · 524 sn"
+  ],
+  "hata": null,
+  "maliyetUsd": 2.502527,
+  "bildirilenTur": 19
+}

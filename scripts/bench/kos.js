@@ -15,12 +15,19 @@ const ANA_KOK = path.join(process.env.USERPROFILE || process.env.HOME || '.', '.
 const KIMLIK = path.join(ANA_KOK, '.credentials.json');
 
 const GOREVLER = ['ozellik', 'hata', 'rapor', 'teksatir'];
+const TUM_GOREVLER = GOREVLER.concat(['proje']);
 const DURUMLAR = ['premium', 'normal', 'eco', 'native'];
 
 const TAVAN_MS = 4 * 60 * 1000;
 const KURULUM_TAVAN_MS = 5 * 60 * 1000;
 const MAX_TUR = 30;
 const BASLAMA_ARALIGI_MS = 400;
+const DOGRULA_TAVAN_MS = 60 * 1000;
+
+const GOREV_TAVAN_MS = { proje: 45 * 60 * 1000 };
+const GOREV_MAX_TUR = { proje: 400 };
+const GOREV_DOGRULA_TAVAN_MS = { proje: 120 * 1000 };
+const KUSUR_ESIGI = { proje: 140 };
 
 function bayrak(ad) {
   return process.argv.includes('--' + ad);
@@ -215,22 +222,40 @@ function transkriptOzeti(dosya) {
 
 async function dogrula(gorev, calisma) {
   const betik = path.join(FIXTURE_KOK, gorev, 'dogrula.js');
-  const r = await kos(process.execPath, [betik, calisma], { tavan: 60 * 1000 });
+  const r = await kos(process.execPath, [betik, calisma], {
+    tavan: GOREV_DOGRULA_TAVAN_MS[gorev] || DOGRULA_TAVAN_MS,
+  });
   return {
     gecti: r.kod === 0,
     cikti: (r.out || r.err).trim().split('\n')[0] || '',
   };
 }
 
-async function kosu(gorev, durum, benchKok, kimlikDosyasi, kuru) {
+// topla.js ile ayni mantik: KIRMIZI satirindaki `|` ile ayrilmis madde sayisi.
+function kusurSayisi(dogrulama) {
+  if (!dogrulama) return null;
+  if (dogrulama.gecti) return 0;
+  const g = String(dogrulama.cikti || '').replace(/^KIRMIZI\s*·\s*/, '');
+  if (!g.trim()) return 1;
+  return g.split('|').filter((x) => x.trim()).length;
+}
+
+function kosuAdi(gorev, durum, tekrar) {
+  return gorev + '__' + durum + (tekrar === null ? '' : '__r' + tekrar);
+}
+
+async function kosu(gorev, durum, tekrar, benchKok, kimlikDosyasi, kuru) {
   const anahtar = gorev + '__' + durum;
-  const konfig = path.join(benchKok, anahtar, 'konfig');
-  const calisma = path.join(benchKok, anahtar, 'calisma');
+  const ad = kosuAdi(gorev, durum, tekrar);
+  const konfig = path.join(benchKok, ad, 'konfig');
+  const calisma = path.join(benchKok, ad, 'calisma');
   const gunluk = [];
   const sonuc = {
     anahtar,
+    dosyaAdi: ad,
     gorev,
     durum,
+    tekrar,
     konfig,
     calisma,
     fixtureOzeti: null,
@@ -246,6 +271,7 @@ async function kosu(gorev, durum, benchKok, kimlikDosyasi, kuru) {
     aracCagrisi: null,
     transkript: null,
     dogrulama: null,
+    kusurSayisi: null,
     kurulumGunlugu: gunluk,
     hata: null,
   };
@@ -278,11 +304,15 @@ async function kosu(gorev, durum, benchKok, kimlikDosyasi, kuru) {
         '--permission-mode',
         'bypassPermissions',
         '--max-turns',
-        String(MAX_TUR),
+        String(GOREV_MAX_TUR[gorev] || MAX_TUR),
         '--output-format',
         'json',
       ],
-      { cwd: calisma, env: { CLAUDE_CONFIG_DIR: konfig }, tavan: TAVAN_MS }
+      {
+        cwd: calisma,
+        env: { CLAUDE_CONFIG_DIR: konfig },
+        tavan: GOREV_TAVAN_MS[gorev] || TAVAN_MS,
+      }
     );
     sonuc.bitis = new Date().toISOString();
     sonuc.sureMs = Date.now() - t0;
@@ -316,6 +346,7 @@ async function kosu(gorev, durum, benchKok, kimlikDosyasi, kuru) {
       gunluk.push('transkript bulunamadi: ' + path.join(konfig, 'projects'));
     }
     sonuc.dogrulama = await dogrula(gorev, calisma);
+    sonuc.kusurSayisi = kusurSayisi(sonuc.dogrulama);
   } catch (e) {
     sonuc.hata = String((e && e.message) || e);
     gunluk.push('HATA: ' + sonuc.hata);
@@ -326,7 +357,7 @@ async function kosu(gorev, durum, benchKok, kimlikDosyasi, kuru) {
 function yaz(sonuc, kuru) {
   const dizin = kuru ? path.join(SONUC_KOK, 'kuru') : SONUC_KOK;
   fs.mkdirSync(dizin, { recursive: true });
-  const dosya = path.join(dizin, sonuc.anahtar + '.json');
+  const dosya = path.join(dizin, (sonuc.dosyaAdi || sonuc.anahtar) + '.json');
   fs.writeFileSync(dosya, JSON.stringify(sonuc, null, 2) + '\n', 'utf8');
   return dosya;
 }
@@ -334,7 +365,7 @@ function yaz(sonuc, kuru) {
 async function fixtureTesti() {
   const gecici = path.join(os.tmpdir(), 'tbench', 'fixture-testi-' + damga());
   let hepsiGecti = true;
-  for (const gorev of GOREVLER) {
+  for (const gorev of TUM_GOREVLER) {
     const kirmizi = path.join(gecici, gorev, 'temiz');
     const yesil = path.join(gecici, gorev, 'cozum');
     kopyala(path.join(FIXTURE_KOK, gorev, 'agac'), kirmizi);
@@ -342,13 +373,15 @@ async function fixtureTesti() {
     kopyala(path.join(FIXTURE_KOK, gorev, 'cozum'), yesil);
     const a = await dogrula(gorev, kirmizi);
     const b = await dogrula(gorev, yesil);
-    const iyi = !a.gecti && b.gecti;
+    const kusur = kusurSayisi(a);
+    const esik = KUSUR_ESIGI[gorev] || 1;
+    const iyi = !a.gecti && b.gecti && kusur >= esik;
     if (!iyi) hepsiGecti = false;
     process.stdout.write(
       gorev.padEnd(10) +
         (iyi ? 'TAMAM' : 'BOZUK') +
         ' · temiz agac: ' +
-        (a.gecti ? 'YESIL (olmamali)' : 'kirmizi') +
+        (a.gecti ? 'YESIL (olmamali)' : 'kirmizi, kusur ' + kusur + ' (esik ' + esik + ')') +
         ' · referans cozum: ' +
         (b.gecti ? 'yesil' : 'KIRMIZI (olmamali) — ' + b.cikti) +
         '\n'
@@ -384,63 +417,87 @@ async function fixtureTesti() {
   }
   for (const g of kimlikGunlugu) process.stdout.write('  ' + g + '\n');
 
-  const isler = [];
-  for (const gorev of GOREVLER) {
-    if (gorevSuzgeci && gorev !== gorevSuzgeci) continue;
-    for (const durum of DURUMLAR) {
-      if (durumSuzgeci && durum !== durumSuzgeci) continue;
-      const anahtar = gorev + '__' + durum;
-      const varOlan = path.join(kuru ? path.join(SONUC_KOK, 'kuru') : SONUC_KOK, anahtar + '.json');
-      if (!yeniden && fs.existsSync(varOlan)) {
-        process.stdout.write('atlandi (sonuc var): ' + anahtar + '\n');
-        continue;
-      }
-      isler.push({ gorev, durum });
+  const tekrarDegeri = deger('tekrar');
+  const tekrarSayisi = tekrarDegeri === null ? 1 : Number(tekrarDegeri);
+  if (!Number.isInteger(tekrarSayisi) || tekrarSayisi < 1) {
+    process.stderr.write('--tekrar tam sayi ve en az 1 olmali: ' + tekrarDegeri + '\n');
+    process.exit(2);
+  }
+  const gorevListesi = gorevSuzgeci ? [gorevSuzgeci] : GOREVLER;
+  for (const g of gorevListesi) {
+    if (!TUM_GOREVLER.includes(g)) {
+      process.stderr.write('bilinmeyen gorev: ' + g + '\n');
+      process.exit(2);
     }
   }
-  if (!isler.length) {
+
+  const sonucDizini = kuru ? path.join(SONUC_KOK, 'kuru') : SONUC_KOK;
+  // Tekrarlar blok olarak sirali kosar: blok icinde kosullar paralel, bloklar arka arkaya.
+  const bloklar = [];
+  for (let t = 1; t <= tekrarSayisi; t++) {
+    const blok = [];
+    const tekrar = tekrarDegeri === null ? null : t;
+    for (const gorev of gorevListesi) {
+      for (const durum of DURUMLAR) {
+        if (durumSuzgeci && durum !== durumSuzgeci) continue;
+        const ad = kosuAdi(gorev, durum, tekrar);
+        const varOlan = path.join(sonucDizini, ad + '.json');
+        if (!yeniden && fs.existsSync(varOlan)) {
+          process.stdout.write('atlandi (sonuc var): ' + ad + '\n');
+          continue;
+        }
+        blok.push({ gorev, durum, tekrar, ad });
+      }
+    }
+    if (blok.length) bloklar.push(blok);
+  }
+  if (!bloklar.length) {
     process.stdout.write('surulecek kosu yok — --yeniden ile zorla\n');
     process.exit(0);
   }
 
   const t0 = Date.now();
-  const sonuclar = await Promise.all(
-    isler.map(
-      (is, i) =>
-        new Promise((cozum) => {
-          setTimeout(() => {
-            kosu(is.gorev, is.durum, benchKok, kimlikDosyasi, kuru).then((s) => {
-              yaz(s, kuru);
-              process.stdout.write(
-                'bitti ' +
-                  s.anahtar.padEnd(20) +
-                  (s.hata
-                    ? 'HATA · ' + s.hata
-                    : (kuru
-                        ? 'kuru · fixture ' + s.fixtureOzeti + ' · kurulum ' + s.kurulumImzasi
-                        : (s.dogrulama && s.dogrulama.gecti ? 'GECTI' : 'KALDI') +
-                          ' · ' +
-                          Math.round(s.sureMs / 1000) +
-                          ' sn' +
-                          (s.tavanAsildi ? ' · TAVAN' : ''))) +
-                  '\n'
-              );
-              cozum(s);
-            });
-          }, i * BASLAMA_ARALIGI_MS);
-        })
-    )
-  );
+  const sonuclar = [];
+  for (const blok of bloklar) {
+    const blokSonuclari = await Promise.all(
+      blok.map(
+        (is, i) =>
+          new Promise((cozum) => {
+            setTimeout(() => {
+              kosu(is.gorev, is.durum, is.tekrar, benchKok, kimlikDosyasi, kuru).then((s) => {
+                yaz(s, kuru);
+                process.stdout.write(
+                  'bitti ' +
+                    s.dosyaAdi.padEnd(24) +
+                    (s.hata
+                      ? 'HATA · ' + s.hata
+                      : (kuru
+                          ? 'kuru · fixture ' + s.fixtureOzeti + ' · kurulum ' + s.kurulumImzasi
+                          : (s.dogrulama && s.dogrulama.gecti ? 'GECTI' : 'KALDI') +
+                            ' · ' +
+                            Math.round(s.sureMs / 1000) +
+                            ' sn' +
+                            (s.tavanAsildi ? ' · TAVAN' : ''))) +
+                    '\n'
+                );
+                cozum(s);
+              });
+            }, i * BASLAMA_ARALIGI_MS);
+          })
+      )
+    );
+    for (const s of blokSonuclari) sonuclar.push(s);
+  }
   const toplam = Date.now() - t0;
 
   process.stdout.write('\n');
   for (const s of sonuclar)
     process.stdout.write(
       kuru
-        ? s.anahtar.padEnd(20) +
+        ? s.dosyaAdi.padEnd(24) +
             (s.hata ? 'HATA · ' + s.hata : 'fixture ' + s.fixtureOzeti + ' · kurulum ' + s.kurulumImzasi) +
             '\n'
-        : s.anahtar.padEnd(20) +
+        : s.dosyaAdi.padEnd(24) +
         (s.hata ? 'HATA' : s.dogrulama && s.dogrulama.gecti ? 'GECTI' : 'KALDI').padEnd(6) +
         (s.sureMs ? Math.round(s.sureMs / 1000) + ' sn' : '-').padEnd(8) +
         (s.modelId || '-').padEnd(28) +

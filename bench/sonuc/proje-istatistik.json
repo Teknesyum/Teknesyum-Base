@@ -1,0 +1,770 @@
+{
+  "uretim": "2026-08-26T15:49:45.112Z",
+  "kaynak": "C:\\Users\\Administrator\\Desktop\\Projeler\\Teknesyum-Base\\bench\\sonuc",
+  "kosular": [
+    {
+      "dosya": "proje__eco__r1.json",
+      "gorev": "proje",
+      "durum": "eco",
+      "tekrar": 1,
+      "hata": null,
+      "sureSn": 458.816,
+      "tazeToken": 109457,
+      "cacheRead": 801232,
+      "kusur": 0,
+      "tur": 14,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__eco__r2.json",
+      "gorev": "proje",
+      "durum": "eco",
+      "tekrar": 2,
+      "hata": null,
+      "sureSn": 452.62,
+      "tazeToken": 109570,
+      "cacheRead": 2485911,
+      "kusur": 0,
+      "tur": 36,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__eco__r3.json",
+      "gorev": "proje",
+      "durum": "eco",
+      "tekrar": 3,
+      "hata": null,
+      "sureSn": 506.799,
+      "tazeToken": 116607,
+      "cacheRead": 1668296,
+      "kusur": 0,
+      "tur": 24,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__native__r1.json",
+      "gorev": "proje",
+      "durum": "native",
+      "tekrar": 1,
+      "hata": null,
+      "sureSn": 445.73,
+      "tazeToken": 105400,
+      "cacheRead": 704747,
+      "kusur": 0,
+      "tur": 13,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__native__r2.json",
+      "gorev": "proje",
+      "durum": "native",
+      "tekrar": 2,
+      "hata": null,
+      "sureSn": 509.136,
+      "tazeToken": 119153,
+      "cacheRead": 1251170,
+      "kusur": 0,
+      "tur": 19,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__native__r3.json",
+      "gorev": "proje",
+      "durum": "native",
+      "tekrar": 3,
+      "hata": null,
+      "sureSn": 468.69,
+      "tazeToken": 108768,
+      "cacheRead": 1023638,
+      "kusur": 0,
+      "tur": 16,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__normal__r1.json",
+      "gorev": "proje",
+      "durum": "normal",
+      "tekrar": 1,
+      "hata": null,
+      "sureSn": 407.608,
+      "tazeToken": 97687,
+      "cacheRead": 1648691,
+      "kusur": 0,
+      "tur": 25,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__normal__r2.json",
+      "gorev": "proje",
+      "durum": "normal",
+      "tekrar": 2,
+      "hata": null,
+      "sureSn": 590.67,
+      "tazeToken": 133522,
+      "cacheRead": 1382081,
+      "kusur": 0,
+      "tur": 19,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__normal__r3.json",
+      "gorev": "proje",
+      "durum": "normal",
+      "tekrar": 3,
+      "hata": null,
+      "sureSn": 506.258,
+      "tazeToken": 120900,
+      "cacheRead": 1229664,
+      "kusur": 1,
+      "tur": 19,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__premium__r1.json",
+      "gorev": "proje",
+      "durum": "premium",
+      "tekrar": 1,
+      "hata": null,
+      "sureSn": 416.785,
+      "tazeToken": 100464,
+      "cacheRead": 832620,
+      "kusur": 27,
+      "tur": 14,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__premium__r2.json",
+      "gorev": "proje",
+      "durum": "premium",
+      "tekrar": 2,
+      "hata": null,
+      "sureSn": 524.229,
+      "tazeToken": 119627,
+      "cacheRead": 1302674,
+      "kusur": 0,
+      "tur": 19,
+      "ajan": 1
+    },
+    {
+      "dosya": "proje__premium__r3.json",
+      "gorev": "proje",
+      "durum": "premium",
+      "tekrar": 3,
+      "hata": null,
+      "sureSn": 515.482,
+      "tazeToken": 122830,
+      "cacheRead": 1100004,
+      "kusur": 0,
+      "tur": 17,
+      "ajan": 1
+    }
+  ],
+  "durumlar": [
+    "premium",
+    "normal",
+    "eco",
+    "native"
+  ],
+  "ozet": {
+    "premium": {
+      "sureSn": {
+        "n": 3,
+        "ortalama": 485.499,
+        "ss": 59.668,
+        "medyan": 515.482,
+        "min": 416.785,
+        "maks": 524.229
+      },
+      "tazeToken": {
+        "n": 3,
+        "ortalama": 114307,
+        "ss": 12094.887,
+        "medyan": 119627,
+        "min": 100464,
+        "maks": 122830
+      },
+      "cacheRead": {
+        "n": 3,
+        "ortalama": 1078432.667,
+        "ss": 235768.281,
+        "medyan": 1100004,
+        "min": 832620,
+        "maks": 1302674
+      },
+      "kusur": {
+        "n": 3,
+        "ortalama": 9,
+        "ss": 15.588,
+        "medyan": 0,
+        "min": 0,
+        "maks": 27
+      },
+      "tur": {
+        "n": 3,
+        "ortalama": 16.667,
+        "ss": 2.517,
+        "medyan": 17,
+        "min": 14,
+        "maks": 19
+      },
+      "ajan": {
+        "n": 3,
+        "ortalama": 1,
+        "ss": 0,
+        "medyan": 1,
+        "min": 1,
+        "maks": 1
+      }
+    },
+    "normal": {
+      "sureSn": {
+        "n": 3,
+        "ortalama": 501.512,
+        "ss": 91.623,
+        "medyan": 506.258,
+        "min": 407.608,
+        "maks": 590.67
+      },
+      "tazeToken": {
+        "n": 3,
+        "ortalama": 117369.667,
+        "ss": 18176.475,
+        "medyan": 120900,
+        "min": 97687,
+        "maks": 133522
+      },
+      "cacheRead": {
+        "n": 3,
+        "ortalama": 1420145.333,
+        "ss": 212090.963,
+        "medyan": 1382081,
+        "min": 1229664,
+        "maks": 1648691
+      },
+      "kusur": {
+        "n": 3,
+        "ortalama": 0.333,
+        "ss": 0.577,
+        "medyan": 0,
+        "min": 0,
+        "maks": 1
+      },
+      "tur": {
+        "n": 3,
+        "ortalama": 21,
+        "ss": 3.464,
+        "medyan": 19,
+        "min": 19,
+        "maks": 25
+      },
+      "ajan": {
+        "n": 3,
+        "ortalama": 1,
+        "ss": 0,
+        "medyan": 1,
+        "min": 1,
+        "maks": 1
+      }
+    },
+    "eco": {
+      "sureSn": {
+        "n": 3,
+        "ortalama": 472.745,
+        "ss": 29.654,
+        "medyan": 458.816,
+        "min": 452.62,
+        "maks": 506.799
+      },
+      "tazeToken": {
+        "n": 3,
+        "ortalama": 111878,
+        "ss": 4095.824,
+        "medyan": 109570,
+        "min": 109457,
+        "maks": 116607
+      },
+      "cacheRead": {
+        "n": 3,
+        "ortalama": 1651813,
+        "ss": 842460.444,
+        "medyan": 1668296,
+        "min": 801232,
+        "maks": 2485911
+      },
+      "kusur": {
+        "n": 3,
+        "ortalama": 0,
+        "ss": 0,
+        "medyan": 0,
+        "min": 0,
+        "maks": 0
+      },
+      "tur": {
+        "n": 3,
+        "ortalama": 24.667,
+        "ss": 11.015,
+        "medyan": 24,
+        "min": 14,
+        "maks": 36
+      },
+      "ajan": {
+        "n": 3,
+        "ortalama": 1,
+        "ss": 0,
+        "medyan": 1,
+        "min": 1,
+        "maks": 1
+      }
+    },
+    "native": {
+      "sureSn": {
+        "n": 3,
+        "ortalama": 474.519,
+        "ss": 32.102,
+        "medyan": 468.69,
+        "min": 445.73,
+        "maks": 509.136
+      },
+      "tazeToken": {
+        "n": 3,
+        "ortalama": 111107,
+        "ss": 7168.643,
+        "medyan": 108768,
+        "min": 105400,
+        "maks": 119153
+      },
+      "cacheRead": {
+        "n": 3,
+        "ortalama": 993185,
+        "ss": 274481.443,
+        "medyan": 1023638,
+        "min": 704747,
+        "maks": 1251170
+      },
+      "kusur": {
+        "n": 3,
+        "ortalama": 0,
+        "ss": 0,
+        "medyan": 0,
+        "min": 0,
+        "maks": 0
+      },
+      "tur": {
+        "n": 3,
+        "ortalama": 16,
+        "ss": 3,
+        "medyan": 16,
+        "min": 13,
+        "maks": 19
+      },
+      "ajan": {
+        "n": 3,
+        "ortalama": 1,
+        "ss": 0,
+        "medyan": 1,
+        "min": 1,
+        "maks": 1
+      }
+    }
+  },
+  "karsilastirmalar": [
+    {
+      "a": "premium",
+      "b": "normal",
+      "metrik": "sureSn",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 485.499,
+      "ortalamaB": 501.512,
+      "ortalamaFark": -16.013,
+      "yuzdeFark": -3.19,
+      "cliffDelta": 0.111,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "premium",
+      "b": "normal",
+      "metrik": "tazeToken",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 114307,
+      "ortalamaB": 117369.667,
+      "ortalamaFark": -3062.667,
+      "yuzdeFark": -2.61,
+      "cliffDelta": -0.111,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "premium",
+      "b": "normal",
+      "metrik": "kusur",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 9,
+      "ortalamaB": 0.333,
+      "ortalamaFark": 8.667,
+      "yuzdeFark": 2600,
+      "cliffDelta": 0.111,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "premium",
+      "b": "eco",
+      "metrik": "sureSn",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 485.499,
+      "ortalamaB": 472.745,
+      "ortalamaFark": 12.754,
+      "yuzdeFark": 2.7,
+      "cliffDelta": 0.333,
+      "p": 0.75,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "premium",
+      "b": "eco",
+      "metrik": "tazeToken",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 114307,
+      "ortalamaB": 111878,
+      "ortalamaFark": 2429,
+      "yuzdeFark": 2.17,
+      "cliffDelta": 0.333,
+      "p": 0.75,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "premium",
+      "b": "eco",
+      "metrik": "kusur",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 9,
+      "ortalamaB": 0,
+      "ortalamaFark": 9,
+      "yuzdeFark": null,
+      "cliffDelta": 0.333,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "premium",
+      "b": "native",
+      "metrik": "sureSn",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 485.499,
+      "ortalamaB": 474.519,
+      "ortalamaFark": 10.98,
+      "yuzdeFark": 2.31,
+      "cliffDelta": 0.333,
+      "p": 0.75,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "premium",
+      "b": "native",
+      "metrik": "tazeToken",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 114307,
+      "ortalamaB": 111107,
+      "ortalamaFark": 3200,
+      "yuzdeFark": 2.88,
+      "cliffDelta": 0.333,
+      "p": 0.75,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "premium",
+      "b": "native",
+      "metrik": "kusur",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 9,
+      "ortalamaB": 0,
+      "ortalamaFark": 9,
+      "yuzdeFark": null,
+      "cliffDelta": 0.333,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "normal",
+      "b": "eco",
+      "metrik": "sureSn",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 501.512,
+      "ortalamaB": 472.745,
+      "ortalamaFark": 28.767,
+      "yuzdeFark": 6.09,
+      "cliffDelta": 0.111,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "normal",
+      "b": "eco",
+      "metrik": "tazeToken",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 117369.667,
+      "ortalamaB": 111878,
+      "ortalamaFark": 5491.667,
+      "yuzdeFark": 4.91,
+      "cliffDelta": 0.333,
+      "p": 0.75,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "normal",
+      "b": "eco",
+      "metrik": "kusur",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 0.333,
+      "ortalamaB": 0,
+      "ortalamaFark": 0.333,
+      "yuzdeFark": null,
+      "cliffDelta": 0.333,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "normal",
+      "b": "native",
+      "metrik": "sureSn",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 501.512,
+      "ortalamaB": 474.519,
+      "ortalamaFark": 26.993,
+      "yuzdeFark": 5.69,
+      "cliffDelta": 0.111,
+      "p": 0.75,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "normal",
+      "b": "native",
+      "metrik": "tazeToken",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 117369.667,
+      "ortalamaB": 111107,
+      "ortalamaFark": 6262.667,
+      "yuzdeFark": 5.64,
+      "cliffDelta": 0.333,
+      "p": 0.5,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "normal",
+      "b": "native",
+      "metrik": "kusur",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 0.333,
+      "ortalamaB": 0,
+      "ortalamaFark": 0.333,
+      "yuzdeFark": null,
+      "cliffDelta": 0.333,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "eco",
+      "b": "native",
+      "metrik": "sureSn",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 472.745,
+      "ortalamaB": 474.519,
+      "ortalamaFark": -1.774,
+      "yuzdeFark": -0.37,
+      "cliffDelta": -0.111,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "eco",
+      "b": "native",
+      "metrik": "tazeToken",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 111878,
+      "ortalamaB": 111107,
+      "ortalamaFark": 771,
+      "yuzdeFark": 0.69,
+      "cliffDelta": 0.333,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    },
+    {
+      "a": "eco",
+      "b": "native",
+      "metrik": "kusur",
+      "n": 3,
+      "bloklar": [
+        1,
+        2,
+        3
+      ],
+      "ortalamaA": 0,
+      "ortalamaB": 0,
+      "ortalamaFark": 0,
+      "yuzdeFark": null,
+      "cliffDelta": 0,
+      "p": 1,
+      "yontem": "tam sayim",
+      "orneklem": 8,
+      "enKucukP": 0.25,
+      "etiket": "ayirt edilemedi",
+      "bonferroniEsigi": 0.00278
+    }
+  ],
+  "bonferroniEsigi": 0.00278,
+  "blokSayisi": 3
+}

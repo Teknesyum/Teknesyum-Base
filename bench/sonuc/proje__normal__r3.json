@@ -1,0 +1,36 @@
+{
+  "anahtar": "proje__normal",
+  "dosyaAdi": "proje__normal__r3",
+  "gorev": "proje",
+  "durum": "normal",
+  "tekrar": 3,
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826153100\\proje__normal__r3\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826153100\\proje__normal__r3\\calisma",
+  "fixtureOzeti": "89c15a2400839c54",
+  "kurulumImzasi": "a4f15f17cafeec7f",
+  "baslangic": "2026-08-26T15:40:55.222Z",
+  "bitis": "2026-08-26T15:49:21.480Z",
+  "sureMs": 506258,
+  "cikisKodu": 1,
+  "tavanAsildi": false,
+  "oturumId": "95830ecb-c0fd-46a0-8040-bdeaf08236ac",
+  "modelId": "<synthetic>",
+  "asistanTuru": 33,
+  "aracCagrisi": 18,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826153100\\proje__normal__r3\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826153100-proje--normal--r3-calisma\\95830ecb-c0fd-46a0-8040-bdeaf08236ac.jsonl",
+  "dogrulama": {
+    "gecti": false,
+    "cikti": "KIRMIZI · cli json iadeliSatislar: sonuc [{\"satisId\":\"S3\",\"iadeAdedi\":15,\"iadeToplami\":298.5},{\"satisId\":\"S6\",\"iadeAdedi\":0,\"iadeToplam"
+  },
+  "kusurSayisi": 1,
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js normal → kod 0 · profil: normal",
+    "claude -p → kod 1 · 506 sn",
+    "sonuc: You've hit your session limit · resets 11:30pm (Europe/Istanbul)"
+  ],
+  "hata": null,
+  "maliyetUsd": 2.483727,
+  "bildirilenTur": 19
+}

@@ -45,11 +45,35 @@ cümle. Kod hiçbir ajanı paralel açmıyor, hiçbir ajana model atamıyor; `ag
 frontmatter'ında `model:` alanı **yok**. Tek yaptırım `kimlikDenetle()`: beyan/gerçek sapmasını
 log'a yazar, bloklamaz (defterde 63 kayıtlık sapma borcu bundan).
 
-**(E) Eklenti yükleniyor ve okunuyor, ama davranışı değiştirmiyor.** Sistem promptu native
-18.979 token, eco/normal ~22.500, premium ~23.500 (+3,5-4,6k). 21 skill ve 7 ajan tanımı
-yükleniyor, `SessionStart` kancası koşuyor, model banner'ı basıp talimata itaat ediyor.
-**Ama 12/12 koşuda sıfır Agent çağrısı, sıfır Skill çağrısı.** Araç kümesi her yerde aynı:
-Bash, Write, Edit, Grep. Ödenen ~4k token'ın karşılığı bir banner satırı.
+**(E) Eklenti yükleniyor ve okunuyor, ama davranışı değiştirmiyor.** 21 skill, 22 komut ve
+7 ajan tanımı yükleniyor, `SessionStart` kancası koşuyor, model banner'ı basıp talimata
+itaat ediyor. **Ama 12/12 koşuda sıfır Agent çağrısı, sıfır Skill çağrısı.** Araç kümesi her
+yerde aynı: Bash, Write, Edit, Grep. Ödenen yükün karşılığı bir banner satırı.
+
+> **Düzeltme (26.08.2026, O8 tur 3).** Bu bölümün ilk hâli yükü "+3,5-4,6k token" diye
+> veriyordu ve iki bakımdan yanlıştı.
+>
+> **Katsayı yanlıştı.** Rakam `karakter/3,6` tahminine dayanıyordu. Gerçek `usage`
+> alanlarıyla A/B ölçümü yapıldı: katsayı **1,894-1,902**, yani eski tahmin **%47 eksik**.
+>
+> **Kalem ayrımı yoktu.** Ölçülen gerçek yük:
+>
+> | kalem | token | ne zaman |
+> | --- | ---: | --- |
+> | skill + komut + ajan tanımları | 2.979 | oturumda bir kez |
+> | `UserPromptSubmit` enjeksiyonu | 3.488 | ilk iki tur |
+> | **oturum toplamı** | **6.722** | |
+>
+> Enjeksiyonun "her turda tekrarlanır" sanılması da yanlıştı: `relay-watch.js:981`
+> `sayacGecti(j, eko ? 1 : 2)` ile ilk iki turda yazıp susuyor (kapsayıcı proje etkinse
+> istisna var).
+>
+> **Küçültme denendi ve fiilen başarısız oldu.** Net kazanç **85 token**. Kesilen iki ibare
+> `test/run.js` içindeki iki testi kırdı — yani davranış kaybettiriyorlardı, geri kondu.
+> Sahiplenilen dilim tamamen silinse toplam 2.590'da kalır. Hedef 2.000 idi, **tutturulamadı.**
+>
+> Buradan çıkan iş kısaltma değil **kaldırma** kararıdır: hangi skill/komut/ajan kaleminin
+> faydası maliyetini karşılıyor — bu Dalga 3'ün konusu.
 
 **(F) Görev, eklentinin iddiasını sınamıyor.** Tek oturum, tek ajan, temiz fixture, tek atışta
 bitecek iş. Relay orkestrasyonu, oturum sürekliliği, sözleşme akışı — hiçbiri tetiklenemez.

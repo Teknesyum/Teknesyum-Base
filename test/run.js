@@ -8307,17 +8307,25 @@ ol('ozel cek symlink uzerinden proje disina kacisi durdurur', () => {
   const disdizin = path.join(s.kok, 'disdizin');
   fs.mkdirSync(disdizin);
   fs.symlinkSync(disdizin, path.join(s.proje, 'baglanti'), 'junction');
-  const man = path.join(s.cfg, 'teknesyum-ozel', 'alfa', 'ozel.json');
-  const m = JSON.parse(fs.readFileSync(man, 'utf8'));
-  m.dosyalar[0].kaynak = './baglanti/kacak.json';
-  fs.writeFileSync(man, JSON.stringify(m));
-  const c = ozelCalistir(['cek', '--zorla'], s.cfg, s.proje);
-  icerir(c.out, 'dışına düşüyor', 'symlink kacisi atlanmali');
-  esit(
-    fs.existsSync(path.join(disdizin, 'kacak.json')),
-    false,
-    'symlink uzerinden disari yazilmis'
-  );
+  try {
+    const man = path.join(s.cfg, 'teknesyum-ozel', 'alfa', 'ozel.json');
+    const m = JSON.parse(fs.readFileSync(man, 'utf8'));
+    m.dosyalar[0].kaynak = './baglanti/kacak.json';
+    fs.writeFileSync(man, JSON.stringify(m));
+    const c = ozelCalistir(['cek', '--zorla'], s.cfg, s.proje);
+    icerir(c.out, 'dışına düşüyor', 'symlink kacisi atlanmali');
+    esit(
+      fs.existsSync(path.join(disdizin, 'kacak.json')),
+      false,
+      'symlink uzerinden disari yazilmis'
+    );
+  } finally {
+    // ÖLÇÜLDÜ (26.08.2026): hedefi silinen junction Windows'ta lstat'a ENOENT verip
+    // rmSync'i kilitliyor; bağ hedefi dururken sökülmeli.
+    try {
+      fs.rmdirSync(path.join(s.proje, 'baglanti'));
+    } catch {}
+  }
 });
 
 ol('ozel pusla detached head klonunda basari yazmaz', () => {

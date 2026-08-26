@@ -556,9 +556,18 @@ function rapor(kosular, elenenler = []) {
   for (const s of SINIFLAR) {
     L.push(`- ${s.baslik} — ${sinifIcindeFark(farkYorumu(kosular, 'taze', s.ad), 'Taze token (input+cc+out)')}`);
   }
-  const basariHepsi = kosular.every((k) => k.basari === 1);
+  // ÖLÇÜLDÜ 27.08 (konsey üyesi buldu): `every` boş dizide `true` döner. Bütün koşular
+  // geçerlilik kapısında elenirse rapor "tamamı geçti" yazıyordu — sıfır veriden başarı
+  // hükmü. Boş küme artık ayrı cümle kurar; hüküm yalnız veri varken verilir.
+  const basariHepsi = kosular.length > 0 && kosular.every((k) => k.basari === 1);
   L.push(
-    `- Başarı: ${basariHepsi ? 'dört koşulun tamamı dört görevi de geçti — bu görev seti koşulları başarı ekseninde ayırmıyor, ayrım yalnız token ve sürede.' : 'koşullar arasında başarı farkı var, ayrıntı §4.'}`
+    `- Başarı: ${
+      !kosular.length
+        ? '**geçerli koşu yok** — bütün koşular geçerlilik kapısında elendi, başarı ekseninde hüküm verilemez.'
+        : basariHepsi
+          ? 'dört koşulun tamamı dört görevi de geçti — bu görev seti koşulları başarı ekseninde ayırmıyor, ayrım yalnız token ve sürede.'
+          : 'koşullar arasında başarı farkı var, ayrıntı §4.'
+    }`
   );
   L.push('');
 

@@ -142,7 +142,7 @@ function acikSozlesmeVar() {
   try { ad = fs.readdirSync(d).filter((a) => a.endsWith('.md')); } catch { return false; }
   return ad.some((a) => {
     try {
-      const m = fs.readFileSync(path.join(d, a), 'utf8').match(/^status:s*(w+)/m);
+      const m = fs.readFileSync(path.join(d, a), 'utf8').match(/^status:\s*(\w+)/m);
       return !!m && (m[1] === 'active' || m[1] === 'submitted');
     } catch { return false; }
   });

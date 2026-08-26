@@ -213,7 +213,13 @@ async function main() {
         h.kesin = true;
       }
     }
-    for (const s of verimSatirlari(kosular)) process.stdout.write(`${s}\n`);
+    // ÖLÇÜLDÜ 27.08 (konsey üyesi buldu): pano süzmeden, nihai rapor (`topla.js` main)
+    // süzerek ortalama alıyordu — aynı girdiden iki farklı verim satırı. Geçersiz koşu
+    // panoda ortalamaya giriyordu. Süzme kaynağı tek: `k.gecerli`.
+    const gecerliler = kosular.filter((k) => k.gecerli);
+    const elenen = kosular.length - gecerliler.length;
+    if (elenen) process.stdout.write(`${elenen} koşu geçerlilik kapısında elendi, verim dışı\n`);
+    for (const s of verimSatirlari(gecerliler)) process.stdout.write(`${s}\n`);
     process.stdout.write('\nkesin taze token — input+cache-create+output (transkriptten):\n');
     ciz(satirlariKur(hucreler, benchKok, 'kesin sayilar', bittiSayisi), 0);
     process.stdout.write('rapor icin: node scripts/bench/topla.js\n');

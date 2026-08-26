@@ -1,0 +1,23 @@
+{
+  "contractId": "O1",
+  "auditorRunId": "aee41711b9231c8ee",
+  "headSha": "abe3d6bed902ad4ba8d69f55ebeffa9755bf1969",
+  "diffHash": "97b6052394d0901a7815a0772aec5fce7b0b656c783e1384617a08c5938c4477",
+  "owns": [
+    "scripts/bench/kos.js",
+    "scripts/bench/topla.js",
+    "scripts/bench/istatistik.js"
+  ],
+  "verification": [
+    "GEÇTİ  T2  · şartname ✓ · kalite ✓",
+    "✓ Verim tablosu ve fark hükmü görev sınıfı içinde; ters işaretli hüküm gitti — durumVerimi sınıf parametresi zorunlu (topla.js:321-322), tablolar sınıf başına (topla.js:527-544), farkYorumu sınıf alıyor (topla.js:408-424). BENCH-SONUC.md içinde \"en çok native\" geçen satır sayısı 0.",
+    "✓ Boş sınıf hücresi veri yok basıyor, karşılaştırmaya girmiyor — topla.js:338-342, 413-416, 420.",
+    "✓ Altı denetçi borcunun altısı da kodda kapalı.",
+    "✓ ERRATA dengesiz karışım maddesi var — topla.js:70-81, geri çekilen hüküm adıyla yazılı.",
+    "✓ Tur 1 kriterleri kırılmamış — 23 geçerli / 6 elenen, cacheRead türev, tohum permütasyonu, kota yolu, eski çağrı biçimleri."
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-26T17:57:07.569Z",
+  "usedAt": "2026-08-26T17:57:35.815Z",
+  "completedSha": "abe3d6bed902ad4ba8d69f55ebeffa9755bf1969"
+}

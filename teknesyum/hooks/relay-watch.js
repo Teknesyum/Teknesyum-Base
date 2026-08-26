@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { s: ceviri, premium, profil } = require('./dil.js');
+const { s: ceviri, premium, profil, dil } = require('./dil.js');
 const { PROFIL, sapmalar, sapmaSatiri } = require('../scripts/premium.js');
 const kapsayici = require('./kapsayici.js');
 const { sozlesmeAdi, bilinenDurum } = require('./contract-schema.js');
@@ -398,14 +398,58 @@ function kimlikDenetle(live, type, s, c) {
   const model = String(s.model || '');
   const beklenenEfor = String(p.effort || t.effort || '');
   const efor = String(s.effort || '');
-  const uyar = (alan, beyan, gercek) =>
-    sorunYaz(live, [rol, alan, 'beyan: ' + beyan, 'gerçek: ' + gercek].join(' | '));
+  const sapan = [];
   if (kabul.length && model && !kabul.some((x) => model.toLowerCase().includes(x))) {
-    uyar('model', kabul.join(' ya da '), model);
+    // Beklenti çağrı kaydından değil profilden geliyorsa beyanı gerçekten bilmiyoruz:
+    // `calisanKapat` kaydı tutmadığında meşru bir çağrı ezmesi profil sapması gibi
+    // görünür. Bilinmeyen beyan üstüne blok atılmaz — sapma yalnız deftere düşer.
+    sapan.push({ alan: 'model', beyan: kabul.join(' ya da '), gercek: model, bloklanir: !!c });
   }
   if (beklenenEfor && efor && efor.toLowerCase() !== beklenenEfor.toLowerCase()) {
-    uyar('efor', beklenenEfor, efor);
+    sapan.push({ alan: 'efor', beyan: beklenenEfor, gercek: efor, bloklanir: true });
   }
+  if (!sapan.length) return;
+  const kacis = kimlikKacisi();
+  for (const x of sapan) {
+    const sonuc = kacis ? KACIS_IZI : x.bloklanir ? 'engellendi' : 'yalnız kayıt (çağrı kaydı yok)';
+    sorunYaz(
+      live,
+      [rol, x.alan, 'beyan: ' + x.beyan, 'gerçek: ' + x.gercek, sonuc].join(' | ')
+    );
+  }
+  if (kacis) return;
+  const engel = sapan.filter((x) => x.bloklanir);
+  if (!engel.length) return;
+  ciktiEkle({
+    decision: 'block',
+    reason: yerel(
+      'kimlikSapma',
+      rol,
+      engel.map((x) => x.alan + ' beyan ' + x.beyan + ', gerçek ' + x.gercek).join('; ')
+    ),
+  });
+}
+
+// Tek kaçış ayarı. Adı `kimlik_kacis`, varsayılanı kapalı (0 = sapma bloklar). Kota
+// baskısı gibi haklı durumda ortamdan `TEKNESYUM_KIMLIK_KACIS=1` ya da SETTINGS.md'de
+// `kimlik_kacis: 1` ile açılır; ikisi de aynı ayardır, ikinci bir kapı yoktur.
+// Kaçış kullanıldığında sapma yine deftere yazılır — sessiz geçiş yok.
+const KACIS_AYARI = 'kimlik_kacis';
+const KACIS_IZI = 'kaçış kullanıldı (' + KACIS_AYARI + ')';
+
+// Ortamdan gelen açık/kapalı değerleri tek yerde okunur; iki ayrı bayrak aynı yazımları
+// kabul etmezse kullanıcı birinde çalışan değeri ötekinde deneyip sessizce ıskalar.
+const ORTAM_ACIK = /^(1|true|evet|on|ac|aç)$/i;
+
+function ortamBayragi(ad) {
+  const e = String(process.env[ad] || '').trim();
+  return e ? ORTAM_ACIK.test(e) : null;
+}
+
+function kimlikKacisi() {
+  const e = ortamBayragi('TEKNESYUM_KIMLIK_KACIS');
+  if (e !== null) return e;
+  return ayarSayi(null, KACIS_AYARI, 0) === 1;
 }
 
 // Transcript'in sonundan geriye doğru ilk asistan satırını bulur. Dosya büyük olabilir;
@@ -1358,7 +1402,8 @@ function acikGunlukSayisi(cwd) {
 function acilis(root, kapNotu, oturumId, cwd, kaynak) {
   const parca = [];
   if (kapNotu) parca.push(kapNotu);
-  if (kurulumEksik()) parca.push(ceviri('kurulumEksik'));
+  const eksik = kurulumEksik();
+  if (eksik && !headlessKosu()) parca.push(yerel(eksik));
   if (premium()) parca.push(ceviri('premiumAcik'));
   if (root) {
     const acik = say(path.join(root, 'contracts'));
@@ -1520,11 +1565,73 @@ function sorunYaz(live, satir) {
 
 // Plugin kendini kuramaz: statusline kullanıcının settings.json'ına yazılır. Eksikse
 // oturum açılışında bir kez söyleriz — kullanıcının komut ezberlemesini bekleme.
+// Eksiğin hangisi olduğunu döndürür: dosya mı yok, yoksa dosya var ama bağlı mı değil.
 function kurulumEksik() {
   const kok = konfigKok();
-  if (!fs.existsSync(path.join(kok, 'teknesyum-statusline.js'))) return true;
+  if (!fs.existsSync(path.join(kok, 'teknesyum-statusline.js'))) return 'statuslineDosya';
   const s = read(path.join(kok, 'settings.json'));
-  return !(s && s.statusLine && /teknesyum-statusline/.test(String(s.statusLine.command || '')));
+  const bagli =
+    s && s.statusLine && /teknesyum-statusline/.test(String(s.statusLine.command || ''));
+  return bagli ? '' : 'statuslineBagli';
+}
+
+// ÖLÇÜLDÜ (docs/SPIKE-ORKESTRASYON.md, yan bulgu): izole konfigürasyonda koşan `claude -p`
+// her koşunun ilk turunda bu uyarıyı basıyordu. Headless koşuda statusline diye bir şey
+// yok — uyarı kullanıcıya değil ölçüme gidiyor, gürültüden başka bir işe yaramıyor.
+//
+// Kanca yükünde interaktiflik alanı YOK (`SessionStart` şeması: session_id, transcript_path,
+// cwd, prompt_id, permission_mode, source). Ortamdan üç işaret okunur:
+//   1. `TEKNESYUM_HEADLESS` — açık ayar, koşum betiği kurar, her şeyi ezer.
+//   2. `CLAUDE_CODE_SESSION_KIND=bg` — arka plan oturumu.
+//   3. `CLAUDE_CODE_ENTRYPOINT=cli` iken `COLUMNS` yok — Claude Code kancayı doğururken
+//      COLUMNS/LINES'ı yalnız kendi stdout'u terminale bağlıyken yazıyor; `-p` çıktısı
+//      yönlendirildiğinde yazmıyor. Tersi kanıt değil: doğrudan terminale basan `-p`
+//      koşusunda COLUMNS gelir ve uyarı basılır.
+// İşaret yoksa interaktif sayılır; yanlış susmaktansa yanlış konuşmak yeğdir.
+function headlessKosu() {
+  const a = ortamBayragi('TEKNESYUM_HEADLESS');
+  if (a !== null) return a;
+  if (String(process.env.CLAUDE_CODE_SESSION_KIND || '') === 'bg') return true;
+  const giris = String(process.env.CLAUDE_CODE_ENTRYPOINT || '').toLowerCase();
+  return giris === 'cli' && !process.env.COLUMNS;
+}
+
+// Bu iki satır `dil.js`'te değil: O6 yalnız bu dosyayı sahipleniyor. Yeri geldiğinde
+// sözlüğe taşınmalı.
+const YEREL = {
+  statuslineDosya: {
+    tr: 'statusline dosyası yok · kurulum eksik, /setup kurar',
+    en: 'statusline file is missing · setup incomplete, /setup installs it',
+  },
+  statuslineBagli: {
+    tr: 'statusline settings.json içinde bağlı değil · kurulum eksik, /setup bağlar',
+    en: 'statusline is not wired in settings.json · setup incomplete, /setup wires it',
+  },
+  kimlikSapma: {
+    tr: (rol, ayrinti) =>
+      rol +
+      ' ajanı beyan ettiği kimlikle koşmadı: ' +
+      ayrinti +
+      '. Sonucu kabul etme, işi doğru model/efor ile yeniden aç. Haklı bir sebep varsa ' +
+      KACIS_AYARI +
+      ' ayarını aç.',
+    en: (rol, ayrinti) =>
+      'the ' +
+      rol +
+      ' agent did not run with the identity it declared: ' +
+      ayrinti +
+      '. Do not accept the result; rerun with the correct model/effort. If the deviation ' +
+      'is justified, enable the ' +
+      KACIS_AYARI +
+      ' setting.',
+  },
+};
+
+function yerel(anahtar, ...arg) {
+  const g = YEREL[anahtar];
+  if (!g) return '';
+  const v = g[dil()] || g.tr;
+  return typeof v === 'function' ? v(...arg) : v;
 }
 
 function say(dir) {

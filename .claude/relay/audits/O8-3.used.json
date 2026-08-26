@@ -1,0 +1,22 @@
+{
+  "contractId": "O8",
+  "auditorRunId": "acc645f880b2a39ef",
+  "headSha": "abe3d6bed902ad4ba8d69f55ebeffa9755bf1969",
+  "diffHash": "21ac9c6069846e807af980c830b5266116a8d789968b6d0cd37f20a1064b0052",
+  "owns": [
+    "teknesyum/skills/"
+  ],
+  "verification": [
+    "GEÇTİ  T3  · şartname ✓ · kalite ✓",
+    "✓ İki düşen test yeşil, davranış kaybı yok — 557/557; kesilen ibareler geri kondu, tetikleyiciler tam.",
+    "✓ İki kip aynı toplamı üretiyor — ikisi de ozetle() dönüşünden okuyor, tur 2nin enjTok*tur çarpımı kodda yok; --dogrula test/all.jse bağlı.",
+    "✓ --deney ham çıktısı Raporda ve gömülü sabitlerle birebir tutuyor: 9.188/4.852 = 1,894. Üretilebilir, uydurma değil.",
+    "✓ Hedef başarısızlığı örtülmemiş — hedefin %49 üstünde; sahiplenilen dilim tamamen silinse bile 2.590da kalır. Manşet ikinci kez geri alınmış.",
+    "✓ Döküm maddelenmiş, tek komutla tekrarlanır, tembel yükleme kaynakla cevaplanmış.",
+    "· Yedi kalite borcu kayıtlı — en önemlisi --dogrulanın beş kontrolünün totoloji olması ve uyarıları yutması."
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-26T18:45:25.080Z",
+  "usedAt": "2026-08-26T18:45:25.142Z",
+  "completedSha": "abe3d6bed902ad4ba8d69f55ebeffa9755bf1969"
+}

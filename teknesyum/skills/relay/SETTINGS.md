@@ -24,6 +24,7 @@ second_opinion     : off            # off | on — karar düğümünde fable kı
 research_repos     : 10             # ön araştırmada taranacak en az depo sayısı — eco 1 · normal 10 · premium 50
 agent_stall        : 10             # kaç dakika sessiz kalan ajan bildirilir
 agent_loop         : 5              # aynı eylem kaç kez üst üste tekrarlarsa döngü sayılır
+kimlik_kacis       : 0              # 1 yapılırsa kimlik sapması bloklamaz, yalnız deftere yazılır
 autocompact        : auto           # settings.json → autoCompactWindow — eco 100000 · premium 1000000
 ```
 
@@ -172,6 +173,17 @@ kalır ve ajanın transkript dosyası bu sırada büyümeye devam ederse döngü
 o durumu `agent_stall` yakalar. Bildirim ve günlük kaydı `agent_stall` ile aynı yoldan gider.
 
 Bu iki düğme `steering` 0 olmadıkça çalışır ve `debug` bayrağından bağımsızdır.
+
+**kimlik_kacis** — kimlik sapmasının tek kaçışı. Varsayılanı `0`: bir ajan beyan ettiği
+model ya da eforla koşmadıysa kanca `SubagentStop` anında blok döndürür, ajan kapanamaz ve
+sonucu kabul edilmez. Kota baskısı gibi haklı bir durumda `1` yapılır — blok kalkar ama sapma
+yine `live/_sorun.log` defterine `kaçış kullanıldı (kimlik_kacis)` satırıyla düşer; sessiz
+geçiş yok. Aynı ayar ortamdan da açılır: `TEKNESYUM_KIMLIK_KACIS=1`; ortam yazılmışsa o
+kazanır. İkinci bir kaçış kapısı yoktur. Profil başına farklılaşmaz: üç profilde de `0`,
+bu yüzden `premium.js` düğme tablosunda yeri yok.
+
+Beklenti çağrıda geçilen modelden gelir, profilden değil. Çağrı kaydı bulunamadığında beyanın
+ne olduğu bilinmez; o durumda model sapması bloklamaz, yalnız deftere yazılır.
 
 **Hook bildirimleri** bu düğmeden bağımsızdır ve buradan değil, `~/.claude/teknesyum.json`
 içindeki `steering` alanından yönetilir — makine başına tek ayar, proje değil kullanıcı

@@ -1,0 +1,23 @@
+{
+  "contractId": "O3",
+  "auditorRunId": "a703c54325ced6f90",
+  "headSha": "abe3d6bed902ad4ba8d69f55ebeffa9755bf1969",
+  "diffHash": "7f9d27c550b33a6f0a846060ad1fdbe71f2907b032d681138ade1d8e7a5107b6",
+  "owns": [
+    "scripts/bench/spike2.js",
+    "docs/SPIKE-ORKESTRASYON.md"
+  ],
+  "verification": [
+    "GEÇTİ  T2  · şartname ✓ · kalite ✓",
+    "✓ Soru 4 D5 ile yeniden ölçüldü, sayaç + tur damgası (spike2.js:242-243,312-313); ham .jsonl bağımsız doğrulandı — resume turu yeni SessionStart eklemiyor, agent_listing/skill_listing yalnız birinci istemden sonra. KISMEN doğru.",
+    "✓ Turlar ayrışıyor — turDokumu üç kova (ham.json:310-351).",
+    "✓ D6 istemi Task/ajan/agent sözcüklerini içermiyor (spike2.js:33-38); 0 Task/Agent ham kanıttan doğrulandı (ham.json:466,629), iki koşuda da kod 0, kota false.",
+    "✓ Hüküm 1 yeniden yazıldı; 12 bench nedeni ölçülmedi ilan edildi, sınır belgede açık.",
+    "✓ Soru 5 belgede cevaplı; soru 2 kutbu düzeltildi (HAYIR + ayrı 2b satırı).",
+    "✓ Yedi borcun hepsi kapalı — D2 reddi yapısal kanıta bağlandı (alt ajan jsonl: is_error + suspicious Windows path pattern), kimlikGunluk ham.json:4-7, ölü kod temizlendi, D1/D2 tekrarı kosDeney ile birleşti, bozukSatir sayılıp basılıyor, hüküm bölümü sonda."
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-26T18:02:31.510Z",
+  "usedAt": "2026-08-26T18:02:31.579Z",
+  "completedSha": "abe3d6bed902ad4ba8d69f55ebeffa9755bf1969"
+}

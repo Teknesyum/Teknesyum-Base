@@ -249,7 +249,8 @@ eklenir. Bu diziye **birlesik** denir.
       `{ urunKodu, ad, adet }` degerleri (`adet` sayi olarak).
     - `iadeliSatislar`: `birlestirCok(satislar, iadeler, 'satisId', 'satisId', 'iadeler')`
       sonucunda `iadeler` bos olmayan kayitlar, sol sirayla; her biri
-      `{ satisId, iadeAdedi, iadeToplami }`.
+      `{ satisId, iadeAdedi, iadeToplami }`. `iadeAdedi` eslesen iade kaydi sayisi,
+      `iadeToplami` bu kayitlarin `adet` alanlarinin toplamidir (ikisi de sayi, para degil).
     - `mutabakat`: 47-49. maddedeki liste.
     - `siparisler`: 59. maddedeki liste (`{ siparisId, durum, adim, hata }`).
 63. `denetim` komutu veriyi denetler. Satis semasi sirayla: `satisId` metin/zorunlu,

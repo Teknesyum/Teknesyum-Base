@@ -7,3 +7,6 @@
 2026-08-24 13:10 | advisor | Fable-Görüş Pencere Rakamları | bekleyen: E1,S1,U1,U2
 2026-08-25 13:58 | advisor | U5 konsey görüşü fable | bekleyen: E1,S1,U1,U2
 2026-08-25 20:26 | advisor | Opus-İkinci görüş: T0 kademe | bekleyen: —
+2026-08-26 17:03 | advisor | Fable stratejik görüşü | bekleyen: —
+2026-08-26 17:51 | advisor | Fable-görüş model yaptırımı | bekleyen: —
+2026-08-26 18:08 | advisor | Fable-görüş sapma bloklaması | bekleyen: —

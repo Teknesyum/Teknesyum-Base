@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const { kosuOzeti, DURUMLAR } = require('./topla.js');
+const { kosuOzeti, gecerlilik, pearson, DURUMLAR, TUREV_ESIGI } = require('./topla.js');
 
 const KOK = path.resolve(__dirname, '..', '..');
 const SONUC_KOK = path.join(KOK, 'bench', 'sonuc');
@@ -14,9 +14,15 @@ const GOREV = 'proje';
 const METRIKLER = [
   { ad: 'sureSn', baslik: 'sure (sn)' },
   { ad: 'tazeToken', baslik: 'taze token' },
-  { ad: 'cacheRead', baslik: 'cache-read' },
   { ad: 'kusur', baslik: 'kusur' },
   { ad: 'tur', baslik: 'tur' },
+  { ad: 'ajan', baslik: 'ajan' },
+];
+const TUREV_ADAYLARI = [
+  { ad: 'cacheRead', baslik: 'cache-read' },
+  { ad: 'tazeToken', baslik: 'taze token' },
+  { ad: 'sureSn', baslik: 'sure (sn)' },
+  { ad: 'kusur', baslik: 'kusur' },
   { ad: 'ajan', baslik: 'ajan' },
 ];
 const KARSILASTIRILAN = ['sureSn', 'tazeToken', 'kusur'];
@@ -69,6 +75,7 @@ async function kosulariOku(kaynak) {
   for (const d of dosyalar) {
     const ham = JSON.parse(fs.readFileSync(d, 'utf8'));
     const k = await kosuOzeti(d);
+    const g = gecerlilik(ham);
     const kalem = k.toplamKalem || ham.toplamKalem || null;
     kosular.push({
       dosya: path.basename(d),
@@ -76,10 +83,13 @@ async function kosulariOku(kaynak) {
       durum: ham.durum,
       tekrar: say(ham.tekrar),
       hata: ham.hata || null,
+      gecerli: g.gecerli,
+      gecersizNedeni: g.gecersizNedeni,
       sureSn: k.sureMs ? k.sureMs / 1000 : say(ham.sureMs) === null ? null : ham.sureMs / 1000,
       tazeToken: kalem ? kalem.input + kalem.cc + kalem.out : null,
       cacheRead: kalem ? kalem.cr : null,
-      kusur: say(ham.kusurSayisi) !== null ? ham.kusurSayisi : k.kusur,
+      // Gecersiz kosuda kusur bilinmiyor: 0 da 27 de degil, null.
+      kusur: g.gecerli ? (say(ham.kusurSayisi) !== null ? ham.kusurSayisi : k.kusur) : null,
       tur: say(k.tur) !== null ? k.tur : say(ham.bildirilenTur),
       ajan: say(k.ajanSayisi) !== null ? k.ajanSayisi : say(ham.ajanSayisi),
     });
@@ -198,26 +208,80 @@ function etiketle(karsilastirmalar) {
   return esik;
 }
 
-function analiz(kosular) {
+// Tur sayisiyla |r| > 0,9 olan metrik turev damgasi alir; birincil tabloda ve
+// karsilastirmalarda kullanilmaz. Tek gorev sinifi oldugu icin merkezleme gerekmez.
+function turevTaramasi(kosular) {
+  const tur = kosular.map((k) => k.tur);
+  return TUREV_ADAYLARI.map((m) => {
+    const r = pearson(
+      kosular.map((k) => k[m.ad]),
+      tur
+    );
+    return { ad: m.ad, baslik: m.baslik, r, turev: r !== null && Math.abs(r) > TUREV_ESIGI };
+  });
+}
+
+function analiz(hepsi) {
+  const kosular = hepsi.filter((k) => k.gecerli !== false);
+  const elenenler = hepsi.filter((k) => k.gecerli === false);
   const durumlar = DURUMLAR.filter((d) => kosular.some((k) => k.durum === d));
+  // Yaptirim: "turev metrikler kullanilmaz" cumlesi statik listeleri kismiyordu.
+  // Tarama once kosar, damgali metrik birincil tablodan ve karsilastirmadan dusurulur.
+  const turevler = turevTaramasi(kosular);
+  const damgali = new Set(turevler.filter((t) => t.turev).map((t) => t.ad));
+  const metrikler = METRIKLER.filter((m) => !damgali.has(m.ad));
+  const karsilastirilan = KARSILASTIRILAN.filter((m) => !damgali.has(m));
+  const dusurulen = {
+    metrik: METRIKLER.filter((m) => damgali.has(m.ad)).map((m) => m.ad),
+    karsilastirma: KARSILASTIRILAN.filter((m) => damgali.has(m)),
+  };
   const ozet = {};
   for (const d of durumlar) {
     ozet[d] = {};
-    for (const m of METRIKLER) ozet[d][m.ad] = betimle(kosular.filter((k) => k.durum === d).map((k) => k[m.ad]));
+    for (const m of metrikler) ozet[d][m.ad] = betimle(kosular.filter((k) => k.durum === d).map((k) => k[m.ad]));
   }
   const karsilastirmalar = [];
   for (let i = 0; i < durumlar.length; i++)
     for (let j = i + 1; j < durumlar.length; j++)
-      for (const m of KARSILASTIRILAN)
+      for (const m of karsilastirilan)
         karsilastirmalar.push(ciftKarsilastir(kosular, durumlar[i], durumlar[j], m));
   const esik = etiketle(karsilastirmalar);
   const blokSayisi = new Set(kosular.map((k) => k.tekrar)).size;
-  return { durumlar, ozet, karsilastirmalar, bonferroniEsigi: yuvarla(esik, 5), blokSayisi };
+  return {
+    durumlar,
+    metrikler,
+    karsilastirilan,
+    dusurulen,
+    ozet,
+    karsilastirmalar,
+    turevler,
+    elenenler,
+    gecerliSayisi: kosular.length,
+    bonferroniEsigi: yuvarla(esik, 5),
+    blokSayisi,
+  };
 }
 
 function rapor(kosular, a) {
   const L = [];
-  L.push('proje bench istatistigi — ' + kosular.length + ' kosu, ' + a.durumlar.length + ' kosul, ' + a.blokSayisi + ' blok');
+  L.push(
+    'proje bench istatistigi — ' + a.gecerliSayisi + ' gecerli kosu (' + a.elenenler.length +
+      ' elendi), ' + a.durumlar.length + ' kosul, ' + a.blokSayisi + ' blok'
+  );
+  L.push('');
+  L.push('## Elenen kosular');
+  L.push('');
+  if (!a.elenenler.length) {
+    L.push('Elenen kosu yok.');
+  } else {
+    L.push(
+      'Cikis kodu, tavan, is_error ya da oturum limiti imzasi tasiyan kosular gecersiz ' +
+        'damgalandi. Asagidaki hicbir betimleyiciye ve teste girmiyorlar; kusur alanlari ' +
+        '0 degil BILINMIYOR. Sessiz dusurme yok, hepsi burada:'
+    );
+    L.push('');
+    for (const k of a.elenenler) L.push('- ' + k.dosya + ' — ' + k.gecersizNedeni);
+  }
   L.push('');
   L.push('## Kosul basina betimleyici');
   L.push('');
@@ -226,7 +290,7 @@ function rapor(kosular, a) {
       'ss'.padStart(12) + 'medyan'.padStart(12) + 'min'.padStart(12) + 'maks'.padStart(12)
   );
   for (const d of a.durumlar) {
-    for (const m of METRIKLER) {
+    for (const m of a.metrikler) {
       const b = a.ozet[d][m.ad];
       L.push(
         d.padEnd(10) + m.baslik.padEnd(13) + String(b.n).padEnd(4) +
@@ -261,6 +325,26 @@ function rapor(kosular, a) {
     );
   }
   L.push('');
+  L.push('## Turev metrikler');
+  L.push('');
+  L.push(
+    'Her metrigin tur sayisiyla Pearson korelasyonu. |r| > ' + TUREV_ESIGI + ' olan metrik ' +
+      'bagimsiz bilgi tasimaz — tur sayisini baska birimle tekrar yazar — ve turev damgasi ' +
+      'alir. Turev metrikler birincil tabloda ve karsilastirmalarda kullanilmaz.'
+  );
+  L.push('');
+  L.push('metrik'.padEnd(14) + 'r(tur)'.padStart(10) + '  damga');
+  for (const t of a.turevler)
+    L.push(t.baslik.padEnd(14) + String(t.r ?? '-').padStart(10) + '  ' + (t.turev ? 'TUREV' : 'birincil'));
+  L.push('');
+  const damgali = a.turevler.filter((t) => t.turev).map((t) => t.ad);
+  L.push(
+    'Yaptirim — damgali metrik: ' + (damgali.join(', ') || 'yok') +
+      ' · betimleyici tablodan dusurulen: ' + (a.dusurulen.metrik.join(', ') || 'yok') +
+      ' · karsilastirmadan dusurulen: ' + (a.dusurulen.karsilastirma.join(', ') || 'yok') +
+      ' · birincil kalan: ' + a.metrikler.map((m) => m.ad).join(', ') + '.'
+  );
+  L.push('');
   L.push('## Durustluk serhi');
   L.push('');
   const n = a.blokSayisi;
@@ -278,9 +362,15 @@ function rapor(kosular, a) {
     );
   L.push('- Ortalama fark ve % fark blok eslemeli hesaplandi; Cliff deltasi eslemesiz sira karsilastirmasidir.');
   L.push('- Anlamli cikmayan hicbir aralik "fark" diye adlandirilmadi; etiketi "ayirt edilemedi" olan satirlar sonuc tasimaz.');
+  if (a.elenenler.length)
+    L.push(
+      '- ' + a.elenenler.length + ' kosu gecersiz kapisinda elendi. Blok esleme yalnizca iki ' +
+        'kosulun da gecerli kosu verdigi bloklarda kurulur; elenen bloklar n sayisini dusurur, ' +
+        'guc buna gore okunmalidir.'
+    );
   const eksik = [];
   for (const d of a.durumlar)
-    for (const m of METRIKLER)
+    for (const m of a.metrikler)
       if (a.ozet[d][m.ad].n === 0) eksik.push(d + '/' + m.baslik);
   if (eksik.length) L.push('- Olculemeyen metrikler (transkript yok ya da alan bos): ' + eksik.join(', ') + '.');
   L.push('');
@@ -367,6 +457,40 @@ async function kendiTesti() {
   const pb = b.karsilastirmalar.find((c) => c.a === 'premium' && c.b === 'native' && c.metrik === 'sureSn');
   onay('n=8 tam ayrisma p tabani 0.0078', pb.p === yuvarla(Math.pow(2, -7), 5), pb.p);
   onay('n=8 fark var etiketi', pb.etiket === 'fark var', pb.etiket);
+
+  const dizinC = path.join(os.tmpdir(), 'tbench-istatistik', 'c');
+  const sure = [300, 100, 400, 200, 350, 150, 450, 250];
+  const tam = (turler, kayma) =>
+    turler.map((t, i) => ({ sureSn: sure[i * 2 + kayma], taze: t * 1000, cr: 1000, kusur: 0, tur: t }));
+  sentetikYaz(dizinC, { premium: tam([10, 12, 14, 16], 0), native: tam([11, 13, 15, 17], 1) });
+  const c2 = analiz(await kosulariOku(dizinC));
+  onay(
+    'taze token tur ile bire bir: turev damgasi',
+    c2.turevler.find((t) => t.ad === 'tazeToken').turev === true,
+    c2.turevler.find((t) => t.ad === 'tazeToken').r
+  );
+  onay(
+    'turev metrik betimleyici tablodan dusuruldu',
+    !c2.metrikler.some((m) => m.ad === 'tazeToken') && c2.dusurulen.metrik.includes('tazeToken'),
+    c2.metrikler.map((m) => m.ad).join()
+  );
+  onay(
+    'turev metrik karsilastirmadan dusuruldu',
+    !c2.karsilastirmalar.some((x) => x.metrik === 'tazeToken'),
+    c2.karsilastirmalar.map((x) => x.metrik).join()
+  );
+  onay(
+    'birincil metrik karsilastirmada kaldi',
+    c2.karsilastirmalar.some((x) => x.metrik === 'sureSn'),
+    c2.karsilastirilan.join()
+  );
+  onay(
+    'yaptirim satiri raporda',
+    /Yaptirim — damgali metrik: cacheRead|Yaptirim — damgali metrik: .*tazeToken/.test(
+      rapor(await kosulariOku(dizinC), c2)
+    ),
+    ''
+  );
 
   fs.rmSync(path.join(os.tmpdir(), 'tbench-istatistik'), { recursive: true, force: true });
   let hepsi = true;

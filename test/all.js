@@ -6,6 +6,8 @@ const path = require('path');
 
 const SUITE = [
   'run.js',
+  'o6-kimlik.js',
+  'olcum-dogrula.js',
   'u3-forms.js',
   'u4-renk.js',
   'u5-a11y.js',

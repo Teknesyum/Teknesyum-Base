@@ -1,9 +1,11 @@
 {
   "anahtar": "hata__premium",
+  "dosyaAdi": "hata__premium",
   "gorev": "hata",
   "durum": "premium",
-  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110134\\hata__premium\\konfig",
-  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110134\\hata__premium\\calisma",
+  "tekrar": null,
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826174706\\hata__premium\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826174706\\hata__premium\\calisma",
   "fixtureOzeti": "8251f2b000fe7d3a",
   "kurulumImzasi": "f0458d9c1e926a0e",
   "baslangic": null,
@@ -17,10 +19,20 @@
   "aracCagrisi": null,
   "transkript": null,
   "dogrulama": null,
+  "kusurSayisi": null,
   "kurulumGunlugu": [
     "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
     "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
     "premium.js premium → kod 0 · profil: premium"
   ],
-  "hata": null
+  "hata": null,
+  "ciktiOzeti": null,
+  "isError": false,
+  "kimlikBozuk": false,
+  "gecerli": true,
+  "gecersizNedeni": null,
+  "tohum": 1060031367,
+  "blokTohumu": 1060031367,
+  "blokSirasi": 3,
+  "blokDenemesi": 1
 }

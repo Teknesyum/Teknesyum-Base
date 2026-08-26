@@ -2,20 +2,20 @@
   "anahtar": "rapor__eco",
   "gorev": "rapor",
   "durum": "eco",
-  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__eco\\konfig",
-  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__eco\\calisma",
-  "fixtureOzeti": "d7be75b69b9f51b0",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\rapor__eco\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\rapor__eco\\calisma",
+  "fixtureOzeti": "aa96be0016680cb6",
   "kurulumImzasi": "30e32677c9af636a",
-  "baslangic": "2026-08-26T10:52:00.752Z",
-  "bitis": "2026-08-26T10:52:54.358Z",
-  "sureMs": 53606,
+  "baslangic": "2026-08-26T11:01:56.357Z",
+  "bitis": "2026-08-26T11:03:01.075Z",
+  "sureMs": 64718,
   "cikisKodu": 0,
   "tavanAsildi": false,
-  "oturumId": "14dcf703-7be5-464a-85af-9c43f61d3c58",
+  "oturumId": "e1adb077-21f4-4490-8ab0-22844428df0d",
   "modelId": "claude-opus-5",
-  "asistanTuru": 5,
+  "asistanTuru": 7,
   "aracCagrisi": 3,
-  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__eco\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-rapor--eco-calisma\\14dcf703-7be5-464a-85af-9c43f61d3c58.jsonl",
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\rapor__eco\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826110151-rapor--eco-calisma\\e1adb077-21f4-4490-8ab0-22844428df0d.jsonl",
   "dogrulama": {
     "gecti": true,
     "cikti": "YESIL · rapor"
@@ -24,9 +24,9 @@
     "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
     "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
     "premium.js eco → kod 0 · profil: eco",
-    "claude -p → kod 0 · 54 sn"
+    "claude -p → kod 0 · 65 sn"
   ],
   "hata": null,
-  "maliyetUsd": 0.273379,
+  "maliyetUsd": 0.287974,
   "bildirilenTur": 4
 }

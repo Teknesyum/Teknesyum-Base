@@ -2,20 +2,20 @@
   "anahtar": "teksatir__premium",
   "gorev": "teksatir",
   "durum": "premium",
-  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__premium\\konfig",
-  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__premium\\calisma",
-  "fixtureOzeti": "e79f6cdb40cad5ae",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\teksatir__premium\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\teksatir__premium\\calisma",
+  "fixtureOzeti": "c558bc9776966de8",
   "kurulumImzasi": "f0458d9c1e926a0e",
-  "baslangic": "2026-08-26T10:52:01.548Z",
-  "bitis": "2026-08-26T10:52:23.854Z",
-  "sureMs": 22306,
+  "baslangic": "2026-08-26T11:01:57.215Z",
+  "bitis": "2026-08-26T11:02:21.166Z",
+  "sureMs": 23951,
   "cikisKodu": 0,
   "tavanAsildi": false,
-  "oturumId": "22dcc76f-c223-4806-b747-195d77c48a1e",
+  "oturumId": "61d836e3-18fc-4e84-bbfe-5216c81a35db",
   "modelId": "claude-opus-5",
   "asistanTuru": 4,
   "aracCagrisi": 2,
-  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__premium\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-teksatir--premium-calisma\\22dcc76f-c223-4806-b747-195d77c48a1e.jsonl",
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\teksatir__premium\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826110151-teksatir--premium-calisma\\61d836e3-18fc-4e84-bbfe-5216c81a35db.jsonl",
   "dogrulama": {
     "gecti": true,
     "cikti": "YESIL · teksatir"
@@ -24,9 +24,9 @@
     "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
     "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
     "premium.js premium → kod 0 · profil: premium",
-    "claude -p → kod 0 · 22 sn"
+    "claude -p → kod 0 · 24 sn"
   ],
   "hata": null,
-  "maliyetUsd": 0.189201,
+  "maliyetUsd": 0.191113,
   "bildirilenTur": 3
 }

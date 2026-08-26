@@ -2,20 +2,20 @@
   "anahtar": "ozellik__normal",
   "gorev": "ozellik",
   "durum": "normal",
-  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__normal\\konfig",
-  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__normal\\calisma",
-  "fixtureOzeti": "4914f236e0acf871",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\ozellik__normal\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\ozellik__normal\\calisma",
+  "fixtureOzeti": "c2ed4c49e2208766",
   "kurulumImzasi": "a4f15f17cafeec7f",
-  "baslangic": "2026-08-26T10:51:57.105Z",
-  "bitis": "2026-08-26T10:52:33.078Z",
-  "sureMs": 35973,
+  "baslangic": "2026-08-26T11:01:52.714Z",
+  "bitis": "2026-08-26T11:02:29.184Z",
+  "sureMs": 36470,
   "cikisKodu": 0,
   "tavanAsildi": false,
-  "oturumId": "2e1f1c4e-0205-4340-8c3b-f3e045c054f6",
+  "oturumId": "3e73d90e-b0fc-4b7e-8981-b82339d4c20b",
   "modelId": "claude-opus-5",
   "asistanTuru": 6,
   "aracCagrisi": 3,
-  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__normal\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-ozellik--normal-calisma\\2e1f1c4e-0205-4340-8c3b-f3e045c054f6.jsonl",
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826110151\\ozellik__normal\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826110151-ozellik--normal-calisma\\3e73d90e-b0fc-4b7e-8981-b82339d4c20b.jsonl",
   "dogrulama": {
     "gecti": true,
     "cikti": "YESIL · ozellik"
@@ -27,6 +27,6 @@
     "claude -p → kod 0 · 36 sn"
   ],
   "hata": null,
-  "maliyetUsd": 0.237888,
+  "maliyetUsd": 0.2329925,
   "bildirilenTur": 4
 }

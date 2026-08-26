@@ -9,3 +9,4 @@ node_modules
 .claude/harita.md
 .claude/oturumlar/
 .claude/relay/kapsam.json
+bench/sonuc/

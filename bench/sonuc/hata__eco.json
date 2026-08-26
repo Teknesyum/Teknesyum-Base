@@ -1,0 +1,32 @@
+{
+  "anahtar": "hata__eco",
+  "gorev": "hata",
+  "durum": "eco",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\hata__eco\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\hata__eco\\calisma",
+  "fixtureOzeti": "7ccf527be11cbc3c",
+  "kurulumImzasi": "30e32677c9af636a",
+  "baslangic": "2026-08-26T10:51:59.086Z",
+  "bitis": "2026-08-26T10:52:28.293Z",
+  "sureMs": 29207,
+  "cikisKodu": 0,
+  "tavanAsildi": false,
+  "oturumId": "cd9b08ce-688e-4c3e-8f14-439b172796e2",
+  "modelId": "claude-opus-5",
+  "asistanTuru": 6,
+  "aracCagrisi": 3,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\hata__eco\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-hata--eco-calisma\\cd9b08ce-688e-4c3e-8f14-439b172796e2.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · hata"
+  },
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js eco → kod 0 · profil: eco",
+    "claude -p → kod 0 · 29 sn"
+  ],
+  "hata": null,
+  "maliyetUsd": 0.20413650000000003,
+  "bildirilenTur": 4
+}

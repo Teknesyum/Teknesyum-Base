@@ -1,0 +1,24 @@
+{
+  "anahtar": "ozellik__native",
+  "gorev": "ozellik",
+  "durum": "native",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105117\\ozellik__native\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105117\\ozellik__native\\calisma",
+  "fixtureOzeti": "4914f236e0acf871",
+  "kurulumImzasi": "39c7f6ed32b093d0",
+  "baslangic": null,
+  "bitis": null,
+  "sureMs": null,
+  "cikisKodu": null,
+  "tavanAsildi": false,
+  "oturumId": null,
+  "modelId": null,
+  "asistanTuru": null,
+  "aracCagrisi": null,
+  "transkript": null,
+  "dogrulama": null,
+  "kurulumGunlugu": [
+    "eklenti kurulmadi, profil yazilmadi"
+  ],
+  "hata": null
+}

@@ -1,0 +1,32 @@
+{
+  "anahtar": "teksatir__premium",
+  "gorev": "teksatir",
+  "durum": "premium",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__premium\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__premium\\calisma",
+  "fixtureOzeti": "e79f6cdb40cad5ae",
+  "kurulumImzasi": "f0458d9c1e926a0e",
+  "baslangic": "2026-08-26T10:52:01.548Z",
+  "bitis": "2026-08-26T10:52:23.854Z",
+  "sureMs": 22306,
+  "cikisKodu": 0,
+  "tavanAsildi": false,
+  "oturumId": "22dcc76f-c223-4806-b747-195d77c48a1e",
+  "modelId": "claude-opus-5",
+  "asistanTuru": 4,
+  "aracCagrisi": 2,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__premium\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-teksatir--premium-calisma\\22dcc76f-c223-4806-b747-195d77c48a1e.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · teksatir"
+  },
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js premium → kod 0 · profil: premium",
+    "claude -p → kod 0 · 22 sn"
+  ],
+  "hata": null,
+  "maliyetUsd": 0.189201,
+  "bildirilenTur": 3
+}

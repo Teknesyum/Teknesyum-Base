@@ -1,0 +1,32 @@
+{
+  "anahtar": "rapor__normal",
+  "gorev": "rapor",
+  "durum": "normal",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__normal\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__normal\\calisma",
+  "fixtureOzeti": "d7be75b69b9f51b0",
+  "kurulumImzasi": "a4f15f17cafeec7f",
+  "baslangic": "2026-08-26T10:52:00.378Z",
+  "bitis": "2026-08-26T10:53:11.826Z",
+  "sureMs": 71448,
+  "cikisKodu": 0,
+  "tavanAsildi": false,
+  "oturumId": "49c7d571-2745-4a59-b51d-005df4fb706d",
+  "modelId": "claude-opus-5",
+  "asistanTuru": 6,
+  "aracCagrisi": 3,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__normal\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-rapor--normal-calisma\\49c7d571-2745-4a59-b51d-005df4fb706d.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · rapor"
+  },
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js normal → kod 0 · profil: normal",
+    "claude -p → kod 0 · 71 sn"
+  ],
+  "hata": null,
+  "maliyetUsd": 0.3204275,
+  "bildirilenTur": 4
+}

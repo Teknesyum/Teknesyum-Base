@@ -1,0 +1,26 @@
+{
+  "anahtar": "rapor__eco",
+  "gorev": "rapor",
+  "durum": "eco",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105117\\rapor__eco\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105117\\rapor__eco\\calisma",
+  "fixtureOzeti": "d7be75b69b9f51b0",
+  "kurulumImzasi": "30e32677c9af636a",
+  "baslangic": null,
+  "bitis": null,
+  "sureMs": null,
+  "cikisKodu": null,
+  "tavanAsildi": false,
+  "oturumId": null,
+  "modelId": null,
+  "asistanTuru": null,
+  "aracCagrisi": null,
+  "transkript": null,
+  "dogrulama": null,
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js eco → kod 0 · profil: eco"
+  ],
+  "hata": null
+}

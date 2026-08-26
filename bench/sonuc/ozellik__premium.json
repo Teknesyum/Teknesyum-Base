@@ -1,0 +1,32 @@
+{
+  "anahtar": "ozellik__premium",
+  "gorev": "ozellik",
+  "durum": "premium",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__premium\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__premium\\calisma",
+  "fixtureOzeti": "4914f236e0acf871",
+  "kurulumImzasi": "f0458d9c1e926a0e",
+  "baslangic": "2026-08-26T10:51:56.782Z",
+  "bitis": "2026-08-26T10:52:36.185Z",
+  "sureMs": 39403,
+  "cikisKodu": 0,
+  "tavanAsildi": false,
+  "oturumId": "4de975dc-4fbc-458e-bede-eab1adccae12",
+  "modelId": "claude-opus-5",
+  "asistanTuru": 6,
+  "aracCagrisi": 3,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\ozellik__premium\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-ozellik--premium-calisma\\4de975dc-4fbc-458e-bede-eab1adccae12.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · ozellik"
+  },
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js premium → kod 0 · profil: premium",
+    "claude -p → kod 0 · 39 sn"
+  ],
+  "hata": null,
+  "maliyetUsd": 0.2519115,
+  "bildirilenTur": 4
+}

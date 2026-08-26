@@ -1,0 +1,32 @@
+{
+  "anahtar": "teksatir__eco",
+  "gorev": "teksatir",
+  "durum": "eco",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__eco\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__eco\\calisma",
+  "fixtureOzeti": "e79f6cdb40cad5ae",
+  "kurulumImzasi": "30e32677c9af636a",
+  "baslangic": "2026-08-26T10:52:02.340Z",
+  "bitis": "2026-08-26T10:52:24.481Z",
+  "sureMs": 22141,
+  "cikisKodu": 0,
+  "tavanAsildi": false,
+  "oturumId": "0a38f7ec-d29f-4e21-ab6f-595f1a3ae145",
+  "modelId": "claude-opus-5",
+  "asistanTuru": 4,
+  "aracCagrisi": 2,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__eco\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-teksatir--eco-calisma\\0a38f7ec-d29f-4e21-ab6f-595f1a3ae145.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · teksatir"
+  },
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js eco → kod 0 · profil: eco",
+    "claude -p → kod 0 · 22 sn"
+  ],
+  "hata": null,
+  "maliyetUsd": 0.176232,
+  "bildirilenTur": 3
+}

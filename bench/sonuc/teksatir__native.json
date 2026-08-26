@@ -1,0 +1,30 @@
+{
+  "anahtar": "teksatir__native",
+  "gorev": "teksatir",
+  "durum": "native",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__native\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__native\\calisma",
+  "fixtureOzeti": "e79f6cdb40cad5ae",
+  "kurulumImzasi": "39c7f6ed32b093d0",
+  "baslangic": "2026-08-26T10:52:01.569Z",
+  "bitis": "2026-08-26T10:52:20.520Z",
+  "sureMs": 18951,
+  "cikisKodu": 0,
+  "tavanAsildi": false,
+  "oturumId": "3d7ea250-d713-4a32-9d6c-55e076db5be8",
+  "modelId": "claude-opus-5",
+  "asistanTuru": 3,
+  "aracCagrisi": 2,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\teksatir__native\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-teksatir--native-calisma\\3d7ea250-d713-4a32-9d6c-55e076db5be8.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · teksatir"
+  },
+  "kurulumGunlugu": [
+    "eklenti kurulmadi, profil yazilmadi",
+    "claude -p → kod 0 · 19 sn"
+  ],
+  "hata": null,
+  "maliyetUsd": 0.1467985,
+  "bildirilenTur": 3
+}

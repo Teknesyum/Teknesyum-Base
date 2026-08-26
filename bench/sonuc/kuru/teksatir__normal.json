@@ -1,0 +1,26 @@
+{
+  "anahtar": "teksatir__normal",
+  "gorev": "teksatir",
+  "durum": "normal",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105117\\teksatir__normal\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105117\\teksatir__normal\\calisma",
+  "fixtureOzeti": "e79f6cdb40cad5ae",
+  "kurulumImzasi": "a4f15f17cafeec7f",
+  "baslangic": null,
+  "bitis": null,
+  "sureMs": null,
+  "cikisKodu": null,
+  "tavanAsildi": false,
+  "oturumId": null,
+  "modelId": null,
+  "asistanTuru": null,
+  "aracCagrisi": null,
+  "transkript": null,
+  "dogrulama": null,
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js normal → kod 0 · profil: normal"
+  ],
+  "hata": null
+}

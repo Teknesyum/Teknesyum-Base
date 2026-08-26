@@ -1,0 +1,32 @@
+{
+  "anahtar": "rapor__eco",
+  "gorev": "rapor",
+  "durum": "eco",
+  "konfig": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__eco\\konfig",
+  "calisma": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__eco\\calisma",
+  "fixtureOzeti": "d7be75b69b9f51b0",
+  "kurulumImzasi": "30e32677c9af636a",
+  "baslangic": "2026-08-26T10:52:00.752Z",
+  "bitis": "2026-08-26T10:52:54.358Z",
+  "sureMs": 53606,
+  "cikisKodu": 0,
+  "tavanAsildi": false,
+  "oturumId": "14dcf703-7be5-464a-85af-9c43f61d3c58",
+  "modelId": "claude-opus-5",
+  "asistanTuru": 5,
+  "aracCagrisi": 3,
+  "transkript": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tbench-kos\\20260826105155\\rapor__eco\\konfig\\projects\\C--Users-ADMINI-1-AppData-Local-Temp-tbench-kos-20260826105155-rapor--eco-calisma\\14dcf703-7be5-464a-85af-9c43f61d3c58.jsonl",
+  "dogrulama": {
+    "gecti": true,
+    "cikti": "YESIL · rapor"
+  },
+  "kurulumGunlugu": [
+    "marketplace add → kod 0 · Adding marketplace…✔ Successfully added marketplace: teknesyum (declared in user settings)",
+    "plugin install → kod 0 · Installing plugin \"teknesyum@teknesyum\"...✔ Successfully installed plugin: teknesyum@teknesyum (scope: user)",
+    "premium.js eco → kod 0 · profil: eco",
+    "claude -p → kod 0 · 54 sn"
+  ],
+  "hata": null,
+  "maliyetUsd": 0.273379,
+  "bildirilenTur": 4
+}

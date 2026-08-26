@@ -1,0 +1,22 @@
+{
+  "contractId": "B2",
+  "auditorRunId": "a427e4a383a213e9d",
+  "headSha": "5c1cfa468d39b02e35aada93521e2bfe2cb0a6da",
+  "diffHash": "558c5cd3ec7752e94e963698a441c7e04a8ebe68606adc4d3cf77839ea5979d0",
+  "owns": [
+    "scripts/bench/topla.js",
+    "scripts/bench/pano.js",
+    "docs/BENCH-SONUC.md",
+    "bench/sonuc/"
+  ],
+  "verification": [
+    "```",
+    "GEÇTİ  T1  · şartname ✓ · kalite ✓",
+    "✓ ±%5 harness kapısı — topla.js:81-92 (butceIlk-butceSon ↔ turSirasi[n-2]) + :399 `if (en > 5) process.exitCode = 1`; hata__eco transkriptinde 15.000.000-14.966.354=33.646, tur3 cc 922+cr 32.490+in/out 234 = 33.646, sapma %0 elle doğrulandı",
+    "✓ taban.js modül"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-26T11:11:26.724Z",
+  "usedAt": "2026-08-26T11:11:26.767Z",
+  "completedSha": "5c1cfa468d39b02e35aada93521e2bfe2cb0a6da"
+}

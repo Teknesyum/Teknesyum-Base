@@ -6,6 +6,34 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.65.0] - 2026-08-26
+
+### Added
+
+- **A five-minute benchmark harness.** `scripts/bench/kos.js` runs a four-task micro
+  corpus (multi-file feature, failing-test bugfix, research report, one-line change)
+  under four conditions — the premium, normal, and eco profiles plus plain Claude Code
+  with no plugin — as sixteen parallel headless sessions, each in its own isolated
+  config root, in under 90 seconds. `pano.js` wraps it in a live miner-style dashboard,
+  and `topla.js` rebuilds every token figure from the transcripts (subagents included),
+  verifies them against the harness counter, and writes the raw JSON plus a comparison
+  report that keeps the four token components separate.
+
+### Fixed
+
+- **The status line now names the real problem-log path.** In projects where the relay
+  keeps its traces elsewhere, the reminder pointed at a `live/_sorun.log` that did not
+  exist; it now prints the actual location.
+
+- **The mirror-escape test unlinks its junction before teardown.** A junction whose
+  target was deleted first became an undeletable orphan on Windows and temp run
+  directories piled up.
+
+### Changed
+
+- **Work units are now called "aşama" instead of "dalga"** in every user-facing Turkish
+  text, per the recorded terminology decision.
+
 ## [2.64.0] - 2026-08-26
 
 ### Added

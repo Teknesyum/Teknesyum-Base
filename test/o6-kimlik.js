@@ -154,7 +154,7 @@ ol('çağrı kaydı yokken model sapması bloklamaz, yalnız deftere düşer', (
   icerir(gunluk(live), 'yalnız kayıt (çağrı kaydı yok)');
 });
 
-ol('çağrı kaydı yoksa da efor sapması bloklamaya devam eder', () => {
+ol('efor sapması bloklamaz, yalnız deftere düşer', () => {
   const { p, live } = proje();
   const d = fs.mkdtempSync(path.join(KOKTEMP, 'ajantr-'));
   const at = path.join(d, 'agent-o6e.jsonl');
@@ -173,9 +173,11 @@ ol('çağrı kaydı yoksa da efor sapması bloklamaya devam eder', () => {
     },
     konfig('premium', true)
   );
-  const o = JSON.parse(r.out);
-  if (o.decision !== 'block') throw new Error('efor sapması bloklamadı');
-  icerir(o.reason, 'efor beyan');
+  // Efor cagri aninda gecilemiyor (SETTINGS.md:110, :216). Blok atilirsa ajan
+  // kendi eforunu duzeltemedigi icin kilitlenir; olculdu 26.08 — denetci rolu
+  // sekiz ardisik uyariyla hic calisamadi.
+  const o = r.out ? JSON.parse(r.out) : {};
+  if (o.decision === 'block') throw new Error('efor sapmasi bloklamamali');
   icerir(gunluk(live), 'builder | efor');
 });
 

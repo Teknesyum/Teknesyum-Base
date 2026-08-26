@@ -1,5 +1,5 @@
 ---
-description: Teknesyum Base neyi ne zaman yapar — tek ekran
+description: What Teknesyum Base does and when — one screen
 ---
 
 Kullanıcı ne olduğunu soruyor. **Dosya okuma, tarama yapma, ajan açma.** Aşağıdakini

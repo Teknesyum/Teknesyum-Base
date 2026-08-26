@@ -1,5 +1,5 @@
 ---
-description: İki depoyu birden gönderir — önce genel depo, sonra özel dosya aynası
+description: Pushes both repos at once — the public repo first, then the private file mirror
 argument-hint: [commit mesajı]
 allowed-tools: Bash
 ---

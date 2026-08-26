@@ -406,7 +406,10 @@ function kimlikDenetle(live, type, s, c) {
     sapan.push({ alan: 'model', beyan: kabul.join(' ya da '), gercek: model, bloklanir: !!c });
   }
   if (beklenenEfor && efor && efor.toLowerCase() !== beklenenEfor.toLowerCase()) {
-    sapan.push({ alan: 'efor', beyan: beklenenEfor, gercek: efor, bloklanir: true });
+    // Efor cagri aninda gecilemiyor (SETTINGS.md:110, :216): ajan kendi eforunu
+    // duzeltemez, dolayisiyla sapma kacinilmaz ve blok ajani kilitler. Olculdu
+    // 26.08: sekiz ardisik uyari, denetci rolu hic calisamadi. Yalniz kayit.
+    sapan.push({ alan: 'efor', beyan: beklenenEfor, gercek: efor, bloklanir: false });
   }
   if (!sapan.length) return;
   const kacis = kimlikKacisi();
@@ -965,11 +968,33 @@ function kapsayiciTopla(kap, durum) {
   if (p) kapsayici.tasi(kap, p.yol);
 }
 
+// ÖLÇÜLDÜ (26.08.2026, D1): `hatirlat()` ilk iki turda 3.317 karakter (~3.488 token)
+// yazıyordu — eklentinin tek kalemde en büyük gideri. Açık sözleşme ve canlı ajan yokken
+// bu metnin karşılığı yok: röle kullanılmıyor. Kapı iki ölçüte birden bakar; `live/`
+// altındaki bitmemiş ajan kaydı da röleyi açık sayar, çünkü sözleşme kapanmış olsa bile
+// ajan hâlâ dönüyor olabilir.
+function relayKullaniliyor(root) {
+  if (!root) return false;
+  if (acikIs(root)) return true;
+  const live = izYolu(root);
+  for (const f of dosyalar(live)) {
+    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    const a = read(path.join(live, f));
+    if (a && !a.ended) return true;
+  }
+  return false;
+}
+
 function hatirlat(j, root, etkinProje) {
   // Kayıt, röle ve harita oturumun açıldığı klasörü değil projeyi bekliyor; modele
   // hangi projede olduğunu söylemezsek `--proje` parametresini boş geçer. Bu satır
   // ölçü hatırlatması susmuş olsa da yazılır.
   const kapMetin = etkinProje ? ceviri('kapsayiciEtkin', etkinProje.ad, etkinProje.yol) : '';
+  // Kapsayıcı notu kapının dışında kalır: kapsayıcı klasörde `.claude` bulunmaz, orada
+  // röle kökü de olamaz — kapıya bağlansaydı üst klasör oturumunda hiç yazılamazdı.
+  // Röle kullanılmayan normal proje oturumunda etkin proje yok, dolayısıyla bu satır
+  // boştur ve enjeksiyon yine 0 karakterdir.
+  if (!relayKullaniliyor(root)) return kapEkle(kapMetin);
   if (seviye() === 0) return kapEkle(kapMetin);
   // ÖLÇÜLDÜ: metin her istekte ~90 token yazıyordu ve geçmişte kalıcı. 60 mesajlık
   // oturumda 5000+ token, hepsi aynı cümlenin kopyası. Kural bir kez okunduğunda

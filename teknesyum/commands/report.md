@@ -1,5 +1,5 @@
 ---
-description: Relay ilerleme durumunu ve ajan progress barlarını gösterir
+description: Shows relay progress and the agent progress bars
 allowed-tools: Read, Glob, Bash
 ---
 

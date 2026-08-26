@@ -1,6 +1,6 @@
 ---
 name: advisor
-description: Relay ikinci görüşü. T0'ın doğru kararı bilmediği tek bir düğümde kısa bir görüş verir - hangi yolu seçerdim, neden, ve soranın kaçırdığı şey. Plan yazmaz, kod yazmaz, dosya oluşturmaz; tek çıktısı üç başlıklı ve en fazla 20 satırlık mesajdır. Tek soru için tek üye - planın tamamı için planner konseyini kullan.
+description: Relay second opinion. Gives one short opinion at a single node where T0 does not know the right call - which way I would go, why, and what the asker is missing. Writes no plan, no code, creates no file; its only output is a message under three headings, at most 20 lines. One member for one question - use the planner council for a whole plan.
 tools: Read, Grep, Glob, LSP, WebSearch, WebFetch
 effort: medium
 maxTurns: 15

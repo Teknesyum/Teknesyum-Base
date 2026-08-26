@@ -1,6 +1,6 @@
 ---
 name: builder
-description: Relay yapıcı işçisi. Bir sözleşme dosyasını alıp kodu yazan taraf. Modül, algoritma, endpoint, refactor, test - kod üreten sözleşmeler buraya gider. Arayüz/CSS/XAML işi için ui-builder kullan. Çağırırken model'i işin ağırlığına göre seç. Sözleşme dosyasının yolunu ver.
+description: Relay build worker. Takes a contract file and writes the code. Module, algorithm, endpoint, refactor, test - contracts that produce code go here. Use ui-builder for interface/CSS/XAML work (arayüz). Pick the model by the weight of the job. Give it the contract file path.
 effort: medium
 maxTurns: 60
 memory: project

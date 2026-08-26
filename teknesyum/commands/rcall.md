@@ -1,5 +1,5 @@
 ---
-description: Bütün projeleri telefondan sürülebilir yapar — her biri için uzak denetim açar
+description: Makes every project drivable from your phone — opens remote control for each
 argument-hint: <boş · tavan N · kok <klasör>>
 allowed-tools: Bash
 ---

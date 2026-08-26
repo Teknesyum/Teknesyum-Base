@@ -133,10 +133,19 @@ function proje(sozlesme, biten) {
   const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-test-'));
   const relay = path.join(p, '.claude', 'relay');
   fs.mkdirSync(path.join(relay, 'contracts', 'done'), { recursive: true });
+  // D1 kapisi acik sozlesme yoksa enjeksiyonu susturuyor; fikstur sozlesmeleri gercek
+  // `status` tasimazsa `acikSozlesmeler` onlari acik saymaz ve enjeksiyonu olcen testler
+  // olculmek istenen davranisi degil kapiyi olcerdi.
   for (let i = 0; i < sozlesme; i++)
-    fs.writeFileSync(path.join(relay, 'contracts', 'T' + i + '.md'), '#');
+    fs.writeFileSync(
+      path.join(relay, 'contracts', 'T' + i + '.md'),
+      '---\nid: T' + i + '\nstatus: active\n---\n'
+    );
   for (let i = 0; i < biten; i++)
-    fs.writeFileSync(path.join(relay, 'contracts', 'done', 'D' + i + '.md'), '#');
+    fs.writeFileSync(
+      path.join(relay, 'contracts', 'done', 'D' + i + '.md'),
+      '---\nid: D' + i + '\nstatus: done\n---\n'
+    );
   return { p, live: path.join(relay, 'live') };
 }
 
@@ -312,8 +321,8 @@ ol('SessionStart röle durumunu ve sözleşme sayacını bildirir', () => {
   icerir(m, 'sürdürüyorum');
 });
 
-ol('UserPromptSubmit her istekte ölçü satırını zorunlu kılar', () => {
-  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
+ol('UserPromptSubmit açık sözleşme varken ölçü satırını zorunlu kılar', () => {
+  const { p } = proje(1, 0);
   const r = calistir(
     IZLE,
     { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'şunu yap' },
@@ -323,6 +332,61 @@ ol('UserPromptSubmit her istekte ölçü satırını zorunlu kılar', () => {
   esit(o.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
   icerir(o.hookSpecificOutput.additionalContext, 'Ölçüm ▸');
   icerir(o.hookSpecificOutput.additionalContext, 'ters tırnak içinde');
+});
+
+// D1 — ölçüldü: enjeksiyon ilk iki turda 3.317 karakter yazıyordu ve röle kullanılmayan
+// oturumda karşılığı yoktu. Kapı dört yönde de sınanır: sözleşme yok, sözleşme açık,
+// sözleşme kapandı, sözleşme yok ama ajan hâlâ dönüyor.
+ol('D1 · sözleşmesiz oturumda UserPromptSubmit hiç yazmaz', () => {
+  const { p } = proje(0, 0);
+  for (const istem of ['şunu yap', 'yeni bir modül yaz ve testlerini kur']) {
+    const r = calistir(
+      IZLE,
+      { ...ort(p), session_id: 'd1-bos', hook_event_name: 'UserPromptSubmit', prompt: istem },
+      konfig(true)
+    );
+    esit(r.out, '', 'sözleşmesiz oturumda enjeksiyon: ' + istem);
+  }
+});
+
+ol('D1 · röle kurulu olmayan klasörde de UserPromptSubmit hiç yazmaz', () => {
+  const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
+  const r = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'd1-relaysiz', hook_event_name: 'UserPromptSubmit', prompt: 'şunu yap' },
+    konfig(true)
+  );
+  esit(r.out, '');
+});
+
+ol('D1 · sözleşme kapanınca kapı yeniden susar', () => {
+  const { p } = proje(1, 0);
+  const dosya = path.join(p, '.claude', 'relay', 'contracts', 'T0.md');
+  const acik = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'd1-kapi-a', hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
+    konfig(true)
+  ).out;
+  icerir(acik, 'Ölçüm ▸', 'açık sözleşmede yazmalı');
+  fs.writeFileSync(dosya, '---\nid: T0\nstatus: done\n---\n');
+  const kapali = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'd1-kapi-b', hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
+    konfig(true)
+  ).out;
+  esit(kapali, '', 'sözleşme kapandıktan sonra susmalı');
+});
+
+ol('D1 · sözleşme yokken canlı ajan kaydı kapıyı açık tutar', () => {
+  const { p, live } = proje(0, 0);
+  fs.mkdirSync(live, { recursive: true });
+  fs.writeFileSync(path.join(live, 'builder.json'), JSON.stringify({ agent_type: 'builder' }));
+  const r = calistir(
+    IZLE,
+    { ...ort(p), session_id: 'd1-ajan', hook_event_name: 'UserPromptSubmit', prompt: 'devam' },
+    konfig(true)
+  ).out;
+  icerir(r, 'Ölçüm ▸');
 });
 
 ol('UserPromptSubmit röle kurulu olmayan klasörde iz bırakmaz', () => {
@@ -856,7 +920,7 @@ ol('ingilizce kurulumda ajan yonergesi de ingilizce', () => {
     { TEKNESYUM_DIL: 'en' }
   );
   icerir(r.out, 'to other agents in English');
-  if (r.out.includes('Türkçe yaz')) throw new Error('karisik dil');
+  if (r.out.includes('in Turkish')) throw new Error('karisik dil');
 });
 
 ol('turkce kurulumda ajanlara turkce yazma talimati gider', () => {
@@ -867,7 +931,7 @@ ol('turkce kurulumda ajanlara turkce yazma talimati gider', () => {
     hook_event_name: 'UserPromptSubmit',
     prompt: 'yeni bir modül yaz',
   });
-  icerir(r.out, 'Türkçe yaz');
+  icerir(r.out, 'in Turkish');
 });
 
 ol('birikmis worktree acilista bir kez bildirilir', () => {
@@ -1172,7 +1236,7 @@ ol('bayat kayit noktasiyla duzeltme turu acilmaz', () => {
 });
 
 ol('yeni proje niyetinde on arastirma hatirlatilir', () => {
-  const { p } = proje(0, 0);
+  const { p } = proje(1, 0);
   const r = calistir(IZLE, {
     ...ort(p),
     session_id: 'arastirma-1',
@@ -1183,7 +1247,7 @@ ol('yeni proje niyetinde on arastirma hatirlatilir', () => {
 });
 
 ol('taramalar varsa hatirlatma cikmaz', () => {
-  const { p } = proje(0, 0);
+  const { p } = proje(1, 0);
   fs.mkdirSync(path.join(p, 'docs', 'taramalar'), { recursive: true });
   const r = calistir(IZLE, {
     ...ort(p),
@@ -1195,7 +1259,7 @@ ol('taramalar varsa hatirlatma cikmaz', () => {
 });
 
 ol('siradan istekte arastirma hatirlatmasi cikmaz', () => {
-  const { p } = proje(0, 0);
+  const { p } = proje(1, 0);
   const r = calistir(IZLE, {
     ...ort(p),
     session_id: 'arastirma-3',
@@ -3675,8 +3739,9 @@ ol('premium notu paralel acmayi varsayilan sayar', () => {
     return (r.stdout || '') + (r.stderr || '');
   };
   const tr = oku('tr');
-  icerir(tr, 'tek ajanla gitmek gerekçe ister');
-  icerir(tr, 'plan istediği her');
+  icerir(tr, 'single agent needs a reason');
+  icerir(tr, 'the user asks for a plan');
+  icerir(tr, 'Teknesyum ▸ Görüş ▸');
   const en = oku('en');
   icerir(en, 'single agent needs a reason');
   icerir(en, 'the user asks for a plan');
@@ -3705,7 +3770,7 @@ ol('premium notu yalnizca acikken enjekte edilir', () => {
     ).out;
   if (iste(kapali).includes('Premium mod'))
     throw new Error('premium kapaliyken not enjekte edildi');
-  icerir(iste(acik), 'Premium mod açık');
+  icerir(iste(acik), 'Premium mode is on');
 });
 
 function profilKonfig(ayar) {
@@ -3732,20 +3797,20 @@ function enjeksiyonBoyu(cikti) {
 ol('eco notu yalnizca eco profilinde enjekte edilir', () => {
   const { p } = proje(1, 0);
   const eco = profilIstek(p, profilKonfig({ profil: 'eco' }));
-  icerir(eco, 'Eco mod açık');
-  icerir(eco, '`Explore` ajanı');
-  icerir(eco, 'ajan açmak gerekçe');
-  if (profilIstek(p, profilKonfig({ profil: 'normal' })).includes('Eco mod açık'))
+  icerir(eco, 'Eco mode is on');
+  icerir(eco, '`Explore` agent');
+  icerir(eco, 'opening any agent needs a reason');
+  if (profilIstek(p, profilKonfig({ profil: 'normal' })).includes('Eco mode is on'))
     throw new Error('normal profilde eco notu enjekte edildi');
   const prem = profilIstek(p, profilKonfig({ profil: 'premium' }));
-  if (prem.includes('Eco mod açık')) throw new Error('premium profilde eco notu enjekte edildi');
-  icerir(prem, 'Premium mod açık');
+  if (prem.includes('Eco mode is on')) throw new Error('premium profilde eco notu enjekte edildi');
+  icerir(prem, 'Premium mode is on');
 });
 
 ol('eco enjeksiyonu tek istekte biter, normal ikinci istekte de yazar', () => {
   const { p } = proje(1, 0);
   const eco = profilKonfig({ profil: 'eco' });
-  icerir(profilIstek(p, eco), 'Eco mod açık');
+  icerir(profilIstek(p, eco), 'Eco mode is on');
   if (profilIstek(p, eco).includes('Teknesyum Base'))
     throw new Error('eco ikinci istekte de enjekte etti');
   const std = profilKonfig({ profil: 'normal' });
@@ -3760,16 +3825,16 @@ ol('profil degisince enjeksiyon sayaci sifirlanir', () => {
   const cfg = profilKonfig({ profil: 'premium' });
   const profilYaz = (ad) =>
     fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ dil: 'tr', profil: ad }));
-  icerir(profilIstek(p, cfg), 'Premium mod açık', 'premium ilk istek');
-  icerir(profilIstek(p, cfg), 'Premium mod açık', 'premium ikinci istek');
-  if (profilIstek(p, cfg).includes('Premium mod açık'))
+  icerir(profilIstek(p, cfg), 'Premium mode is on', 'premium ilk istek');
+  icerir(profilIstek(p, cfg), 'Premium mode is on', 'premium ikinci istek');
+  if (profilIstek(p, cfg).includes('Premium mode is on'))
     throw new Error('premium ucuncu istekte tavan calismali');
   profilYaz('eco');
   const ilk = profilIstek(p, cfg);
-  icerir(ilk, 'Eco mod açık', 'profil degisince yeni blok ilk istekte gelmeli');
+  icerir(ilk, 'Eco mode is on', 'profil degisince yeni blok ilk istekte gelmeli');
   icerir(ilk, 'Tabandan sapan düğmeler: ');
-  if (ilk.includes('Premium mod açık')) throw new Error('eski profilin metni hâlâ geliyor');
-  if (profilIstek(p, cfg).includes('Eco mod açık'))
+  if (ilk.includes('Premium mode is on')) throw new Error('eski profilin metni hâlâ geliyor');
+  if (profilIstek(p, cfg).includes('Eco mode is on'))
     throw new Error('sifirlanan sayac eco tavanini da uygulamali');
 });
 
@@ -3785,7 +3850,7 @@ ol('profil degismediyse sayac sifirlanmaz, tavan yerinde durur', () => {
 ol('eco fark satirlarini enjekte etmez, steering 2 ayarliyken bile', () => {
   const { p } = proje(1, 0);
   const eco = profilIstek(p, profilKonfig({ profil: 'eco', steering: 2 }));
-  icerir(eco, 'Eco mod açık');
+  icerir(eco, 'Eco mode is on');
   if (eco.includes('Fark ▸')) throw new Error('eco profilinde seviye 2 metni enjekte edildi');
   icerir(profilIstek(p, profilKonfig({ profil: 'normal', steering: 2 })), 'Fark ▸');
 });
@@ -3885,8 +3950,10 @@ ol('eco istek basina da normalden az bayt tutar', () => {
     throw new Error('eco istek basina normalden buyuk: ' + e.tek + ' / ' + s.tek);
   if (!(e.toplam < s.toplam))
     throw new Error('eco oturum basina normalden buyuk: ' + e.toplam + ' / ' + s.toplam);
+  // Sapma satırından sonra rota satırı geliyor (fikstürde açık sözleşme var); ölçülen
+  // sadece sapma satırı olmalı, yoksa uzunluk kapısı komşu cümleyi de sayar.
   const satir = (profilIstek(p, profilKonfig({ profil: 'eco' })).match(
-    /Tabandan sapan düğmeler: [^"]*?(?=\\n|")/
+    /Tabandan sapan düğmeler: [^"]*?(?= Yeni iş| Owns eşleşmesi| Aynı dosya|\\n|")/
   ) || [''])[0];
   if (!satir) throw new Error('eco sapma satiri bulunamadi');
   if (satir.length > 200) throw new Error('eco sapmasi 3-4 satiri asti: ' + satir.length);
@@ -7983,7 +8050,7 @@ ol('ui standardi ayar dosyasi olmadan yururlukte degildir', () => {
   icerir(k, 'kendiliğinden yürürlüğe girmez');
   icerir(k, 'İkisi de yok');
   icerir(k, '/uisetup');
-  icerir(k, 'Kendiliğinden yürürlüğe girmez', 'skill tanimi da soylemeli');
+  icerir(k, 'Not in force on its own', 'skill tanimi da soylemeli');
 });
 
 ol('uisetup sablonu sunar, kendiliginden dosya yazmaz', () => {
@@ -10245,13 +10312,13 @@ ol('yasakta kacis ifadesi yok', () => {
 
 ol('relay description kapsam ibaresi tasir', () => {
   const d = relayDesc();
-  icerir(d, 'ana oturumda');
-  icerir(d, 'oturumda bir kez');
-  icerir(d, 'alt ajan açmaz');
+  icerir(d, 'main session');
+  icerir(d, 'once per session');
+  icerir(d, 'never in a subagent');
 });
 
 ol('relay description uzamamis', () => {
-  if (relayDesc().length > 367) throw new Error('description uzadi: ' + relayDesc().length);
+  if (relayDesc().length > 520) throw new Error('description uzadi: ' + relayDesc().length);
 });
 
 ol('relay description ornek talep listesi duruyor', () => {

@@ -1,5 +1,5 @@
 ---
-description: Oturum durum panosu — eklenti, depo, profil, açık iş, son kayıt
+description: Session status board — plugin, repo, profile, open work, last save
 argument-hint: [--guncelle]
 allowed-tools: Bash
 ---

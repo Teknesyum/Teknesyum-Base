@@ -1,5 +1,5 @@
 ---
-description: Ekran kapısını açar — ajan bir tur masaüstüne dokunabilir
+description: Opens the screen gate — the agent may touch the desktop for one round
 argument-hint: [dakika]
 allowed-tools: Bash
 ---

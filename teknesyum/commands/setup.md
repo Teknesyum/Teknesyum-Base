@@ -1,5 +1,5 @@
 ---
-description: Bu makineyi bağlar — eksikleri kendin bulur, sadece karar gerekeni sorar
+description: Connects this machine — finds what is missing itself, asks only what needs a decision
 allowed-tools: Read, Write, Edit, Bash, Glob
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Bütün projelerin genel durumunu yükler — nerede kalındı, ne açık
+description: Loads the overall state of every project — where each was left, what is open
 argument-hint: <boş · kok <üst klasör>>
 allowed-tools: Bash
 ---

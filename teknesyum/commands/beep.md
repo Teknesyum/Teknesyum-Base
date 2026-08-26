@@ -1,5 +1,5 @@
 ---
-description: Sesli bildirimi yönetir — hangi olayda hangi ses çalsın, açık mı, hangi kapsamda
+description: Manages the sound alert — which sound on which event, on or off, in which scope
 argument-hint: [on | off | dinle | <olay> on|off | <olay> <dosya> | <olay> bip <hz> <ms>] [this | this sil]
 allowed-tools: Bash
 ---

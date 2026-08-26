@@ -1,5 +1,5 @@
 ---
-description: Arayüz standardını salt-okuma tarar ve onaylı planı doğrulanmış manifest olarak aktarır
+description: Scans the interface standard read-only and hands the approved plan over as a verified manifest
 argument-hint: <hedef-kökü>
 allowed-tools: Bash, Read
 ---

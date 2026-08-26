@@ -1,5 +1,5 @@
 ---
-description: Projenin bir profil standardına uygunluğunu denetler — eco, normal veya premium sertifikası; `ui` arayüz taraması
+description: Audits the project against a profile standard — eco, normal or premium certificate; `ui` scans the interface
 argument-hint: eco | normal | premium | ui [--tamamla] [--json] [--proje <yol>]
 allowed-tools: Bash, Read, Glob, Grep, Edit, Write, Agent
 ---

@@ -1,5 +1,5 @@
 ---
-description: Uzak denetimi seçeneklerle açar — kip, izin, kapasite, ad, kayıtsız açılış
+description: Opens remote control with options — mode, permission, capacity, name, unsaved start
 argument-hint: <ad · kip same-dir|worktree|session · izin <mod> · kapasite N · kaydetme · metin>
 allowed-tools: Bash
 ---

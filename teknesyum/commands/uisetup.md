@@ -1,5 +1,5 @@
 ---
-description: Arayüz standardını kurar, özelleştirir veya kapatır — hazır neon şablonu ya da kullanıcının kendi standardı
+description: Installs, customises or turns off the interface standard — the ready neon template or your own standard
 argument-hint: [sablon | kendim | kapat | ac | durum | palet | font | imza | not <metin>]
 allowed-tools: Read, Write, Edit, Glob
 ---

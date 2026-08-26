@@ -1,6 +1,6 @@
 ---
 name: teknesyum-ui
-description: Neon arayüz standardı — palet, tipografi, başlık hiyerarşisi, bileşen kalıpları, imza bloğu. Arayüz, panel, pencere, sayfa, bileşen veya CSS/XAML yazarken ya da mevcut arayüzü değiştirirken kullan; web, React, Electron, WPF/WinForms. Kendiliğinden yürürlüğe girmez: yalnız `teknesyum-ui.json` varken uygulanır, /uisetup ile kurulur.
+description: Neon interface standard — palette, typography, heading hierarchy, component patterns, signature block. Use when writing or changing an interface, panel, window, page, component or CSS/XAML (arayüz, panel, pencere, sayfa, bileşen); web, React, Electron, WPF/WinForms. Not in force on its own: applies only when `teknesyum-ui.json` exists, installed with /uisetup.
 ---
 
 # Neon UI standardı

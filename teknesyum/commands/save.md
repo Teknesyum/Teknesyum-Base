@@ -1,5 +1,5 @@
 ---
-description: Bu oturumu diske kaydeder — konuşma, bağlam, git durumu, gönderilmemiş metin
+description: Saves this session to disk — conversation, context, git state, unsent text
 argument-hint: <kayıt adı — boş bırakılırsa tarih>
 allowed-tools: Bash
 ---

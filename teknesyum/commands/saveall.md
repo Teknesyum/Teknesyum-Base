@@ -1,5 +1,5 @@
 ---
-description: Bütün projelerin son oturumunu kendi klasörlerine kaydeder
+description: Saves the last session of every project into its own folder
 argument-hint: <boş · kok <üst klasör>>
 allowed-tools: Bash
 ---

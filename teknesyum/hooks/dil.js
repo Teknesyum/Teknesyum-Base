@@ -362,14 +362,14 @@ const S = {
 
   olcu: {
     tr:
-      'Teknesyum Base: iş talebiyse relay §1 ile ölç ve ilk satırı **ters tırnak içinde** ' +
-      'bas — `Teknesyum ▸ Ölçüm ▸ <iş ne kadar> — <ne yaptım>`. Satırın tamamı tek kod ' +
-      'parçası olacak, arkası bloklu görünsün; başlık işareti, kalın yazı ya da madde imi ' +
-      'ekleme. Etiket büyük harfle başlar, ayraç ▸ işaretidir, kalan cümle sıradan tümce ' +
-      'düzenindedir: ilk harf büyük, gerisi küçük. Günlük dille yaz, kısaltma yapma ve ' +
-      'cümlenin içinde ok kullanma: ' +
-      '`Teknesyum ▸ Ölçüm ▸ Tek dosyalık iş — ajan açmadım, kendim yaptım`. Ajan açmasan da ' +
-      'yaz. Salt soru/sohbette satırı hiç yazma.',
+      'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
+      'line **ters tırnak içinde** (inside backticks) — `Teknesyum ▸ Ölçüm ▸ <iş ne kadar> — ' +
+      '<ne yaptım>`. Label and sentence stay Turkish. The whole line is one code span so it ' +
+      'reads as a block; no heading marks, bold or bullets. The label is capitalised, the ' +
+      'separator is ▸, and the rest is ordinary sentence case: first letter capital, the rest ' +
+      'lower. Plain everyday Turkish, no shorthand, no arrows inside the sentence: ' +
+      '`Teknesyum ▸ Ölçüm ▸ Tek dosyalık iş — ajan açmadım, kendim yaptım`. Write it even when ' +
+      'no agent is opened. Skip the line entirely for plain questions.',
     en:
       'Teknesyum Base: if this is a work request, size it with relay §1 and print the first ' +
       'line **inside backticks** — `Teknesyum ▸ Measure ▸ <how big> — <what I did>`. The whole ' +
@@ -404,31 +404,34 @@ const S = {
   },
   premiumNotu: {
     tr:
-      'Premium mod açık (Max 20x). Sonnet ve haiku kullanma; her ajan opus çalışır. ' +
-      'Bağımsız sözleşmeleri sıraya dizme, aynı anda yürüt — yirmi paralel ajana kadar ' +
-      'çıkabilirsin, üçü geçtiğinde worktree izolasyonuyla. Paralel açmak bu modda ' +
-      'varsayılandır, tek ajanla gitmek gerekçe ister: işi bölebiliyorsan böl, beş on ' +
-      'elden hallet, bitince sonraki basamağa geç. Ajan açmak için kullanıcıdan izin ' +
-      'bekleme — kararı kendi ölçüne göre sen verirsin, kullanıcı istediğinde zaten ' +
-      'açarsın. Tek ajan yalnız iş gerçekten küçükken doğrudur. Token tasarrufu bu ' +
-      'modda gerekçe değil — dosyayı okumak grepten daha iyi cevap veriyorsa oku, ' +
-      'aramayı dar tutma, denetimi her sözleşmede çalıştır. Düşünmeyi işe göre ayarla: ' +
-      'mekanik ve kalıbı belli işte uzun uzun düşünme, karar taşıyan veya hata ayıklama ' +
-      'işinde dibini sıyır. Deterministik araç hâlâ modelden önce gelir; o tercih ' +
-      'tokenden değil doğruluktan. Plan konseyi açık: sıfırdan projede PLAN.md yazmadan ' +
-      'önce aynı brifingle iki planner ajanı aç — biri fable, biri opus. İkisi de iş ' +
-      'yapmaz, yalnız öneri döner; ortak çıkan kararı doğrulanmış say, ayrıştıkları yeri ' +
-      'PLAN.md içinde Konsey ayrışması başlığına gerekçesiyle yaz. İkinci görüş de açık: ' +
-      'doğru kararı bilmediğin düğümde advisor ajanını aç, ' +
+      'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
+      'Do not queue independent contracts, run them at once — up to twenty agents in ' +
+      'parallel, with worktree isolation past three. Going parallel is the default here ' +
+      'and going with a single agent needs a reason: split the work when it can be ' +
+      'split, get it done five or ten hands at a time, then move to the next step. Do ' +
+      'not wait for the user to authorise opening an agent — the call is yours to make ' +
+      'on your own measure, and when the user does ask you open one anyway. A single ' +
+      'agent is right only when the job really is small. Saving tokens is not a ' +
+      'reason here — read the file when reading answers better than grepping, keep the ' +
+      'search wide, run the audit on every contract. Match thinking to the work: do not ' +
+      'labour over mechanical, pattern-fixed tasks; go all the way down on decisions and ' +
+      'debugging. A deterministic tool still comes before a model call — that choice is ' +
+      'about correctness, not tokens. The plan council is on: before writing PLAN.md on a ' +
+      'from-scratch project, open two planner agents with the same briefing — one fable, ' +
+      'one opus. Neither does the work, they only return proposals; treat what both agree ' +
+      'on as confirmed and record every disagreement under a Konsey ayrışması heading in ' +
+      'PLAN.md with your reasoning. The second opinion is on as well: at a node where you ' +
+      'do not know the right call, open the advisor agent and ' +
       GORUS +
-      ' üç başlıkta kısa cevap verir. Geri alınması pahalı seçim, üç turdur çözülmeyen ' +
-      'hata, bozulacak kural, iki türlü okunan istek ve kullanıcının plan istediği her ' +
-      'sefer için aç; mekanik işte açma ve sorabiliyorsan önce kullanıcıya sor. Plan ' +
-      'teyidini konseyle karıştırma: konsey sıfırdan projede PLAN.md için iki üyeyle ' +
-      'açılır, teyit kullanıcı plan oluştur dediğinde tek üyeyle alınır. Görüş ' +
-      'bağlayıcı değil — katılmazsan ' +
-      'gerekçeni yaz, aldığını `Teknesyum ▸ Görüş ▸ …` satırıyla bildir. Ön araştırma ' +
-      'tavanı bu modda 50 depodur.',
+      ' answers short, under three headings. Open it for a choice that is expensive to ' +
+      'undo, a bug unsolved for three rounds, a rule you are about to break, a request ' +
+      'that reads two ways, and every time the user asks for a plan; not for mechanical ' +
+      'work, and ask the user first whenever you are allowed to ask. Do not confuse the ' +
+      'plan check with the council: the council opens with two members for PLAN.md on a ' +
+      'from-scratch project, the check is one member whenever the user says make a plan. ' +
+      'The opinion is not binding — write your reasoning when you ' +
+      'disagree, and report that you took one with a `Teknesyum ▸ Görüş ▸ …` line. ' +
+      'Prior art in this mode means 50 repositories.',
     en:
       'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
       'Do not queue independent contracts, run them at once — up to twenty agents in ' +
@@ -461,9 +464,10 @@ const S = {
   },
   ecoNotu: {
     tr:
-      'Eco mod açık. Token tasarrufu en yüksek öncelik; hız ve zarafet feda edilebilir, ' +
-      'doğruluk edilemez. Önce `Grep`/`Glob` ile ara, tam dosyayı ancak grep yetmeyince ' +
-      'oku. `Explore` ajanı açma; ajan açmak gerekçe ister. Cevabı kısa yaz.',
+      'Eco mode is on. Saving tokens is the top priority; speed and polish can go, ' +
+      'correctness cannot. Search with `Grep`/`Glob` first, read a whole file only when ' +
+      'grep falls short. Do not open an `Explore` agent; opening any agent needs a ' +
+      'reason. Keep the answer short.',
     en:
       'Eco mode is on. Saving tokens is the top priority; speed and polish can go, ' +
       'correctness cannot. Search with `Grep`/`Glob` first, read a whole file only when ' +
@@ -475,7 +479,7 @@ const S = {
     en: (satir) => 'Buttons deviating from the baseline: ' + satir,
   },
   dilTalimati: {
-    tr: 'Kullanıcıya ve diğer ajanlara Türkçe yaz — sözleşmeler, paketler, raporlar dahil.',
+    tr: 'Write to the user and to other agents in Turkish — contracts, packets and reports included.',
     en: 'Write to the user and to other agents in English — contracts, packets and reports included.',
   },
   dilTalimatiKisa: {

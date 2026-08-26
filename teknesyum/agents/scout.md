@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Ön araştırma işçisi. Sıfırdan bir projeye başlarken aynı problemi çözmüş depoları inceler ve alınmaya değer fikirleri çıkarır. Kod kopyalamaz, kod yazmaz - tek çıktısı docs/taramalar/ altındaki inceleme dosyasıdır. Sana 2-3 depo adı ve projenin ne yapacağı verilir.
+description: Prior-art worker. When starting a project from scratch, studies repositories that solved the same problem and extracts the ideas worth taking. Copies no code, writes no code - its only output is the review file under docs/taramalar/. You are given 2-3 repository names and what the project will do.
 tools: Read, Grep, Glob, WebSearch, WebFetch, Bash, Write
 effort: high
 maxTurns: 45

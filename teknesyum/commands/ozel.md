@@ -1,5 +1,5 @@
 ---
-description: Kişisel dosyaları tek private depoda tutar — depo parça parça çekilir, tamamı inmez
+description: Keeps personal files in one private repo — pulled piece by piece, never whole
 argument-hint: [kur <url> [ad] | ekle <yol>... | cikar <yol>... | pusla | cek [--zorla] | projeler | ac <ad>]
 allowed-tools: Bash
 ---

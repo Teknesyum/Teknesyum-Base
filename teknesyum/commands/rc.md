@@ -1,5 +1,5 @@
 ---
-description: Bu projeyi telefondan sürülebilir hale getirir — uzak denetim oturumu açar
+description: Makes this project drivable from your phone — opens a remote control session
 argument-hint: <oturum adı — boş bırakılırsa klasör adı>
 allowed-tools: Bash
 ---

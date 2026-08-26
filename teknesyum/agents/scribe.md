@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: Relay mekanik işçisi. Karar gerektirmeyen toplu işler için kullan - AGENTS.md yönlendirici dosyalarını doldurma, isim değiştirme, biçimlendirme, metin/çeviri düzenleme, envanter çıkarma, tekrarlı düzeltme. Kod mantığına dokunmaz.
+description: Relay mechanical worker. Use for bulk work that needs no decisions - filling in AGENTS.md pointer files, renaming, formatting, text/translation editing, taking inventory, repetitive fixes. Does not touch code logic.
 effort: low
 maxTurns: 40
 memory: project

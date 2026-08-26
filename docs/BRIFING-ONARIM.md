@@ -45,7 +45,7 @@ cümle. Kod hiçbir ajanı paralel açmıyor, hiçbir ajana model atamıyor; `ag
 frontmatter'ında `model:` alanı **yok**. Tek yaptırım `kimlikDenetle()`: beyan/gerçek sapmasını
 log'a yazar, bloklamaz (defterde 63 kayıtlık sapma borcu bundan).
 
-**(E) Eklenti yükleniyor ve okunuyor, ama davranışı değiştirmiyor.** 21 skill, 22 komut ve
+**(E) Eklenti yükleniyor ve okunuyor, ama davranışı değiştirmiyor.** 2 skill, 22 komut ve
 7 ajan tanımı yükleniyor, `SessionStart` kancası koşuyor, model banner'ı basıp talimata
 itaat ediyor. **Ama 12/12 koşuda sıfır Agent çağrısı, sıfır Skill çağrısı.** Araç kümesi her
 yerde aynı: Bash, Write, Edit, Grep. Ödenen yükün karşılığı bir banner satırı.

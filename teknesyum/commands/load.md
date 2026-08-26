@@ -1,5 +1,5 @@
 ---
-description: Kaydedilmiş bir oturumu geri yükler — kaldığın yerden devam
+description: Restores a saved session — pick up where you left off
 argument-hint: <kayıt adı · son · hepsi — boş bırakılırsa en son kayıt>
 allowed-tools: Bash, Read
 ---

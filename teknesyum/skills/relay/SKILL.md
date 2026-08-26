@@ -1,6 +1,6 @@
 ---
 name: relay
-description: Teknesyum iş yönetimi. Yalnız ana oturumda ve oturumda bir kez açılır; alt ajan açmaz. Kullanıcı bir şey yapılmasını istediğinde İLK BURAYA BAK - özellik ekleme, uygulama yazma, hata düzeltme, refactor, yeni proje, "şunu yapalım" tipi her talep. İşi ölçer, hazırlığı yapar, gerekiyorsa ajanlara dağıtır. İlerleme sorulduğunda ve kesilen oturumda da kullan.
+description: Teknesyum work management. Opens only in the main session and only once per session; never in a subagent. LOOK HERE FIRST when the user wants something done — İLK BURAYA BAK — adding a feature, writing an app, fixing a bug, refactor, a new project, any "let us do this" request; özellik ekleme, uygulama yazma, hata düzeltme, refactor, yeni proje, "şunu yapalım". Sizes the work, prepares it, hands it to agents when needed. Use it when progress is asked for and in an interrupted session.
 ---
 
 # Relay — giriş kapısı

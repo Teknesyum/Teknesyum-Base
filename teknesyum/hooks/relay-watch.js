@@ -102,6 +102,7 @@ function run(j) {
     doneYeniden(root);
     acikBildir(root);
     acikEngelle(root);
+    calisanBildir(turIzi(j, root));
     const engelli = engelliKapanis();
     const sonuc = turBitir(j, root);
     // Ses makbuzdan ayrıldı. Makbuz "o ana kadarki maliyet"tir ve engellenen turda da
@@ -866,6 +867,18 @@ function calisanEkle(live, j) {
   return l.length;
 }
 
+// Olculdu 26.08 (openlogs/HATA-t0-acik-ajan-varken-restart-onayi-verdi): T0 donus
+// blogunda "ajan yok" yazdi, o an bir denetci hala kosuyordu. Kullanici o satira
+// bakip restart'a basacakti. Ajan sayisi T0'in yargisi degil olculen bir gercek —
+// Stop aninda dosyadan okunup basiliyor ki tahmin edilemesin.
+function calisanBildir(live) {
+  if (!live) return;
+  const l = read(path.join(live, CALISAN));
+  if (!Array.isArray(l) || !l.length) return;
+  const roller = l.map((x) => String(x.type || '?').replace(/^teknesyum:/, '')).join(', ');
+  duyur(ceviri('calisanVar', l.length, roller), 1, true);
+}
+
 // Stop olayını başlangıç kaydına bağlayan bir kimlik alanı yok; eşleştirme tipten
 // yapılıyor. Aynı tipten birden çok ajan açıksa hangisinin bittiği bilinemez —
 // o durumda süre uydurulmaz, `ambiguous` döner. Yanlış süre, süresizlikten kötüdür.
@@ -1424,12 +1437,20 @@ function acikGunlukSayisi(cwd) {
   return n;
 }
 
+// Olculdu 26.08 (openlogs/HATA-acilis-banner-i-her-istekte-yeniden-basiliyor): tek
+// oturumda banner uc kez basildi — acilis, compact sonrasi, resume sonrasi. Sabit
+// kalemler (premium satiri, kurulum uyarisi, yordam cumlesi) her seferinde tekrarlandi:
+// kullanici icin gurultu, model icin tekrar eden token. Durum kalemleri (sozlesme
+// sayisi, ajan sorunu, gunluk) tekrarda deger tasir, iki olay arasinda degisebilir.
+const ACILIS_TAM = { startup: 1, clear: 1 };
+
 function acilis(root, kapNotu, oturumId, cwd, kaynak) {
+  const tam = !kaynak || ACILIS_TAM[kaynak];
   const parca = [];
   if (kapNotu) parca.push(kapNotu);
   const eksik = kurulumEksik();
-  if (eksik && !headlessKosu()) parca.push(yerel(eksik));
-  if (premium()) parca.push(ceviri('premiumAcik'));
+  if (tam && eksik && !headlessKosu()) parca.push(yerel(eksik));
+  if (tam && premium()) parca.push(ceviri('premiumAcik'));
   if (root) {
     const acik = say(path.join(root, 'contracts'));
     const biten = say(path.join(root, 'contracts', 'done'));
@@ -1459,7 +1480,7 @@ function acilis(root, kapNotu, oturumId, cwd, kaynak) {
   //
   // Seviye 0 "base sessizce çalışsın" demek ve bu, modele giden metni de kapsar: sessiz
   // kip isteyen kullanıcı enjeksiyon da istemiyor.
-  if (seviye() >= 1)
+  if (tam && seviye() >= 1)
     ciktiEkle({
       hookSpecificOutput: {
         hookEventName: 'SessionStart',

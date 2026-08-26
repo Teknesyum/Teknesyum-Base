@@ -77,6 +77,18 @@ const KONSEY = 'fable + opus';
 const GORUS = 'fable';
 
 const S = {
+  calisanVar: {
+    tr: (n, roller) =>
+      n +
+      ' ajan hâlâ çalışıyor (' +
+      roller +
+      '). Dönüş bloğunda "ajan yok" yazma; bu satır ölçüldü, tahmin değil.',
+    en: (n, roller) =>
+      n +
+      ' agent(s) still running (' +
+      roller +
+      '). Do not write "no agents" in the return block; this line is measured, not guessed.',
+  },
   gorev: {
     tr: (rol, model, tanim, n) =>
       'Görev ▸ ' +

@@ -1,0 +1,22 @@
+{
+  "contractId": "B1",
+  "auditorRunId": "ae413949ceca4091f",
+  "headSha": "32a8bc655be32bf2954d7362b4d00105ac2279fe",
+  "diffHash": "cb5a96323ffa3309e4eca736675461aee5749e26474806b9d500b9e4622ad1bf",
+  "owns": [
+    "bench/fixtures/",
+    "bench/gorevler/",
+    "scripts/bench/kos.js",
+    "docs/BENCH-KORPUS.md"
+  ],
+  "verification": [
+    "```",
+    "GEÇTİ  B1  · şartname ✓ · kalite ✓",
+    "✓ tek komut 16 koşu, ≤6 dk — kos.js:388-433 (4×4 iş, Promise.all, 400 ms kademeli); bench/sonuc/*.json zaman aralığı 10:51:56→10:53:20 = ~85 sn, 16/16 `\"gecti\": true`, `tavanAsildi` hepsinde false, tavan kos.js:20+285 = 4 dk",
+    "✓ iki koşuda fixture hash + kuru"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-26T10:59:58.967Z",
+  "usedAt": "2026-08-26T10:59:59.013Z",
+  "completedSha": "32a8bc655be32bf2954d7362b4d00105ac2279fe"
+}

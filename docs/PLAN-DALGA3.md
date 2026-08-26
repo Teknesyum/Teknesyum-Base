@@ -143,3 +143,99 @@ token karsiliginda."
   tavana baglanir.
 - **Tum ajanlari silip tek `builder` birakmak.** Olcmeden kesmek, olcmeden eklemekle
   ayni hatadir.
+
+---
+
+# EK — Ikinci konsey turu (26.08.2026, aksam)
+
+Baskan fable, uye opus. Bagimsiz iki inceleme, tum depo okundu.
+
+## E1. Manseti curuten veri
+
+`~/.claude/teknesyum/canli/kullanim.json` (22-26.08) gercek cagri sayiyor:
+
+| kalem | n | kalem | n |
+|---|---:|---|---:|
+| ajan:builder | 211 | komut:save | 11 |
+| ajan:auditor | 166 | komut:scan | 8 |
+| ajan:scout | 137 | komut:premium | 2 |
+| ajan:ui-builder | 57 | komut:load / loadall / update | 1 |
+| ajan:planner | 45 | skill:relay | 2 |
+| ajan:advisor | 39 | skill:teknesyum-ui | 6 |
+| ajan:scribe | 20 | | |
+
+**"0 Agent cagrisi" bench artefaktidir.** Bench headless ve tek atislik; o gorev
+sinifinda denetim zinciri hic tetiklenmez. Fayda tarafi olculmedi demek dogru,
+fayda yok demek yanlisti. §1'in "0 olculmus fayda" satiri bu ek ile duzeltilmistir.
+
+Komut tarafi tersi yonde: **beep, autocompact, ekran, help, log, ozel, pusla, rc,
+rcall, rcadvanced, report, rule, uicheckup, uisetup, saveall** — tek kayit yok.
+Sayac 22.08'de dogdu, 5 gunluk. Yon verir, hukum vermez → tasima > silme.
+
+## E2. Konum — iki uye birlesti
+
+> Teknesyum Base, biten isin "bitti" sayilmasini modelin beyanina degil kancanin
+> dogrulayabildigi bir denetim zincirine baglar.
+
+Elenen adaylar ve gerekcesi:
+
+| aday | neden degil |
+|---|---|
+| token tasarrufu | eklenti net token harciyor |
+| paralel ajan | native de 20 ajan aciyor |
+| UI standardi | bir CLAUDE.md satiri + tokens.json ile taklit edilir |
+| sureklilik | native `--resume` + `/rewind` var |
+| profiller | yaptirimsiz prompt metni |
+| Turkce | %47 pahali yuzey; maliyet, iddia degil |
+
+Kalan cekirdek: `contract-guard.js` (baglama 0 token yazar, `done/` kilidini ve
+muhur kanitini mekanik uygular), `auditor` (`tools: Read, Grep, Glob, LSP` — yazan
+ajanin kendi isini onaylamasi arac seviyesinde kilitli), sozlesme protokolu.
+
+## E3. Ayrildiklari nokta — olcum metrigi
+
+**Baskan (fable):** kacan kusur sayisi + her kosuya **zorunlu kesinti**. Gerekce:
+iddianin yarisi "kesilen iste dosyadan surme"; kusur metrigi bunu hic olcmuyor.
+Kusurlari kosan taraf degil ayri bir model eksin (secim yanliligi).
+
+**Uye (opus):** kacan kusuru **reddediyor**, yerine **yanlis tamam orani** —
+`done` muhurlenen sozlesmelerin bagimsiz son-dogrulamada dusme yuzdesi. Gerekce
+uc katli: (1) 12 kosunun 10'u sifir kusurdu, tavan etkisi kollari ayirt etmiyor;
+(2) ekili kusur modelin dikkatini olcer, eklentinin kapisini degil; (3) tek atislik
+gorevde denetim zinciri hic tetiklenmez.
+
+Uye ayrica **A/B eksenini** degistiriyor: eklenti acik/kapali degil, **yalniz denetim
+zinciri acik/kapali, gerisi sabit** — yoksa bagimsiz degisken fiilen sistem promptu
+boyutu olur.
+
+**T0 karari:** uyenin metrigi birincil (yanlis tamam orani), baskanin kesinti kolu
+ikincil metrik olarak eklenir (kesinti sonrasi kurtarilan is yuzdesi). Ikisi celismiyor;
+biri kapinin dogrulugunu, digeri sureklilik iddiasini olcer. Eksen uyeninki.
+
+## E4. Sira — iki uye de plani duzeltti
+
+**Once kes, sonra cevir.** D2 cevirisi atilacak satirlara da uygulandi, o emek gitti.
+
+| # | is | kabul olcutu |
+|---|---|---|
+| A1 | yuzey kesimi: rc/rcall/rcadvanced/ozel/pusla/autocompact/beep/saveall/loadall | acilis sabiti 2.979 → ≤1.400 |
+| A2 | enjeksiyon kesimi: `olcu`, `seviye2`, `premiumNotu`, `yonlendirmeYonerge` | rolesiz oturumda 0 karakter (D1 bunu yapti) |
+| B1 | muhur sarti: `submitted → done` gecisi auditor muhru olmadan yazilamaz | 10 sentetik muhursuz deneme %100 engellenir |
+| B2 | rolenin kosuda devre disi kalmasi — kok neden `roleKoku()` mu | headless `SessionStart` ciktisinda role durumu gorunur |
+| C | olcum duzenegi (E3) | once eksen spike'i, sonra guc |
+| D | yuzey Ingilizceye — **kesimden sonra** | katsayi ≥3,2 |
+| E | `teknesyum-ui` ayri eklentiye | Base yuzeyinden cikar |
+
+## E5. Reddedilenler
+
+- Eklentiyi sifirdan yazmak — `contract-guard.js` ve auditor kilidi calisiyor.
+- Yuku kisaltarak cozmek — denendi, net 85 token. Kalem kaldirmadan bitmez.
+- Her kullanilmayan komutu aninda silmek — sayac 5 gunluk, tasima > silme.
+- 12 bloklu tam guclu bench'i simdi kurmak — yanlis ekseni yuksek gucle olcmek pahali.
+- Profilleri gercek paralellige baglamak — olculmemis iddia uzerine ikinci olculmemis iddia.
+
+## E6. Duzeltilen yanlis hukum
+
+Baskan `denetim-kaydi.js` ve `kapsayici.js` icin "olu kod" dedi: `hooks.json`'da
+bagli degiller, dogru — ama `contract.js` ve `relay-watch.js` onlari modul olarak
+`require` ediyor. Olu degiller. Hukum T0 tarafindan reddedildi.

@@ -133,6 +133,18 @@ function kancaKos(olay, oturum) {
   return { ad: `relay-watch · ${olay}`, kar: metin.length, satir: metin };
 }
 
+function acikSozlesmeVar() {
+  const d = path.join(KOK, '.claude', 'relay', 'contracts');
+  let ad = [];
+  try { ad = fs.readdirSync(d).filter((a) => a.endsWith('.md')); } catch { return false; }
+  return ad.some((a) => {
+    try {
+      const m = fs.readFileSync(path.join(d, a), 'utf8').match(/^status:s*(w+)/m);
+      return !!m && (m[1] === 'active' || m[1] === 'submitted');
+    } catch { return false; }
+  });
+}
+
 function toplaKalemler(kancasiz) {
   const birKez = [
     ['Komutlar (slash)', komutlar()],
@@ -151,7 +163,9 @@ function toplaKalemler(kancasiz) {
       if (i === 1 && r) herTur.push({ ...r, ad: `${r.ad} · tur 1` });
     }
     const yazan = turDokumu.filter((t) => t.kar > 0).length;
-    if (yazan === 0) uyarilar.push('UserPromptSubmit hicbir turda yazmadi — seviye 0 olabilir.');
+    if (yazan === 0 && acikSozlesmeVar()) {
+      uyarilar.push('UserPromptSubmit hicbir turda yazmadi — acik sozlesme var, kapi hatali kapali.');
+    }
   }
   return { birKez, herTur, turDokumu };
 }

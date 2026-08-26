@@ -1,0 +1,18 @@
+{
+  "contractId": "B0",
+  "auditorRunId": "a5466fa4db132c61b",
+  "headSha": "c5e17e88e0134520d3c450efb70d4e9d16db240c",
+  "diffHash": "99b55c1bfd8fe3a031bc50b72e421bdfbaa527f24a35f29016fed76013bba489",
+  "owns": [
+    "scripts/bench/spike.js",
+    "docs/BENCH-ISKANDIL.md"
+  ],
+  "verification": [
+    "GEÇTİ  B0  · şartname ✓ · kalite ✓",
+    "✓ Dört koşu paralel + EVET/HAYIR + kanıt satırı → docs/BENCH-ISKANDIL.md — spike.js:518 (`Promise.all(DURUMLAR...)`), her koşu izole `CLAUDE_CONFIG_DIR` alıyor (spike.js:129, 147, 305; konfig kökü spike.js:277 benchKok altında), tablo üretimi spike.js:411-421 → d"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-26T10:47:37.210Z",
+  "usedAt": "2026-08-26T10:47:37.258Z",
+  "completedSha": "c5e17e88e0134520d3c450efb70d4e9d16db240c"
+}

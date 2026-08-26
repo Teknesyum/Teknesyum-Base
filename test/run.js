@@ -242,7 +242,12 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
   // ÖLÇÜLDÜ (22.08.2026): tarama raporları başka projelerin komut adlarını taşıyor —
   // `docs/taramalar/` altındaki bir rapor yabancı bir `/durum` komutundan söz edince
   // test bunu bizim eski adımız sandı. Kapsam kendi yüzeyimizle sınırlı.
-  const YABANCI = (f) => f.replace(/\\/g, '/').includes('/docs/taramalar/');
+  // ÖLÇÜLDÜ (26.08.2026): bench fikstürü sentetik bir proje taşıyor — `src/durum.js`
+  // yolu da aynı kalıba düşüyor. Fikstür bizim komut yüzeyimiz değil.
+  const YABANCI = (f) => {
+    const y = f.replace(/\\/g, '/');
+    return y.includes('/docs/taramalar/') || y.includes('/bench/fixtures/') || y.includes('/bench/gorevler/');
+  };
   for (const f of yuru(path.join(__dirname, '..'))) {
     if (!/\.(md|js|json|tsx)$/.test(f) || f === __filename) continue;
     if (YABANCI(f)) continue;

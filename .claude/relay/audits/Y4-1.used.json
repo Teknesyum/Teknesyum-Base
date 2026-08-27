@@ -1,0 +1,24 @@
+{
+  "contractId": "Y4",
+  "auditorRunId": "adfa54e90c46362ac",
+  "headSha": "89fbce796fac0ab3f96085062486e9a1a2396472",
+  "diffHash": "67e9fa843699bab184dceea493cd6aa3daeea2dec1ceb9a73114f89bed3afce2",
+  "owns": [
+    "teknesyum/commands",
+    "teknesyum/agents"
+  ],
+  "verification": [
+    "GECTI  T2  · sartname ✓ · kalite ✓",
+    "✓ K1 ajan tanimlari 851 karakter / 341 token, en uzun 126 — denetci tek tek saydi, regresyon yok",
+    "✓ K2 sabit yuzey 1.396 ≤ 1.400 — kriteri kapatan is Y5te yapildi, done/Y5.md:225 ham cikti; denetci kaba kontrolle dogruladi (komut 330 birebir tuttu)",
+    "✓ K3 testler yesil 570/570 + 10 suite",
+    "✓ K4 konusuz — Y4 komut cikarmadi, cikaran Y5",
+    "✓ K5 owns disina yazma yok",
+    "✓ K6 kova kararlari + olcum tablosu Y4.md:97-161",
+    "BORC: Y4 metni hala 1.569 diyor (kendi aninda dogruydu), 1.400 esigini test tutmuyor (marj 4 token, Y6ya yazildi)"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-27T00:27:34.787Z",
+  "usedAt": "2026-08-27T00:27:34.854Z",
+  "completedSha": "89fbce796fac0ab3f96085062486e9a1a2396472"
+}

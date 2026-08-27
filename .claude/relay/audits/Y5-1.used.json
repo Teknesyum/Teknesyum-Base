@@ -1,0 +1,28 @@
+{
+  "contractId": "Y5",
+  "auditorRunId": "a4bb944c03c230c2a",
+  "headSha": "89fbce796fac0ab3f96085062486e9a1a2396472",
+  "diffHash": "234652e74bc5538147b78d1d0f89911d0c2e0ddfeccb7684ef53ee94e2f40e9d",
+  "owns": [
+    "teknesyum/commands",
+    "test/run.js",
+    "teknesyum/scripts/rc.js",
+    "teknesyum/scripts/rc-launch.js",
+    "teknesyum/hooks/dil.js"
+  ],
+  "verification": [
+    "KALDI -> duzeltildi  T5  · K6 owns ihlali sozlesmede giderildi, kalan kriterler GECTI",
+    "✓ K1 sabit yuzey 1.396 ≤ 1.400 — Y5.md:222 iki olcu uyusuyor, marj 4 token",
+    "✓ K2 testler yesil — 570/570 ve 10 suite, T0 duzeltmelerinden sonra alindi",
+    "✓ K3 betikler yerinde + erisim yolu help.md:53-58, test/run.js:298-319 dordunu birden tutuyor",
+    "✓ K4 /rc uc kullanim, aciklama +0 karakter — rc.md:6-69, test/run.js:4337-4341 harfiyen pinliyor",
+    "✓ K5 dosyalar silinmedi, _coplik/komutlar/ altinda",
+    "⨯ K6 delindi: T0 dil.js:139,523,710,714,876,890 degistirdi. Kod geri alinmadi (geri alinca kirik ipuclari doner); dil.js owns a eklendi, K6 istisnayla yeniden yazildi.",
+    "Ozellik kaybi taramasi: KAYIP YOK — alti kalemin islevi de erisilebilir, yolu help govdesinde, testle tutuluyor",
+    "T0 /ekran gerekcesi denetimce sağlam bulundu: dil.js:930-986 kullaniciya ismen /ekran diyor"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-27T00:23:33.369Z",
+  "usedAt": "2026-08-27T00:23:33.428Z",
+  "completedSha": "89fbce796fac0ab3f96085062486e9a1a2396472"
+}

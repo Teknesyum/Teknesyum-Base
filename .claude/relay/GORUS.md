@@ -17,3 +17,9 @@
 2026-08-27 07:25 | advisor | Fable-Yüzey | bekleyen: —
 2026-08-27 07:25 | advisor | Fable-Kancalar | bekleyen: —
 2026-08-27 07:25 | advisor | Fable-Belgeler | bekleyen: —
+2026-08-27 08:42 | advisor | Fable-Betikler ve Testler | bekleyen: —
+2026-08-27 08:42 | advisor | Fable-Komut Gövdeleri | bekleyen: —
+2026-08-27 08:42 | advisor | Fable-Skill Gövdeleri | bekleyen: —
+2026-08-27 08:43 | advisor | Fable-Paket ve Dağıtım | bekleyen: —
+2026-08-27 08:43 | advisor | Fable-Röle Çalışma Alanı | bekleyen: —
+2026-08-27 10:39 | advisor | Fable-Telemetri Tasarımı | bekleyen: —

@@ -164,8 +164,16 @@ konsey açılmaz. Tek üyeyle konsey kurulmaz — bir öneri, öneri değil plan
 
 ## 1.5.1 İkinci görüş — tek soruluk konsey
 
-`SETTINGS.md` içindeki `second_opinion` açıksa (premium profilde varsayılan), T0 doğru
-kararın ne olduğunu bilmediği bir düğümde **`advisor` ajanını** açar. Ayrı bir ajandır,
+`SETTINGS.md` içindeki `second_opinion` açıksa (premium profilde varsayılan), T0 önemli
+bir düğümde **`advisor` ajanını** açar.
+
+**Görüş yetersizlik itirafı değildir.** Kullanıcı 27.08.2026'da bunu açıkça söyledi:
+"sadece senin yetersiz olduğun alanlar gibi bir kısıt yok — ek görüş ile ufkunu açmanın
+faydalı olacağı önemli kilit noktalarda." Yani tetik "bilmiyorum" değil, "burası kilit".
+T0 kendinden eminken de açılır; ikinci okuma emin olunan yerdeki kör noktayı gösterir.
+Ölçüldü, aynı gün: T0 mühür doğrulayıcısının "%33 yanlış tamam" çıktısını bugünkü
+makinenin kusuru diye raporladı; `advisor` on beş vakanın tamamının yama öncesi dönemden
+geldiğini, bugünkü oranın sıfır olduğunu gösterdi. T0 emindi ve yanılıyordu. Ayrı bir ajandır,
 `planner`'ın bir kipi değil: brifingde ön ek yoktur, doğrudan `advisor` açılır ve soru
 yazılır.
 
@@ -199,7 +207,7 @@ tetikleyici beş tur boyunca hiç ateşlenmedi. Bakma anları şunlardır: her d
 geldiğinde brifing yazmadan önce · bir sözleşme ikinci düzeltme turuna girerken · plan
 kullanıcıya verilmeden önce · geri alınması pahalı bir adımdan önce.
 
-Dokuz hatırlatma maddesi. Her madde ölçülebilir bir eksik ya da çelişki gösterir:
+On bir hatırlatma maddesi. Her madde ölçülebilir bir eksik, çelişki ya da kilit gösterir:
 
 1. İki yol arasında kalındı ve seçim geri alınması pahalı — mimari sınır, veri modeli,
    bağımlılık kararı.
@@ -220,6 +228,12 @@ Dokuz hatırlatma maddesi. Her madde ölçülebilir bir eksik ya da çelişki g�
    ve üstündeyken `CHECK`siz kriter zaten sözleşmeye giremez.
 9. Geri alınması pahalı bir yayın adımından önce: sürüm etiketi, `main`'e birleştirme,
    yayımlanmış bir arayüzün ya da şemanın değişmesi, bir sürümün geri çekilmesi.
+10. Bir ölçümün sonucu **yoruma dönüşecek**: sayı elde, hüküm henüz yazılmadı. Sayıyı
+    okumak ile ne anlama geldiğini söylemek ayrı işlerdir; ikincisi görüş ister. Bu madde
+    T0 emin olduğunda da ateşlenir — nedeni yukarıdaki ölçülmüş vakadır.
+11. Bir şey **kesilecek**: kod, komut, kural, belge, bağımlılık. Kaldırma kararı kalıcı
+    yükü azaltır ama neyi taşıdığı ancak kaldırıldıktan sonra görülür. Kesimden önce
+    sorulur, kesimden sonra sormak geç kalmış olur.
 
 **Dördüncü maddede sormak önce gelir.** Görüş, kullanıcıya sormanın yerini tutmaz;
 yalnızca `ask_threshold` sormaya izin vermediğinde devreye girer. Eşik soruyorsa sor.

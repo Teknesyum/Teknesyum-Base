@@ -730,7 +730,23 @@ function turDamga(j) {
   const now = Date.now();
   d.durak = durakToplami(d, now, j);
   d.son = now;
+  if (debugAcik()) sayacBirik(d, j);
   yaz(f, d);
+}
+
+// Telemetri sayacı. Yalnız debug modunda birikir; kapanışta tek JSONL satırına iner.
+// Beyaz liste: araç adı, skill adı, ajan tipi. Serbest metin — istem, dosya yolu,
+// komut, tool_input — hiçbir koşulda girmez. Özel projelerden veri topluyoruz.
+function sayacBirik(d, j) {
+  const s = d.sayac || (d.sayac = { arac: {}, skill: [], ajan: [] });
+  const ad = String(j.tool_name || '').slice(0, 40);
+  if (!ad) return;
+  s.arac[ad] = (s.arac[ad] || 0) + 1;
+  if (j.hook_event_name !== 'PreToolUse') return;
+  const g = j.tool_input || {};
+  if (ad === 'Skill' && g.skill && s.skill.length < 40) s.skill.push(String(g.skill).slice(0, 60));
+  if (ad === 'Agent' && s.ajan.length < 40)
+    s.ajan.push(String(g.subagent_type || 'claude').slice(0, 60));
 }
 
 // "Her şey gerçekten bitti mi?" — `Stop` bu soruyu cevaplamıyor. Ana oturumun turu
@@ -785,7 +801,64 @@ function turBitir(j, root) {
   try {
     fs.unlinkSync(f);
   } catch {}
+  telemetriYaz(j, d, sn, ana, alt);
   turOzetiBas(ceviri('turOzeti', sureMetni(sn), tokenMetni(ana), tokenMetni(alt)), iz);
+}
+
+// Bedava bench. Gerçek projelerde eklenti zaten koşuyor; makbuz zaten hesaplanıyor.
+// Tek eklenen, o sayıyı merkezî bir dosyaya da yazmak — bağlama tek karakter girmez,
+// ek API çağrısı yoktur, maliyeti bir satırlık disk yazımıdır.
+//
+// FABLE HÜKMÜ (27.08.2026): bu veri "şu özellik şu kadar tüketiyor" sorusunu DOĞRUDAN
+// cevaplamaz — kanca gerçek API token'ını görmez, transkript baytından türetir ve tek
+// bir özelliğin bağlam payını ayıramaz. Cevapladığı sorular: hangi özellik gerçekten
+// kullanılıyor, ajan sayısı ile maliyet nasıl ilişkileniyor, bir değişiklikten önce ve
+// sonra eğilim ne. Alt ajan başına maliyet tek gerçek atıftır — ayrı transkripti var.
+// Kontrollü karşılaştırma (premium vs native, aynı görev) için yine sentetik bench şart.
+const TELEMETRI = 'teknesyum-telemetri.jsonl';
+const TELEMETRI_TAVAN = 5000;
+
+function projeKimligi(kok) {
+  return require('crypto')
+    .createHash('sha256')
+    .update(String(kok || ''))
+    .digest('hex')
+    .slice(0, 12);
+}
+
+function telemetriYaz(j, d, sn, ana, alt) {
+  if (!debugAcik()) return;
+  try {
+    const s = d.sayac || {};
+    const satir = {
+      ts: new Date().toISOString(),
+      proje: projeKimligi(j.cwd),
+      sure_sn: sn,
+      durak_ms: Math.max(0, Number(d.durak) || 0),
+      tok_ana: ana,
+      tok_alt: alt,
+      arac: s.arac || {},
+      skill: s.skill || [],
+      ajan: s.ajan || [],
+    };
+    const f = path.join(konfigKok(), TELEMETRI);
+    fs.appendFileSync(f, JSON.stringify(satir) + '\n', 'utf8');
+    telemetriKirp(f);
+  } catch {}
+}
+
+function telemetriKirp(f) {
+  let satir;
+  try {
+    satir = fs.readFileSync(f, 'utf8').split('\n');
+  } catch {
+    return;
+  }
+  if (satir.length <= TELEMETRI_TAVAN + 1) return;
+  const tut = satir.filter(Boolean).slice(-Math.round(TELEMETRI_TAVAN * 0.8));
+  try {
+    fs.writeFileSync(f, tut.join('\n') + '\n', 'utf8');
+  } catch {}
 }
 
 // Bitiş sesi ne `Stop` olayına ne makbuza bağlıdır — **klavyenin kullanıcıya geçtiği

@@ -3752,7 +3752,7 @@ ol('plan uretimi ikinci gorus tetikleyicisidir ve konseyden ayrilir', () => {
   const j = s.indexOf('## 1.6');
   if (i < 0 || j < i) throw new Error('§1.5.1 bulunamadı');
   const bolum = s.slice(i, j);
-  icerir(bolum, 'Dokuz hatırlatma maddesi');
+  icerir(bolum, 'On bir hatırlatma maddesi');
   icerir(bolum, 'plan oluştur');
   icerir(bolum, 'Plan konseyi (§1.5)');
   // Varsayilan acmaktir: liste izin listesi degil hatirlatma listesi, ve acmamanin
@@ -3763,16 +3763,19 @@ ol('plan uretimi ikinci gorus tetikleyicisidir ve konseyden ayrilir', () => {
   icerir(bolum, 'Ne zaman bakılacağı da kuraldır');
 });
 
-ol('ikinci gorus tetikleyicileri dokuza cikti ve her biri olculebilir', () => {
+ol('ikinci gorus tetikleyicileri on bire cikti ve her biri olculebilir', () => {
   const s = relayMetin().replace(/\r/g, '');
   const bolum = s.slice(s.indexOf('## 1.5.1'), s.indexOf('## 1.6'));
   const madde = bolum.split('\n').filter((r) => /^\d+\. /.test(r));
-  esit(madde.length, 9, 'dokuz tetikleyici olmali');
+  esit(madde.length, 11, 'on bir tetikleyici olmali');
   for (const yeni of [
     'yeniden\n   üreten adımı',
     'İki ajanın raporu',
     'geçti/kaldı yapan komut yazılamadı',
     'sürüm etiketi',
+    'yoruma dönüşecek',
+    'Bir şey **kesilecek**',
+    'Görüş yetersizlik itirafı değildir',
   ])
     icerir(bolum, yeni);
   for (const belirsiz of ['kararsız kaldığında', 'emin olamadığında', 'şüphelendiğinde'])
@@ -10953,6 +10956,57 @@ ol('bin/Release altindaki konsol exe ekran kapisina takilmaz', () => {
   esit(konsol.kod, 0, 'konsol exe engellendi');
   const pencere = kos('./bin/Release/app.exe');
   esit(pencere.kod, 2, 'pencere exe gecti');
+});
+
+ol('telemetri yalniz debug modunda yazilir ve serbest metin tasimaz', () => {
+  const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-tlm-'));
+  const { p } = proje(1, 0);
+  const tlm = path.join(cfg, 'teknesyum-telemetri.jsonl');
+  const tur = (ek) => {
+    calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'is' }, ek);
+    calistir(
+      IZLE,
+      {
+        ...ort(p),
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Skill',
+        tool_input: { skill: 'relay', gizli: 'PAROLA-SIZMAMALI' },
+      },
+      ek
+    );
+    calistir(
+      IZLE,
+      {
+        ...ort(p),
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Bash',
+        tool_input: { command: 'echo GIZLI-KOMUT-SIZMAMALI' },
+      },
+      ek
+    );
+    calistir(
+      IZLE,
+      { ...ort(p), hook_event_name: 'Stop', transcript_path: transcript('bitti') },
+      ek
+    );
+  };
+
+  tur({ CLAUDE_CONFIG_DIR: cfg });
+  if (fs.existsSync(tlm)) throw new Error('debug kapaliyken telemetri yazildi');
+
+  fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ debug: true }));
+  tur({ CLAUDE_CONFIG_DIR: cfg, TEKNESYUM_DEBUG: '1' });
+  if (!fs.existsSync(tlm)) throw new Error('debug acikken telemetri yazilmadi');
+
+  const ham = fs.readFileSync(tlm, 'utf8');
+  if (/PAROLA-SIZMAMALI|GIZLI-KOMUT-SIZMAMALI/.test(ham))
+    throw new Error('telemetriye serbest metin sizdi');
+  const satir = JSON.parse(ham.trim().split(/\n/).pop());
+  for (const alan of ['ts', 'proje', 'sure_sn', 'tok_ana', 'tok_alt', 'arac'])
+    if (!(alan in satir)) throw new Error('telemetri alani eksik: ' + alan);
+  if (/[\\/:]/.test(String(satir.proje)))
+    throw new Error('proje alani yol tasiyor, hash olmali: ' + satir.proje);
+  icerir(JSON.stringify(satir.skill), 'relay', 'skill adi sayilmamis');
 });
 
 console.log(

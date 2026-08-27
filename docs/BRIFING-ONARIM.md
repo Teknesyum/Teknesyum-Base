@@ -98,7 +98,7 @@ Kapsamlı bir onarım projesi öner. Kapsam en az şu üç ekseni ayırmalı ve 
 gerekçelendirmeli:
 
 1. **Ölçüm onarımı** — geçerli koşu kapısı, kota izolasyonu, doğru metrik seti, yeterli güç,
-   gerçek rastgeleleştirme. Mevcut iki rapordaki (BENCH-PROJE.md, BENCH-SONUC.md) yanlış
+   gerçek rastgeleleştirme. Mevcut iki rapordaki (trash/bench/BENCH-PROJE.md, BENCH-SONUC.md) yanlış
    hükümlerin düzeltilmesi.
 2. **Doğru ekseni ölçen düzenek** — eklentinin iddiasını (orkestrasyon, süreklilik, insan
    maliyeti) sınayan görev sınıfları ve metrikler. Headless mi, interaktif taklidi mi, hibrit mi?

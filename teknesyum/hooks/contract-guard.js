@@ -439,6 +439,11 @@ const GIT_OKUMA = new Set([
   'grep',
   'cat-file',
   'blame',
+  // done/ altına dosya yerleştiremez, complete kapısını atlatamaz.
+  // `mv`/`checkout`/`restore` bilerek dışarıda — onlar yerleştirebilir.
+  'add',
+  'commit',
+  'push',
 ]);
 
 function izinli(parca) {

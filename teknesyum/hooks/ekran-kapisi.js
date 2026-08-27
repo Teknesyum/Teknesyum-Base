@@ -128,7 +128,29 @@ function calistirir(parca, cwd) {
     return arg === 'start' && elektronMu(cwd);
   }
   if (BASLAT.test(ilk)) return s.some((x) => /\.exe$/i.test(x));
-  return CIKTI_EXE.test(ilk);
+  if (!CIKTI_EXE.test(ilk)) return false;
+  const alt = peAltSistem(path.resolve(cwd || process.cwd(), ilk));
+  return alt === null ? true : alt !== 3;
+}
+
+// PE başlığındaki Subsystem alanı: 2 = pencere, 3 = konsol. Aynı bin/Release altında
+// duran CLI aracı ile pencere uygulamasını ayıran tek deterministik ölçüt bu.
+// Okunamazsa (dosya henüz derlenmemiş) eski davranış sürer: pencere say, engelle.
+function peAltSistem(dosya) {
+  let fd;
+  try {
+    fd = fs.openSync(dosya, 'r');
+    const b = Buffer.alloc(4);
+    if (fs.readSync(fd, b, 0, 4, 0x3c) !== 4) return null;
+    const pe = b.readUInt32LE(0);
+    const c = Buffer.alloc(2);
+    if (fs.readSync(fd, c, 0, 2, pe + 0x5c) !== 2) return null;
+    return c.readUInt16LE(0);
+  } catch {
+    return null;
+  } finally {
+    if (fd !== undefined) try { fs.closeSync(fd); } catch {}
+  }
 }
 
 function arayuzAcar(komut, cwd) {

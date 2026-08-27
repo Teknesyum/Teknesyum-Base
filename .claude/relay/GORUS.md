@@ -12,3 +12,8 @@
 2026-08-26 18:08 | advisor | Fable-görüş sapma bloklaması | bekleyen: —
 2026-08-26 22:04 | advisor | Fable kesim kararı | bekleyen: —
 2026-08-27 06:41 | advisor | Fable — doğrulanmış bulgular üzerine | bekleyen: —
+2026-08-27 07:24 | advisor | Fable-Premium Şartları | bekleyen: —
+2026-08-27 07:25 | advisor | Fable-Röle Protokolü | bekleyen: —
+2026-08-27 07:25 | advisor | Fable-Yüzey | bekleyen: —
+2026-08-27 07:25 | advisor | Fable-Kancalar | bekleyen: —
+2026-08-27 07:25 | advisor | Fable-Belgeler | bekleyen: —

@@ -74,7 +74,18 @@ function depoSayisi(sid) {
 }
 
 const KONSEY = 'fable + opus';
-const GORUS = 'fable';
+
+// Dört emir kaldı. Ölçüt: emrin ihlali maliyetli mi, yani modelin varsayılanını ters
+// çeviriyor mu. Çıkanlar başka kanaldan geliyordu — plan konseyi ve ikinci görüş
+// `relay/SKILL.md`'de, deterministik araç kuralı üç profilde de değişmez.
+const PREMIUM_NOTU =
+  'Premium mode is on. Agents: opus only, no sonnet/haiku. Independent contracts run ' +
+  'at once, parallel by default: 20 parallel, worktree past 3. Open agents without ' +
+  'asking; tokens are not a reason. Why: relay/references/premium.md';
+
+const ECO_NOTU =
+  'Eco mode is on. Tokens come first; correctness does not bend. `Grep`/`Glob` before ' +
+  'reading a whole file. Do not open agents. Keep the answer short.';
 
 const S = {
   calisanVar: {
@@ -327,35 +338,10 @@ const S = {
     en: () => 'repo is behind the remote — `git pull` first, then work',
   },
 
-  premiumNotu: {
-    tr:
-      'Premium mode is on. Agents: opus only, no sonnet/haiku. Independent contracts ' +
-      'run at once: 20 parallel, worktree past 3. Parallel is default; one agent needs ' +
-      'a reason. Open agents without asking. Tokens are not a reason. Deterministic ' +
-      'tool before model. New project: fable+opus plan council before PLAN.md. Second ' +
-      'opinion: advisor (' +
-      GORUS +
-      '). Why: relay/references/premium.md',
-    en:
-      'Premium mode is on. Agents: opus only, no sonnet/haiku. Independent contracts ' +
-      'run at once: 20 parallel, worktree past 3. Parallel is default; one agent needs ' +
-      'a reason. Open agents without asking. Tokens are not a reason. Deterministic ' +
-      'tool before model. New project: fable+opus plan council before PLAN.md. Second ' +
-      'opinion: advisor (' +
-      GORUS +
-      '). Why: relay/references/premium.md',
-  },
+  premiumNotu: { tr: PREMIUM_NOTU, en: PREMIUM_NOTU },
   ecoNotu: {
-    tr:
-      'Eco mode is on. Saving tokens is the top priority; speed and polish can go, ' +
-      'correctness cannot. Search with `Grep`/`Glob` first, read a whole file only when ' +
-      'grep falls short. Do not open an `Explore` agent; opening any agent needs a ' +
-      'reason. Keep the answer short.',
-    en:
-      'Eco mode is on. Saving tokens is the top priority; speed and polish can go, ' +
-      'correctness cannot. Search with `Grep`/`Glob` first, read a whole file only when ' +
-      'grep falls short. Do not open an `Explore` agent; opening any agent needs a ' +
-      'reason. Keep the answer short.',
+    tr: ECO_NOTU,
+    en: ECO_NOTU,
   },
   dugmeSapma: {
     tr: (satir) => 'Tabandan sapan düğmeler: ' + satir,

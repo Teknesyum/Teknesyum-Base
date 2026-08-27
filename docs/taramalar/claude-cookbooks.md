@@ -55,7 +55,7 @@ Hata hâli defter içinde; koleksiyon düzeyinde bir hata yolu yok.
 
 **1. Maliyet kollarını teker teker uygula ve her adımı ölç.**
 Ne: `cost_optimization.ipynb`'nin yöntemi — eval sabit, kol tek tek açılıyor.
-Neden değerli: bizde `docs/BENCH-SONUC.md` (9,3 KB) ve `BENCH-PROMPT.md` (7,7 KB) zaten
+Neden değerli: bizde `docs/BENCH-SONUC.md` (9,3 KB) ve `trash/bench/BENCH-PROMPT.md` (7,7 KB) zaten
 var, yani ölçüm altyapısı kurulmuş. Eksik olan, **tek değişken** disiplini: tasarruf
 profilinin tasarrufsuz koşunun üstünde çıkması, birden fazla kolun aynı anda değişmiş
 olabileceğini gösteriyor.

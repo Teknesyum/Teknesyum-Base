@@ -1215,8 +1215,11 @@ const SENDEN_ALAN = /^[ \t#*]*(senden|needed|from you|senden istediklerim)[ \t]*
 // `mı ... mı?` biçimi kalıba eklendi. Ölçüldü: dönüş bloğuna sıkıştırılan soru iki
 // sözleşmeden hangisinin sıraya gireceğini soruyordu — apaçık bir seçim, ama liste onu
 // görmedi ve yükümlülük ikinci kez düştü.
+// 27.08: kalıp `yoksa` şartına bağlandı. Şartsız hali "doğru mu, eksik mi?" gibi her
+// çift soru ekini yakalıyor, Stop'u bloklayıp modele TÜM cevabı yeniden yazdırıyordu —
+// eklentinin en pahalı sürekli gideri. Seçim sorusunun Türkçedeki ayıracı `yoksa`.
 const ISTEK =
-  /(yeniden başlat|yeniden baslat|kapatıp aç|kapatip ac|restart|onayla|onayını|onayini|kararını (yaz|ver)|karar ver|hangisini seç|hangisini sec|sen (yap|aç|ac|çalıştır|calistir|seç|sec)\b|\b(mı|mi|mu|mü)\b[^?\n]{0,60}\b(mı|mi|mu|mü)\?)/i;
+  /(yeniden başlat|yeniden baslat|kapatıp aç|kapatip ac|restart|onayla|onayını|onayini|kararını (yaz|ver)|karar ver|hangisini seç|hangisini sec|sen (yap|aç|ac|çalıştır|calistir|seç|sec)\b|\b(mı|mi|mu|mü)\b[^?\n]{0,40}\byoksa\b[^?\n]{0,40}\b(mı|mi|mu|mü)\?)/i;
 
 function sendenEksik(root, govde) {
   const son = govde.slice(-1500);
@@ -1664,7 +1667,8 @@ function kurulumEksik() {
   return bagli ? '' : 'statuslineBagli';
 }
 
-// ÖLÇÜLDÜ (docs/SPIKE-ORKESTRASYON.md, yan bulgu): izole konfigürasyonda koşan `claude -p`
+// ÖLÇÜLDÜ (O3 sözleşmesi, yan bulgu; ham rapor `scripts/bench/spike2.js` koşulunca
+// üretilir, ağaçta durmaz): izole konfigürasyonda koşan `claude -p`
 // her koşunun ilk turunda bu uyarıyı basıyordu. Headless koşuda statusline diye bir şey
 // yok — uyarı kullanıcıya değil ölçüme gidiyor, gürültüden başka bir işe yaramıyor.
 //

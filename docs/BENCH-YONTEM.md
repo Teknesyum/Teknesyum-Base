@@ -2,7 +2,7 @@
 
 Bu dosya **görevden bağımsızdır**. Hangi iş ölçülürse ölçülsün kurulum, izolasyon ve
 ölçüm burada yazdığı gibi yapılır. Görevin kendisi ayrı bir pakettedir
-(`docs/BENCH-PROMPT.md` Chess960 için).
+(`trash/bench/BENCH-PROMPT.md` Chess960 için).
 
 İlk turda bu standart yoktu ve dört koşunun ikisi kullanılamadı. Buradaki her madde bir
 koşuyu bozan somut bir hatadan geliyor; hiçbiri temkin değil.

@@ -3800,7 +3800,7 @@ ol('premium paralel tavani yirmidir ve gerekcesi yazili', () => {
 // (`the user asks for a plan`, `Teknesyum ▸ Görüş ▸`) artık gövdenin cümleleri; bağlamda
 // aranmaları metnin uzun kalmasını zorunlu kılıyordu. Yeni iddia iki parçalı: sekiz emir
 // bağlamda duruyor mu, taşınan ayrıntı gövdede duruyor mu.
-ol('premium notu sekiz emri tasir, gerekcesi govdeye iner', () => {
+ol('premium notu dort emri tasir, cikanlar govdede durur', () => {
   const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
   const oku = (d) => {
     const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-not-'));
@@ -3819,19 +3819,18 @@ ol('premium notu sekiz emri tasir, gerekcesi govdeye iner', () => {
   const emirler = [
     'opus only, no sonnet/haiku',
     '20 parallel, worktree past 3',
-    'one agent needs a reason',
     'Open agents without asking',
-    'Tokens are not a reason',
-    'Deterministic tool before model',
-    'fable+opus plan council before PLAN.md',
-    'Second opinion: advisor',
+    'tokens are not a reason',
   ];
+  const cikanlar = ['Deterministic tool', 'plan council', 'Second opinion'];
   for (const d of ['tr', 'en']) {
     const not = oku(d);
     for (const e of emirler) icerir(not, e, d + ' emri');
+    for (const c of cikanlar)
+      if (not.includes(c)) throw new Error(d + ' notunda cikmis emir duruyor: ' + c);
     icerir(not, 'relay/references/premium.md', d + ' govde yolu');
     const token = not.length / 2.492;
-    if (token > 150) throw new Error(d + ' premium notu 150 tokeni asti: ' + token.toFixed(1));
+    if (token > 100) throw new Error(d + ' premium notu 100 tokeni asti: ' + token.toFixed(1));
   }
   const govde = fs.readFileSync(
     path.join(KOK, 'skills', 'relay', 'references', 'premium.md'),
@@ -3841,6 +3840,9 @@ ol('premium notu sekiz emri tasir, gerekcesi govdeye iner', () => {
   icerir(govde, 'Teknesyum ▸ Görüş ▸');
   icerir(govde, 'Konsey ayrışması heading in PLAN.md');
   icerir(govde, 'Prior art in this mode means 50 repositories');
+  icerir(govde, 'A deterministic tool still comes before a model call', 'cikan emir 1');
+  icerir(govde, 'The plan council is on', 'cikan emir 2');
+  icerir(govde, 'The second opinion is on as well', 'cikan emir 3');
 });
 
 ol('konfig elle degistirilse de durum uyusmazlik bildirmez', () => {
@@ -3926,8 +3928,8 @@ ol('eco notu yalnizca eco profilinde enjekte edilir', () => {
   const { p } = proje(1, 0);
   const eco = profilIstek(p, profilKonfig({ profil: 'eco' }));
   icerir(eco, 'Eco mode is on');
-  icerir(eco, '`Explore` agent');
-  icerir(eco, 'opening any agent needs a reason');
+  icerir(eco, 'Do not open agents');
+  icerir(eco, 'Keep the answer short');
   if (profilIstek(p, profilKonfig({ profil: 'normal' })).includes('Eco mode is on'))
     throw new Error('normal profilde eco notu enjekte edildi');
   const prem = profilIstek(p, profilKonfig({ profil: 'premium' }));
@@ -10906,6 +10908,51 @@ ol('karsilanmamis sozlesme gerekcesiz kapanmaz', () => {
   icerir(String(bos.stdout) + String(bos.stderr), 'Gerekçesiz kapanış yok');
   const kisa = kosu(['--gerekce', 'olmadi']);
   esit(kisa.status, 2, 'kisa gerekce kabul edildi');
+});
+
+ol('cift soru eki tek basina Stop u bloklamaz, ayirac yoksa', () => {
+  const { p } = proje(0, 0);
+  fs.writeFileSync(
+    path.join(p, '.claude', 'relay', 'contracts', 'T1.md'),
+    '---\nstatus: active\n---\n'
+  );
+  const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapi-')) };
+  const kos = (m) =>
+    calistir(
+      IZLE,
+      { ...ort(p), hook_event_name: 'Stop', transcript_path: transcript(m) },
+      ek
+    );
+  const masum = kos('Yama uygulandi. Olcum dogru mu, eksik mi? Kendim dogruladim.');
+  const om = JSON.parse(masum.out || '{}');
+  if (om.decision === 'block' && /Senden istediklerim/.test(String(om.reason)))
+    throw new Error('masum cift soru eki Stop u blokladi');
+  const secim = kos('Iki yol var. Sirada once T4 mu yoksa T5 mi?');
+  const os = JSON.parse(secim.out);
+  esit(os.decision, 'block', 'gercek secim sorusu yakalanmadi');
+  icerir(os.reason, 'Senden istediklerim');
+});
+
+ol('bin/Release altindaki konsol exe ekran kapisina takilmaz', () => {
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-pe-'));
+  const dizin = path.join(d, 'bin', 'Release');
+  fs.mkdirSync(dizin, { recursive: true });
+  const pe = (altSistem) => {
+    const b = Buffer.alloc(0x200);
+    b.write('MZ', 0);
+    b.writeUInt32LE(0x80, 0x3c);
+    b.write('PE', 0x80);
+    b.writeUInt16LE(altSistem, 0x80 + 0x5c);
+    return b;
+  };
+  fs.writeFileSync(path.join(dizin, 'cli.exe'), pe(3));
+  fs.writeFileSync(path.join(dizin, 'app.exe'), pe(2));
+  const c = ekranCfg(false);
+  const kos = (komut) => ekranCagri(c, { tool_name: 'Bash', tool_input: { command: komut }, cwd: d });
+  const konsol = kos('./bin/Release/cli.exe --surum');
+  esit(konsol.kod, 0, 'konsol exe engellendi');
+  const pencere = kos('./bin/Release/app.exe');
+  esit(pencere.kod, 2, 'pencere exe gecti');
 });
 
 console.log(

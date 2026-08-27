@@ -25,7 +25,9 @@ const OLCUM = {
   // dil.js enjeksiyonu, oturum toplami (tur 1-3, sonrasi sifir).
   // Y7 (27.08): premiumNotu 838 -> 149 token, gerekce references/premium.md govdesine
   // indi. 1005 - (838 - 149) = 316.
-  enjeksiyon: 316,
+  // Fable taramasi (27.08): premium notu dort emre indi, 149 -> 91; eco notu ayni
+  // olcutle 105 -> 59. 316 - 58 - 46 = 212.
+  enjeksiyon: 212,
   // bench 64 kosu: premium cr/tur - native cr/tur
   surenYukTur: 1067,
   // bench 64 kosu: premium cc - native cc

@@ -230,4 +230,4 @@ Kullanıcı "bitti" diye döndüğünde ayrı bir komut bekleme, sen topla:
 Paket düşerse yalnız o paket kaybolur. Kullanıcı aynı satırı yeni bir oturumda yapıştırır;
 paket `## Rapor` bölümü ve `status` alanı üzerinden kaldığı yerden devam eder.
 
-Ana oturum düşerse yeni oturumda `/report`: paket durumları + `LOG.md` + raporlar okunur.
+Ana oturum düşerse yeni oturumda `/update`: paket durumları + `LOG.md` + raporlar okunur.

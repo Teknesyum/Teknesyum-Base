@@ -162,7 +162,7 @@ Kural yazılı olduğu için uygulanmaz; olaya bağlandığı için uygulanır. 
 
 **Beyan ile gerçek ayrışabilir.** Ajan tanımında `model: sonnet` yazması o modelde
 koştuğu anlamına gelmez. `live/*.json` içindeki `model` ve `effort` alanları transcript'ten
-okunur — beyanla uyuşmuyorsa `/report` bunu RİSK olarak basar.
+okunur — beyanla uyuşmuyorsa `/update` bunu RİSK olarak basar.
 
 ## 2. Sözleşme formatı
 
@@ -425,7 +425,7 @@ yapılmayanlar ve sebebi, önerilen sonraki adım.
 
 Rapor **yapılandırılmış durum bildirimidir, düzyazı özet değildir.** Tablo, madde, tek
 satırlık olay. Bitmiş işi tekrar anlatma; anlatılacak şey değişimdir. `briefing: sessiz`
-ayarında yalnızca 8.1, 8.5 ve 8.6 kalır — diğerlerini kullanıcı `/report` ile ister.
+ayarında yalnızca 8.1, 8.5 ve 8.6 kalır — diğerlerini kullanıcı `/update` ile ister.
 
 ## 9. Yönlendirici AGENTS.md
 

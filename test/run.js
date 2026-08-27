@@ -3793,7 +3793,14 @@ ol('premium paralel tavani yirmidir ve gerekcesi yazili', () => {
   icerir(ayar, 'güvenlik ağı olur');
 });
 
-ol('premium notu paralel acmayi varsayilan sayar', () => {
+// ÖLÇÜLDÜ 27.08 (Y7): `premiumNotu` tek dilde 838 token'dı ve premium oturumun her
+// turunda yeniden okunuyordu (60 turda ~50.000 token) — enjeksiyonun %83'ü. Metin ikiye
+// ayrıldı: davranışı değiştiren sekiz emir bağlamda kaldı (149 token), gerekçeler ve
+// biçim ayrıntısı `references/premium.md` gövdesine indi. Bu testin eski iddiaları
+// (`the user asks for a plan`, `Teknesyum ▸ Görüş ▸`) artık gövdenin cümleleri; bağlamda
+// aranmaları metnin uzun kalmasını zorunlu kılıyordu. Yeni iddia iki parçalı: sekiz emir
+// bağlamda duruyor mu, taşınan ayrıntı gövdede duruyor mu.
+ol('premium notu sekiz emri tasir, gerekcesi govdeye iner', () => {
   const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
   const oku = (d) => {
     const cfg = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-not-'));
@@ -3809,13 +3816,31 @@ ol('premium notu paralel acmayi varsayilan sayar', () => {
     );
     return (r.stdout || '') + (r.stderr || '');
   };
-  const tr = oku('tr');
-  icerir(tr, 'single agent needs a reason');
-  icerir(tr, 'the user asks for a plan');
-  icerir(tr, 'Teknesyum ▸ Görüş ▸');
-  const en = oku('en');
-  icerir(en, 'single agent needs a reason');
-  icerir(en, 'the user asks for a plan');
+  const emirler = [
+    'opus only, no sonnet/haiku',
+    '20 parallel, worktree past 3',
+    'one agent needs a reason',
+    'Open agents without asking',
+    'Tokens are not a reason',
+    'Deterministic tool before model',
+    'fable+opus plan council before PLAN.md',
+    'Second opinion: advisor',
+  ];
+  for (const d of ['tr', 'en']) {
+    const not = oku(d);
+    for (const e of emirler) icerir(not, e, d + ' emri');
+    icerir(not, 'relay/references/premium.md', d + ' govde yolu');
+    const token = not.length / 2.492;
+    if (token > 150) throw new Error(d + ' premium notu 150 tokeni asti: ' + token.toFixed(1));
+  }
+  const govde = fs.readFileSync(
+    path.join(KOK, 'skills', 'relay', 'references', 'premium.md'),
+    'utf8'
+  );
+  icerir(govde, 'every time the user asks for a plan');
+  icerir(govde, 'Teknesyum ▸ Görüş ▸');
+  icerir(govde, 'Konsey ayrışması heading in PLAN.md');
+  icerir(govde, 'Prior art in this mode means 50 repositories');
 });
 
 ol('konfig elle degistirilse de durum uyusmazlik bildirmez', () => {
@@ -4088,7 +4113,12 @@ ol('eco sapma satiri uc dort satiri asmaz', () => {
   if (beklenen.length > 200) throw new Error('eco sapmasi 3-4 satiri asti: ' + beklenen.length);
 });
 
-ol('eco notu premium notunun yarisini gecmez', () => {
+// ÖLÇÜLDÜ 27.08 (Y7): iddia "eco notu premium notunun yarısını geçmez"di ve premium
+// notunun uzun kalmasına dayanıyordu — premium 2088 karakterken eco 263 karakter rahatça
+// yarının altındaydı. Premium notu 372 karaktere indi, oran iddiası eco'yu 186 karaktere
+// kısmaya zorlar; oysa eco'ya sözleşme gereği dokunulmadı. İddia yön değiştirdi: eco notu
+// premium notundan uzun olmamalı, ikisi de kendi tavanının altında kalmalı.
+ol('eco notu premium notundan uzun degil', () => {
   const dilYolu = JSON.stringify(path.join(KOK, 'hooks', 'dil.js'));
   for (const d of ['tr', 'en']) {
     const r = spawnSync(
@@ -4108,7 +4138,8 @@ ol('eco notu premium notunun yarisini gecmez', () => {
     const [eco, prem] = String(r.stdout || '')
       .split(' ')
       .map(Number);
-    if (!(eco > 0 && eco * 2 < prem)) throw new Error(d + ' eco notu uzun: ' + eco + ' / ' + prem);
+    if (!(eco > 0 && eco <= prem)) throw new Error(d + ' eco notu uzun: ' + eco + ' / ' + prem);
+    if (eco / 2.492 > 150) throw new Error(d + ' eco notu 150 tokeni asti: ' + eco);
   }
 });
 
@@ -8040,7 +8071,7 @@ ol('oturum kaydi varken ciplak beep sessiz golgelemeyi uc satirda soyler', () =>
   const r = beepCalistir(['on'], cfg, { CLAUDE_CODE_SESSION_ID: sid });
   icerir(r.out, 'Makine varsayılanı yazıldı.');
   icerir(r.out, 'oturuma özel ayar üstte kalır');
-  icerir(r.out, '/beep this sil');
+  icerir(r.out, 'beep.js this sil');
 });
 
 ol('beep golge uyarisi oturum kaydi yokken cikmaz', () => {

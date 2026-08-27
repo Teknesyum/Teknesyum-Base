@@ -1488,7 +1488,9 @@ function acilis(root, kapNotu, oturumId, cwd, kaynak) {
   if (kapNotu) parca.push(kapNotu);
   const eksik = kurulumEksik();
   if (tam && eksik && !headlessKosu()) parca.push(yerel(eksik));
-  if (tam && premium()) parca.push(ceviri('premiumAcik'));
+  // Kullanici talebi 27.08: profil satiri her oturumda basiliyordu ve hicbir sey
+  // soylemiyordu — profil zaten enjeksiyonla yururlukte, kullanici kendi actigi
+  // profili biliyor. `/premium durum` sorulunca soyler. Banner'dan cikti.
   if (root) {
     const acik = say(path.join(root, 'contracts'));
     const biten = say(path.join(root, 'contracts', 'done'));

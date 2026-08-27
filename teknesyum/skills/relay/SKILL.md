@@ -148,7 +148,7 @@ yarıda geçiş planı baştan yazdırır.
 Oturum açıldığında `.claude/relay/contracts/` altında `open` veya `active` sözleşme,
 ya da `live/`'de son görülmesi 30 dakikayı aşmış ajan varsa: kullanıcı bir şey demeden
 **durumu okuyup kaldığın yerden devam et.** "Devam edeyim mi" diye sorma, komut bekleme —
-kullanıcı "devam" dese de demese de sürdürmek senin işin. `/report` yalnızca durumu
+kullanıcı "devam" dese de demese de sürdürmek senin işin. `/update` yalnızca durumu
 görmek isteyene bakar, sürdürmeyi o başlatmaz.
 
 Devam etmeden önce tek satır bildir: kaç sözleşme açık, hangisinden devam ediyorsun.
@@ -185,7 +185,7 @@ ya bir sözleşmeye işlenmiştir.
 **Durum bağlama basılmaz.** Ne tur başında ne tur ortasında açık iş listesi enjekte edilir:
 bir oturumun maliyetinin **%89'u konuşma hacminden** gelir (`docs/OLCUM-TABAN.md`) ve her
 tura basılan liste o kalemi büyütür. Kuyruk diskte durur; `Stop` kancası tur biterken
-**tek satır** hatırlatır, statusline `açıkta N` gösterir, listeyi kullanıcı `/report` ile
+**tek satır** hatırlatır, statusline `açıkta N` gösterir, listeyi kullanıcı `/update` ile
 açar.
 
 **Boşaltmayı `Stop` kancası zorlar.** Aşama sonu ve kapanış raporu `acikta` boşalmadan
@@ -193,7 +193,7 @@ kapanmaz — ve bu artık bir hatırlatma değil: `acikta` doluyken kanca turu b
 kalan maddeyi söyler ve işi sürdürtür. Boşalınca serbest bırakır.
 
 **Güvenlik valfi.** Aynı madde turu üç kez engellerse kanca geçirir ve `_sorun.log`'a
-yazar; oturum kilitlenmez. Kullanıcı bir maddeyi her zaman elle düşürebilir — `/report`
+yazar; oturum kilitlenmez. Kullanıcı bir maddeyi her zaman elle düşürebilir — `/update`
 üzerinden ya da `live/_acik.json` dosyasını silerek. Bir madde çözülemiyorsa kuyrukta
 tutma: neden düştüğünü kullanıcıya söyle ve `acikta`'dan çıkar.
 
@@ -346,7 +346,7 @@ Alt ajan soğuk başlar; üretken iş başlamadan ~4-15k token yanar. Karar kura
 
 **Her sözleşme yeni ajanla başlar.** Bu varsayılan ve doğru olan: soğuk bağlam, temiz
 sınır, ajanın önceki işten taşıdığı kör nokta yok. Ajanı "builder-1, builder-2" diye
-numaralamaya gerek yok — `/report` ajanı sözleşme numarasıyla anar, kimlik oradan gelir.
+numaralamaya gerek yok — `/update` ajanı sözleşme numarasıyla anar, kimlik oradan gelir.
 
 **Tek istisna: art arda gelen ve aynı dosyalara dokunan iki sözleşme.** İkincisi için
 yeni ajan açma, birincisini `SendMessage` ile sürdür. Kazanç ölçülü — soğuk başlangıç

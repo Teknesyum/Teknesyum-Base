@@ -316,7 +316,7 @@ function kurulumYonergesi() {
     'Kişisel dosyaların (makine ayarları, kural defteri, yerel yapılandırma) hepsini tek',
     'bir private depoda toplar. Depodan yalnız bu projenin klasörü iner, tamamı değil.',
     '',
-    '  /ozel kur <private-depo-url> [proje-adı]',
+    '  node <eklenti>/scripts/ozel.js kur <private-depo-url> [proje-adı]',
     '',
     'Depo yoksa önce aç:  gh repo create <ad> --private',
   ];
@@ -324,7 +324,7 @@ function kurulumYonergesi() {
 
 function kur(argv) {
   const url = argv[0];
-  if (!url) dur('Depo adresi gerekli:  /ozel kur <private-depo-url> [proje-adı]');
+  if (!url) dur('Depo adresi gerekli:  node <eklenti>/scripts/ozel.js kur <private-depo-url> [proje-adı]');
   const kok = projeKoku();
   const a = ayar() || {};
   a.depo = url;
@@ -356,14 +356,14 @@ function kur(argv) {
   satir.push('İnen klasör: ' + mevcut.join(', ') + '  (deponun kalanı diske serilmez)');
   satir.push('Bu proje: ' + ad);
   satir.push('');
-  satir.push('Sıradaki:  /ozel ekle ~/.claude/teknesyum.json   ·   /ozel pusla');
+  satir.push('Sıradaki:  node <eklenti>/scripts/ozel.js ekle ~/.claude/teknesyum.json   ·   node <eklenti>/scripts/ozel.js pusla');
   bas(satir);
 }
 
 function ekle(argv) {
   const a = ayar();
   if (!kuruluMu(a)) return bas(kurulumYonergesi());
-  if (!argv.length) dur('Dosya yolu gerekli:  /ozel ekle <yol> [yol...]');
+  if (!argv.length) dur('Dosya yolu gerekli:  node <eklenti>/scripts/ozel.js ekle <yol> [yol...]');
   const kok = projeKoku();
   const ad = projeAdi(a, kok);
   const m = manifest(a, ad);
@@ -403,14 +403,14 @@ function ekle(argv) {
   const satir = [];
   if (eklenen.length) satir.push('Eklendi: ' + eklenen.join(', '));
   for (const s of atlanan) satir.push('Atlandı: ' + s);
-  satir.push('Kayıtlı dosya sayısı: ' + m.dosyalar.length + '  ·  aynaya yazmak için /ozel pusla');
+  satir.push('Kayıtlı dosya sayısı: ' + m.dosyalar.length + '  ·  aynaya yazmak için node <eklenti>/scripts/ozel.js pusla');
   bas(satir);
 }
 
 function cikar(argv) {
   const a = ayar();
   if (!kuruluMu(a)) return bas(kurulumYonergesi());
-  if (!argv.length) dur('Dosya yolu gerekli:  /ozel cikar <yol>');
+  if (!argv.length) dur('Dosya yolu gerekli:  node <eklenti>/scripts/ozel.js cikar <yol>');
   const kok = projeKoku();
   const ad = projeAdi(a, kok);
   const m = manifest(a, ad);
@@ -420,7 +420,7 @@ function cikar(argv) {
   manifestYaz(a, ad, m);
   bas([
     'Kayıttan düşürüldü: ' + (once - m.dosyalar.length) + ' dosya',
-    'Depodaki kopya duruyor; silmek için depoda elle sil ve /ozel pusla.',
+    'Depodaki kopya duruyor; silmek için depoda elle sil ve node <eklenti>/scripts/ozel.js pusla.',
   ]);
 }
 
@@ -434,7 +434,7 @@ function durum() {
   satir.push('inen klasörler: ' + sparseListe(klonYolu(a)).join(', '));
   satir.push('');
   if (!f.length) {
-    satir.push('Kayıtlı dosya yok.  /ozel ekle <yol>');
+    satir.push('Kayıtlı dosya yok.  node <eklenti>/scripts/ozel.js ekle <yol>');
     return bas(satir);
   }
   const en = Math.max.apply(
@@ -452,7 +452,7 @@ function durum() {
   const bekleyen = f.filter((d) => d.durum === 'degisti' || d.durum === 'yeni').length;
   satir.push('');
   satir.push(
-    bekleyen ? bekleyen + ' dosya aynaya yazılmayı bekliyor — /ozel pusla' : 'Ayna güncel.'
+    bekleyen ? bekleyen + ' dosya aynaya yazılmayı bekliyor — node <eklenti>/scripts/ozel.js pusla' : 'Ayna güncel.'
   );
   return bas(satir);
 }
@@ -472,7 +472,7 @@ function projeler() {
   bas(
     ['Depodaki projeler (içerikleri inmedi, yalnız ağaç okundu):'].concat(
       hepsi.map((p) => '  ' + p + (inen.includes(p) ? '   ← bu makinede inen' : '')),
-      ['', 'Başka bir projeyi de indirmek için:  /ozel ac <ad>']
+      ['', 'Başka bir projeyi de indirmek için:  node <eklenti>/scripts/ozel.js ac <ad>']
     )
   );
 }
@@ -480,7 +480,7 @@ function projeler() {
 function ac(argv) {
   const a = ayar();
   if (!kuruluMu(a)) return bas(kurulumYonergesi());
-  if (!argv.length) dur('Proje adı gerekli:  /ozel ac <ad>');
+  if (!argv.length) dur('Proje adı gerekli:  node <eklenti>/scripts/ozel.js ac <ad>');
   const klon = klonYolu(a);
   const mevcut = sparseListe(klon);
   for (const g of argv) if (!mevcut.includes(adDenetle(g))) mevcut.push(g);
@@ -543,7 +543,7 @@ function cek(argv) {
     satir.push('  korundu  ' + y + '  — yereldeki farklı, üzerine yazılmadı');
   for (const y of disari)
     satir.push('  atlandı  ' + y + '  — hedef proje ve ev dizininin dışına düşüyor');
-  if (korunan.length) satir.push('', 'Yereli aynadakiyle ezmek için:  /ozel cek --zorla');
+  if (korunan.length) satir.push('', 'Yereli aynadakiyle ezmek için:  node <eklenti>/scripts/ozel.js cek --zorla');
   bas(satir);
 }
 
@@ -605,7 +605,7 @@ function gonder(klon, mesaj) {
       ok: false,
       satir: [
         'Push yapılamadı: klon detached HEAD durumunda, gönderilecek dal yok.',
-        '  git -C ' + klon + ' checkout main  ile düzeltip /ozel pusla ile yeniden dene.',
+        '  git -C ' + klon + ' checkout main  ile düzeltip node <eklenti>/scripts/ozel.js pusla ile yeniden dene.',
       ],
     };
   const ustAkim = gitSonuc(klon, ['rev-parse', '--abbrev-ref', '@{upstream}']).ok;
@@ -615,7 +615,7 @@ function gonder(klon, mesaj) {
   if (!push.ok)
     return {
       ok: false,
-      satir: ['Push başarısız: ' + tekSatir(push.stderr), '/ozel pusla ile yeniden dene.'],
+      satir: ['Push başarısız: ' + tekSatir(push.stderr), 'node <eklenti>/scripts/ozel.js pusla ile yeniden dene.'],
     };
 
   // Push'un çıkış kodu 0 olması yetmez: commit hiç açılmamışsa "Everything up-to-date"
@@ -644,14 +644,17 @@ function yardim() {
   bas([
     'Özel dosya aynası — kişisel dosyalar tek private depoda, projeye göre bölünmüş.',
     '',
-    '  /ozel                     durum: kayıtlı dosyalar, hangisi değişmiş',
-    '  /ozel kur <url> [ad]      private depoyu kısmi klonla, bu projeyi bağla',
-    '  /ozel ekle <yol>...       dosyayı aynaya kaydet (~/… ev, ./… proje kökü)',
-    '  /ozel cikar <yol>...      kayıttan düşür (depodaki kopya durur)',
-    '  /ozel pusla               değişenleri aynaya yaz, kaydet ve gönder',
-    '  /ozel cek [--zorla]       aynadaki dosyaları diske geri yaz',
-    '  /ozel projeler            depodaki bütün projeler (içerik indirmeden)',
-    '  /ozel ac <ad>             başka bir projenin klasörünü de indir',
+    'Çağrı: node <eklenti>/scripts/ozel.js <altkomut>',
+    '<eklenti> = ${CLAUDE_PLUGIN_ROOT}, çözülmezse ~/.claude/plugins/**/teknesyum.',
+    '',
+    '  (altkomutsuz)      durum: kayıtlı dosyalar, hangisi değişmiş',
+    '  kur <url> [ad]     private depoyu kısmi klonla, bu projeyi bağla',
+    '  ekle <yol>...      dosyayı aynaya kaydet (~/… ev, ./… proje kökü)',
+    '  cikar <yol>...     kayıttan düşür (depodaki kopya durur)',
+    '  pusla              değişenleri aynaya yaz, kaydet ve gönder',
+    '  cek [--zorla]      aynadaki dosyaları diske geri yaz',
+    '  projeler           depodaki bütün projeler (içerik indirmeden)',
+    '  ac <ad>            başka bir projenin klasörünü de indir',
     '',
     'Deponun tamamı hiçbir zaman çekilmez: klon `--filter=blob:none`, çalışma ağacı',
     '`sparse-checkout` ile yalnız bağlı projelerin klasörüne açılır.',
@@ -671,7 +674,7 @@ function main() {
   if (k === 'cek' || k === 'pull') return cek(kalan);
   if (k === 'projeler' || k === 'projects') return projeler();
   if (k === 'ac' || k === 'open') return ac(kalan);
-  dur('Bilinmeyen alt komut: ' + k + '  —  /ozel yardim');
+  dur('Bilinmeyen alt komut: ' + k + '  —  node <eklenti>/scripts/ozel.js yardim');
 }
 
 // Açılış bildirimi için tek soruluk durum. Ayna kurulu ve projeye bağlıyken kayıtlı

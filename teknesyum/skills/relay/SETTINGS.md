@@ -89,7 +89,7 @@ Bu düğme **ajan→T0** trafiğini ayarlar, sana gösterileni değil.
 `milestone` varsayılan: açılış brifingi, her sözleşme kapanışı, her aşama sonu ara
 raporu, sapma anı, kapanış raporu · `every-step` ajan başlangıçlarını ve düzeltme turlarını
 da ekler, uzun işte gürültü yapar · `quiet` yalnızca brifing, sapma ve kapanış; gerisini
-`/report` ile sen istersin. Hiçbir değerde sapma bildirimi kapanmaz.
+`/update` ile sen istersin. Hiçbir değerde sapma bildirimi kapanmaz.
 
 `approval_gate` ile karıştırma: o **beklemeyi**, bu **anlatmayı** yönetir.
 
@@ -142,7 +142,7 @@ geniş pencere o kararı sessizce iptal ederdi. Bu yüzden profile bağlıdır.
 **Ölçüldü (23.08.2026, `claude.exe` 2.1.241 üzerinden):** şema `int().min(1e5).max(1e6)` —
 yani geçerli aralık **100000–1000000**, ondalık yok. Aralık dışındaki değer hata vermez,
 şema `.catch(void 0)` ile onu **sessizce düşürür** ve pencere `auto`ya döner; bu yüzden
-`/autocompact` aralık dışını yazmadan önce durur. CLI karşılığı `--autocompact <auto|tokens>`.
+`node <eklenti>/scripts/premium.js autocompact` aralık dışını yazmadan önce durur. CLI karşılığı `--autocompact <auto|tokens>`.
 
 Üç profilin değeri:
 
@@ -160,12 +160,12 @@ pencere limitleri daha hızlı tüketir — premium'da erken limite takılıyors
 düğme budur.
 
 **`CLAUDE_CODE_AUTO_COMPACT_WINDOW` ortam değişkeni ayarı ezer.** Set edilmişse `settings.json`
-ne yazarsa yazsın etkisi olmaz; `/premium durum` ve `/autocompact` bunu tek satırla söyler.
+ne yazarsa yazsın etkisi olmaz; `/premium durum` ve `node <eklenti>/scripts/premium.js autocompact` bunu tek satırla söyler.
 
 Modele hiç yazılmaz; `agent_stall` gibi bunu da kanca değil koşum ortamı okur. **Makine
 genelidir:** oturuma inen profil (`/premium eco`) ajan modellerini değiştirir ama bu pencereyi
 değiştirmez, çünkü koşum ortamı değeri oturum açılışında okur. Pencereyi gerçekten oynatmak
-makine kararıdır — `/premium <profil> --genel` ya da `/autocompact`.
+makine kararıdır — `/premium <profil> --genel` ya da `node <eklenti>/scripts/premium.js autocompact`.
 
 **agent_loop** — ajan ilerliyor ama aynı yerde: `last_action` bu sayı kadar üst üste aynı
 kalır ve ajanın transkript dosyası bu sırada büyümeye devam ederse döngü sayılır. Büyüme

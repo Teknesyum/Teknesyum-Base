@@ -185,6 +185,6 @@ Bu yüzden bildirimdeki model alanı adla birlikte kalır; tekrar değil, karş�
 
 Bu kural depodaki **"başlık ve dosya adı ilki büyük gerisi küçük"** kuralıyla çelişmez.
 O kural belge başlıkları ve dosya adları içindir; bu kural ajan adı içindir. Ajan adı
-başlık değil etikettir — `/report` ve `live/` kayıtları onu tek parça olarak taşır.
+başlık değil etikettir — `/update` ve `live/` kayıtları onu tek parça olarak taşır.
 İkisini birbirine uydurma; ne ajan adını küçült, ne belge başlığını büyült.
 

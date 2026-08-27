@@ -192,7 +192,7 @@ function durum(gocSatiri) {
   const ciz = (r) => r.map((h, i) => (i === r.length - 1 ? h : h.padEnd(w[i]))).join('  ');
   const not = [
     '',
-    'örnek · ekran başındayken: /beep bitti off — bekleme ve hata sesi açık kalır',
+    'örnek · ekran başındayken: node <eklenti>/scripts/beep.js bitti off — bekleme ve hata sesi açık kalır',
     'kapsam · çıplak komut makineye yazar, sonuna `this` eklenince yalnız bu sohbete',
   ];
   if (a.toptan.deger) not.push('* toptan kapalı — olay satırlarındaki açık/kapalı beklemede');
@@ -231,7 +231,7 @@ function dinle() {
     ...rapor.map((r) => '  ' + r),
     '',
     'Duymadıysan ses eklentinin dışında kesiliyor: çıkış aygıtı, sanal ses kartının kanal',
-    'karıştırıcısı ya da uygulama ses seviyesi. `/beep <olay> <dosya>` ile başka bir dosya dene.',
+    'karıştırıcısı ya da uygulama ses seviyesi. `node <eklenti>/scripts/beep.js <olay> <dosya>` ile başka bir dosya dene.',
   ]);
 }
 
@@ -256,7 +256,7 @@ function golgeUyarisi(oturuma) {
     '',
     'Makine varsayılanı yazıldı.',
     'Bu sohbette oturuma özel ses ayarı yürürlükte — oturuma özel ayar üstte kalır.',
-    'Bu sohbeti de geneline döndürmek için: /beep this sil',
+    'Bu sohbeti de geneline döndürmek için: node <eklenti>/scripts/beep.js this sil',
   ];
 }
 

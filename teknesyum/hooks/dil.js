@@ -327,77 +327,23 @@ const S = {
     en: () => 'repo is behind the remote — `git pull` first, then work',
   },
 
-  premiumAcik: {
-    tr: () =>
-      'premium mod · her ajan opus · 20 paralele kadar · plan konseyi ' +
-      KONSEY +
-      ' · ikinci görüş ' +
-      GORUS,
-    en: () =>
-      'premium mode · every agent on opus · up to 20 in parallel · plan council ' +
-      KONSEY +
-      ' · second opinion ' +
-      GORUS,
-  },
   premiumNotu: {
     tr:
-      'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
-      'Do not queue independent contracts, run them at once — up to twenty agents in ' +
-      'parallel, with worktree isolation past three. Going parallel is the default here ' +
-      'and going with a single agent needs a reason: split the work when it can be ' +
-      'split, get it done five or ten hands at a time, then move to the next step. Do ' +
-      'not wait for the user to authorise opening an agent — the call is yours to make ' +
-      'on your own measure, and when the user does ask you open one anyway. A single ' +
-      'agent is right only when the job really is small. Saving tokens is not a ' +
-      'reason here — read the file when reading answers better than grepping, keep the ' +
-      'search wide, run the audit on every contract. Match thinking to the work: do not ' +
-      'labour over mechanical, pattern-fixed tasks; go all the way down on decisions and ' +
-      'debugging. A deterministic tool still comes before a model call — that choice is ' +
-      'about correctness, not tokens. The plan council is on: before writing PLAN.md on a ' +
-      'from-scratch project, open two planner agents with the same briefing — one fable, ' +
-      'one opus. Neither does the work, they only return proposals; treat what both agree ' +
-      'on as confirmed and record every disagreement under a Konsey ayrışması heading in ' +
-      'PLAN.md with your reasoning. The second opinion is on as well: at a node where you ' +
-      'do not know the right call, open the advisor agent and ' +
+      'Premium mode is on. Agents: opus only, no sonnet/haiku. Independent contracts ' +
+      'run at once: 20 parallel, worktree past 3. Parallel is default; one agent needs ' +
+      'a reason. Open agents without asking. Tokens are not a reason. Deterministic ' +
+      'tool before model. New project: fable+opus plan council before PLAN.md. Second ' +
+      'opinion: advisor (' +
       GORUS +
-      ' answers short, under three headings. Open it for a choice that is expensive to ' +
-      'undo, a bug unsolved for three rounds, a rule you are about to break, a request ' +
-      'that reads two ways, and every time the user asks for a plan; not for mechanical ' +
-      'work, and ask the user first whenever you are allowed to ask. Do not confuse the ' +
-      'plan check with the council: the council opens with two members for PLAN.md on a ' +
-      'from-scratch project, the check is one member whenever the user says make a plan. ' +
-      'The opinion is not binding — write your reasoning when you ' +
-      'disagree, and report that you took one with a `Teknesyum ▸ Görüş ▸ …` line. ' +
-      'Prior art in this mode means 50 repositories.',
+      '). Why: relay/references/premium.md',
     en:
-      'Premium mode is on (Max 20x). Do not use sonnet or haiku; every agent runs opus. ' +
-      'Do not queue independent contracts, run them at once — up to twenty agents in ' +
-      'parallel, with worktree isolation past three. Going parallel is the default here ' +
-      'and going with a single agent needs a reason: split the work when it can be ' +
-      'split, get it done five or ten hands at a time, then move to the next step. Do ' +
-      'not wait for the user to authorise opening an agent — the call is yours to make ' +
-      'on your own measure, and when the user does ask you open one anyway. A single ' +
-      'agent is right only when the job really is small. Saving tokens is not a ' +
-      'reason here — read the file when reading answers better than grepping, keep the ' +
-      'search wide, run the audit on every contract. Match thinking to the work: do not ' +
-      'labour over mechanical, pattern-fixed tasks; go all the way down on decisions and ' +
-      'debugging. A deterministic tool still comes before a model call — that choice is ' +
-      'about correctness, not tokens. The plan council is on: before writing PLAN.md on a ' +
-      'from-scratch project, open two planner agents with the same briefing — one fable, ' +
-      'one opus. Neither does the work, they only return proposals; treat what both agree ' +
-      'on as confirmed and record every disagreement under a Konsey ayrışması heading in ' +
-      'PLAN.md with your reasoning. The second opinion is on as well: at a node where you ' +
-      'do not know the right call, open the advisor agent and ' +
+      'Premium mode is on. Agents: opus only, no sonnet/haiku. Independent contracts ' +
+      'run at once: 20 parallel, worktree past 3. Parallel is default; one agent needs ' +
+      'a reason. Open agents without asking. Tokens are not a reason. Deterministic ' +
+      'tool before model. New project: fable+opus plan council before PLAN.md. Second ' +
+      'opinion: advisor (' +
       GORUS +
-      ' answers short, under three headings. Open it for a choice that is expensive to ' +
-      'undo, a bug unsolved for three rounds, a rule you are about to break, a request ' +
-      'that reads two ways, and every time the user asks for a plan; not for mechanical ' +
-      'work, and ask the user first whenever you are allowed to ask. Do not confuse the ' +
-      'plan check with the council: the council opens with two members for PLAN.md on a ' +
-      'from-scratch project, the check is one member whenever the user says make a plan. ' +
-      'The opinion is not binding — write your reasoning when you ' +
-      'disagree, and report that you took one with a `Teknesyum ▸ Opinion ▸ …` line. ' +
-      'Prior art in this mode means 50 repositories.',
+      '). Why: relay/references/premium.md',
   },
   ecoNotu: {
     tr:

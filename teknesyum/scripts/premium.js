@@ -391,7 +391,7 @@ function acDurum(beklenen) {
     beklenen +
     ' profili ' +
     hedef +
-    ' ister — makine geneli, oturum profili taşımaz; /autocompact ile bağla' +
+    ' ister — makine geneli, oturum profili taşımaz; node <eklenti>/scripts/premium.js autocompact ile bağla' +
     not
   );
 }

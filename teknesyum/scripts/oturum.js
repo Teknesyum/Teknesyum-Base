@@ -1510,7 +1510,7 @@ function yardim() {
       '  calisma.diff  kaydetme anındaki kirli çalışma alanı',
       '  devir.md      son asistan mesajının kırpılmamış tam metni',
       '',
-      'Özel ayna kuruluysa (`/ozel kur`) kayıt dörtlüsü — ozet.md, durum.json,',
+      'Özel ayna kuruluysa (`node <eklenti>/scripts/ozel.js kur`) kayıt dörtlüsü — ozet.md, durum.json,',
       'calisma.diff, devir.md — oraya da push edilir. Ham transkript yerelde kalır.',
       '`/load` önce aynayı çeker. TEKNESYUM_AYNA=0 aynayı tümden kapatır.',
     ].join('\n') + '\n'

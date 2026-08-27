@@ -29,7 +29,27 @@ function ozet(veri) {
 
 // Kayıt HEAD'e ve sahip olunan dosyaların o andaki içeriğine birlikte bağlanır: eski bir
 // denetim kaydı yeni bir ağaçla eşleşemez, dosya kanca sonrası değişirse hash tutmaz.
+// ÖLÇÜLDÜ (27.08.2026, mühür zinciri doğrulaması): `owns` içinde klasör yolu olan
+// sözleşmelerde `readFileSync` EISDIR atıyor, catch boş tampon sayıyordu — klasörün
+// içeriği ne olursa olsun hash sabit kalıyordu. Kırk iki sözleşmenin yedisi bu delikten
+// mühürlenmiş. Sessizce boş tampon saymak yasak: klasör artık reddedilir.
+function ownsKusuru(kok, liste) {
+  for (const p of liste) {
+    if (/[\\/]$/.test(String(p))) return 'owns klasör yolu içeriyor: ' + p;
+    let st;
+    try {
+      st = fs.statSync(path.join(kok, p));
+    } catch {
+      continue;
+    }
+    if (st.isDirectory()) return 'owns klasör yolu içeriyor: ' + p;
+  }
+  return '';
+}
+
 function dosyaOzeti(kok, liste) {
+  const kusur = ownsKusuru(kok, liste);
+  if (kusur) throw new Error(kusur);
   const satir = liste
     .slice()
     .sort()
@@ -209,6 +229,7 @@ module.exports = {
   ozet,
   dosyaOzeti,
   ownsListesi,
+  ownsKusuru,
   alanDegeri,
   kayitYolu,
   kayitOku,

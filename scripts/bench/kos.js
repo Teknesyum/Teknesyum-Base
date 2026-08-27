@@ -38,9 +38,17 @@ function bayrak(ad) {
   return process.argv.includes('--' + ad);
 }
 
+// OLCULDU 27.08.2026: `--tekrar 3` (esitliksiz) sessizce yutuldu; bench 48 yerine 16
+// kosu kostu ve kimse fark etmedi. Deney tasarimini sessizce degistiren bayrak, yanlis
+// sonuctan beterdir - once kendisi hata versin.
 function deger(ad) {
   const on = '--' + ad + '=';
   const s = process.argv.find((a) => a.startsWith(on));
+  const bosluklu = process.argv.indexOf('--' + ad);
+  if (!s && bosluklu >= 0) {
+    process.stderr.write('--' + ad + ' deger esitlikle verilir: --' + ad + '=<deger>\n');
+    process.exit(2);
+  }
   return s ? s.slice(on.length) : null;
 }
 

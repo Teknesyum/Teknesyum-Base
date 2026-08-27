@@ -78,6 +78,15 @@ function tamamla() {
       '  ' + D.ALANLAR.join(', '),
     ]);
 
+  const ownsKusur = D.ownsKusuru(kok, owns);
+  if (ownsKusur)
+    return dur([
+      id + ' tamamlanamadı — ' + ownsKusur,
+      '',
+      'Klasör yolu mühürlenemez: içeriği değişse de özeti değişmez, mühür yalan söyler.',
+      'Sözleşmenin dokunduğu dosyaları tek tek yaz.',
+    ]);
+
   const sebep = D.kayitDogrula(kayit, {
     id,
     headSha,
@@ -108,6 +117,67 @@ function tamamla() {
   ]);
 }
 
+function kapat() {
+  const id = arg('id');
+  if (!id || !sozlesmeAdi(id + '.md'))
+    return dur([
+      'Sözleşme kimliği verilmedi ya da biçim dışı.',
+      'Kullanım: contract.js close --id Y2 --gerekce "..."',
+    ]);
+
+  const gerekce = arg('gerekce');
+  if (!gerekce || gerekce.trim().length < 40)
+    return dur([
+      'Gerekçesiz kapanış yok — --gerekce en az 40 karakter olmalı.',
+      'Karşılanmamış sözleşme neden karşılanmadığını yazmadan kapanmaz.',
+    ]);
+
+  const yer = kokBul();
+  if (!yer) return dur(['Röle kökü bulunamadı — `.claude/relay` yok.']);
+  const { relay, kok } = yer;
+
+  const kaynak = path.join(relay, 'contracts', id + '.md');
+  const hedef = path.join(relay, 'contracts', 'done', id + '.md');
+  let govde;
+  try {
+    govde = fs.readFileSync(kaynak, 'utf8');
+  } catch {
+    return dur(['Sözleşme okunamadı: ' + path.relative(kok, kaynak)]);
+  }
+  if (fs.existsSync(hedef)) return dur([id + ' zaten done/ altında.']);
+
+  const tur = D.alanDegeri('round', govde) || '1';
+  const headSha = gitCikti(kok, ['rev-parse', 'HEAD']);
+  if (!headSha) return dur(['HEAD okunamadı — bu bir git deposu değil ya da henüz commit yok.']);
+
+  const damga = new Date().toISOString();
+  const not =
+    '\n\n## Kapanış — karşılanmadı (' +
+    damga.slice(0, 10) +
+    ')\n\n' +
+    gerekce.trim() +
+    '\n\nBu sözleşme **mühürlenmedi**. Kabul kriterleri karşılanmadı; yapılan iş\n' +
+    'ağaçta korunuyor, kazanç ölçülmedi. Defterde `sonuc: karsilanmadi`.\n';
+  fs.writeFileSync(kaynak, govde.replace(/\s*$/, '') + not, 'utf8');
+
+  fs.mkdirSync(path.dirname(hedef), { recursive: true });
+  fs.renameSync(kaynak, hedef);
+  D.defterKur(relay);
+  D.defterEkle(relay, {
+    id,
+    round: tur,
+    sonuc: 'karsilanmadi',
+    gerekce: gerekce.trim(),
+    headSha,
+    at: damga,
+  });
+
+  return bas([
+    id + ' karşılanmadı olarak kapandı — ' + 'contracts/done/' + id + '.md',
+    'Mühür yok, denetim kaydı tüketilmedi. Defterde sonuc: karsilanmadi.',
+  ]);
+}
+
 function denetle() {
   const yer = kokBul();
   if (!yer) return dur(['Röle kökü bulunamadı — `.claude/relay` yok.']);
@@ -128,6 +198,8 @@ function yardim() {
     'contract.js — sözleşme tamamlamanın tek meşru yolu',
     '',
     '  complete --id <ID>   denetim kaydını doğrular, done/ altına atomik taşır',
+    '  close --id <ID> --gerekce "..."',
+    '                       karşılanmamış sözleşmeyi mühürsüz kapatır',
     '  audit                done/ içeriğini defterle karşılaştırır',
   ]);
 }
@@ -135,9 +207,10 @@ function yardim() {
 function main() {
   const komut = argv[0];
   if (komut === 'complete') return tamamla();
+  if (komut === 'close') return kapat();
   if (komut === 'audit') return denetle();
   return yardim();
 }
 
 if (require.main === module) main();
-module.exports = { tamamla, denetle };
+module.exports = { tamamla, kapat, denetle };

@@ -11,6 +11,9 @@ const YONLER = ['ayni', 'ayri'];
 const argv = process.argv.slice(2);
 
 function arg(ad) {
+  const on = '--' + ad + '=';
+  const esitlikli = argv.find((a) => a.startsWith(on));
+  if (esitlikli) return esitlikli.slice(on.length);
   const i = argv.indexOf('--' + ad);
   return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : null;
 }

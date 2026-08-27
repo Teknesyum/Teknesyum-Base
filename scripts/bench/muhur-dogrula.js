@@ -107,6 +107,12 @@ function dogrula(kok) {
     if (!used) kusur.push('kanit yok: ' + path.basename(usedYol) + ' bulunamadi');
 
     const satir = defter.find((d) => d.id === id);
+    // Karsilanmadi olarak kapanan sozlesme MUHURLENMEDI: denetim kaydi aranmaz, orana
+    // katilmaz. Konsey hukmu 27.08.2026 — is korunur, kazanc olculmedi sayilir.
+    if (satir && satir.sonuc === 'karsilanmadi') {
+      sonuc.push({ id, tur, owns, kusur: [], belirsiz: [], dusuk: false, muhursuz: true });
+      continue;
+    }
     if (!satir) kusur.push('defterde satir yok');
     else if (satir.kaynak === 'devralindi') kusur.push('defter satiri devralindi (kanit degil)');
 
@@ -148,14 +154,17 @@ function dogrula(kok) {
     sonuc.push({ id, tur, owns, kusur, belirsiz, dusuk: kusur.length > 0 });
   }
 
-  const dusen = sonuc.filter((x) => x.dusuk);
-  const belirsizler = sonuc.filter((x) => !x.dusuk && x.belirsiz.length);
+  const muhurlu = sonuc.filter((x) => !x.muhursuz);
+  const dusen = muhurlu.filter((x) => x.dusuk);
+  const belirsizler = muhurlu.filter((x) => !x.dusuk && x.belirsiz.length);
   return {
     kok,
     toplam: sonuc.length,
+    muhurlu: muhurlu.length,
+    muhursuz: sonuc.length - muhurlu.length,
     dusen: dusen.length,
     belirsiz: belirsizler.length,
-    oran: sonuc.length ? Number((dusen.length / sonuc.length).toFixed(4)) : null,
+    oran: muhurlu.length ? Number((dusen.length / muhurlu.length).toFixed(4)) : null,
     kayitlar: sonuc,
   };
 }
@@ -176,8 +185,11 @@ function main() {
   }
   process.stdout.write(
     'muhur dogrulamasi · ' + r.kok + '\n' +
-      'bitmis sozlesme: ' + r.toplam + ' · dusen: ' + r.dusen +
-      ' · yanlis tamam orani: ' + (r.oran === null ? '—' : (r.oran * 100).toFixed(1) + '%') + '\n\n'
+      'bitmis sozlesme: ' + r.toplam + ' (muhurlu ' + r.muhurlu +
+      ' · muhursuz kapanis ' + r.muhursuz + ')\n' +
+      'dusen: ' + r.dusen + ' · belirsiz: ' + r.belirsiz +
+      ' · yanlis tamam orani: ' + (r.oran === null ? '—' : (r.oran * 100).toFixed(1) + '%') +
+      ' (payda: muhurlu)\n\n'
   );
   for (const k of r.kayitlar) {
     if (!k.dusuk) continue;

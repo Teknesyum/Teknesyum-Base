@@ -333,6 +333,24 @@ function yonlendirici(hedef, icerik) {
   return engelle(...ceviri('yonlendiriciDosya'));
 }
 
+// Klasör yolu mühürlenemez (bkz. denetim-kaydi.js/ownsKusuru). Açılışta reddedilirse
+// sözleşme hiç yanlış doğmaz; tamamlamada reddetmek işi bittikten sonra durdurur.
+function ownsSemasi(hedef, icerik) {
+  const n = norm(path.resolve(hedef));
+  if (!/[\\/]contracts[\\/][^\\/]+\.md$/i.test(n)) return;
+  if (/[\\/]done[\\/]/i.test(n)) return;
+  if (!/^owns:/im.test(icerik)) return;
+  const kotu = ownsKumesi(icerik).filter((x) => /[\\/]$/.test(String(x)));
+  if (!kotu.length) return;
+  return engelle(
+    'ENGELLENDİ: owns klasör yolu içeriyor — ' + kotu.join(', '),
+    '',
+    'Klasörün özeti içeriği değişse de değişmez; böyle bir sözleşme mühürlenirse',
+    'mühür yalan söyler. 27.08.2026 doğrulamasında 42 sözleşmenin 7si bu delikten geçmiş.',
+    'Sözleşmenin dokunacağı dosyaları tek tek yaz.'
+  );
+}
+
 function karar(j) {
   const arac = j.tool_name || '';
   const t = j.tool_input || {};
@@ -342,6 +360,7 @@ function karar(j) {
     if (!hedef) return;
     if (arac === 'Write') onArastirma(hedef);
     if (arac === 'Write') yonlendirici(hedef, t.content || '');
+    if (arac === 'Write') ownsSemasi(hedef, t.content || '');
     else if (arac === 'Edit' && YONLENDIRICI_AD.test(norm(path.resolve(hedef))))
       yonlendirici(hedef, duzenlenmis(hedef, t));
     gerileme(hedef, arac === 'Write' ? t.content || '' : t.new_string || '');

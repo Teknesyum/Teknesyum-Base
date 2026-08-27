@@ -10832,6 +10832,51 @@ ol('baskan kendi metnini arsivlemeden karar veremez — T0 sentez yazmaz', () =>
   icerir(r.cikti, 'T0 sentez yazmaz');
 });
 
+const DK = require(path.join(KOK, 'hooks', 'denetim-kaydi.js'));
+
+ol('owns klasor yolu muhurlenemez — sessiz bos tampon yasak', () => {
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-owns-'));
+  fs.mkdirSync(path.join(d, 'kaynak'), { recursive: true });
+  fs.writeFileSync(path.join(d, 'kaynak', 'a.js'), 'a', 'utf8');
+  esit(DK.ownsKusuru(d, ['kaynak/a.js']), '', 'dosya yolu reddedildi');
+  const kusur = DK.ownsKusuru(d, ['kaynak']);
+  if (!kusur) throw new Error('klasor yolu kabul edildi');
+  icerir(kusur, 'klasör yolu');
+  let atti = false;
+  try {
+    DK.dosyaOzeti(d, ['kaynak']);
+  } catch {
+    atti = true;
+  }
+  esit(atti, true, 'dosyaOzeti klasor icin sessizce ozet uretti');
+});
+
+ol('bitis egik cizgili owns yolu diskte yoksa da reddedilir', () => {
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-owns2-'));
+  const kusur = DK.ownsKusuru(d, ['hic/olmayan/']);
+  if (!kusur) throw new Error('egik cizgiyle biten yol kabul edildi');
+});
+
+ol('karsilanmamis sozlesme gerekcesiz kapanmaz', () => {
+  const d = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapat-'));
+  fs.mkdirSync(path.join(d, '.claude', 'relay', 'contracts'), { recursive: true });
+  fs.writeFileSync(
+    path.join(d, '.claude', 'relay', 'contracts', 'Z9.md'),
+    '---\nid: Z9\nowns: [a.js]\nstatus: blocked\nround: 1\n---\n',
+    'utf8'
+  );
+  const kosu = (ek) =>
+    spawnSync(process.execPath, [path.join(KOK, 'scripts', 'contract.js'), 'close', '--id', 'Z9', ...ek, '--kok', d], {
+      encoding: 'utf8',
+      maxBuffer: 8 * 1024 * 1024,
+    });
+  const bos = kosu([]);
+  esit(bos.status, 2, 'gerekcesiz kapanis kabul edildi');
+  icerir(String(bos.stdout) + String(bos.stderr), 'Gerekçesiz kapanış yok');
+  const kisa = kosu(['--gerekce', 'olmadi']);
+  esit(kisa.status, 2, 'kisa gerekce kabul edildi');
+});
+
 console.log(
   '\n' + (kaldi.length ? '⨯ KALDI' : '✓ GEÇTİ') + '  ' + gecti + '/' + (gecti + kaldi.length)
 );

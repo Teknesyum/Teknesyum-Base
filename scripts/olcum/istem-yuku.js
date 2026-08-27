@@ -25,6 +25,7 @@ const DENEY = {
 };
 
 const uyarilar = [];
+const bilgiler = [];
 
 function bicim(n) {
   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -223,7 +224,7 @@ function turSayisiOlc(tavanDosya = 40) {
     if (gorulen.size > 0) turSayilari.push(gorulen.size);
   }
   if (!turSayilari.length) {
-    uyarilar.push('Tur sayisi ortancasi olculemedi — transcript yok, 20 varsayildi.');
+    bilgiler.push('Tur sayisi ortancasi olculemedi — transcript yok, 20 varsayildi.');
     return 20;
   }
   turSayilari.sort((a, b) => a - b);
@@ -392,6 +393,7 @@ function main() {
     cikti.oturumToplami = { kar: ozet.oturumKar, token: ozet.oturumTok };
     cikti.turOrtanca = ozet.turOrtanca;
     cikti.uyarilar = uyarilar;
+    cikti.bilgiler = bilgiler;
     process.stdout.write(`${JSON.stringify(cikti, null, 2)}\n`);
     if (uyarilar.length) process.exitCode = 1;
     return;
@@ -447,6 +449,12 @@ function main() {
     'enjeksiyon hiç olmaz. Yukarıdaki rakam bu deponun ölçüm anındaki hâlidir.',
     ''
   );
+
+  if (bilgiler.length) {
+    L.push('## BİLGİ — bu makinede ölçülemeyen, varsayılana düşen', '');
+    for (const b of bilgiler) L.push('- ' + b);
+    L.push('');
+  }
 
   if (uyarilar.length) {
     L.push('## UYARI — ölçüm eksik', '');

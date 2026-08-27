@@ -1,0 +1,24 @@
+{
+  "contractId": "Y7",
+  "auditorRunId": "a3b8ea0fe9830fde2",
+  "headSha": "d8df23e5d1d0e6404dd42754f7c9e35cc161440f",
+  "diffHash": "fb151361ddc68e6c1a2d795f563ff3b1b2a13589ced92e5781d74941cacf0302",
+  "owns": [
+    "teknesyum/hooks/dil.js",
+    "teknesyum/skills/relay/references/premium.md",
+    "test/run.js"
+  ],
+  "verification": [
+    "K1 metin 372 karakter = 149,28 token <= 150; sekiz emrin sekizi de birebir dizgi olarak var, hicbiri ima yoluyla sayilmamis (dil.js:331-346)",
+    "K2 govdedeki blok alintilarinin karakter toplami ~2088 = eski premiumNotu 2088 karakter; silinen cumle yok. Iki \"bicim farkli\" cumle ayrica denetlendi, biri tam eslesme cikti",
+    "K3 dil.js:338 ve :346 \"Why: relay/references/premium.md\" — yol ismen geciyor, yazim SKILL.md:371-376 ile ayni",
+    "K4 573/573 + 10 suite; test/run.js:3803-3844 sekiz emri iki dilde ayri ayri ariyor, 150 token tavanini olcuyor, tasinan dort cumleyi govdede ariyor",
+    "K5 1005 - (838 - 149) = 316 dogru; yuz-milyon.js:28 enjeksiyon=316. Tablo ic tutarli: 2,3631 x 0,31443 = 0,7430",
+    "K6 ecoNotu 263 karakter, dilTalimati 91 karakter — ikisi de onceki uzunlukla birebir, dokunulmamis. premiumAcik silinmesi T0 isi (kullanici talebi), yapici kusuru degil; olu referans birakilmadi",
+    "Hukum: \"Prior art 50 repositories\" cumlesinin govdeye inmesi dogru — sayi zaten depoSayisi() ile tam gerektigi anda enjekte ediliyor, premiumNotu dorduncu bir sabit kopyaydi"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-27T06:11:03.305Z",
+  "usedAt": "2026-08-27T06:11:03.361Z",
+  "completedSha": "d8df23e5d1d0e6404dd42754f7c9e35cc161440f"
+}

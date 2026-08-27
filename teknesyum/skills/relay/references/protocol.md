@@ -438,3 +438,30 @@ dışındaki araçlar da okuyor (Codex, Cursor, Copilot); `AGENTS.md` hepsinin o
 Claude Code'un o dosyayı kendiliğinden bulduğu doğrulanamadı — garanti yol, yanına tek
 satırlık bir `CLAUDE.md` koyup içine `@AGENTS.md` yazmaktır. İçe aktarma sözdizimi
 ölçüldü, çalışıyor. Bilgi tek yerde durur, ikinci dosya bir satırdır.
+
+
+## 4.1 Denetçi güvencesi, denetim turu ve eco şablonu
+
+**Denetçinin "yazamaz" güvencesi üç katlıdır, hiçbiri tek başına yetmez.** `agents/auditor.md`
+`Write`, `Edit` ve `Bash` istemez; `memory` alanı yoktur, çünkü hafıza istemek harness'ın
+araç listesini tamamlamasına yol açıyordu. Ama `tools:` satırı harness için bir tavan
+değil taban: ölçümde denetçi ajanı `Write, Edit` de verilmiş halde açıldı. Taşıyan kat
+üçüncüsüdür — mühür kapısı `live/<auditor_id>.json` kaydına bakar ve `files` listesi
+doluysa mührü işlemez. Denetçi bir dosyaya yazarsa denetimi düşer.
+
+**Denetim turunun durdurma kuralı `fix_ceiling`den ayrıdır.** `fix_ceiling` düzeltme
+turlarını sayar; denetimin ne zaman biteceğini söylemez. Tur **yalnız KRİTİK**
+bulunursa açılır (tanım `agents/auditor.md`: gerçekçi girdide yanlış çıktı/çıkış
+kodu, ya da yazılı bir kabul kriterinin delinmesi). Kalan her bulgu borçtur, mühür
+notuna yazılır ve sözleşme mühürlenir. Üçüncü turdan sonra `advisor` zorunlu,
+beşinciden sonra borç tur gerekçesi olamaz. Ayrıntı: `references/protocol.md` §4.
+Kural yazılı olmadığında bir sözleşme on iki tur döndü — ölçüldü,
+`docs/openlogs/kapali/HATA-denetim-turu-durdurma-kurali-yok.md`.
+
+**eco'da sözleşme ve plan şablonu kısalır.** Şablon ikiye ayrılmaz — tek şablon durur, sen
+doldururken düşürürsün. Sözleşmede düşenler: `## Amaç` (başlık ve kabul kriteri işi zaten
+anlatıyorsa), `## Arayüzler` (yalnızca `depends: []` iken), boş `side_effects` satırı ve
+kapanıştaki açıklama yorumu. `## Bağlam` düşmez, üç satırla sınırlanır. Planda ASCII görev
+grafiği düşer; `Bağımlı` sütunu aynı bilgiyi taşır. **Asla düşmeyenler:** `id`, `status`,
+`owns`, mühür alanları, `## Kabul kriteri`, `## Kayıt noktası`, `## Çıktı` — doğruluk ve
+kesilen oturumdan kurtarma bunlardan gelir. Tam liste şablonların kendi yorum bloğunda.

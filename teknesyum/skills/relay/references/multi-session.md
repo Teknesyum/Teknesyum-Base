@@ -231,3 +231,14 @@ Paket düşerse yalnız o paket kaybolur. Kullanıcı aynı satırı yeni bir ot
 paket `## Rapor` bölümü ve `status` alanı üzerinden kaldığı yerden devam eder.
 
 Ana oturum düşerse yeni oturumda `/update`: paket durumları + `LOG.md` + raporlar okunur.
+
+
+## 7.1 Kesinti kuyruğunun alan şeması
+
+Kuyruk dosyası **oturum içidir** ve üç alan taşır: `simdi` (yürüyen iş, tek satır),
+`acikta[]` (cevaplanmamış kesintiler, en çok 8 madde), `sirada` (sonraki adım, tek satır).
+Toplam tavan 10 satır — kanca dosyaya her yazıldığında aşanı kırpar.
+
+Kalıcı durum rotadadır (§3.2). `acikta` onun ikizi değildir: oturum kapanınca kuyruk
+düşer, rota kalır. Aynı maddeyi iki yere yazma; kuyruktan çıkan madde ya cevaplanmıştır
+ya bir sözleşmeye işlenmiştir.

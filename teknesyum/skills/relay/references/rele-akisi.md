@@ -188,3 +188,31 @@ O kural belge başlıkları ve dosya adları içindir; bu kural ajan adı içind
 başlık değil etikettir — `/update` ve `live/` kayıtları onu tek parça olarak taşır.
 İkisini birbirine uydurma; ne ajan adını küçült, ne belge başlığını büyült.
 
+
+## 5.1 Delege eşiğinin gerekçeleri
+
+Gerekçe "token harcarız" olamaz. Geçerli gerekçe şudur: parçalar gerçekten bağımsız değil
+(`owns` kümeleri kesişiyor), ya da bölmenin kendisi işten pahalı (sözleşme yazmak işi
+yapmaktan uzun sürüyor).
+
+Alt ajan soğuk başlar; üretken iş başlamadan ~4-15k token yanar. Karar kuralı,
+**ara çıktı / geri dönen rapor oranı**:
+
+- Yüksek (keşif, tarama, çok dosyalı refactor) → **delege et.** Ara çıktı alt ajanın
+  context'inde ölür, sana sonuç döner. Kazanç budur.
+- Düşük (tek fonksiyon, zaten tasarladığın şeyi yazmak) → **yine de tek ajan aç.**
+
+**Her sözleşme yeni ajanla başlar.** Bu varsayılan ve doğru olan: soğuk bağlam, temiz
+sınır, ajanın önceki işten taşıdığı kör nokta yok. Ajanı "builder-1, builder-2" diye
+numaralamaya gerek yok — `/update` ajanı sözleşme numarasıyla anar, kimlik oradan gelir.
+
+**Tek istisna: art arda gelen ve aynı dosyalara dokunan iki sözleşme.** İkincisi için
+yeni ajan açma, birincisini `SendMessage` ile sürdür. Kazanç ölçülü — soğuk başlangıç
+4-15k token, sürdürmede sıfır. Kayıp da ölçülü: aynı ajan iki işi de kendi bağlamıyla
+görür, ilk işteki yanlış varsayımı ikinciye taşır. Bu yüzden sürdürülen ajanın işini
+**her zaman ayrı bir denetçi** açar; denetçi hiçbir koşulda sürdürülmez.
+
+Buradaki "kendin yap" istisnası §1'deki tek satırlık düzeltmeyle sınırlıdır, bir adım
+ötesine geçmez. Sebep token değil rol: senin yazdığın kodu denetleyecek bağımsız taraf
+kalmaz. Düşük oranlı iş, delegenin *kazançsız* olduğu yerdir — *yasak* olduğu değil.
+Kazanç yoksa bile ayrımı koru; maliyeti dispatch, karşılığı denetlenebilirlik.

@@ -123,3 +123,9 @@ Görüş bağlayıcı değildir — katılmıyorsan gerekçeni yaz. Görüş ald
 Premium modda scout'un tarayacağı depo sayısı elli sayılır.
 
 > Prior art in this mode means 50 repositories.
+
+
+## 10. Tasarruf neyden kesilir
+
+Tasarruf, yapılan işin **miktarından** kesilir; **doğrulandığından** değil. Denetimi
+kısmak kazanılan tokenden pahalıya gelir: yanlış iş ikinci kez yazılır.

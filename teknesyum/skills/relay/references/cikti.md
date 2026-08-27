@@ -116,3 +116,54 @@ kalır.
    graphify semantik topluluk çıkarır ama her dosya için model çağırır. Yabancı bir
    kod tabanını *anlamak* gerekiyorsa graphify; kendi projende *ne neye bağlı* diye
    soruyorsan harita. Küçük projede ikisi de gereksiz — `Explore`+`Grep` yeter.
+
+
+## 2.3 Hazırlık maddelerinin ayrıntısı
+
+2. **Proje kendi içinde nasıl bağlı, biliyor musun?** ~30+ kaynak dosya varsa ya da iş
+   3+ modüle dokunacaksa önce `scripts/harita.js` ile deterministik haritayı çıkar —
+   model çağırmaz, saniyeler sürer. Komut, `/graphify` ile farkı ve ne zaman ikisinin de
+   gereksiz olduğu `references/cikti.md` içinde.
+
+5. **Deterministik araç kuruldu mu?** Yeni JS/TS projesinde `biome.json` yaz; iş bitiminde
+   biçimlendirmeyi modele değil `biome check --write`'a yaptır. Model gerekmeyen yerde
+   model kullanmak token israfıdır — aynı düstur `sed`, `rg` ve IDE refactor için de geçerli.
+
+7. **Sürüm çıkıyor mu?** Kökte `CHANGELOG.md` tutulur, `Keep a Changelog` biçiminde:
+   sürüm başlığı + `Eklendi` / `Değişti` / `Düzeltildi` başlıkları. Commit mesajlarından
+   otomatik üretilmez — o listeler kullanıcıya bir şey anlatmaz. `changesets` veya
+   `semantic-release` kurulmaz; tek bakımcılı depoda kurulum maliyeti kazancından fazla.
+8. **JS/TS projesi büyüdü mü?** (~30+ kaynak dosya) `knip` çalıştır: kullanılmayan dosya,
+   export ve bağımlılığı tek geçişte bulur, `--fix` ile temizler. Ölü kodu modele
+   aratmak token israfıdır. Küçük projede kurma.
+
+## 6.1 Token disiplini ayrıntıları
+
+- **Skill dosyası şişmez.** Bir `SKILL.md` her etkinleşmede tamamen bağlama girer; yan
+  dosyalar yalnızca okunduğunda girer. Tavan **~30 kB**; aşan bölüm `references/` altına
+  taşınır ve `SKILL.md`'de tek satırlık işaretçi bırakılır. Taşınacak olan seçilirken
+  ölçüt "önemli mi" değil **"her işte gerekli mi"**: masaüstüne özel kural, web işinde
+  bağlam yakar.
+- **Kırpma dürüst yapılır.** Bir çıktıyı, dosyayı veya arama sonucunu kısaltarak
+  aktarıyorsan **neyin düştüğünü ve tamamına nasıl bakılacağını** yaz: `[ilk 40 satır ·
+  312 satır atlandı · tamamı: dosya:1-352]`. Sessiz kırpma en pahalı token tasarrufudur —
+  eksik bilgiyle yazılan kod ikinci kez yazılır.
+- **Optimizasyonun tabanı vardır.** Küçük işi optimize etmek, optimizasyonun kendisinden
+  ucuza gelmez: 3 satırlık dosyayı grep'lemek, 20 karakterlik düzenlemeyi ajanla yapmak,
+  tek dosyalık işe rota kurmak. Kazanç kurulum maliyetinden küçükse **doğrudan yap**.
+- **Getirme maliyeti ölçütü.** Kalıcı bir dosyaya (`AGENTS.md`, hafıza, sözleşme bağlamı)
+  bir bilgiyi yazmadan önce sor: bu, gerektiğinde **ucuza türetilebilir mi?** Dosya
+  listesi, fonksiyon imzası, bağımlılık sürümü — `grep` bir saniyede bulur, yazılmaz.
+  Yazılacak olan yalnızca türetilemeyen şeydir: karar ve gerekçesi, dışarıdan gelen
+  kısıt, tekrar eden tercih.
+- **Ölçüm tekrarı kapısı.** Getirme maliyeti ölçütünün kardeşi, ölçüm tarafında.
+  Sözleşmeye bir ölçüm yazmadan önce sor: **bu sayı zaten ölçülmüş ve bir yere
+  yazılmış mı?** `CHANGELOG`, röle `LOG.md`, `docs/olcumler/`, önceki sözleşmenin
+  `## Çıktı`sı — yazılıysa sözleşme onu **kaynağıyla alıntılar**, yeniden ölçmez.
+  "Öncesi/sonrası ölçüm" kalıbı düşünmeden uygulanınca "öncesi" boşa koşuluyor:
+  bir sözleşmede dakikalar süren dört ffmpeg koşusu, `CHANGELOG`'da zaten yazılı bir
+  sayıyı yeniden ölçmek için harcandı ve iptal edildi. Kalıp doğru; belgelenmiş
+  tarafını yeniden ölçmek ölçüm değil tekrar.
+- **Bilgi tekrar ediyorsa hafızaya yazılır, oturuma değil.** Üçüncü kez açıklanan şey
+  kalıcı hafızaya gider; ilgili notlar birbirine `[[ad]]` ile bağlanır. Ayrı bir not
+  uygulaması (Obsidian vb.) kurulmaz — hafıza zaten markdown, bağlar zaten çalışıyor.

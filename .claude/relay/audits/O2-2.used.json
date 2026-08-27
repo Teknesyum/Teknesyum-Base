@@ -1,0 +1,24 @@
+{
+  "contractId": "O2",
+  "auditorRunId": "a253b9fd46b68f518",
+  "headSha": "ba15ce9684643e125496eb9faf374f4ae8afc3d5",
+  "diffHash": "881d72d2638bbcbfa12b2222a8198cc8034328f229c17b579d0b62bd240c64a5",
+  "owns": [
+    "docs/BENCH-PROJE.md",
+    "docs/BENCH-SONUC.md"
+  ],
+  "verification": [
+    "K1 bes maddenin hepsi geri cekilmis: m1 BENCH-PROJE.md:83-91 ve :125-130, m2 :46+:49-55 ve :59-61+:74-79, m3 :28-31, m4 :92-96, m5 BENCH-SONUC.md:22-27 (kaynagi topla.js:62-67)",
+    "K2 iki belgenin basinda gecersizlik uyarisi: BENCH-PROJE.md:3-14 elle yazili, BENCH-SONUC.md:5-40 uretecten (topla.js:44-81, her uretimde basiliyor topla.js:455)",
+    "K3 Errata bolumu BENCH-PROJE.md:136-167, yedi madde, A-G ile eslesiyor; (E) tur 2 de duzeltildi, :157 = BRIFING-ONARIM.md:48, diskle dogrulandi (iki SKILL.md, yedi agents/*.md)",
+    "K4 gecersiz 6 kosuya dayanan tek sayisal hukum kalmamis: SONUC ta yapisal olarak (topla.js:634 gecerli suzgeci, elenenler yalniz §0:50-55), PROJE de her sayisal blok geri cekme notu altinda (:49-55, :59-61, :114-116)",
+    "K5 yeni istatistiksel iddia uretilmemis; BENCH-PROJE.md:166-167 acikca yeniden kosuma erteliyor",
+    "Tur 2 kapsami: degisiklik yalniz BENCH-PROJE.md:156-159, owns icinde; tur 0 da sayilan sekiz ustu-cizili/duzeltme cifti ayni satirlarda duruyor",
+    "Hukum: geri cekme notunun yeri urectir — .claude/relay/contracts/done/O1.md:168-172 elle yazilan erratanin bir topla.js kosusunda silindigini kaydediyor; ERRATA dizisi uyariyi belgenin degil urectin ozelligi yapiyor. O2 kapsam disina yazmak yerine engeli bildirmis (O2.md:88-89), dogru davranis",
+    "Alti denetim borcu sozlesmeye kaydedildi (bayat kayit noktasi, ERRATA da m4 eksik, n=1 uzerine kalin hukum, blok geri cekme, kapsam disi $2,25-2,54, git diff kaniti verilmedi); hicbiri kabul maddesi delmiyor"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-27T06:55:27.493Z",
+  "usedAt": "2026-08-27T06:55:31.069Z",
+  "completedSha": "ba15ce9684643e125496eb9faf374f4ae8afc3d5"
+}

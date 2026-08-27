@@ -22,7 +22,12 @@ if (dustu) console.error('\nÖlçüm doğrulaması — KALDI (çıkış ' + r.st
 
 const j = spawnSync(process.execPath, [BETIK, '--json'], { encoding: 'utf8' });
 if (j.error || j.status !== 0) {
-  console.error('eşik testi: --json çıktısı alınamadı');
+  console.error(
+    'eşik testi: --json çıktısı alınamadı — çıkış ' +
+      j.status +
+      (j.error ? ' · ' + j.error.message : '') +
+      (j.stderr ? '\n' + j.stderr : '')
+  );
   process.exit(1);
 }
 

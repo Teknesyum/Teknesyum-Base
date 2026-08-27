@@ -1,0 +1,30 @@
+{
+  "contractId": "Y6",
+  "auditorRunId": "aa6b6001f3b44cd4c",
+  "headSha": "5bfa64f1bc5d4204ab0b2ba685e846b196cc0547",
+  "diffHash": "7e8a72bee30e83495cb7db967c75e957b1db34c3e30ce33f972dfcb5620c978b",
+  "owns": [
+    "teknesyum/scripts/ozel.js",
+    "teknesyum/scripts/beep.js",
+    "teknesyum/scripts/premium.js",
+    "teknesyum/scripts/oturum.js",
+    "teknesyum/skills/relay/SKILL.md",
+    "teknesyum/skills/relay/SETTINGS.md",
+    "teknesyum/skills/relay/references/protocol.md",
+    "teknesyum/skills/relay/references/rele-akisi.md",
+    "teknesyum/skills/relay/references/multi-session.md",
+    "test/olcum-dogrula.js"
+  ],
+  "verification": [
+    "K1 owns disi olmayan-komut gecisi yok; scripts/+skills/ altinda kalan dort gecis yalniz yorum satiri (ozel.js:13,390 oturum.js:1128 rc.js:99 statusline.js:165)",
+    "K2 esik testi olcum-dogrula.js:7 ESIK=1400, :43 kosul, :117 exit 1; yapicinin kirmizi ciktisi diskteki kodun uretecegi bicimle birebir, 1396-1300=96 aritmetigi dogru",
+    "K3 node test/run.js 573/573 GECTI · node test/all.js 10 suite gecti; beep.js:259 test/run.js:8074 dizgisini basiyor",
+    "K4 oturumdaBirKez.token 1396 <= 1400; Y6 satirlarinin hicbiri olculen yuzeyde degil, rakam bayat degil",
+    "K5 git status: degisen Y6 dosyasi tam olarak owns 10 dosya; CHANGELOG.md, _coplik/, teknesyum/commands/ altinda tek satir yok",
+    "Usul: yapici test/run.js owns disindaydi, dokunmadi, engeli T0a tasidi - dogru davranis; dosya o sirada Y7de de acikti"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-27T06:04:25.963Z",
+  "usedAt": "2026-08-27T06:04:50.302Z",
+  "completedSha": "5bfa64f1bc5d4204ab0b2ba685e846b196cc0547"
+}

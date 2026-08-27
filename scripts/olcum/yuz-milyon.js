@@ -22,8 +22,10 @@ const FIYAT = {
 const OLCUM = {
   // scripts/olcum/istem-yuku.js --json, 27.08.2026
   sabitYuzey: 1396,
-  // dil.js enjeksiyonu, oturum toplami (tur 1-3, sonrasi sifir)
-  enjeksiyon: 1005,
+  // dil.js enjeksiyonu, oturum toplami (tur 1-3, sonrasi sifir).
+  // Y7 (27.08): premiumNotu 838 -> 149 token, gerekce references/premium.md govdesine
+  // indi. 1005 - (838 - 149) = 316.
+  enjeksiyon: 316,
   // bench 64 kosu: premium cr/tur - native cr/tur
   surenYukTur: 1067,
   // bench 64 kosu: premium cc - native cc

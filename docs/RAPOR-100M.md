@@ -39,7 +39,8 @@ Fiyat: cache-write $18,75/M, cache-read $1,50/M.
 
 | kalem | token | oturumda | 100M içinde | USD | çağrı | USD/çağrı |
 |---|---:|---:|---:|---:|---:|---:|
-| **enjeksiyon** (`dil.js`) | 1.005 | 60.300 | 1.322.003 | **$2,3631** | — | — |
+| **enjeksiyon** (`dil.js`) — Y7 öncesi | 1.005 | 60.300 | 1.322.003 | ~~$2,3631~~ | — | — |
+| **enjeksiyon** (`dil.js`) — **Y7 sonrası** | **316** | 18.960 | 415.675 | **$0,7430** | — | — |
 | **sabit yüzey** (tümü) | 1.396 | 88.452 | 1.939.201 | **$4,0660** | — | — |
 | skill `relay` | 196 | 27.244 | 597.291 | $1,4148 | 2 | $0,7074 |
 | skill `teknesyum-ui` | 145 | 20.155 | 441.874 | $1,0467 | 6 | $0,1744 |
@@ -67,10 +68,10 @@ Fiyat: cache-write $18,75/M, cache-read $1,50/M.
 | komut `ekran` | 14 | — | — | $0,0335 | **0** | **hiç** |
 | komut `load` | 10 | — | — | $0,0239 | 10 | $0,0024 |
 
-**Eklentinin 100M içindeki toplam yükü: $6,43.**
+**Eklentinin 100M içindeki toplam yükü: $4,81.** (Y7 öncesi $6,43.)
 
 Kıyas: 100M token, ağırlığı cache-read olan bir kullanımda yaklaşık $150-200 tutar.
-Eklentinin payı **%3-4**.
+Eklentinin payı **%2-3**.
 
 ---
 
@@ -78,7 +79,7 @@ Eklentinin payı **%3-4**.
 
 | ne | kazanç | pay | karar |
 |---|---:|---:|---|
-| **`premiumNotu` talep üzerine yüklensin** | ~$1,90 | %30 | **Yapılıyor (Y7)** |
+| **`premiumNotu` talep üzerine yüklendi** | **$1,62** | %25 | **BİTTİ (Y7)** — 838 → 149 token |
 | Hiç çağrılmamış 6 tanımı çıkar | $0,32 | %5 | Yapılabilir, riski düşük |
 | Skill açıklamalarını %50 kısalt | $0,41 | %6 | **Yapılmamalı** — relay tetiklenmesi riskte |
 | Skill açıklamaları alt bağlama gitmesin | $1,65 | %26 | **Elimizde değil** — harness kararı |
@@ -87,19 +88,31 @@ Eklentinin payı **%3-4**.
 
 ### Asıl kalem: `premiumNotu`
 
-Enjeksiyonun **%83'ü** tek bir metin: premium doktrini, tek dilde ~836 token.
-Premium oturumda bağlama bir kez yazılıyor ve o oturumun **her turunda yeniden
-okunuyor** — 60 turluk bir oturumda 50.000 token.
+Enjeksiyonun **%83'ü** tek bir metindi: premium doktrini, 838 token. Premium
+oturumda bağlama bir kez yazılıyor ve o oturumun **her turunda yeniden okunuyordu**
+— 60 turluk bir oturumda 50.000 token.
 
 Kullanıcının koyduğu mimari tam buna oturuyor: **bağlamda emir kalır, gerekçe
-dosyaya iner.** Model doktrini uygulamak için her turda 836 token taşımaz; ne
+dosyaya iner.** Model doktrini uygulamak için her turda 838 token taşımaz; ne
 yapacağını bilecek kadarını taşır, nedenini merak ederse okur — MCP'nin araç şeması
 gibi.
 
-`Y7` bu işi yapıyor: bağlam metni ≤150 token'a inecek, sekiz zorunlu emrin hepsi
-kalacak, gerekçe `skills/relay/references/premium.md` dosyasına taşınacak. Kabul
-kriteri her emrin hangi cümleyle karşılandığını tabloyla istiyor — bir maddenin
-sessizce düşmesi eklentiyi kimseye fark ettirmeden sıradanlaştırır.
+**Y7 bu işi bitirdi.** Bağlam metni **838 → 149 token** (372 karakter), sekiz zorunlu
+emrin sekizi de yerinde, gerekçe `skills/relay/references/premium.md` gövdesine indi
+— eski metnin 25 karakterden uzun 24 cümlesinin **24'ü de** gövdede birebir korundu,
+otomatik taramayla doğrulandı. Hiçbir cümle silinmedi, taşındı.
+
+Bağlamda kalan metnin tamamı:
+
+> Premium mode is on. Agents: opus only, no sonnet/haiku. Independent contracts run at
+> once: 20 parallel, worktree past 3. Parallel is default; one agent needs a reason. Open
+> agents without asking. Tokens are not a reason. Deterministic tool before model. New
+> project: fable+opus plan council before PLAN.md. Second opinion: advisor (fable).
+> Why: relay/references/premium.md
+
+Son satır asıl mimariyi taşıyor: **büyük güç dosyada, yolu bağlamda.**
+
+Enjeksiyon kalemi $2,3631 → **$0,7430** (−%68,6).
 
 ### Çağrı başına en pahalı üç kalem
 
@@ -134,12 +147,18 @@ Harness bunu tam olarak vermiyor: **her oturum yeni bağlamla başlar**, o yüzd
 1. **Oturum başına ödenen** kısmı asgariye indir → yüzey 1.396 token, dün %37 kesildi,
    konsey buradan sonrasını durdurdu (getiri gürültüde, yönlendirme kaybı riski var).
 2. **Tur başına tekrarlananı sıfırla** → enjeksiyon tur 3'ten sonra zaten sıfır.
-   Kalan `premiumNotu` bir kez yazılıp 59 tur okunuyor; Y7 bunu ≤150 token'a indiriyor.
+   Kalan `premiumNotu` bir kez yazılıp 59 tur okunuyordu; **Y7 bunu 149 token'a
+   indirdi.**
 3. **Ağırlığı talep üzerine yükle** → skill gövdeleri, `references/`, komut gövdeleri
-   zaten böyle. Y7 ile premium doktrini de bu sınıfa geçiyor.
+   zaten böyleydi. **Y7 ile premium doktrini de bu sınıfa geçti.**
 
-Üçü tamamlandığında bağlamda kalan şey yalnız **ne olduğunu söyleyen ince tabaka**
-olur; büyük güç dosyada bekler ve gerektiğinde okunur.
+Üçü de yapıldı. Bağlamda kalan şey artık **ne olduğunu söyleyen ince tabaka**; büyük
+güç dosyada bekliyor ve gerektiğinde okunuyor. Toplam yük $12,44 → **$4,81**.
+
+Buradan sonrası azalan getiri: kalan en büyük kalem `relay` ve `teknesyum-ui` skill
+açıklamaları ($2,46 birlikte) ve bunlar eklentinin tetiklenme yüzeyi — kısaltmak
+maliyeti değil, işlevi keser. Konseyin "kesim doygun, durun" hükmü bu tabloyla
+sayısal olarak doğrulanıyor.
 
 ---
 

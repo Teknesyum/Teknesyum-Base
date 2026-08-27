@@ -2,7 +2,7 @@
 name: builder
 description: Relay build worker. Writes the code a contract asks for - module, endpoint, refactor, test. Interface work goes to ui-builder.
 effort: medium
-maxTurns: 60
+maxTurns: 40
 memory: project
 color: cyan
 ---

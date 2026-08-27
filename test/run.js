@@ -255,7 +255,11 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
   // yolu da aynı kalıba düşüyor. Fikstür bizim komut yüzeyimiz değil.
   const YABANCI = (f) => {
     const y = f.replace(/\\/g, '/');
-    return y.includes('/docs/taramalar/') || y.includes('/bench/fixtures/') || y.includes('/bench/gorevler/');
+    return (
+      y.includes('/docs/taramalar/') ||
+      y.includes('/bench/fixtures/') ||
+      y.includes('/bench/gorevler/')
+    );
   };
   for (const f of yuru(path.join(__dirname, '..'))) {
     if (!/\.(md|js|json|tsx)$/.test(f) || f === __filename) continue;
@@ -391,7 +395,12 @@ ol('D1 · röle kurulu olmayan klasörde de UserPromptSubmit hiç yazmaz', () =>
   const p = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-bos-'));
   const r = calistir(
     IZLE,
-    { ...ort(p), session_id: 'd1-relaysiz', hook_event_name: 'UserPromptSubmit', prompt: 'şunu yap' },
+    {
+      ...ort(p),
+      session_id: 'd1-relaysiz',
+      hook_event_name: 'UserPromptSubmit',
+      prompt: 'şunu yap',
+    },
     konfig(true)
   );
   esit(r.out, '');
@@ -402,7 +411,10 @@ ol('D1 · röle kurulu olmayan klasörde de UserPromptSubmit hiç yazmaz', () =>
 // premium profilde ilk tur onu yazar, kapı kapalıysa hiç yazmaz.
 function premiumKonfig() {
   const c = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-d1-'));
-  fs.writeFileSync(path.join(c, 'teknesyum.json'), JSON.stringify({ dil: 'tr', profil: 'premium' }));
+  fs.writeFileSync(
+    path.join(c, 'teknesyum.json'),
+    JSON.stringify({ dil: 'tr', profil: 'premium' })
+  );
   return { CLAUDE_CONFIG_DIR: c, TEKNESYUM_PREMIUM: '', TEKNESYUM_STEERING: '' };
 }
 
@@ -1314,7 +1326,7 @@ ol('yeni proje niyetinde on arastirma hatirlatilir', () => {
     hook_event_name: 'UserPromptSubmit',
     prompt: 'VideoEdit diye bir klasör oluştur, plan yap, işe girişme',
   });
-  icerir(r.out, 'en az 10 depo');
+  icerir(r.out, 'en az 1 depo');
 });
 
 ol('taramalar varsa hatirlatma cikmaz', () => {
@@ -1326,7 +1338,7 @@ ol('taramalar varsa hatirlatma cikmaz', () => {
     hook_event_name: 'UserPromptSubmit',
     prompt: 'sıfırdan bir uygulama yapacağız',
   });
-  if (r.out.includes('en az 10 depo')) throw new Error('gereksiz hatirlatma');
+  if (r.out.includes('en az 1 depo')) throw new Error('gereksiz hatirlatma');
 });
 
 ol('siradan istekte arastirma hatirlatmasi cikmaz', () => {
@@ -1337,7 +1349,7 @@ ol('siradan istekte arastirma hatirlatmasi cikmaz', () => {
     hook_event_name: 'UserPromptSubmit',
     prompt: 'su fonksiyondaki hatayi duzelt',
   });
-  if (r.out.includes('en az 10 depo')) throw new Error('gureltu');
+  if (r.out.includes('en az 1 depo')) throw new Error('gureltu');
 });
 
 ol('yeni projede PLAN.md yazimi arastirma kapisina takilir', () => {
@@ -2685,26 +2697,15 @@ const sorunSatirlari = (p) => {
   }
 };
 
-ol('eco profilinde on arastirma kapisi engellemez, uyarir', () => {
+ol('eco profilinde de kapi engeller, iz birakmaz', () => {
   const p = taptazeProje(null);
   const r = ilkSozlesmeProfilde(p, 'eco');
-  esit(r.kod, 0, 'eco kapiyi engellememeli');
-  esit(r.err, '', 'eco engel mesaji yazmamali');
-  icerir(r.out, 'UYARI');
-  icerir(r.out, 'docs/taramalar/ATLANDI.md');
-  icerir(r.out, 'sessizce atlamak değil');
+  esit(r.kod, 2, 'eco kapisi da engellemeli');
+  esit(sorunSatirlari(p), '', 'engellenen istek sorun gunlugune yazilmaz');
 });
 
-ol('eco atlamasi _sorun.log dosyasina kalici iz birakir', () => {
-  const p = taptazeProje(null);
-  ilkSozlesmeProfilde(p, 'eco');
-  const log = sorunSatirlari(p);
-  icerir(log, 'eco ön araştırma atlandı');
-  icerir(log, '.claude/relay/contracts/T1.md');
-});
-
-ol('normal ve premium profilde on arastirma kapisi hala engeller', () => {
-  for (const profil of ['normal', 'premium']) {
+ol('eco ve premium profilde on arastirma kapisi hala engeller', () => {
+  for (const profil of ['eco', 'premium']) {
     const r = ilkSozlesmeProfilde(taptazeProje(null), profil);
     esit(r.kod, 2, profil + ' engellemeli');
     icerir(r.err, 'ön araştırma');
@@ -2712,7 +2713,7 @@ ol('normal ve premium profilde on arastirma kapisi hala engeller', () => {
   }
 });
 
-ol('eco uyarisi yalnizca kapinin durdugu yerde cikar', () => {
+ol('ATLANDI.md eco kapisini da acar', () => {
   const r = ilkSozlesmeProfilde(taptazeProje('ATLANDI.md'), 'eco');
   esit(r.kod, 0);
   esit(r.out, '', 'gerekce dosyasi varken uyari da cikmaz');
@@ -2722,18 +2723,18 @@ ol('research_repos eco profilinde 1 depoya iner', () => {
   const s = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
   const satir = (s.match(/^\| `research_repos` \|.*$/m) || [])[0] || '';
   esit(satir.split('|')[2].trim(), '1', 'profil tablosunda eco sutunu');
-  icerir(s.replace(/\s+/g, ' '), 'eco profilinde 1, normal profilde 10, premium profilde 50');
+  icerir(s.replace(/\s+/g, ' '), 'eco profilinde 1, premium profilde 50');
 });
 
 ol('SKILL eco bolumunu ve tersine donen ilke sirasini anlatir', () => {
   const s = relayMetin().replace(/\r/g, '');
   const duz = s.replace(/\s+/g, ' ');
-  icerir(s, '## 0.1 Üç profil');
+  icerir(s, '## 0.1 İki profil');
   icerir(duz, 'token tasarrufu > kullanıcı rahatlığı > kod verimliliği');
   for (const madde of ['Grep önce, oku sonra', '`Explore` açma', 'Tek ajan varsayılan'])
     icerir(duz, madde, 'eco T0 davranisi');
   icerir(duz, "`critical`'e düşer ama daha aşağı inmez; `critical` alt sınırdır");
-  icerir(duz, "**eco'da kapı engellemez, uyarır.**");
+  icerir(duz, '**Kapı her profilde engeller.**');
   const i = duz.indexOf("**eco'da değişmeyenler.**");
   if (i < 0) throw new Error('eco degismeyenler basligi yok');
   const blok = duz.slice(i, i + 700);
@@ -2942,7 +2943,7 @@ ol('oturum kaydi ozet, ham ve durum uretir', () => {
   );
   esit(r.kod, 0, 'kaydet cikis kodu');
   const dip = path.join(p, '.claude', 'oturumlar', 'sinav');
-  for (const f of ['ozet.md', 'ham.jsonl', 'durum.json'])
+  for (const f of ['ozet.md', 'ham.jsonl.gz', 'durum.json'])
     if (!fs.existsSync(path.join(dip, f))) throw new Error('eksik dosya: ' + f);
   const d = JSON.parse(fs.readFileSync(path.join(dip, 'durum.json'), 'utf8'));
   esit(d.oturumId, 'S1', 'oturum kimligi');
@@ -3140,15 +3141,16 @@ function ayarMetni(p) {
   return fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
 }
 
-ol('premium profili sonnet ve haiku birakir, opus ve fable secer', () => {
+ol('premium profili haiku birakir, angaryayi sonnete verir', () => {
   const { p, cfg } = premiumKopya();
   esit(premiumCalistir('premium', p, cfg).kod, 0, 'premium cikis kodu');
   const model = Object.keys(premiumTablo.PROFIL.premium).map(
     (a) => premiumTablo.PROFIL.premium[a].model
   );
-  if (model.some((m) => m === 'sonnet' || m === 'haiku'))
-    throw new Error('premium profilinde sonnet/haiku kaldı');
-  esit(model.filter((m) => m === 'opus').length, 6, 'alti calisan ajan da opus olmali');
+  if (model.some((m) => m === 'haiku')) throw new Error('premium profilinde haiku kaldı');
+  esit(model.filter((m) => m === 'opus').length, 4, 'dort agir ajan opus olmali');
+  esit(premiumTablo.PROFIL.premium.scribe.model, 'sonnet', 'angarya sonnete gider');
+  esit(premiumTablo.PROFIL.premium.scout.model, 'sonnet', 'on arastirma sonnete gider');
   esit(model.filter((m) => m === 'fable').length, 1, 'advisor fable kalmali');
   const out = premiumCalistir('premium', p, cfg).out;
   icerir(out, 'default_model opus');
@@ -3162,15 +3164,15 @@ ol('premium profili sonnet ve haiku birakir, opus ve fable secer', () => {
 ol('hicbir profil ajan dosyasina ve SETTINGS.md ye yazmaz', () => {
   const { p, cfg } = premiumKopya();
   const once = ajanMetni(p) + ayarMetni(p);
-  for (const ad of ['eco', 'normal', 'premium', 'ac', 'kapat', 'durum']) {
+  for (const ad of ['eco', 'premium', 'ac', 'kapat', 'durum']) {
     esit(premiumCalistir(ad, p, cfg).kod, 0, ad + ' cikis kodu');
     esit(ajanMetni(p) + ayarMetni(p), once, ad + ' dosya yazdi');
   }
 });
 
-ol('ajan dosyalarinda model alani yok, efor ve tur normal tabaninda', () => {
+ol('ajan dosyalarinda model alani yok, efor ve tur eco tabaninda', () => {
   const taban = premiumTablo.PROFIL[premiumTablo.TABAN];
-  esit(premiumTablo.TABAN, 'normal', 'taban normal olmali');
+  esit(premiumTablo.TABAN, 'eco', 'taban eco olmali');
   for (const ad of Object.keys(taban)) {
     const m = fs.readFileSync(path.join(KOK, 'agents', ad + '.md'), 'utf8').replace(/\r/g, '');
     const on = m.slice(0, m.indexOf('\n---', 4));
@@ -3180,7 +3182,7 @@ ol('ajan dosyalarinda model alani yok, efor ve tur normal tabaninda', () => {
   }
   const s = ayarMetni(KOK);
   icerir(s, 'makine varsayılanıdır');
-  for (const [anahtar, deger] of Object.entries(premiumTablo.DUGME.normal))
+  for (const [anahtar, deger] of Object.entries(premiumTablo.DUGME.eco))
     icerir(s, anahtar, 'SETTINGS.md ' + anahtar + ' ' + deger);
 });
 
@@ -3189,7 +3191,7 @@ ol('autocompact tablosu premium.js ile post-install.js arasinda ayni', () => {
   const m = kaynak.match(/const AUTOCOMPACT = (\{[^}]*\})/);
   if (!m) throw new Error('post-install.js AUTOCOMPACT tablosunu kaybetmis');
   const kurulum = JSON.parse(m[1].replace(/([a-z]+):/g, '"$1":').replace(/'/g, '"'));
-  for (const profil of ['eco', 'normal', 'premium'])
+  for (const profil of ['eco', 'premium'])
     esit(
       String(kurulum[profil]),
       premiumTablo.DUGME[profil].autocompact,
@@ -3198,8 +3200,8 @@ ol('autocompact tablosu premium.js ile post-install.js arasinda ayni', () => {
 });
 
 ol('autocompact modele hic yazilmaz, sapma satirinda gorunmez', () => {
-  esit(premiumTablo.sapmalar('eco').autocompact, '150000', 'sapma tablosunda olmali');
-  esit(premiumTablo.DUGME.normal.autocompact, 'auto', 'taban Claude Code varsayilanini kullanmali');
+  esit(premiumTablo.sapmalar('premium').autocompact, '500000', 'sapma tablosunda olmali');
+  esit(premiumTablo.DUGME.eco.autocompact, '150000', 'taban dar pencere kullanmali');
   if (/autocompact/.test(premiumTablo.sapmaSatiri('eco')))
     throw new Error('kanca dugmesi modele enjekte ediliyor: ' + premiumTablo.sapmaSatiri('eco'));
   if (/autocompact/.test(premiumTablo.sapmaSatiri('premium')))
@@ -3266,15 +3268,14 @@ ol('autocompact komutu profilden turetir, sayi verilince elle yazar', () => {
 });
 
 ol('sapma tablosu yalniz tabandan ayrilan dugmeleri verir', () => {
-  esit(Object.keys(premiumTablo.sapmalar('normal')).length, 0, 'taban profil sapmamali');
-  const eco = premiumTablo.sapmalar('eco');
-  esit(eco.parallel_width, '1');
-  esit(eco.default_model, 'haiku');
-  esit(eco.audit, 'very-critical');
-  esit(eco.ask_threshold, undefined, 'tabanla ayni deger sapma sayilmamali');
-  esit(eco.agent_stall, undefined, 'kanca dugmesi uc profilde de ayni');
-  esit(premiumTablo.sapmalar('premium').parallel_width, '20');
-  esit(premiumTablo.sapmalar('premium').plan_council, 'on');
+  esit(Object.keys(premiumTablo.sapmalar('eco')).length, 0, 'taban profil sapmamali');
+  const pr = premiumTablo.sapmalar('premium');
+  esit(pr.parallel_width, '20');
+  esit(pr.default_model, 'opus');
+  esit(pr.audit, 'high');
+  esit(pr.ask_threshold, undefined, 'tabanla ayni deger sapma sayilmamali');
+  esit(pr.agent_stall, undefined, 'kanca dugmesi iki profilde de ayni');
+  esit(pr.plan_council, 'on');
 });
 
 ol('premium kapatildiginda dosyalar bire bir geri doner', () => {
@@ -3287,16 +3288,15 @@ ol('premium kapatildiginda dosyalar bire bir geri doner', () => {
     ajanMetni(p) + fs.readFileSync(path.join(p, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
   esit(sonra === once, true, 'kapat sonrasi dosyalar ayni olmali');
   const c = JSON.parse(fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8'));
-  esit(c.profil, 'normal');
+  esit(c.profil, 'eco');
   esit(c.premium, false);
-  icerir(premiumCalistir('durum', p, cfg).out, 'yürürlükteki profil: normal');
+  icerir(premiumCalistir('durum', p, cfg).out, 'yürürlükteki profil: eco');
 });
 
-ol('uc profil de uygulanir, durum yururlukteki profili soyler', () => {
+ol('iki profil de uygulanir, durum yururlukteki profili soyler', () => {
   const { p, cfg } = premiumKopya();
   const beklenen = {
-    eco: ['varsayılan model: haiku', 'parallel_width 1', 'research_repos 1', 'audit very-critical'],
-    normal: ['varsayılan model: sonnet', 'sapan düğme: yok — taban profil'],
+    eco: ['varsayılan model: haiku', 'sapan düğme: yok — taban profil'],
     premium: [
       'varsayılan model: opus',
       'parallel_width 20',
@@ -3304,7 +3304,7 @@ ol('uc profil de uygulanir, durum yururlukteki profili soyler', () => {
       'worktree_isolation on',
     ],
   };
-  for (const profil of ['eco', 'normal', 'premium']) {
+  for (const profil of ['eco', 'premium']) {
     const uygula = premiumCalistir(profil, p, cfg);
     esit(uygula.kod, 0, profil + ' cikis kodu');
     for (const satir of beklenen[profil]) icerir(uygula.out, satir);
@@ -3317,12 +3317,12 @@ ol('uc profil de uygulanir, durum yururlukteki profili soyler', () => {
   }
 });
 
-ol('eski cagrilar ve eski konfig premium/normal olarak okunur', () => {
+ol('eski cagrilar ve eski konfig premium/eco olarak okunur', () => {
   const { p, cfg } = premiumKopya();
   for (const eski of ['kapat', 'off', 'standart']) {
     premiumCalistir('ac', p, cfg);
     esit(premiumCalistir(eski, p, cfg).kod, 0, eski + ' cikis kodu');
-    icerir(premiumCalistir('durum', p, cfg).out, 'yürürlükteki profil: normal');
+    icerir(premiumCalistir('durum', p, cfg).out, 'yürürlükteki profil: eco');
   }
   for (const eski of ['ac', 'aç', 'on']) {
     premiumCalistir('kapat', p, cfg);
@@ -3336,7 +3336,7 @@ ol('eski cagrilar ve eski konfig premium/normal olarak okunur', () => {
   if (eskiAcik.includes('UYUŞMAZLIK'))
     throw new Error('eski premium:true konfigi premium sayilmadi');
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ premium: false }));
-  icerir(premiumCalistir('durum', p, cfg).out, 'konfig profili: normal (eski premium alanından)');
+  icerir(premiumCalistir('durum', p, cfg).out, 'konfig profili: eco (eski premium alanından)');
 });
 
 ol('eco profili en ucuz modeli ve en dar paralelligi secer', () => {
@@ -3410,7 +3410,7 @@ ol('iki oturum ayri profil kaydi tutar, profil her birine kendi cevabini verir',
   );
   esit(oturumProfilOku(cfg, 'oturum-a'), 'eco');
   esit(oturumProfilOku(cfg, 'oturum-b'), 'premium');
-  esit(oturumProfilOku(cfg, null), 'normal', 'kimliksiz surec makine varsayilanina dusmeli');
+  esit(oturumProfilOku(cfg, null), 'eco', 'kimliksiz surec makine varsayilanina dusmeli');
   esit(
     fs.existsSync(path.join(cfg, 'teknesyum.json')),
     false,
@@ -3449,7 +3449,7 @@ ol('ciplak komut makineye yazar, oturum kaydi acmaz', () => {
 
 ol('this eki yalniz oturumu yazar, makine dosyasi ellenmez', () => {
   const { p, cfg } = premiumKopya();
-  premiumCalistir('normal', p, cfg);
+  premiumCalistir('eco', p, cfg);
   const once = fs.readFileSync(path.join(cfg, 'teknesyum.json'), 'utf8');
   const ek = { CLAUDE_CODE_SESSION_ID: 'kapsam-2' };
   const r = premiumCalistir(['eco', 'this'], p, cfg, ek);
@@ -3524,13 +3524,13 @@ ol('this sil oturum kaydindaki oteki anahtarlari korur', () => {
 
 ol('kapsam eki almayan alt komut this yazilinca hata basmaz', () => {
   const { p, cfg } = premiumKopya();
-  premiumCalistir('normal', p, cfg);
+  premiumCalistir('eco', p, cfg);
   const d = premiumCalistir(['durum', 'this'], p, cfg);
   esit(d.kod, 0, d.err);
-  icerir(d.out, 'yürürlükteki profil: normal');
+  icerir(d.out, 'yürürlükteki profil: eco');
   const a = premiumCalistir(['autocompact', 'this'], p, cfg);
   esit(a.kod, 0, a.err);
-  icerir(a.out, 'autoCompactWindow: auto');
+  icerir(a.out, 'autoCompactWindow: 150000');
 });
 
 ol('this oturum kimligi yokken acikca durur', () => {
@@ -3551,22 +3551,22 @@ ol('bayat oturum kaydi yok sayilir ve yeni kayit yazilirken silinir', () => {
   fs.writeFileSync(path.join(dizin, 'taze.json'), kayit(Date.now()));
   esit(oturumProfilOku(cfg, 'bayat'), 'eco', 'bayat kayit makine varsayilanina dusmeli');
   esit(oturumProfilOku(cfg, 'taze'), 'premium', 'taze kayit okunmali');
-  premiumCalistir(['normal', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'yeni' });
+  premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'yeni' });
   esit(fs.existsSync(path.join(dizin, 'bayat.json')), false, 'bayat kayit silinmeli');
   esit(fs.existsSync(path.join(dizin, 'taze.json')), true, 'taze kayit durmali');
 });
 
 ol('durum profil kaynagini ve eforun izole olmadigini soyler', () => {
   const { p, cfg } = premiumKopya();
-  premiumCalistir('normal', p, cfg);
+  premiumCalistir('eco', p, cfg);
   const makine = premiumCalistir('durum', p, cfg).out;
-  icerir(makine, 'yürürlükteki profil: normal (kaynak: makine)');
+  icerir(makine, 'yürürlükteki profil: eco (kaynak: makine)');
   icerir(makine, 'efor: taban — oturuma izole değil, ajan dosyasından gelir');
   const sid = { CLAUDE_CODE_SESSION_ID: 'oturum-c' };
   icerir(premiumCalistir(['premium', 'this'], p, cfg, sid).out, 'kayıt: oturum');
   const d = premiumCalistir('durum', p, cfg, sid).out;
   icerir(d, 'yürürlükteki profil: premium (kaynak: oturum)');
-  icerir(d, 'konfig profili: normal');
+  icerir(d, 'konfig profili: eco');
   if (d.includes('UYUŞMAZLIK')) throw new Error('oturum kaydi konfigle uyusmazlik sayildi');
   icerir(
     premiumCalistir('durum', p, cfg, { ...sid, TEKNESYUM_DIL: 'en' }).out,
@@ -3576,7 +3576,7 @@ ol('durum profil kaynagini ve eforun izole olmadigini soyler', () => {
 
 ol('okunamayan oturum kaydi bayat sayilmaz, silinmez', () => {
   const { p, cfg } = premiumKopya();
-  premiumCalistir('normal', p, cfg);
+  premiumCalistir('eco', p, cfg);
   const dizin = oturumlarDizini(cfg);
   fs.mkdirSync(dizin, { recursive: true });
   const yarim = path.join(dizin, 'yarim.json');
@@ -3586,7 +3586,7 @@ ol('okunamayan oturum kaydi bayat sayilmaz, silinmez', () => {
   premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'yazan' });
   esit(fs.existsSync(yarim), true, 'yarim yazilmis kayit silinmemeli');
   esit(fs.existsSync(bos), true, 'bos kayit silinmemeli');
-  esit(oturumProfilOku(cfg, 'yarim'), 'normal', 'okunamayan kayit makine varsayilanina dusmeli');
+  esit(oturumProfilOku(cfg, 'yarim'), 'eco', 'okunamayan kayit makine varsayilanina dusmeli');
 });
 
 ol('durum iki oturumda ayri profil basar, uyusmazlik satiri hic cikmaz', () => {
@@ -3601,11 +3601,11 @@ ol('durum iki oturumda ayri profil basar, uyusmazlik satiri hic cikmaz', () => {
   icerir(a, 'yürürlükteki profil: eco (kaynak: oturum)');
   icerir(a, 'paralel: 1 ajan · ön araştırma: 1+ depo · denetim: very-critical');
   icerir(a, 'plan konseyi: off');
-  icerir(a, 'sapan düğme: audit very-critical');
+  icerir(a, 'sapan düğme: yok — taban profil');
   icerir(b, 'yürürlükteki profil: premium (kaynak: oturum)');
   icerir(b, 'paralel: 20 ajan · ön araştırma: 50+ depo · denetim: high');
   icerir(b, 'plan konseyi: fable + opus');
-  icerir(b, 'sapan düğme: audit high · fix_ceiling 8');
+  icerir(b, 'sapan düğme: audit high · fix_ceiling 8 · model_escalation off');
   for (const [ad, cikti] of [
     ['ajan dosyaları', a],
     ['relay düğmeleri', b],
@@ -3665,26 +3665,26 @@ ol('advisor yazma araci ve memory alani tasimaz', () => {
   icerir(m, '_sorun.log');
 });
 
-ol('advisor ucuz kalir, ecoda low otekilerde medium', () => {
+ol('advisor ucuz kalir, ecoda low premiumda medium', () => {
   const src = fs.readFileSync(PREMIUM, 'utf8');
   const govde = src.slice(src.indexOf('const PROFIL'), src.indexOf('const PROFILLER'));
   const satirlar = govde.split('\n').filter((r) => r.trim().startsWith('advisor:'));
-  esit(satirlar.length, 3, 'advisor üç profilde de tanımlı olmalı');
+  esit(satirlar.length, 2, 'advisor iki profilde de tanımlı olmalı');
   if (!/effort: 'low'/.test(satirlar[0]))
     throw new Error('eco advisor düşük eforda değil: ' + satirlar[0].trim());
   for (const satir of satirlar.slice(1))
     if (!/effort: 'medium'/.test(satir))
       throw new Error('advisor medium eforda değil: ' + satir.trim());
-  icerir(satirlar[2], "model: 'fable'");
-  if (/effort: '(high|xhigh)'/.test(satirlar[2]))
-    throw new Error('premium advisor planner kopyasina donmus: ' + satirlar[2].trim());
+  icerir(satirlar[1], "model: 'fable'");
+  if (/effort: '(high|xhigh)'/.test(satirlar[1]))
+    throw new Error('premium advisor planner kopyasina donmus: ' + satirlar[1].trim());
 });
 
 ol('konsey uyeleri medium eforda cagrilir', () => {
   const src = fs.readFileSync(PREMIUM, 'utf8');
   const govde = src.slice(src.indexOf('const PROFIL'), src.indexOf('const PROFILLER'));
   const satirlar = govde.split('\n').filter((r) => r.trim().startsWith('planner:'));
-  esit(satirlar.length, 3, 'planner üç profilde de tanımlı olmalı');
+  esit(satirlar.length, 2, 'planner iki profilde de tanımlı olmalı');
   for (const satir of satirlar.slice(1))
     if (/effort: '(high|xhigh)'/.test(satir))
       throw new Error('konsey üyesi yüksek eforda, cevap süresi uzuyor: ' + satir.trim());
@@ -3713,9 +3713,9 @@ ol('on arastirma kapisi depo sayisini profile gore soyler', () => {
   };
   const kapali = oku(false);
   const acik = oku(true);
-  icerir(kapali, '10|');
-  icerir(kapali, 'en az 10 depoyu');
-  if (/plan konseyini aç/.test(kapali)) throw new Error('standart profilde konsey notu cikmamali');
+  icerir(kapali, '1|');
+  icerir(kapali, 'en az 1 depoyu');
+  if (/plan konseyini aç/.test(kapali)) throw new Error('eco profilde konsey notu cikmamali');
   icerir(acik, '50|');
   icerir(acik, 'en az 50 depoyu');
   icerir(acik, 'plan konseyini aç');
@@ -3792,7 +3792,7 @@ ol('premium paralel tavani yirmidir ve gerekcesi yazili', () => {
   icerir(s, 'bölünebilen işi bölmemek\ngerekçe ister');
   icerir(s, 'güvenlik ağıdır');
   const ayar = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
-  icerir(ayar, '| `parallel_width` | 1 | 2 | 20 |');
+  icerir(ayar, '| `parallel_width` | 1 | 20 |');
   icerir(ayar, 'güvenlik ağı olur');
 });
 
@@ -3820,7 +3820,7 @@ ol('premium notu dort emri tasir, cikanlar govdede durur', () => {
     return (r.stdout || '') + (r.stderr || '');
   };
   const emirler = [
-    'opus only, no sonnet/haiku',
+    'opus; scribe and scout run sonnet, never haiku',
     '20 parallel, worktree past 3',
     'Open agents without asking',
     'tokens are not a reason',
@@ -3853,7 +3853,7 @@ ol('konfig elle degistirilse de durum uyusmazlik bildirmez', () => {
   premiumCalistir('ac', p, cfg);
   fs.writeFileSync(path.join(cfg, 'teknesyum.json'), JSON.stringify({ premium: false }));
   const d = premiumCalistir('durum', p, cfg).out;
-  icerir(d, 'yürürlükteki profil: normal');
+  icerir(d, 'yürürlükteki profil: eco');
   if (d.includes('UYUŞMAZLIK')) throw new Error('uyusmazlik satiri geri gelmis');
 });
 
@@ -3933,8 +3933,6 @@ ol('eco notu yalnizca eco profilinde enjekte edilir', () => {
   icerir(eco, 'Eco mode is on');
   icerir(eco, 'Do not open agents');
   icerir(eco, 'Keep the answer short');
-  if (profilIstek(p, profilKonfig({ profil: 'normal' })).includes('Eco mode is on'))
-    throw new Error('normal profilde eco notu enjekte edildi');
   const prem = profilIstek(p, profilKonfig({ profil: 'premium' }));
   if (prem.includes('Eco mode is on')) throw new Error('premium profilde eco notu enjekte edildi');
   icerir(prem, 'Premium mode is on');
@@ -3947,9 +3945,9 @@ ol('eco enjeksiyonu tek istekte biter, normal ikinci istekte de yazar', () => {
   const eco = profilKonfig({ profil: 'eco' });
   icerir(profilIstek(p, eco), 'Eco mode is on');
   esit(profilIstek(p, eco), '', 'eco ikinci istekte de enjekte etti');
-  const std = profilKonfig({ profil: 'normal' });
-  icerir(profilIstek(p, std), 'Yeni iş öncelikli', 'normal ilk istek');
-  icerir(profilIstek(p, std), 'Yeni iş öncelikli', 'normal ikinci istek');
+  const std = profilKonfig({ profil: 'premium' });
+  icerir(profilIstek(p, std), 'Yeni iş öncelikli', 'premium ilk istek');
+  icerir(profilIstek(p, std), 'Yeni iş öncelikli', 'premium ikinci istek');
   esit(profilIstek(p, std), '', 'normal ucuncu istekte enjeksiyon durmali');
 });
 
@@ -3967,14 +3965,14 @@ ol('profil degisince enjeksiyon sayaci sifirlanir', () => {
   profilYaz('eco');
   const ilk = profilIstek(p, cfg);
   icerir(ilk, 'Eco mode is on', 'profil degisince yeni blok ilk istekte gelmeli');
-  icerir(ilk, 'Tabandan sapan düğmeler: ');
+  icermez(ilk, 'Tabandan sapan düğmeler', 'eco taban profildir, sapma satiri yazmaz');
   if (ilk.includes('Premium mode is on')) throw new Error('eski profilin metni hâlâ geliyor');
   esit(profilIstek(p, cfg), '', 'sifirlanan sayac eco tavanini da uygulamali');
 });
 
 ol('profil degismediyse sayac sifirlanmaz, tavan yerinde durur', () => {
   const { p } = proje(1, 0);
-  const cfg = profilKonfig({ profil: 'normal' });
+  const cfg = profilKonfig({ profil: 'premium' });
   icerir(profilIstek(p, cfg), 'Yeni iş öncelikli', 'ilk istek');
   icerir(profilIstek(p, cfg), 'Yeni iş öncelikli', 'ikinci istek');
   esit(profilIstek(p, cfg), '', 'ayni profilde tavan asildi, sayac sifirlanmis');
@@ -3988,7 +3986,7 @@ ol('steering 2 hicbir profilde fark satiri enjekte etmez', () => {
   icerir(eco, 'Eco mode is on');
   icermez(eco, 'Fark ▸', 'eco profilinde seviye 2 metni enjekte edildi');
   icermez(
-    profilIstek(p, profilKonfig({ profil: 'normal', steering: 2 })),
+    profilIstek(p, profilKonfig({ profil: 'premium', steering: 2 })),
     'Fark ▸',
     'seviye 2 metni silinmis olmali'
   );
@@ -4009,10 +4007,10 @@ function enjeksiyonOlcu(p, ayar) {
 ol('enjeksiyon her profilde kendi tavaninda biter', () => {
   const { p } = proje(1, 0);
   const e = enjeksiyonOlcu(p, { profil: 'eco' });
-  const s = enjeksiyonOlcu(p, { profil: 'normal' });
+  const s = enjeksiyonOlcu(p, { profil: 'premium' });
   if (!(e.tek > 0 && s.tek > 0)) throw new Error('enjeksiyon olculemedi: ' + e.tek + ' / ' + s.tek);
   esit(e.toplam, e.tek, 'eco tavani 1: ikinci istekten sonra 0 olmali');
-  esit(s.toplam, s.tek * 2, 'normal tavani 2: ucuncu istekten sonra 0 olmali');
+  if (!(s.toplam > s.tek)) throw new Error('premium ikinci turda da yazmali');
 });
 
 function ayarOku(cfg, sid, anahtar, root) {
@@ -4046,44 +4044,40 @@ ol('iki oturum kimliginde parallel_width farkli deger doner', () => {
   const { p, cfg } = premiumKopya();
   premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-eco' });
   premiumCalistir(['premium', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-prem' });
-  premiumCalistir(['normal', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-std' });
   esit(ayarOku(cfg, 'w-eco', 'parallel_width'), '1', 'eco oturumu');
   esit(ayarOku(cfg, 'w-prem', 'parallel_width'), '20', 'premium oturumu');
-  esit(ayarOku(cfg, 'w-std', 'parallel_width'), '2', 'normal oturumu dosyadan okumali');
+  esit(ayarOku(cfg, 'w-yok', 'parallel_width'), '1', 'kayitsiz oturum tabandan okumali');
 });
 
 ol('sapmayan dugmede proje SETTINGS.md hala gecerli', () => {
   const { p, cfg } = premiumKopya();
-  premiumCalistir(['eco', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-kat' });
+  premiumCalistir(['premium', 'this'], p, cfg, { CLAUDE_CODE_SESSION_ID: 'w-kat' });
   const root = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kat-'));
   fs.writeFileSync(path.join(root, 'SETTINGS.md'), 'agent_stall : 3\nparallel_width : 7\n');
   esit(ayarOku(cfg, 'w-kat', 'agent_stall', root), '3', 'sapmayan dugme projeden okunmali');
-  esit(ayarOku(cfg, 'w-kat', 'parallel_width', root), '1', 'sapan dugmede oturum profili kazanir');
+  esit(ayarOku(cfg, 'w-kat', 'parallel_width', root), '20', 'sapan dugmede oturum profili kazanir');
   esit(ayarOku(cfg, 'w-kat', 'agent_loop', root), '5', 'kanca dugmesi global tabandan gelir');
 });
 
 ol('enjeksiyona yalniz tabandan sapan dugmeler girer', () => {
   const { p } = proje(1, 0);
   const eco = profilIstek(p, profilKonfig({ profil: 'eco' }));
-  icerir(eco, 'Tabandan sapan düğmeler: ');
-  for (const s of ['parallel_width 1', 'default_model haiku', 'audit very-critical'])
-    icerir(eco, s, 'eco sapmasi');
-  for (const s of ['ask_threshold', 'approval_gate', 'worktree_isolation', 'report_length'])
-    if (eco.includes(s)) throw new Error('tabandan sapmayan düğme enjekte edildi: ' + s);
-  for (const s of ['agent_stall', 'agent_loop'])
-    if (eco.includes(s)) throw new Error('kanca düğmesi enjekte edildi: ' + s);
+  icermez(eco, 'Tabandan sapan düğmeler', 'eco tabandir, sapma satiri yazmaz');
   const prem = profilIstek(p, profilKonfig({ profil: 'premium' }));
-  icerir(prem, 'parallel_width 20');
-  icerir(prem, 'plan_council on');
-  icerir(prem, 'audit high', 'premium denetim esigi enjekte edilmeli');
+  icerir(prem, 'Tabandan sapan düğmeler: ');
+  for (const s of ['parallel_width 20', 'default_model opus', 'audit high', 'plan_council on'])
+    icerir(prem, s, 'premium sapmasi');
+  for (const s of ['ask_threshold', 'approval_gate'])
+    if (prem.includes(s)) throw new Error('tabandan sapmayan düğme enjekte edildi: ' + s);
+  for (const s of ['agent_stall', 'agent_loop'])
+    if (prem.includes(s)) throw new Error('kanca düğmesi enjekte edildi: ' + s);
 });
 
 ol('taban profil enjeksiyona dugme satiri yazmaz', () => {
   const { p } = proje(1, 0);
-  const std = profilIstek(p, profilKonfig({ profil: 'normal' }));
+  const std = profilIstek(p, profilKonfig({ profil: 'eco' }));
   icerir(std, 'Yeni iş öncelikli');
-  if (std.includes('Tabandan sapan düğmeler'))
-    throw new Error('normal profil kendi tabanindan sapti');
+  if (std.includes('Tabandan sapan düğmeler')) throw new Error('eco profil kendi tabanindan sapti');
 });
 
 // ÖLÇÜLDÜ 27.08 (Y3 §5): `dugmeSapma` premium profilde 249 karakter ve **her turda**
@@ -4107,15 +4101,15 @@ ol('dugme sapmasi yalniz profil gecisinde yazilir', () => {
 // Sınır metne bağlanmaz: satır enjeksiyona komşularıyla tek boşlukla ekleniyor ve eski
 // regex komşu cümlelerin metnine bakıyordu — o cümleler değişince test sessizce yanlış
 // ölçerdi. Beklenen satır kaynağından (`premium.js` + `dil.js`) üretilip birebir aranır.
-ol('eco sapma satiri uc dort satiri asmaz', () => {
+ol('premium sapma satiri uc dort satiri asmaz', () => {
   const { p } = proje(1, 0);
-  const beklenen = dilMetni('dugmeSapma', sapmaSatiri('eco'));
+  const beklenen = dilMetni('dugmeSapma', sapmaSatiri('premium'));
   icerir(
-    enjeksiyonMetni(profilIstek(p, profilKonfig({ profil: 'eco' }))),
+    enjeksiyonMetni(profilIstek(p, profilKonfig({ profil: 'premium' }))),
     beklenen,
-    'eco sapma satiri'
+    'premium sapma satiri'
   );
-  if (beklenen.length > 200) throw new Error('eco sapmasi 3-4 satiri asti: ' + beklenen.length);
+  if (beklenen.length > 320) throw new Error('premium sapmasi 3-4 satiri asti: ' + beklenen.length);
 });
 
 // ÖLÇÜLDÜ 27.08 (Y7): iddia "eco notu premium notunun yarısını geçmez"di ve premium
@@ -4415,6 +4409,11 @@ function filoKur() {
 
 ol('loadall butun projelerin durumunu tek ekranda verir', () => {
   const { dip, evOrt } = filoKur();
+  fs.mkdirSync(evOrt.CLAUDE_CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(
+    path.join(evOrt.CLAUDE_CONFIG_DIR, 'teknesyum.json'),
+    JSON.stringify({ profil: 'premium' })
+  );
   const r = spawnSync(process.execPath, [OTURUM, 'toplu-yukle', '--kok', dip], {
     maxBuffer: 64 * 1024 * 1024,
     encoding: 'utf8',
@@ -4765,7 +4764,9 @@ function izKur(live, ad, kayit) {
 ol('proje live dizini de supurulur, biten kayit arsive iner', () => {
   const { p, live } = proje(1, 0);
   eskit(izKur(live, 'bitmis.json', { ended: '2026-08-20 10:00:00', stop_reason: 'end_turn' }));
-  eskit(izKur(live, 'canli.json', { ended: null, stop_reason: null, last_seen: '2026-08-27 10:00:00' }));
+  eskit(
+    izKur(live, 'canli.json', { ended: null, stop_reason: null, last_seen: '2026-08-27 10:00:00' })
+  );
   const taze = izKur(live, 'taze.json', { ended: '2026-08-27 10:00:00' });
   const durum = izKur(live, '_makbuz.json', {});
   eskit(durum);
@@ -6121,7 +6122,7 @@ ol('dil.js te oksuz girdi kalmaz', () => {
     }
   })(KOK);
   const metin = govde.join('\n');
-  const oksuz = anahtar.filter((k) => !new RegExp("['\"]" + k + "['\"]").test(metin));
+  const oksuz = anahtar.filter((k) => !new RegExp('[\'"]' + k + '[\'"]').test(metin));
   esit(oksuz.length, 0, 'dil.js oksuz girdi: ' + oksuz.join(', '));
   const kaynak = fs.readFileSync(DIL, 'utf8');
   // Makbuz `_makbuz.json` üzerinden statusline'a gidiyor; modele yazan girdi geri gelirse
@@ -6172,11 +6173,11 @@ ol('bayat calisan kaydi makbuzu sonsuza kadar ertelemez', () => {
   icerir(turSatiri({}, live), 'Total Süre: ', 'olu kayit ertelemeyi tutmamali');
 });
 
-ol('dugmeler uc profilde de tanimli', () => {
+ol('dugmeler iki profilde de tanimli', () => {
   const src = fs.readFileSync(PREMIUM, 'utf8');
   const govde = src.slice(src.indexOf('const DUGME'), src.indexOf('function arg'));
   for (const anahtar of ['agent_stall', 'agent_loop']) {
-    esit((govde.match(new RegExp(anahtar + ':', 'g')) || []).length, 3, anahtar + ' üç profilde');
+    esit((govde.match(new RegExp(anahtar + ':', 'g')) || []).length, 2, anahtar + ' iki profilde');
   }
   const s = fs.readFileSync(path.join(KOK, 'skills', 'relay', 'SETTINGS.md'), 'utf8');
   icerir(s, 'agent_stall        : 10');
@@ -6211,7 +6212,7 @@ function profilliOturum(ad, ...ek) {
   return { out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), kod: r.status };
 }
 
-ol('eco kaydi ham transkripti sikistirir, normal bire bir kopyalar', () => {
+ol('eco kaydi ham transkripti sikistirir, premium bire bir kopyalar', () => {
   const p = oturumProjesi();
   const kaynak = path.join(p, 'kaynak.jsonl');
   esit(
@@ -6233,7 +6234,7 @@ ol('eco kaydi ham transkripti sikistirir, normal bire bir kopyalar', () => {
     'durum.json hangi ham dosyasi yazildigini soylemeli'
   );
 
-  for (const ad of ['normal', 'premium']) {
+  for (const ad of ['premium']) {
     const q = oturumProjesi();
     const k = path.join(q, 'kaynak.jsonl');
     esit(
@@ -6253,9 +6254,9 @@ ol('eco kaydi ham transkripti sikistirir, normal bire bir kopyalar', () => {
   // Profil değişip aynı kayıt tazelenince eski ham dosyası kalmamalı: `--tam` bayat
   // döküm açmasın.
   esit(
-    profilliOturum('normal', 'kaydet', 'eko', '--proje', p, '--transkript', kaynak).kod,
+    profilliOturum('premium', 'kaydet', 'eko', '--proje', p, '--transkript', kaynak).kod,
     0,
-    'ayni kayit normalde tazelenebilmeli'
+    'ayni kayit premiumda tazelenebilmeli'
   );
   esit(fs.existsSync(path.join(dip, 'ham.jsonl.gz')), false, 'gzipli kalinti silinmeli');
   esit(fs.existsSync(path.join(dip, 'ham.jsonl')), true, 'duz kopya yazilmali');
@@ -6308,7 +6309,7 @@ ol('eco filo dokumu tek satira iner, devam promptu kisalmaz', () => {
   esit((r.stdout.match(/Devam promptu:/g) || []).length, 2, 'her proje kendi promptunu almali');
 });
 
-ol('eco baslik tamponu kucultur, normal yarim megabayt okur', () => {
+ol('eco baslik tamponu kucultur, premium yarim megabayt okur', () => {
   const dip = fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-baslik-'));
   const { ev: evDizin, ort: evOrt } = oturumEvi();
   const p = path.join(dip, 'Gama');
@@ -6340,17 +6341,16 @@ ol('eco baslik tamponu kucultur, normal yarim megabayt okur', () => {
     }).stdout;
   };
   if (filo('eco').includes('GEC GELEN BASLIK')) throw new Error('eco 64 kB tamponun otesini okudu');
-  icerir(filo('normal'), 'GEC GELEN BASLIK');
+  icerir(filo('premium'), 'GEC GELEN BASLIK');
 });
 
-ol('durum uc profilin ayirt edici degerlerini basar', () => {
+ol('durum iki profilin ayirt edici degerlerini basar', () => {
   const { p, cfg } = premiumKopya();
   const beklenen = {
     eco: ['paralel: 1 ajan', 'ön araştırma: 1+ depo', 'denetim: very-critical'],
-    normal: ['paralel: 2 ajan', 'ön araştırma: 10+ depo', 'denetim: critical'],
     premium: ['paralel: 20 ajan', 'ön araştırma: 50+ depo', 'denetim: high'],
   };
-  for (const ad of ['eco', 'normal', 'premium']) {
+  for (const ad of ['eco', 'premium']) {
     esit(premiumCalistir(ad, p, cfg).kod, 0, ad + ' cikis kodu');
     const out = premiumCalistir('durum', p, cfg).out;
     icerir(out, 'yürürlükteki profil: ' + ad);
@@ -6358,18 +6358,17 @@ ol('durum uc profilin ayirt edici degerlerini basar', () => {
   }
 });
 
-ol('premium yardimi ve belgesi uc profili esit anlatir', () => {
+ol('premium yardimi ve belgesi iki profili esit anlatir', () => {
   const y =
     spawnSync(process.execPath, [PREMIUM], {
       maxBuffer: 64 * 1024 * 1024,
       encoding: 'utf8',
     }).stdout || '';
-  for (const s of ['node premium.js eco', 'node premium.js normal', 'node premium.js premium'])
-    icerir(y, s);
+  for (const s of ['node premium.js eco', 'node premium.js premium']) icerir(y, s);
   icerir(y, 'ham.jsonl.gz');
   const k = fs.readFileSync(path.join(KOK, 'commands', 'premium.md'), 'utf8');
-  icerir(k, 'üç profil arasında geçiş');
-  for (const b of ['## eco', '## normal', '## premium']) icerir(k, b);
+  icerir(k, 'iki profil arasında geçiş');
+  for (const b of ['## eco', '## premium']) icerir(k, b);
   icerir(k, 'ham.jsonl.gz');
 });
 
@@ -6818,7 +6817,7 @@ ol('tarama kapsayici kapisini --kapsayici asar', () => {
 
 ol('tarama kapsayici raporu --json ile ayristirilabilir', () => {
   const kap = taramaKapsayici();
-  const j = JSON.parse(taramaCalistir(kap, 'normal', '--json').out);
+  const j = JSON.parse(taramaCalistir(kap, 'eco', '--json').out);
   esit(j.durum, 'kapsayici', 'durum alani');
   esit(j.altlar.join(','), 'alfa,beta', 'alt proje listesi');
 });
@@ -6846,8 +6845,8 @@ ol('kapsayici.kesin role klasorune aldanmaz', () => {
 ol('tarama esikleri premium.js DUGME tablosundan okur, kopyalamaz', () => {
   const t = require(TARAMA).dugmeTablosu();
   esit(t.eco.research_repos, '1', 'eco');
-  esit(t.normal.research_repos, '10', 'normal');
   esit(t.premium.research_repos, '50', 'premium');
+  esit(t.normal, undefined, 'normal profil kaldirildi');
   esit(t.premium.default_model, 'opus', 'premium modeli');
   esit(t.eco.audit, 'very-critical', 'eco denetimi');
   esit(
@@ -6857,17 +6856,16 @@ ol('tarama esikleri premium.js DUGME tablosundan okur, kopyalamaz', () => {
   );
 });
 
-ol('uc profil uc farkli on arastirma esigi uygular', () => {
+ol('iki profil iki farkli on arastirma esigi uygular', () => {
   const p = taramaProje(3);
   const madde = (profil) => JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[0];
   esit(madde('eco').esik, 1, 'eco esigi');
-  esit(madde('normal').esik, 10, 'normal esigi');
   esit(madde('premium').esik, 50, 'premium esigi');
   esit(madde('eco').gecti, true, '3 depo eco esigini gecer');
-  esit(madde('normal').gecti, false, '3 depo normal esiginin altinda');
+  esit(madde('premium').gecti, false, '3 depo premium esiginin altinda');
 });
 
-ol('uc profil uc farkli kapsam kipi uygular', () => {
+ol('iki profil iki farkli kapsam kipi uygular', () => {
   const p = taramaProje(50);
   const kapsam = (profil) => JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[1];
   esit(kapsam('premium').hedef, 2, 'premium her kaynak dosyayi ister');
@@ -6875,7 +6873,6 @@ ol('uc profil uc farkli kapsam kipi uygular', () => {
   esit(kapsam('premium').gereken.efor, 'high', 'premium eforu');
   esit(kapsam('eco').gereken.model, 'haiku', 'eco modeli');
   esit(kapsam('eco').gereken.efor, null, 'eco efor sarti koymaz');
-  esit(kapsam('normal').gereken.model, 'sonnet', 'normal modeli');
 });
 
 ol('tarama incelenmemis dosyayi raporlar', () => {
@@ -6931,7 +6928,6 @@ ol('denetim esigi geri donus maliyetine gore acilir', () => {
   const bak = (profil) =>
     JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[2].muhursuz.length;
   esit(bak('eco'), 1, 'eco yalniz geri donusu olmayani denetler');
-  esit(bak('normal'), 2, 'normal kritik ve ustunu denetler');
   esit(bak('premium'), 3, 'premium basit sozlesmeyi denetlemez');
 });
 
@@ -6949,12 +6945,15 @@ ol('sozlesme kendi risk seviyesini soyleyebilir, owns vekili ezilir', () => {
   const bak = (profil) =>
     JSON.parse(taramaCalistir(p, profil, '--json').out).maddeler[2].muhursuz.join(',');
   esit(bak('eco'), 'T1.md', 'tek dosyali sozlesme risk alanıyla denetime girmeli');
-  esit(bak('normal'), 'T1.md', 'medium diyen uc dosyali sozlesme denetim disi kalmali');
 });
 
 ol('tarama belge tutarliligini surumle karsilastirir', () => {
   const p = taramaProje(50);
-  esit(JSON.parse(taramaCalistir(p, 'normal', '--json').out).maddeler[3].gecti, true, 'README var');
+  esit(
+    JSON.parse(taramaCalistir(p, 'premium', '--json').out).maddeler[3].gecti,
+    true,
+    'README var'
+  );
   fs.writeFileSync(path.join(p, 'package.json'), JSON.stringify({ name: 'x', version: '2.0.0' }));
   const r = taramaCalistir(p, 'premium');
   icerir(r.out, 'CHANGELOG.md — 1.0.0 ≠ 2.0.0');
@@ -7067,7 +7066,7 @@ ol('/scan komutu uc profili esit anlatir ve betigi cagirir', () => {
   const k = fs.readFileSync(path.join(KOK, 'commands', 'scan.md'), 'utf8');
   icerir(k, 'scripts/tarama.js');
   icerir(k, '$ARGUMENTS');
-  for (const profil of ['eco', 'normal', 'premium']) icerir(k, '`' + profil + '`');
+  for (const profil of ['eco', 'premium']) icerir(k, '`' + profil + '`');
   icerir(k, '--tamamla');
   icerir(k, 'kapsam.json');
   const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
@@ -10309,7 +10308,7 @@ ol('save ayna kuruluyken dort dosyayi push eder, ham transkripti etmez', () => {
     icerir(agac, 'sinavproje/oturumlar/sinav/' + f, 'aynaya gitmeliydi');
   icermez(agac, 'ham.jsonl', 'ham transkript aynaya gitmemeli');
   esit(
-    fs.existsSync(path.join(p, '.claude', 'oturumlar', 'sinav', 'ham.jsonl')),
+    fs.existsSync(path.join(p, '.claude', 'oturumlar', 'sinav', 'ham.jsonl.gz')),
     true,
     'ham transkript yerelde durmali'
   );
@@ -10328,7 +10327,7 @@ ol('ayna kurulu degilse kayit yerele yazilir, sebep soylenir, hata verilmez', ()
   esit(r.kod, 0, 'kurulu olmayan ayna hata degildir');
   icerir(r.out, 'özel ayna: kayıt yerelde; özel ayna kurulu değil, push edilmedi');
   const dip = path.join(p, '.claude', 'oturumlar', 'yalnizyerel');
-  for (const f of ['ozet.md', 'durum.json', 'devir.md', 'ham.jsonl'])
+  for (const f of ['ozet.md', 'durum.json', 'devir.md', 'ham.jsonl.gz'])
     esit(fs.existsSync(path.join(dip, f)), true, 'yerel kayit tam olmali: ' + f);
 });
 
@@ -10352,7 +10351,7 @@ ol('push basarisizsa kayit yerelde kalir ve sebep basilir, yutulmaz', () => {
   icerir(satir, onek);
   if (satir.replace(onek, '').trim().length < 3) throw new Error('sebep bos basildi: ' + satir);
   const dip = path.join(p, '.claude', 'oturumlar', 'kirik');
-  for (const f of ['ozet.md', 'durum.json', 'devir.md', 'ham.jsonl'])
+  for (const f of ['ozet.md', 'durum.json', 'devir.md', 'ham.jsonl.gz'])
     esit(fs.existsSync(path.join(dip, f)), true, 'yerel kayit tam olmali: ' + f);
 });
 
@@ -10851,8 +10850,15 @@ ol('tavan 3 turdur, dorduncu tur acilmaz', () => {
   for (let i = 1; i <= 3; i++) {
     konsey(kok, ['uye', '--dosya', metinYaz(kok, 'uye' + i + '.md')]);
     son = konsey(kok, [
-      'karar', '--karar', 'uzat', '--uye-yonu', 'ayri',
-      '--dosya', metinYaz(kok, 'baskan' + i + '.md'), '--nesne', 'devam',
+      'karar',
+      '--karar',
+      'uzat',
+      '--uye-yonu',
+      'ayri',
+      '--dosya',
+      metinYaz(kok, 'baskan' + i + '.md'),
+      '--nesne',
+      'devam',
     ]);
   }
   esit(son.kod, 2, 'tavan asildi');
@@ -10902,10 +10908,14 @@ ol('karsilanmamis sozlesme gerekcesiz kapanmaz', () => {
     'utf8'
   );
   const kosu = (ek) =>
-    spawnSync(process.execPath, [path.join(KOK, 'scripts', 'contract.js'), 'close', '--id', 'Z9', ...ek, '--kok', d], {
-      encoding: 'utf8',
-      maxBuffer: 8 * 1024 * 1024,
-    });
+    spawnSync(
+      process.execPath,
+      [path.join(KOK, 'scripts', 'contract.js'), 'close', '--id', 'Z9', ...ek, '--kok', d],
+      {
+        encoding: 'utf8',
+        maxBuffer: 8 * 1024 * 1024,
+      }
+    );
   const bos = kosu([]);
   esit(bos.status, 2, 'gerekcesiz kapanis kabul edildi');
   icerir(String(bos.stdout) + String(bos.stderr), 'Gerekçesiz kapanış yok');
@@ -10921,11 +10931,7 @@ ol('cift soru eki tek basina Stop u bloklamaz, ayirac yoksa', () => {
   );
   const ek = { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-kapi-')) };
   const kos = (m) =>
-    calistir(
-      IZLE,
-      { ...ort(p), hook_event_name: 'Stop', transcript_path: transcript(m) },
-      ek
-    );
+    calistir(IZLE, { ...ort(p), hook_event_name: 'Stop', transcript_path: transcript(m) }, ek);
   const masum = kos('Yama uygulandi. Olcum dogru mu, eksik mi? Kendim dogruladim.');
   const om = JSON.parse(masum.out || '{}');
   if (om.decision === 'block' && /Senden istediklerim/.test(String(om.reason)))
@@ -10951,7 +10957,8 @@ ol('bin/Release altindaki konsol exe ekran kapisina takilmaz', () => {
   fs.writeFileSync(path.join(dizin, 'cli.exe'), pe(3));
   fs.writeFileSync(path.join(dizin, 'app.exe'), pe(2));
   const c = ekranCfg(false);
-  const kos = (komut) => ekranCagri(c, { tool_name: 'Bash', tool_input: { command: komut }, cwd: d });
+  const kos = (komut) =>
+    ekranCagri(c, { tool_name: 'Bash', tool_input: { command: komut }, cwd: d });
   const konsol = kos('./bin/Release/cli.exe --surum');
   esit(konsol.kod, 0, 'konsol exe engellendi');
   const pencere = kos('./bin/Release/app.exe');

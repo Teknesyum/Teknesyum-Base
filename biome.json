@@ -1,12 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
   "files": {
-    "includes": [
-      "teknesyum/hooks/**/*.js",
-      "teknesyum/scripts/**/*.js",
-      "test/**/*.js",
-      "!.claude/**"
-    ]
+    "includes": ["teknesyum/hooks/**/*.js", "teknesyum/scripts/**/*.js", "test/**/*.js", "!.claude"]
   },
   "formatter": {
     "enabled": true,

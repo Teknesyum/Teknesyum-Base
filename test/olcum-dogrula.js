@@ -61,7 +61,13 @@ if (token > ESIK) {
   );
   if (enUzun) {
     console.error(
-      'En uzun tanım: ' + enUzun.grup + ' → ' + enUzun.ad + ' (' + enUzun.token + ' token). Önce oraya bak.'
+      'En uzun tanım: ' +
+        enUzun.grup +
+        ' → ' +
+        enUzun.ad +
+        ' (' +
+        enUzun.token +
+        ' token). Önce oraya bak.'
     );
   }
   dustu = true;
@@ -85,11 +91,15 @@ function dosyalar(dizin, biriktir) {
   return biriktir;
 }
 
-const yorumMu = (s) => s.startsWith('//') || s.startsWith('*') || s.startsWith('/*') || s.startsWith('#');
+const yorumMu = (s) =>
+  s.startsWith('//') || s.startsWith('*') || s.startsWith('/*') || s.startsWith('#');
 const kalip = new RegExp('/(' + OLMAYAN.join('|') + ')(?!\\.js)(?![\\w-])');
 
 const bulunan = [];
-for (const dizin of [path.join(KOK, 'teknesyum', 'scripts'), path.join(KOK, 'teknesyum', 'skills')]) {
+for (const dizin of [
+  path.join(KOK, 'teknesyum', 'scripts'),
+  path.join(KOK, 'teknesyum', 'skills'),
+]) {
   for (const dosya of dosyalar(dizin, [])) {
     const satirlar = fs.readFileSync(dosya, 'utf8').split(/\r?\n/);
     satirlar.forEach((satir, i) => {

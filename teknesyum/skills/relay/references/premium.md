@@ -6,7 +6,8 @@ ettiğinde, bir emri esnetmek üzereyken ya da konseyin/görüşün biçimini ya
 
 Bağlamdaki not (`dil.js` · `premiumNotu`) şudur:
 
-> Premium mode is on. Agents: opus only, no sonnet/haiku. Independent contracts run at
+> Premium mode is on. Agents: opus; scribe and the first scout pass run sonnet, never
+> haiku. Independent contracts run at
 > once: 20 parallel, worktree past 3. Parallel is default; one agent needs a reason. Open
 > agents without asking. Tokens are not a reason. Deterministic tool before model. New
 > project: fable+opus plan council before PLAN.md. Second opinion: advisor (fable).
@@ -17,12 +18,24 @@ Profil Max 20x aboneliğini varsayar — notun eski hali bunu açıkça yazardı
 
 ---
 
-## 1. Model — opus, sonnet ve haiku yok
+## 1. Model — opus esas, angarya işte sonnet, haiku hiç
 
-Premium modda ajan modeli iş ağırlığına göre seçilmez. Ucuz model burada tasarruf değil,
-kalite kaybıdır: işi ikinci turda düzeltmek, ilk turda opus koşmaktan pahalıdır.
+Premium modda ajan modeli iş ağırlığına göre serbestçe seçilmez: esas model opus'tur ve
+haiku hiçbir rolde koşmaz. Ucuz modele düşmek çoğu işte tasarruf değil kalite kaybıdır —
+işi ikinci turda düzeltmek, ilk turda opus koşmaktan pahalıdır.
 
-> Do not use sonnet or haiku; every agent runs opus.
+Tek sapma angarya iştedir: `scribe` sonnet koşar, `scout` ilk tarama tabakasında sonnet
+koşar. Gerekçe: angarya iş modelin en pahalısını hak etmiyor — isim değiştirme, biçim
+düzeltme, elli deponun ilk sığ elemesi karar üretmez, kalıp uygular. Ölçüt rolde yazılıdır,
+sözleşmede değil: rolde yazılan kural kimlik kancasıyla ölçülür, sözleşmede yazılan
+temenni olur.
+
+Düşmeyen roller ve nedeni: `auditor` — denetçi işçiden zayıf olamaz · `planner` — konsey
+tanımı fable+opus · `advisor` — zaten fable · `builder` ve `ui-builder` — kod üreten iş
+angarya değildir.
+
+> Run opus; scribe and the first scout pass run sonnet because that work is drudgery, and
+> haiku never runs.
 
 ## 2. Paralellik — sıraya alma, aynı anda koş
 

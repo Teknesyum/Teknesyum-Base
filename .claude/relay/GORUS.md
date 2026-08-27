@@ -23,3 +23,5 @@
 2026-08-27 08:43 | advisor | Fable-Paket ve Dağıtım | bekleyen: —
 2026-08-27 08:43 | advisor | Fable-Röle Çalışma Alanı | bekleyen: —
 2026-08-27 10:39 | advisor | Fable-Telemetri Tasarımı | bekleyen: —
+2026-08-27 11:38 | advisor | Fable-SKILL.md Satır Satır | bekleyen: —
+2026-08-27 11:39 | advisor | Fable-Normal Mod ve Sonnet | bekleyen: —

@@ -2,7 +2,7 @@
 name: scribe
 description: Relay mechanical worker. Bulk work with no decisions - renaming, formatting, text edits, inventory. No code logic.
 effort: low
-maxTurns: 40
+maxTurns: 30
 memory: project
 color: yellow
 ---

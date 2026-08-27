@@ -136,10 +136,10 @@ function xmlOku(kaynak, dosyaAdi) {
     const oz = {};
     const ozRe = /([A-Za-z_][\w.:-]*)\s*=\s*("([^"]*)"|'([^']*)')/g;
     let m;
-    let kalan = temiz.slice(adEsl[0].length);
+    const kalan = temiz.slice(adEsl[0].length);
     while ((m = ozRe.exec(kalan)) !== null) {
       const ozAd = m[1];
-      if (Object.prototype.hasOwnProperty.call(oz, ozAd)) hata(ac, 'ayni ozellik iki kez: ' + ozAd);
+      if (Object.hasOwn(oz, ozAd)) hata(ac, 'ayni ozellik iki kez: ' + ozAd);
       oz[ozAd] = m[3] !== undefined ? m[3] : m[4];
     }
     // ozellik gibi gorunmeyen artik kaldi mi

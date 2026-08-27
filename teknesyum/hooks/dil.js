@@ -20,8 +20,17 @@ function dil() {
   return (_dil = 'en');
 }
 
-const PROFILLER = ['eco', 'normal', 'premium'];
+// İki profil (kullanıcı kararı, 27.08.2026). `normal` kaldırıldı; taban eco'ya indi.
+// Eski kayıtlarda `normal` görülebilir — `oturumProfili` onu tanımaz ve makine profiline
+// düşer. Düşüş sessiz olmamalı, bu yüzden `normalKaydi` ayrıca raporlanır.
+const PROFILLER = ['eco', 'premium'];
 const BAYAT_MS = 7 * 24 * 60 * 60 * 1000;
+
+function normalKaydi(sid) {
+  if (!sid) return false;
+  const c = read(oturumProfilYolu(sid));
+  return !!(c && c.profil === 'normal');
+}
 
 function oturumProfili(sid) {
   if (!sid) return null;
@@ -36,14 +45,14 @@ function makineProfili() {
   try {
     const c = JSON.parse(fs.readFileSync(path.join(konfigKok(), 'teknesyum.json'), 'utf8'));
     if (PROFILLER.includes(c.profil)) return c.profil;
-    return c.premium === true ? 'premium' : 'normal';
+    return c.premium === true ? 'premium' : 'eco';
   } catch {}
-  return 'normal';
+  return 'eco';
 }
 
 function profilHesapla(sid) {
   const e = process.env.TEKNESYUM_PREMIUM;
-  if (e === '0' || e === 'off') return 'normal';
+  if (e === '0' || e === 'off') return 'eco';
   if (e === '1' || e === 'on') return 'premium';
   return oturumProfili(sid) || makineProfili();
 }
@@ -70,7 +79,7 @@ function profilKaynak(sid) {
 }
 
 function depoSayisi(sid) {
-  return { eco: 1, normal: 10, premium: 50 }[profil(sid)];
+  return { eco: 1, premium: 50 }[profil(sid)];
 }
 
 const KONSEY = 'fable + opus';
@@ -79,7 +88,8 @@ const KONSEY = 'fable + opus';
 // çeviriyor mu. Çıkanlar başka kanaldan geliyordu — plan konseyi ve ikinci görüş
 // `relay/SKILL.md`'de, deterministik araç kuralı üç profilde de değişmez.
 const PREMIUM_NOTU =
-  'Premium mode is on. Agents: opus only, no sonnet/haiku. Independent contracts run ' +
+  'Premium mode is on. Agents: opus; scribe and scout run sonnet, never haiku. ' +
+  'Independent contracts run ' +
   'at once, parallel by default: 20 parallel, worktree past 3. Open agents without ' +
   'asking; tokens are not a reason. Why: relay/references/premium.md';
 
@@ -939,6 +949,7 @@ module.exports = {
   profilKaynak,
   depoSayisi,
   oturumProfili,
+  normalKaydi,
   PROFILLER,
   BAYAT_MS,
   KONSEY,

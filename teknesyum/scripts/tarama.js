@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Profil standardı denetimi — sertifika. Projenin şu anki halinin eco/normal/premium
+// Profil standardı denetimi — sertifika. Projenin şu anki halinin eco/premium
 // ölçütlerine uyup uymadığını dört maddede söyler: ön araştırma, kapsam, denetim, belge.
 //
 // Betik salt okurdur. Hiçbir dosyayı değiştirmez, ajan açmaz, model çağırmaz —
@@ -18,11 +18,10 @@ const { tara, kur } = require('./harita.js');
 const { roleKoku, norm, konfigKok, izKoku, oturumKimligi, safe } = require('../hooks/ortak.js');
 const kapsayici = require('../hooks/kapsayici.js');
 
-const PROFILLER = ['eco', 'normal', 'premium'];
+const PROFILLER = ['eco', 'premium'];
 
 const OLCUT = {
   eco: { kapsam: 'degisen', efor: '', belge: [] },
-  normal: { kapsam: 'komsu', efor: '', belge: ['README'] },
   premium: { kapsam: 'tum', efor: 'high', belge: ['README', 'CHANGELOG', 'SKILL'] },
 };
 
@@ -1527,7 +1526,7 @@ function uiMain(bayrak, bilinmeyen) {
             '',
             'ui kipi standarda karşı ölçer; standart yokken ölçüm uygunluk değil şablona',
             'uzaklıktır, o yüzden tarama başlamaz. Kurmak için: /uisetup',
-            'Profil kipleri (eco/normal/premium) bu kapıdan etkilenmez.',
+            'Profil kipleri (eco/premium) bu kapıdan etkilenmez.',
           ].join('\n') + '\n'
     );
     return bitir(2);
@@ -1622,18 +1621,17 @@ function bitir(kod) {
 function kullanim() {
   return (
     [
-      'kullanım: node tarama.js <eco|normal|premium|ui> [--tamamla] [--json] [--proje <yol>]',
+      'kullanım: node tarama.js <eco|premium|ui> [--tamamla] [--json] [--proje <yol>]',
       '',
       'Profil verilmeden çalışmaz — hangi standarda göre denetleyeceğini kendi seçmez.',
       'Kapsayıcı klasörde çalışmaz — üst klasörde ölçülen sayı projelerin toplamı olur.',
       '',
       '  eco      1 depo · haiku+ · değişen dosyalar · denetim kritik sözleşmelerde · belge şartı yok',
-      '  normal   10 depo · sonnet+ · değişen dosyalar + komşuları · her sözleşme denetlenir · README',
       '  premium  50 depo · opus/high+ · baştan sona her kaynak dosya · her sözleşme · README + CHANGELOG + skill',
       '  ui       profilden bağımsız · yalnız arayüz dosyaları · ihlal + durgunluk · beş saniyenin altında',
       '           teknesyum-ui.json (proje ya da makine) yoksa veya kapali: true ise çalışmaz — /uisetup.',
       '',
-      '  --tamamla  eco/normal/premium: çıktının sonuna "ne yapılmalı" bölümü ekler, dosya yazmaz.',
+      '  --tamamla  eco/premium: çıktının sonuna "ne yapılmalı" bölümü ekler, dosya yazmaz.',
       '             ui: iki faz. Faz 1 mekanik olanı kaynakta düzeltir, karar gerektireni rapor eder;',
       '             Faz 2 uçtan uca doğrulamayı önce başsız yolla dener, ekran yolu ekran kapısına',
       '             tabidir. Kirli ağaçta iki faz da çalışmaz.',

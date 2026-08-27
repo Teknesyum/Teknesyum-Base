@@ -11,8 +11,6 @@
 //
 // Tek başına koşar:  node test/u9-renkkorlugu.js
 
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 
@@ -70,8 +68,8 @@ function ters(a) {
 // ---------------------------------------------------------------------------
 // IEC 61966-2-1 aktarım eğrisi. libDaltonLens.c ile aynı eşikler.
 
-const linerle = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-const linerBoz = (c) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+const linerle = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const linerBoz = (c) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
 const kirp = (v) => Math.min(1, Math.max(0, v));
 
 function hexAyir(h) {
@@ -195,8 +193,8 @@ function deltaE2000(lab1, lab2) {
   const C1 = Math.hypot(a1, b1),
     C2 = Math.hypot(a2, b2);
   const Cort = (C1 + C2) / 2;
-  const C7 = Math.pow(Cort, 7);
-  const G = 0.5 * (1 - Math.sqrt(C7 / (C7 + Math.pow(25, 7))));
+  const C7 = Cort ** 7;
+  const G = 0.5 * (1 - Math.sqrt(C7 / (C7 + 25 ** 7)));
   const ap1 = (1 + G) * a1,
     ap2 = (1 + G) * a2;
   const Cp1 = Math.hypot(ap1, b1),
@@ -233,20 +231,17 @@ function deltaE2000(lab1, lab2) {
     0.32 * Math.cos((3 * hort + 6) * RAD) -
     0.2 * Math.cos((4 * hort - 63) * RAD);
 
-  const dTeta = 30 * Math.exp(-Math.pow((hort - 275) / 25, 2));
-  const Cp7 = Math.pow(Cport, 7);
-  const RC = 2 * Math.sqrt(Cp7 / (Cp7 + Math.pow(25, 7)));
-  const L50 = Math.pow(Lort - 50, 2);
+  const dTeta = 30 * Math.exp(-(((hort - 275) / 25) ** 2));
+  const Cp7 = Cport ** 7;
+  const RC = 2 * Math.sqrt(Cp7 / (Cp7 + 25 ** 7));
+  const L50 = (Lort - 50) ** 2;
   const SL = 1 + (0.015 * L50) / Math.sqrt(20 + L50);
   const SC = 1 + 0.045 * Cport;
   const SH = 1 + 0.015 * Cport * T;
   const RT = -Math.sin(2 * dTeta * RAD) * RC;
 
   return Math.sqrt(
-    Math.pow(dLp / SL, 2) +
-      Math.pow(dCp / SC, 2) +
-      Math.pow(dHp / SH, 2) +
-      RT * (dCp / SC) * (dHp / SH)
+    (dLp / SL) ** 2 + (dCp / SC) ** 2 + (dHp / SH) ** 2 + RT * (dCp / SC) * (dHp / SH)
   );
 }
 
@@ -455,7 +450,7 @@ const say = (s) =>
     String(s)
       .replace(/\*\*/g, '')
       .replace(',', '.')
-      .replace(/[^0-9.\-]/g, '')
+      .replace(/[^0-9.-]/g, '')
   );
 const hx = (s) => (String(s).match(/#[0-9a-fA-F]{6}/) || [''])[0].toLowerCase();
 

@@ -421,10 +421,7 @@ function kimlikDenetle(live, type, s, c) {
   const kacis = kimlikKacisi();
   for (const x of sapan) {
     const sonuc = kacis ? KACIS_IZI : x.bloklanir ? 'engellendi' : 'yalnız kayıt (çağrı kaydı yok)';
-    sorunYaz(
-      live,
-      [rol, x.alan, 'beyan: ' + x.beyan, 'gerçek: ' + x.gercek, sonuc].join(' | ')
-    );
+    sorunYaz(live, [rol, x.alan, 'beyan: ' + x.beyan, 'gerçek: ' + x.gercek, sonuc].join(' | '));
   }
   if (kacis) return;
   const engel = sapan.filter((x) => x.bloklanir);
@@ -1140,7 +1137,9 @@ function hatirlat(j, root) {
   if (root) {
     const g = gorusGerekenler(root);
     if (g.length)
-      parcalar.push(ceviri('gorusHatirlat', g.map((x) => x.id + ' (tur ' + x.tur + ')').join(', ')));
+      parcalar.push(
+        ceviri('gorusHatirlat', g.map((x) => x.id + ' (tur ' + x.tur + ')').join(', '))
+      );
   }
   const rota = yeniIsRotasi(root, j.prompt);
   if (rota) parcalar.push(rota);
@@ -1198,7 +1197,6 @@ function baglamEkle(metin) {
   });
 }
 
-
 // Oturum başına kaç kez yazdığımızı sayar. Sayaç dosyası oturuma özel; `supur()`
 // bir günü geçenleri zaten atıyor.
 //
@@ -1209,9 +1207,9 @@ function baglamEkle(metin) {
 function profilIlkTur(j) {
   const id = safe((j && j.session_id) || 'oturum');
   try {
-    const [eski] = String(
-      fs.readFileSync(path.join(genelKok(), id + '.hatirlatma'), 'utf8')
-    ).trim().split(' ');
+    const [eski] = String(fs.readFileSync(path.join(genelKok(), id + '.hatirlatma'), 'utf8'))
+      .trim()
+      .split(' ');
     return eski !== profil();
   } catch {
     return true;

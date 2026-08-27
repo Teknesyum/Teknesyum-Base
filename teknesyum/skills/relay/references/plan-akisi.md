@@ -81,11 +81,9 @@ Araştırma yapılmadan ilk sözleşme yazılmaya kalkılırsa hook geri çeviri
 istemiyorsa gerekçesi `docs/taramalar/ATLANDI.md` dosyasına tek satır yazılır — kapı
 o zaman açılır. Atlamak serbest, sessizce atlamak değil.
 
-**eco'da kapı engellemez, uyarır.** Sözleşme yazılır, oturuma tek satırlık bir uyarı
-çıkar ve atlama `.claude/relay/live/_sorun.log` dosyasına kaydedilir. Kural delinmedi,
-taşıyıcısı değişti: ekrandan kayan uyarı kalıcı iz değildir, günlük satırı öyledir ve
-onu T0 okur. Uyarıyı gördüğünde gerekçeyi yine de `ATLANDI.md` dosyasına yaz — kanca
-neyi atladığını kaydeder, **neden** atladığını yalnızca sen yazabilirsin.
+**Kapı her profilde engeller.** eco'nun eşiği tek depodur — bir depo okumanın bedeli
+kapıyı tercihe çevirmeyi haklı çıkarmaz. İhlali maliyetsiz olan kural kural değildir;
+bu yüzden eco'da da geçmenin tek yolu `ATLANDI.md` dosyasına yazılan gerekçedir.
 
 ## 1.5 Plan konseyi — planı iki model önerir
 

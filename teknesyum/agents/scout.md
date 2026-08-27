@@ -2,8 +2,8 @@
 name: scout
 description: Prior-art worker. Studies repos that solved the same problem, writes docs/taramalar/. No code. Give 2-3 repo names.
 tools: Read, Grep, Glob, WebSearch, WebFetch, Bash, Write
-effort: high
-maxTurns: 45
+effort: low
+maxTurns: 25
 memory: project
 color: cyan
 ---

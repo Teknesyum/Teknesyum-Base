@@ -26,12 +26,13 @@ function ol(ad, f) {
 
 function icerir(govde, parca, not) {
   if (!String(govde).includes(parca))
-    throw new Error((not || 'içermeli') + ': ' + parca + ' · bulunan: ' + String(govde).slice(0, 300));
+    throw new Error(
+      (not || 'içermeli') + ': ' + parca + ' · bulunan: ' + String(govde).slice(0, 300)
+    );
 }
 
 function icermez(govde, parca, not) {
-  if (String(govde).includes(parca))
-    throw new Error((not || 'içermemeli') + ': ' + parca);
+  if (String(govde).includes(parca)) throw new Error((not || 'içermemeli') + ': ' + parca);
 }
 
 function calistir(yuk, ek) {
@@ -183,10 +184,15 @@ ol('efor sapması bloklamaz, yalnız deftere düşer', () => {
 
 ol('kaçış ayarı açıkken blok kalkar ama kayıt kalır', () => {
   const { p, live } = proje();
-  const r = sapanAjanBitir(p, {
-    ...konfig('premium', true),
-    TEKNESYUM_KIMLIK_KACIS: '1',
-  }, null, 'opus');
+  const r = sapanAjanBitir(
+    p,
+    {
+      ...konfig('premium', true),
+      TEKNESYUM_KIMLIK_KACIS: '1',
+    },
+    null,
+    'opus'
+  );
   const o = r.out ? JSON.parse(r.out) : {};
   if (o.decision === 'block') throw new Error('kaçış açıkken hâlâ bloklandı');
   icerir(gunluk(live), 'kaçış kullanıldı (kimlik_kacis)');
@@ -228,10 +234,13 @@ ol('statusline dosyası varken bağlantı eksiğini ayrı söyler', () => {
 ol('headless koşuda kurulum uyarısı hiç basılmaz', () => {
   const { p } = proje();
   const m = acilisMetni(
-    calistir({ ...ort(p), hook_event_name: 'SessionStart' }, {
-      ...konfig('normal', false),
-      TEKNESYUM_HEADLESS: '1',
-    })
+    calistir(
+      { ...ort(p), hook_event_name: 'SessionStart' },
+      {
+        ...konfig('normal', false),
+        TEKNESYUM_HEADLESS: '1',
+      }
+    )
   );
   icermez(m, 'statusline', 'headless koşuda kurulum uyarısı basıldı');
   icerir(m, 'röle kurulu', 'röle satırı headless koşuda da yazılmalı');
@@ -239,12 +248,12 @@ ol('headless koşuda kurulum uyarısı hiç basılmaz', () => {
 
 ol('arka plan oturumu ve yönlendirilmiş -p çıktısı da headless sayılır', () => {
   const { p } = proje();
-  for (const ek of [
-    { CLAUDE_CODE_SESSION_KIND: 'bg' },
-    { CLAUDE_CODE_ENTRYPOINT: 'cli' },
-  ]) {
+  for (const ek of [{ CLAUDE_CODE_SESSION_KIND: 'bg' }, { CLAUDE_CODE_ENTRYPOINT: 'cli' }]) {
     const m = acilisMetni(
-      calistir({ ...ort(p), hook_event_name: 'SessionStart' }, { ...konfig('normal', false), ...ek })
+      calistir(
+        { ...ort(p), hook_event_name: 'SessionStart' },
+        { ...konfig('normal', false), ...ek }
+      )
     );
     icermez(m, 'statusline', JSON.stringify(ek) + ' koşusunda uyarı basıldı');
   }
@@ -253,11 +262,14 @@ ol('arka plan oturumu ve yönlendirilmiş -p çıktısı da headless sayılır',
 ol('terminale bağlı koşuda uyarı yine basılır', () => {
   const { p } = proje();
   const m = acilisMetni(
-    calistir({ ...ort(p), hook_event_name: 'SessionStart' }, {
-      ...konfig('normal', false),
-      CLAUDE_CODE_ENTRYPOINT: 'cli',
-      COLUMNS: '120',
-    })
+    calistir(
+      { ...ort(p), hook_event_name: 'SessionStart' },
+      {
+        ...konfig('normal', false),
+        CLAUDE_CODE_ENTRYPOINT: 'cli',
+        COLUMNS: '120',
+      }
+    )
   );
   icerir(m, 'statusline', 'terminale bağlı koşuda uyarı susmamalı');
 });

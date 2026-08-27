@@ -2,8 +2,8 @@
 name: advisor
 description: Relay second opinion on one decision node. Short message only, no plan or code. A whole plan goes to the planner council.
 tools: Read, Grep, Glob, LSP, WebSearch, WebFetch
-effort: medium
-maxTurns: 15
+effort: low
+maxTurns: 12
 color: yellow
 ---
 

@@ -17,7 +17,7 @@ SORMA.** Bunlar senin kararın. O sadece ne istediğini söyler.
 
 Davranış düğmeleri `SETTINGS.md`'de. Projede `.claude/relay/SETTINGS.md` varsa o öncelikli.
 
-**Çıktı dili:** `~/.claude/teknesyum.json` içindeki `dil` alanı ne diyorsa o dilde yaz; dosya yoksa Türkçe. Komut ve alan adlarının İngilizce olması çıktı dilini değiştirmez.
+**Çıktı dili:** kanca sana dili bildirir, o dilde yaz. Ayrıntı ve varsayılan: §7.3.
 
 Kullanıcıdan aksiyon veya karar bekleniyorsa yanıtın sonunda `Senden istediklerim` başlığı aç ve numaralı maddelerde tam kopyalanabilir metin ver. Aksiyon veya karar beklenmiyorsa bu başlığı yazma.
 
@@ -35,7 +35,7 @@ savunabiliyorsan yap, savunamıyorsan yapma.
 **eco profilinde bu sıra tersine döner: token tasarrufu > kullanıcı rahatlığı > kod
 verimliliği.** eco'yu seçen kullanıcı bütçenin gerçekten kısıt olduğunu söylemiştir; orada
 token hedeftir. Hız ve zarafet feda edilir, doğruluk edilmez — eco yavaş ve kaba olabilir,
-yanlış olamaz. Üç profilin hangisi yürürlükte olursa olsun aşağıdaki üç soru aynı kalır;
+yanlış olamaz. İki profilin hangisi yürürlükte olursa olsun aşağıdaki üç soru aynı kalır;
 değişen yalnızca eşitlik bozulduğunda hangi tarafın kazandığıdır.
 
 Takası şu üç soruyla ölç:
@@ -56,14 +56,17 @@ daha değerli bir kazancın önünde durmaz. Ama bozarken üç şey zorunlu: ne 
 neden bozduğunu tek cümleyle yaz, kullanıcıya bildir.
 
 
-## 0.1 Üç profil — eco, normal, premium
+## 0.1 İki profil — eco ve premium
 
 Profili kullanıcı `/premium` ile seçer, sen değiştirmezsin; `/premium durum` hangisinin
 yürürlükte olduğunu söyler. Seçim tek soruya bakar: **bu işte kısıt token mu, süre mi?**
-Bütçe gerçekten dardaysa **eco** — her ajan haiku, tek ajan, kısa cevap. Kısıt ne token ne
-süreyse **normal**, varsayılan budur ve çoğu iş oradadır. Max 20x planında olduğu gibi
-token kısıt olmaktan çıkmışsa **premium** — opus, yirmi paralel ajan, plan konseyi ve
-ikinci görüş. Düğme değerleri `SETTINGS.md`'deki profil tablosunda.
+Bütçe gerçekten dardaysa **eco** — varsayılan budur: her ajan haiku, tek ajan, kısa cevap.
+Max 20x planında olduğu gibi token kısıt olmaktan çıkmışsa **premium** — opus, yirmi
+paralel ajan, plan konseyi ve ikinci görüş; angarya rollerde (`scribe`, `scout`) sonnet.
+Düğme değerleri `SETTINGS.md`'deki profil tablosunda.
+
+Arada bir kademe yoktu ve arayan olmadı: `normal` 27.08.2026'da kaldırıldı. İki uç
+birbirinden ayrıştığı için taban tektir — sapma hesabı `eco` üzerinden yapılır.
 
 **eco'da T0 davranışı** — sırayla:
 
@@ -285,7 +288,7 @@ Kural yazılı olmadığında bir sözleşme on iki tur döndü — ölçüldü,
 `docs/openlogs/kapali/HATA-denetim-turu-durdurma-kurali-yok.md`.
 
 **Planlamayı asla delege etme.** Soğuk başlayan ajan daha kötü plan yapar. Tek istisna
-plan konseyidir (§1.5): üyeler öneri üretir, kararı ve kalemi T0 elinde tutar.
+plan konseyidir (`references/plan-akisi.md` §1.5): üyeler öneri üretir, kararı ve kalemi T0 elinde tutar.
 
 **Ajana verdiğin metin yalın olur.** Sözleşme, paket ve dönüş raporu düz cümleyle yazılır:
 ne oldu, nerede, ne gerekiyor. Ajanın aramasını istediğin dosyanın **yolunu ver ve zorunlu
@@ -312,7 +315,7 @@ tablosu** `references/rele-akisi.md` içindedir. Röle kurulmayan işte o dosya 
 
 Tabloya girmeden bilinmesi gereken tek şey: **modeli işin ağırlığı seçer.** İki ajan
 bu kuralın dışındadır — `planner` ve `advisor`. Onların modeli işin ağırlığına göre
-değil, konseyin kendisi tarafından sabitlenmiştir (§1.3).
+değil, konseyin kendisi tarafından sabitlenmiştir (`references/plan-akisi.md` §1.3).
 
 ## 4. Kim yapacak: rol × model
 

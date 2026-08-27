@@ -1,6 +1,6 @@
 # Relay ayarları
 
-**Bu dosya makine varsayılanıdır ve `normal` profilin değerlerinde durur. `/premium` onu
+**Bu dosya makine varsayılanıdır ve `eco` profilin değerlerinde durur. `/premium` onu
 ezmez, hiç yazmaz.** Profilin tabandan sapan düğmeleri oturumun kanca enjeksiyonuyla
 gelir ve buradaki satırı geçer; sapmayan düğme buradan okunur.
 
@@ -11,21 +11,21 @@ Sıralama üç katmandır: **oturum profili → proje `SETTINGS.md` → bu dosya
 ```
 ask_threshold      : critical       # never | critical | ambiguity | often
 approval_gate      : none           # none | plan | every-contract
-audit              : critical       # off | very-critical | critical | high | every-contract
-fix_ceiling        : 5              # kaç tur sonra karar sana gelir
+audit              : very-critical  # off | very-critical | critical | high | every-contract
+fix_ceiling        : 3              # kaç tur sonra karar sana gelir
 model_escalation   : on             # on | off
-parallel_width     : 2              # eşzamanlı ajan tavanı — eco 1 · normal 2 · premium 20
-default_model      : sonnet         # haiku | sonnet | opus
+parallel_width     : 1              # eşzamanlı ajan tavanı — eco 1 · premium 20
+default_model      : haiku          # haiku | sonnet | opus — premium opus, `scribe` ve `scout` sonnet
 worktree_isolation : off            # on | off
 report_length      : short          # short | normal | detailed
-briefing           : milestone      # quiet | milestone | every-step
+briefing           : quiet          # quiet | milestone | every-step
 plan_council       : off            # off | on — planı iki model bağımsız önerir
 second_opinion     : off            # off | on — karar düğümünde fable kısa görüş verir
-research_repos     : 10             # ön araştırmada taranacak en az depo sayısı — eco 1 · normal 10 · premium 50
+research_repos     : 1              # ön araştırmada taranacak en az depo sayısı — eco 1 · premium 50
 agent_stall        : 10             # kaç dakika sessiz kalan ajan bildirilir
 agent_loop         : 5              # aynı eylem kaç kez üst üste tekrarlarsa döngü sayılır
 kimlik_kacis       : 0              # 1 yapılırsa kimlik sapması bloklamaz, yalnız deftere yazılır
-autocompact        : auto           # settings.json → autoCompactWindow — eco 100000 · premium 1000000
+autocompact        : 150000         # settings.json → autoCompactWindow — eco 150000 · premium 500000
 ```
 
 ## Anlamları
@@ -54,7 +54,7 @@ maliyeti bu seviyede ya da üstündeyse denetçi açılır.
 Ölçek risk sırasıdır, denetim sırası değil: `high` eşiği `critical` eşiğinden **daha çok**
 sözleşme denetler, çünkü daha alçak bir riskten itibaren açılır.
 
-Varsayılan `critical`. Premium bile `every-contract` değildir: basit ve geri dönüşü ucuz
+Varsayılan `very-critical`. Premium bile `every-contract` değildir: basit ve geri dönüşü ucuz
 işte denetçi açmak tur ve token harcar, karşılığında hiçbir şey yakalamaz. Denetimin
 karşılığı geri dönüş maliyeti yüksekken doğar; premium orada `high` ile daha erken açılır
 ve daha titiz çalışır. Ajan raporu denetim yerine geçmez — eşiği aşan sözleşmede denetçi
@@ -68,9 +68,9 @@ taze ajanla** bir üst modele çıkar (haiku→sonnet→opus). Sorun modelin sev
 harcamayı keser. Devam ettirilen ajanın modeli değiştirilemez, bu yüzden tırmanış hep
 taze ajanla gelir.
 
-**parallel_width** — `owns` kümeleri kesişmeyen sözleşmeler için tavan. Normal profilde
-3'ü aşma; her paralel ajan tam dispatch maliyeti taşır. eco profilinde tavan 1'dir —
-paralellik oradaki tek kısıtı, süreç sayısını, doğrudan çarpar.
+**parallel_width** — `owns` kümeleri kesişmeyen sözleşmeler için tavan. eco profilinde
+tavan 1'dir — paralellik oradaki tek kısıtı, süreç sayısını, doğrudan çarpar; her paralel
+ajan tam dispatch maliyeti taşır.
 
 Premium profilde tavan **20**'dir ve 3'ü geçtiğinde `worktree_isolation` kendiliğinden
 açılır. Kaç ajan açılacağına T0 karar verir ve ölçüsü **hızdır, token değil**. Tavan
@@ -113,11 +113,11 @@ bağlıyordu. `advisor` premiumda bile **düşük eforla** çalışır; danışm
 ancak ucuz olmasıyla mümkün.
 
 Görüş bağlayıcı değildir — T0 katılmazsa gerekçesini yazar. Kullanıcıya sormanın yerini
-de tutmaz: `ask_threshold` sormaya izin veriyorsa önce sorulur. eco ve normal profilde
+de tutmaz: `ask_threshold` sormaya izin veriyorsa önce sorulur. eco profilde
 kapalıdır, premiumda açılır. Hangi dokuz durumda tetiklendiği relay `references/plan-akisi.md` §1.5.1.
 
 **research_repos** — ön araştırmada (SKILL `references/plan-akisi.md` §1.4) taranacak en az depo sayısı. eco
-profilinde 1, normal profilde 10, premium profilde 50. Elli depo, on depoyla aynı
+profilinde 1, premium profilde 50. Elli depo, tek depoyla aynı
 derinlikte okunmaz: ilk tarama tabakası sığdır, konsey ve planlama derinleşeceği yeri
 kendi seçer.
 
@@ -144,13 +144,10 @@ yani geçerli aralık **100000–1000000**, ondalık yok. Aralık dışındaki d
 şema `.catch(void 0)` ile onu **sessizce düşürür** ve pencere `auto`ya döner; bu yüzden
 `node <eklenti>/scripts/premium.js autocompact` aralık dışını yazmadan önce durur. CLI karşılığı `--autocompact <auto|tokens>`.
 
-Üç profilin değeri:
+İki profilin değeri:
 
-- **eco `100000`** — şemanın izin verdiği en küçük pencere. En erken sıkıştırma, en ucuz istek.
-- **normal `auto`** — anahtar `settings.json`'a **hiç yazılmaz**. Claude Code'un kendi
-  varsayılanı modele göre pencere seçer; `/config` ekranı bunu ezmeyi "yüksek token
-  kullanımına yol açabilir" diye işaretler. Taban profil satıcı varsayılanının dışına çıkmaz.
-- **premium `1000000`** — şemanın tavanı. "Token bütçesi kısıt olmaktan çıkar" felsefesinin
+- **eco `150000`** — dar pencere. Erken sıkıştırma, ucuz istek.
+- **premium `500000`** — geniş pencere. "Token bütçesi kısıt olmaktan çıkar" felsefesinin
   karşılığı. **Fiili pencere modelin bağlam penceresiyle sınırlıdır:** Opus'ta ~200k, 1M
   bağlam açık Sonnet'te gerçekten 1M. Yani `1000000` yazmak "modelin verdiği en genişi kullan"
   demektir, 1M garantisi değil.
@@ -179,7 +176,7 @@ model ya da eforla koşmadıysa kanca `SubagentStop` anında blok döndürür, a
 sonucu kabul edilmez. Kota baskısı gibi haklı bir durumda `1` yapılır — blok kalkar ama sapma
 yine `live/_sorun.log` defterine `kaçış kullanıldı (kimlik_kacis)` satırıyla düşer; sessiz
 geçiş yok. Aynı ayar ortamdan da açılır: `TEKNESYUM_KIMLIK_KACIS=1`; ortam yazılmışsa o
-kazanır. İkinci bir kaçış kapısı yoktur. Profil başına farklılaşmaz: üç profilde de `0`,
+kazanır. İkinci bir kaçış kapısı yoktur. Profil başına farklılaşmaz: iki profilde de `0`,
 bu yüzden `premium.js` düğme tablosunda yeri yok.
 
 Beklenti çağrıda geçilen modelden gelir, profilden değil. Çağrı kaydı bulunamadığında beyanın
@@ -203,38 +200,35 @@ ezer. Geçersiz değer `en` sayılır.
 `/setup` sorar ve yazar. `TEKNESYUM_SESSIZ=1` hâlâ 0'a eşdeğerdir, `TEKNESYUM_STEERING=0|1|2`
 tek oturumluk ezer. Satırların çoğunu hook basar — model unutsa da gelir, ölçülmüş olaydandır.
 
-## Üç profil
+## İki profil
 
-Yukarıdaki blok **taban**dır: `normal` profilin değerleridir ve `/premium` ona dokunmaz.
+Yukarıdaki blok **taban**dır: `eco` profilin değerleridir ve `/premium` ona dokunmaz.
 Profil oturuma yazılır (`~/.claude/teknesyum/oturumlar/<oturum>.json`), tabandan sapan
 düğmeleri de oturumun enjeksiyonuyla taşır. Böylece iki pencere aynı makinede iki farklı
-profille çalışabilir; eskiden üçü aynı dosyaya yazıldığı için son çalışan komut ötekini
+profille çalışabilir; eskiden hepsi aynı dosyaya yazıldığı için son çalışan komut ötekini
 eziyordu.
 
-Ajan frontmatter'ı da tabandır: `effort` ve `maxTurns` `normal` değerlerinde donar,
+Ajan frontmatter'ı da tabandır: `effort` ve `maxTurns` `eco` değerlerinde donar,
 `model` alanı dosyalarda hiç yoktur — modeli her çağrıda T0 geçer ve çağrı anındaki
 değer frontmatter'ı ezer. `effort` çağrı anında geçilemediği için **oturuma izole
 edilemez**; premium farkını `model` taşır, efor ikinci derece kaldıraçtır.
 
-| Düğme | eco | normal | premium |
-|---|---|---|---|
-| `default_model` | haiku | sonnet | opus |
-| `parallel_width` | 1 | 2 | 20 |
-| `worktree_isolation` | off | off | on |
-| `model_escalation` | on | on | off |
-| `audit` | very-critical | critical | high |
-| `fix_ceiling` | 3 | 5 | 8 |
-| `report_length` | short | short | detailed |
-| `briefing` | quiet | milestone | every-step |
-| `plan_council` | off | off | on — fable + opus |
-| `second_opinion` | off | off | on — fable |
-| `research_repos` | 1 | 10 | 50 |
-| `agent_stall` | 10 | 10 | 10 |
-| `agent_loop` | 5 | 5 | 5 |
-| `autocompact` | 100000 | auto | 1000000 |
-
-**normal** varsayılandır ve eski `standart` profilin aynısıdır — yalnız adı değişti.
-`/premium kapat` hâlâ buraya götürür.
+| Düğme | eco | premium |
+|---|---|---|
+| `default_model` | haiku | opus — `scribe` ve `scout` sonnet |
+| `parallel_width` | 1 | 20 |
+| `worktree_isolation` | off | on |
+| `model_escalation` | on | off |
+| `audit` | very-critical | high |
+| `fix_ceiling` | 3 | 8 |
+| `report_length` | short | detailed |
+| `briefing` | quiet | every-step |
+| `plan_council` | off | on — fable + opus |
+| `second_opinion` | off | on — fable |
+| `research_repos` | 1 | 50 |
+| `agent_stall` | 10 | 10 |
+| `agent_loop` | 5 | 5 |
+| `autocompact` | 150000 | 500000 |
 
 Bu tablo yalnız neyin nasıl çalışacağını değil, **neyin sertifika sayılacağını** da
 belirler: `/scan <profil>` projenin şu anki halini bu düğmelere karşı denetler. Ölçüyü
@@ -244,11 +238,11 @@ görmek zorunda. Denetimin "hangi dosya incelendi" sorusuna `.claude/relay/kapsa
 cevap verir; kayıt ajan bitişinde ve ana oturumun her düzenlemesinde kendiliğinden düşer,
 `live/` gibi süpürülmez.
 
-**premium**, Max 20x planı içindir: token bütçesi kısıt olmaktan çıkar, sonnet ve haiku
-tamamen bırakılır, efor tavanı `xhigh` olur. Tek istisna `advisor`: modeli `fable`,
-eforu `low`. Danışma sık olacaksa ucuz olmak zorundadır.
+**premium**, Max 20x planı içindir: token bütçesi kısıt olmaktan çıkar, haiku tamamen bırakılır ve
+angarya olmayan her rol opus koşar, efor tavanı `xhigh` olur. `scribe` ile `scout`un ilk
+tarama tabakası sonnet kalır. Tek istisna `advisor`: modeli `fable`, eforu `low`. Danışma sık olacaksa ucuz olmak zorundadır.
 
-**eco**, token'ın gerçekten kısıt olduğu profildir. Felsefesi tek cümle: **token tasarrufu
+**eco** varsayılandır ve token'ın gerçekten kısıt olduğu profildir. Felsefesi tek cümle: **token tasarrufu
 önceliği en yüksek, hız ve verimlilik ondan feda edilebilir.** Feda edilmeyen şey
 doğruluktur — eco yavaş ve daha az zarif olabilir, yanlış olamaz. Bu yüzden denetim,
 mühür kapısı, `owns` disiplini ve kabul kriteri eco'da da aynen durur.
@@ -257,18 +251,18 @@ Her ajan `haiku` çalışır; efor kod
 üreten ve denetleyen üç rolde (`builder`, `ui-builder`, `auditor`) `medium`, kalanında
 `low`. Sebebi: haiku maliyeti zaten bir mertebe düşürüyor, kod yazan rolü bunun üstüne
 `low`'a indirmek kabul kriterini geçmeyen iş üretir ve harcanan tur kazanılan tokenden
-pahalıya gelir. `audit` `critical`'e düşer — eco'nun en büyük tasarruf kolu ajan
+pahalıya gelir. `audit` `very-critical`'e düşer — eco'nun en büyük tasarruf kolu ajan
 sayısıdır, denetim ajanı sözleşme başına ikinci ajandır. `model_escalation` açık kalır:
 haiku'nun yetmediği sözleşmede tur harcamak yerine modeli yükseltmek eco'da daha da
 önemlidir. `fix_ceiling` 3'tür, `briefing` `quiet`'tir. `research_repos` 1'e iner: ön
 araştırma ajan sayısıyla çarpılan tek kalemdir ve eco'nun kestiği ilk şey odur.
 
-Üç profilde de değişmeyen şey deterministik araç tercihidir — `biome`, `rg`, `sed`
+İki profilde de değişmeyen şey deterministik araç tercihidir — `biome`, `rg`, `sed`
 modelden ucuz olduğu için değil daha doğru olduğu için seçilir. `/premium durum`
 yürürlükteki profili söyler, `TEKNESYUM_PREMIUM=1|0` tek oturumluk ezer.
 
-`~/.claude/teknesyum.json` profili `profil` alanında tutar: `eco` · `normal` · `premium`.
-Alan yoksa eski `premium` bayrağı okunur — `true` premium, gerisi normal sayılır. Betik
+`~/.claude/teknesyum.json` profili `profil` alanında tutar: `eco` · `premium`.
+Alan yoksa eski `premium` bayrağı okunur — `true` premium, gerisi eco sayılır. Betik
 yazarken ikisini birlikte yazar, böylece eski bayrağı okuyan kanca bozulmaz.
 
 ## Kural

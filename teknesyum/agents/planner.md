@@ -2,8 +2,8 @@
 name: planner
 description: Relay plan council member. Returns an independent plan proposal, writes nothing. Opens in pairs; one question goes to advisor.
 tools: Read, Grep, Glob, LSP, WebSearch, WebFetch
-effort: medium
-maxTurns: 40
+effort: low
+maxTurns: 30
 color: yellow
 ---
 

@@ -2,7 +2,7 @@
 name: ui-builder
 description: Relay interface worker. Contracts producing UI (arayüz) - component, panel, page, CSS, XAML, theme. Neon standard preloaded.
 effort: medium
-maxTurns: 60
+maxTurns: 40
 memory: project
 color: pink
 skills: [teknesyum-ui]

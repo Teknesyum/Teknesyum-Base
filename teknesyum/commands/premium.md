@@ -1,22 +1,22 @@
 ---
-description: Switches the profile — premium, normal or eco
-argument-hint: premium | normal | eco | durum | <profil> this | this sil
+description: Switches the profile — premium or eco
+argument-hint: premium | eco | durum | <profil> this | this sil
 allowed-tools: Bash
 ---
 
 İstenen: $ARGUMENTS
 
-Bu komut **üç profil arasında geçiş yapar**: `eco`, `normal`, `premium`. Adı `/premium`
+Bu komut **iki profil arasında geçiş yapar**: `eco`, `premium`. Adı `/premium`
 kalmıştır çünkü ezberde odur; işlevi profil anahtarıdır, premium düğmesi değil.
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/premium.js" <eco|normal|premium|durum> [this|this sil]
+node "${CLAUDE_PLUGIN_ROOT}/scripts/premium.js" <eco|premium|durum> [this|this sil]
 ```
 
 `${CLAUDE_PLUGIN_ROOT}` çözülmezse betik `~/.claude/plugins/**/teknesyum/scripts/premium.js`
 altındadır. Argüman boşsa `durum` çalıştır — kendiliğinden profil değiştirme.
 
-Eski çağrılar durur: `aç` premium, `kapat` normal demektir. `standart` da `normal`'e gider.
+Eski çağrılar durur: `aç` premium, `kapat` eco demektir. `standart` da `eco`'ya gider.
 
 ## Kapsam: çıplak makinedir, `this` bu sohbettir
 
@@ -32,7 +32,7 @@ aynı anlama gelir.
 ```
 
 **Okuma sırası değişmez ve oturum kaydı üstte kalır:** `TEKNESYUM_PREMIUM` → oturum kaydı
-→ `teknesyum.json` → `normal`. Bunun tek gerçek bedeli sessiz gölgelemedir: bu sohbette
+→ `teknesyum.json` → `eco`. Bunun tek gerçek bedeli sessiz gölgelemedir: bu sohbette
 `this` ile ayar yapıldıysa çıplak komut geneli değiştirir ama burada hiçbir şey değişmez.
 Betik o durumda üç satır basar — makine varsayılanının ne olduğunu, bu sohbette hangi
 değerin yürürlükte kaldığını ve `this sil` ile nasıl temizleneceğini. **O üç satırı
@@ -42,7 +42,7 @@ kısaltma, olduğu gibi bas.**
 yalnız eski çağrılar kırılmasın diye durur. Yeni metinde kullanma.
 
 **Betik hiçbir depo dosyası yazmaz.** Ajan frontmatter'ı ve relay düğmeleri
-(`skills/relay/SETTINGS.md`) **makine tabanıdır** ve `normal` profilin değerlerinde durur;
+(`skills/relay/SETTINGS.md`) **makine tabanıdır** ve `eco` profilin değerlerinde durur;
 profil onları ezmez. Yazdığı tek yer profil kaydıdır. Çıktıyı olduğu gibi bas, kendin
 dosya düzenleme.
 
@@ -58,7 +58,7 @@ açıldı. Alan hiç bulunmayınca ezme ihtimali de kalmaz.
 
 Oturuma bağlanan şey **profil kaydı ve model**dir, **efor değildir.** Efor yalnız ajan
 tanım dosyasından gelir — `Agent` aracının şemasında `effort` alanı yoktur, oturum başına
-ayrılamaz. Taban `normal`'dir: tek taban kalınca eco `xhigh` öderse eco anlamını, premium
+ayrılamaz. Taban `eco`'dur: tek taban kalınca eco `xhigh` öderse eco anlamını, premium
 `medium`'da kalırsa premium anlamını yitirirdi. Premium farkını `model` taşır, efor ikinci
 derece kaldıraçtır. `durum` bunu her seferinde tek satırla söyler; yarım çözümü tam gibi
 göstermemek için oradadır.
@@ -72,26 +72,26 @@ profilden profile değişen asıl değerlerdir; gerisi bu üçünün sonucudur.
 
 Profilden profile değişen tek ajan alanı **model**dir; onu da dosya değil çağrı taşır.
 
-| | eco | normal | premium |
-|---|---|---|---|
-| builder · ui-builder | haiku | sonnet | opus |
-| auditor | haiku | sonnet | opus |
-| scout | haiku | sonnet | opus |
-| scribe | haiku | haiku | opus |
-| planner | haiku | sonnet | opus |
-| advisor | haiku | sonnet | fable |
-| paralel ajan | 1 | 2 | 20 |
-| worktree izolasyonu | kapalı | kapalı | açık |
-| model tırmanışı | açık | açık | kapalı — zaten tepede |
-| denetim eşiği | very-critical | critical | high |
-| rapor · brifing | short · quiet | short · milestone | detailed · every-step |
-| plan konseyi | kapalı | kapalı | açık — fable + opus |
-| ikinci görüş | kapalı | kapalı | açık — fable |
-| ön araştırma | 1+ depo | 10+ depo | 50+ depo |
-| /save ham transkript | `ham.jsonl.gz` gzipli | `ham.jsonl` bire bir | `ham.jsonl` bire bir |
-| /loadall proje bloğu | tek satır durum | dört satır durum | dört satır durum |
+| | eco | premium |
+|---|---|---|
+| builder · ui-builder | haiku | opus |
+| auditor | haiku | opus |
+| scout | haiku | sonnet — ilk tarama tabakası |
+| scribe | haiku | sonnet |
+| planner | haiku | opus |
+| advisor | haiku | fable |
+| paralel ajan | 1 | 20 |
+| worktree izolasyonu | kapalı | açık |
+| model tırmanışı | açık | kapalı — zaten tepede |
+| denetim eşiği | very-critical | high |
+| rapor · brifing | short · quiet | detailed · every-step |
+| plan konseyi | kapalı | açık — fable + opus |
+| ikinci görüş | kapalı | açık — fable |
+| ön araştırma | 1+ depo | 50+ depo |
+| /save ham transkript | `ham.jsonl.gz` gzipli | `ham.jsonl` bire bir |
+| /loadall proje bloğu | tek satır durum | dört satır durum |
 
-**Efor ve tur tavanı üç profilde de aynıdır** — ajan dosyasındaki taban değerlerdir:
+**Efor ve tur tavanı iki profilde de aynıdır** — ajan dosyasındaki taban değerlerdir:
 `builder` · `ui-builder` `medium`/60, `auditor` `high`/30, `scout` `high`/45, `planner`
 `high`/40, `scribe` `low`/40, `advisor` `low`/15. `scribe` ve `advisor` premiumda da
 düşük eforda kalır: model yükseldi diye isim değiştirme işine ya da kısa bir görüşe uzun
@@ -121,14 +121,9 @@ Kayıt tarafında iki değişiklik daha var, ikisi de veri kaybetmeden:
   commit başlığı ve röle günlüğü düşer. **Devam promptu kısalmaz** — kullanıcının
   kopyalayacağı metin odur.
 
-## normal
-
-Varsayılan. `sonnet`, iki paralel ajan, denetim eşiği `critical`; plan konseyi ve ikinci
-görüş kapalı. Kayıt davranışı değişmez: `ham.jsonl` bire bir kopyalanır.
-
 ## premium
 
-Hız ve kod kalitesi önceliklidir; token tasarrufu gerekçe sayılmaz. `opus` + `xhigh`,
+Hız ve kod kalitesi önceliklidir; token tasarrufu gerekçe sayılmaz. `opus` + `xhigh` (`scribe` ve `scout` sonnet),
 20 paralel ajan, worktree izolasyonu açık, plan konseyi ve ikinci görüş açık.
 
 **Premiumda bile her sözleşme koşulsuz denetlenmez.** Denetim eşiği `high`'dır: geri
@@ -138,7 +133,7 @@ açılır ve `opus`/`xhigh` ile titiz çalışır. Ölçü sözleşmenin büyük
 maliyetidir.**
 
 Premium açıkken oturum açılışında `Teknesyum ▸ premium mod` satırı çıkar ve ilk iki
-istekte modele davranış notu enjekte edilir — paraleli aç, sonnet'e düşme, token
+istekte modele davranış notu enjekte edilir — paraleli aç, angarya olmayan işte sonnet'e düşme, token
 tasarrufunu gerekçe sayma, plan konseyini aç.
 
 ## Profilden bağımsız mekanizmalar
@@ -161,7 +156,7 @@ aracının şemasında `model` var, `effort` yok; efor yalnızca ajan tanımınd
 tek dosyada dururken aynı eforu paylaşıyordu. Ayrılınca `advisor` premiumda bile `low`
 eforda kalabiliyor — tetikleyici sayısı arttıkça danışmanın ucuz olması önem kazanır.
 
-**Ön araştırma tavanı** profille değişir: eco 1, normal 10, premium 50 depo (SKILL `references/plan-akisi.md` §1.4).
+**Ön araştırma tavanı** profille değişir: eco 1, premium 50 depo (SKILL `references/plan-akisi.md` §1.4).
 Derinlik değişmez, kapsam değişir: elli depo aşamalar hâlinde okunur ve her aşama bir
 sonrakinin aday listesini eler.
 
@@ -171,10 +166,10 @@ güvenlik ağı olur. Kararı T0 verir ve ölçüsü hızdır — bölünebilen 
 ister. Eco'da tavan 1'dir: paralel ajan hızdır, token değil.
 
 `~/.claude/teknesyum.json` **makine varsayılanını** `profil` alanında tutar. Alan yoksa
-eski `premium` bayrağı okunur: `true` premium, gerisi normal sayılır. Betik bu dosyayı
+eski `premium` bayrağı okunur: `true` premium, gerisi eco sayılır. Betik bu dosyayı
 çıplak çağrıda yazar ve `profil` ile `premium` alanlarını birlikte günceller; `this` ile
 çağrıldığında ona hiç dokunmaz. Profil okuma sırası: `TEKNESYUM_PREMIUM` → oturum kaydı
-→ `teknesyum.json` → `normal`.
+→ `teknesyum.json` → `eco`.
 
 Betik dosya yazmadığı için eklenti güncellemesiyle profil arasında uyuşmazlık da oluşmaz;
 `durum` artık uyuşmazlık satırı basmaz, yürürlükteki profili ve sapan düğmeleri basar.

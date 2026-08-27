@@ -17,24 +17,24 @@ const SUITE = [
   'u11-tema.js',
 ];
 
-let kalan = 0;
+const dusen = [];
 for (const ad of SUITE) {
   const r = spawnSync(process.execPath, [path.join(__dirname, ad)], { stdio: 'inherit' });
   if (r.error) {
     console.error('\n' + ad + ' çalıştırılamadı: ' + r.error.message);
-    kalan++;
+    dusen.push(ad);
     continue;
   }
   if (r.signal) {
     console.error('\n' + ad + ' sinyalle düştü: ' + r.signal);
-    kalan++;
+    dusen.push(ad);
     continue;
   }
-  if (r.status !== 0) kalan++;
+  if (r.status !== 0) dusen.push(ad);
 }
 
-if (kalan) {
-  console.error('\n⨯ ' + kalan + ' suite düştü');
+if (dusen.length) {
+  console.error('\n⨯ ' + dusen.length + ' suite düştü: ' + dusen.join(', '));
   process.exit(1);
 }
 console.log('\n✓ ' + SUITE.length + ' suite geçti');

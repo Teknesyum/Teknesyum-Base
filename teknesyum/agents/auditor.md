@@ -2,8 +2,8 @@
 name: auditor
 description: Relay auditor. Verifies a finished contract's acceptance criteria independently. Read-only pass/fail; give the contract path.
 tools: Read, Grep, Glob, LSP
-effort: high
-maxTurns: 30
+effort: medium
+maxTurns: 20
 color: purple
 ---
 

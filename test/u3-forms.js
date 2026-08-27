@@ -27,8 +27,6 @@
 //   Kaynakları geçici bir dizine kopyalar, tek tek bozar ve testi o kopyaya karşı
 //   yeniden koşar; her mutasyonun testi DÜŞÜRMESİ beklenir. Çıktı sözleşmeye yapıştırılır.
 
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 
@@ -231,7 +229,7 @@ const kanal = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 function parlaklik(hex) {
   const [r, g, b] = kanal(hex)
     .map((v) => v / 255)
-    .map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+    .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 

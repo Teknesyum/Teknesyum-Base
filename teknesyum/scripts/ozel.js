@@ -324,7 +324,8 @@ function kurulumYonergesi() {
 
 function kur(argv) {
   const url = argv[0];
-  if (!url) dur('Depo adresi gerekli:  node <eklenti>/scripts/ozel.js kur <private-depo-url> [proje-adı]');
+  if (!url)
+    dur('Depo adresi gerekli:  node <eklenti>/scripts/ozel.js kur <private-depo-url> [proje-adı]');
   const kok = projeKoku();
   const a = ayar() || {};
   a.depo = url;
@@ -356,7 +357,9 @@ function kur(argv) {
   satir.push('İnen klasör: ' + mevcut.join(', ') + '  (deponun kalanı diske serilmez)');
   satir.push('Bu proje: ' + ad);
   satir.push('');
-  satir.push('Sıradaki:  node <eklenti>/scripts/ozel.js ekle ~/.claude/teknesyum.json   ·   node <eklenti>/scripts/ozel.js pusla');
+  satir.push(
+    'Sıradaki:  node <eklenti>/scripts/ozel.js ekle ~/.claude/teknesyum.json   ·   node <eklenti>/scripts/ozel.js pusla'
+  );
   bas(satir);
 }
 
@@ -403,7 +406,11 @@ function ekle(argv) {
   const satir = [];
   if (eklenen.length) satir.push('Eklendi: ' + eklenen.join(', '));
   for (const s of atlanan) satir.push('Atlandı: ' + s);
-  satir.push('Kayıtlı dosya sayısı: ' + m.dosyalar.length + '  ·  aynaya yazmak için node <eklenti>/scripts/ozel.js pusla');
+  satir.push(
+    'Kayıtlı dosya sayısı: ' +
+      m.dosyalar.length +
+      '  ·  aynaya yazmak için node <eklenti>/scripts/ozel.js pusla'
+  );
   bas(satir);
 }
 
@@ -452,7 +459,9 @@ function durum() {
   const bekleyen = f.filter((d) => d.durum === 'degisti' || d.durum === 'yeni').length;
   satir.push('');
   satir.push(
-    bekleyen ? bekleyen + ' dosya aynaya yazılmayı bekliyor — node <eklenti>/scripts/ozel.js pusla' : 'Ayna güncel.'
+    bekleyen
+      ? bekleyen + ' dosya aynaya yazılmayı bekliyor — node <eklenti>/scripts/ozel.js pusla'
+      : 'Ayna güncel.'
   );
   return bas(satir);
 }
@@ -543,7 +552,8 @@ function cek(argv) {
     satir.push('  korundu  ' + y + '  — yereldeki farklı, üzerine yazılmadı');
   for (const y of disari)
     satir.push('  atlandı  ' + y + '  — hedef proje ve ev dizininin dışına düşüyor');
-  if (korunan.length) satir.push('', 'Yereli aynadakiyle ezmek için:  node <eklenti>/scripts/ozel.js cek --zorla');
+  if (korunan.length)
+    satir.push('', 'Yereli aynadakiyle ezmek için:  node <eklenti>/scripts/ozel.js cek --zorla');
   bas(satir);
 }
 
@@ -605,7 +615,9 @@ function gonder(klon, mesaj) {
       ok: false,
       satir: [
         'Push yapılamadı: klon detached HEAD durumunda, gönderilecek dal yok.',
-        '  git -C ' + klon + ' checkout main  ile düzeltip node <eklenti>/scripts/ozel.js pusla ile yeniden dene.',
+        '  git -C ' +
+          klon +
+          ' checkout main  ile düzeltip node <eklenti>/scripts/ozel.js pusla ile yeniden dene.',
       ],
     };
   const ustAkim = gitSonuc(klon, ['rev-parse', '--abbrev-ref', '@{upstream}']).ok;
@@ -615,7 +627,10 @@ function gonder(klon, mesaj) {
   if (!push.ok)
     return {
       ok: false,
-      satir: ['Push başarısız: ' + tekSatir(push.stderr), 'node <eklenti>/scripts/ozel.js pusla ile yeniden dene.'],
+      satir: [
+        'Push başarısız: ' + tekSatir(push.stderr),
+        'node <eklenti>/scripts/ozel.js pusla ile yeniden dene.',
+      ],
     };
 
   // Push'un çıkış kodu 0 olması yetmez: commit hiç açılmamışsa "Everything up-to-date"

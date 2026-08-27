@@ -12,8 +12,6 @@
 //
 // Tek başına koşar:  node test/u5-a11y.js
 
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 

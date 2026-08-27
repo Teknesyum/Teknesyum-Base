@@ -15,22 +15,17 @@ const PROFIL = {
     scribe: { model: 'haiku', effort: 'low', maxTurns: 30 },
     'ui-builder': { model: 'haiku', effort: 'medium', maxTurns: 40 },
   },
-  normal: {
-    advisor: { model: 'sonnet', effort: 'medium', maxTurns: 15 },
-    auditor: { model: 'sonnet', effort: 'high', maxTurns: 30 },
-    builder: { model: 'sonnet', effort: 'medium', maxTurns: 60 },
-    planner: { model: 'sonnet', effort: 'medium', maxTurns: 40 },
-    scout: { model: 'sonnet', effort: 'high', maxTurns: 45 },
-    scribe: { model: 'haiku', effort: 'low', maxTurns: 40 },
-    'ui-builder': { model: 'sonnet', effort: 'medium', maxTurns: 60 },
-  },
+  // Angarya işte sonnet (kullanıcı kararı, 27.08.2026). Ölçüt rolde yazılı, sözleşmede
+  // değil: rolde yazılan kural kimlik kancasıyla ölçülür, sözleşmede yazılan temenni olur.
+  // Düşmeyenler ve nedeni — auditor: denetçi işçiden zayıf olamaz · planner: konsey tanımı
+  // fable+opus · advisor: zaten fable · builder/ui-builder: kod üreten iş angarya değildir.
   premium: {
     advisor: { model: 'fable', effort: 'medium', maxTurns: 20 },
     auditor: { model: 'opus', effort: 'xhigh', maxTurns: 40 },
     builder: { model: 'opus', effort: 'xhigh', maxTurns: 80 },
     planner: { model: 'opus', kabul: ['fable'], effort: 'medium', maxTurns: 40 },
-    scout: { model: 'opus', effort: 'high', maxTurns: 60 },
-    scribe: { model: 'opus', effort: 'low', maxTurns: 40 },
+    scout: { model: 'sonnet', kabul: ['opus'], effort: 'high', maxTurns: 60 },
+    scribe: { model: 'sonnet', effort: 'low', maxTurns: 40 },
     'ui-builder': { model: 'opus', effort: 'xhigh', maxTurns: 80 },
   },
 };
@@ -39,9 +34,9 @@ const TAKMA = {
   ac: 'premium',
   aç: 'premium',
   on: 'premium',
-  kapat: 'normal',
-  off: 'normal',
-  standart: 'normal',
+  kapat: 'eco',
+  off: 'eco',
+  standart: 'eco',
 };
 
 const KONSEY = ['fable', 'opus'];
@@ -63,24 +58,6 @@ const DUGME = {
     plan_council: 'off',
     second_opinion: 'off',
     research_repos: '1',
-    agent_stall: '10',
-    agent_loop: '5',
-  },
-  normal: {
-    autocompact: 'auto',
-    ask_threshold: 'critical',
-    approval_gate: 'none',
-    audit: 'critical',
-    fix_ceiling: '5',
-    model_escalation: 'on',
-    parallel_width: '2',
-    default_model: 'sonnet',
-    worktree_isolation: 'off',
-    report_length: 'short',
-    briefing: 'milestone',
-    plan_council: 'off',
-    second_opinion: 'off',
-    research_repos: '10',
     agent_stall: '10',
     agent_loop: '5',
   },
@@ -129,7 +106,7 @@ function konfigOku() {
 function konfigProfili(c) {
   if (PROFILLER.includes(c.profil)) return c.profil;
   if (c.premium === true) return 'premium';
-  return 'normal';
+  return 'eco';
 }
 
 function konfigYaz(profil) {
@@ -256,7 +233,7 @@ function ajanYolu(kok, ad) {
   return path.join(kok, 'agents', ad + '.md');
 }
 
-const TABAN = 'normal';
+const TABAN = 'eco';
 
 const KANCA_DUGME = ['agent_stall', 'agent_loop', 'autocompact'];
 
@@ -278,7 +255,7 @@ function sapmaSatiri(profil) {
 
 function ajanProfili(kok) {
   const sonuc = {};
-  for (const ad of Object.keys(PROFIL.normal)) {
+  for (const ad of Object.keys(PROFIL.eco)) {
     const yol = ajanYolu(kok, ad);
     if (!fs.existsSync(yol)) continue;
     const m = fs.readFileSync(yol, 'utf8');
@@ -442,10 +419,9 @@ function durum() {
 function yardim() {
   process.stdout.write(
     [
-      'premium.js — üç profil arasında geçiş yapar',
+      'premium.js — iki profil arasında geçiş yapar',
       '',
       '  node premium.js eco      haiku · 1 paralel ajan · 1 depo · denetim very-critical',
-      '  node premium.js normal   sonnet · 2 paralel ajan · 10 depo · denetim critical',
       '  node premium.js premium  opus/xhigh · 20 paralel ajan · 50 depo · denetim high',
       '  node premium.js durum    hangi profilin yürürlükte olduğunu söyler',
       '  node premium.js <profil> this      yalnız bu oturumu yazar, makineye dokunmaz',
@@ -458,19 +434,16 @@ function yardim() {
       'makine varsayılanını (~/.claude/teknesyum.json) yazar, sonuna `this` eklenirse yalnız',
       'içinde bulunulan oturumu (~/.claude/teknesyum/oturumlar/<oturum>.json) yazar. Okuma',
       'sırası değişmez ve oturum kaydı üstte kalır: TEKNESYUM_PREMIUM → oturum → makine →',
-      'normal. Yani makine varsayılanı premium olsa da tek bir sohbette `eco this` serbesttir.',
+      'eco. Yani makine varsayılanı premium olsa da tek bir sohbette `eco this` serbesttir.',
       'Oturuma özel ayarı geri almanın yolu `this sil`. Eski çağrılar durur: `ac` premium,',
-      '`kapat` normal, `--genel` çıplak komutla aynı şey demektir.',
+      '`kapat` eco, `--genel` çıplak komutla aynı şey demektir.',
       '',
-      'eco — token kısıtken. Her rol ' +
+      'eco — varsayılan, token kısıtken. Her rol ' +
         PROFIL.eco.builder.model +
         ', kod yazan ve denetleyen roller `medium` eforda kalır; denetim yalnız geri',
       '  dönüşü en pahalı sözleşmede açılır. `/save` ham transkripti gzipli yazar',
       '  (ham.jsonl.gz), `/loadall`',
       '  proje başına tek satır basar — devam promptu ikisinde de kısalmaz.',
-      'normal — varsayılan. ' +
-        PROFIL.normal.builder.model +
-        ', iki paralel ajan, denetim kritik eşiğinde; konsey ve görüş kapalı.',
       'premium — hız ve kalite öncelikli. ' +
         PROFIL.premium.builder.model +
         ', 20 paralel ajan, worktree izolasyonu açık. Plan konseyi açılır (' +

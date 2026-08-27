@@ -16,8 +16,6 @@
 //
 // Tek başına koşar:  node test/u8-glow.js
 
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 
@@ -156,7 +154,7 @@ function glowMu(b) {
 // ---------------------------------------------------------------------------
 // Kapsam: aynı şablondan üretilen, sayısı veriyle değişen kardeş öğe.
 
-const ELEMAN = /(^|[\s>+~])(tr|td|th|li|option|dd|dt)(\b|[.:\[#])/i;
+const ELEMAN = /(^|[\s>+~])(tr|td|th|li|option|dd|dt)(\b|[.:[#])/i;
 const SINIF = /[-_](row|cell|item|entry|node|satir|hucre|oge)\b/i;
 const ROL = /\[role\s*=\s*["']?(row|gridcell|cell|listitem|treeitem|option)["']?\]/i;
 const NTH = /:nth-(child|of-type)\b/i;
@@ -181,7 +179,7 @@ const xamlHam = oku(XAML);
 const motionHam = oku(MOTION);
 
 let kurallar = [];
-let tumBildirim = [];
+const tumBildirim = [];
 
 function s0_ayristiriciSaglam() {
   if (!cssHam) return;

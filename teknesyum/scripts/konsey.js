@@ -65,7 +65,9 @@ function ozet(h) {
   for (const k of h.kayitlar) {
     L.push(
       `  tur ${k.tur}: uye=${k.uyeMetni || '—'}` +
-        (k.karar ? ` · karar=${k.karar} uye_yonu=${k.uyeYonu}${k.nesne ? ` · nesne: ${k.nesne}` : ''}` : '')
+        (k.karar
+          ? ` · karar=${k.karar} uye_yonu=${k.uyeYonu}${k.nesne ? ` · nesne: ${k.nesne}` : ''}`
+          : '')
     );
   }
   return L;

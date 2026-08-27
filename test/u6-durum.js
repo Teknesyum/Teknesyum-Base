@@ -1,4 +1,3 @@
-'use strict';
 const fs = require('fs');
 const path = require('path');
 
@@ -425,7 +424,7 @@ const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const lum = (c) => {
   const s = c.map((v) => {
     const u = v / 255;
-    return u <= 0.03928 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4);
+    return u <= 0.03928 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4;
   });
   return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
 };

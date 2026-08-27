@@ -173,3 +173,61 @@ sayısal olarak doğrulanıyor.
   verdiği ayrı bir ölçüm işi (konseyin S4 tasarımı, henüz koşulmadı).
 - **Sonda tek turluk.** Alt bağlam bulgusu iki ajanda doğrulandı ama harness sürümüne
   bağlı; sürüm değişince tekrarlanmalı.
+
+---
+
+## 6. Fable'ın taraması — göremediğim yerler
+
+Doğrulanmış bulgular fable'a verildi ve "gördüğüm optimizasyonları değil,
+göremediklerimi söyle" dendi. Üç şey çıktı; ikisi haklı, biri ölçünce zayıfladı.
+
+### 6.1 Asıl yük eklentide değil, harness'ta — **haklı, ölçülmedi**
+
+MCP araç şemaları ve sunucu talimatları her oturumda bağlamda duruyor ve tek başına
+1.396 token'lık yüzeyin katbekat üstünde. Bu raporun "%2-3" hükmü bu kalemi
+saymadan veriliyor; yani **alt sınır, üst sınır değil.**
+
+Kısmi hafifletici: araçların çoğu *deferred* — şeması değil yalnız adı bağlamda
+duruyor, şema `ToolSearch` ile talep üzerine yükleniyor. Yani harness zaten bizim
+Y7'de yaptığımız şeyi yapıyor. Ama şeması bağlamda duran araçlar da var ve
+sayılmadılar.
+
+**Borç:** MCP şema yükü ölçülmedi. Ölçmenin yolu: aynı görevi MCP sunucuları açık ve
+kapalıyken koşup `cache_creation_input_tokens` farkına bakmak.
+
+### 6.2 Cache TTL — **haklı, ölçülmedi**
+
+5 dakikalık boşlukta önbellek düşüyor ve tüm sabit yüzey cache-read ($1,50/M) değil
+**cache-write ($18,75/M)** fiyatından yeniden yazılıyor — 12,5 kat. Bu raporun
+tablosu her turun sıcak önbellekte olduğunu varsayıyor.
+
+Uzun aralıklarla çalışan bir kullanıcıda gerçek maliyet buradaki sayıdan belirgin
+yüksektir. **Bu, kesim yapılmasını değil, kesimin değerinin daha yüksek olduğunu
+söyler** — düşen önbellek her seferinde yüzeyin tamamını 12,5 kat fiyatla ödetiyor.
+
+### 6.3 "47 skill'in çoğu bizim değil" — **ölçünce zayıfladı**
+
+Fable "her alt ajan çağrısında 47 satır ödeniyor, kullanılmayan eklentiyi kapat"
+dedi. `scripts/olcum/skill-yuzeyi.js` ile ölçüldü:
+
+| kaynak | skill | karakter | token |
+|---|---:|---:|---:|
+| teknesyum | 2 | 860 | **345** |
+| kullanıcı (`graphify`) | 1 | 349 | 140 |
+
+Kalan ~44 skill harness'ın kendi yerleşik skill'leri (`design`, `dataviz`,
+`code-review`, `artifact-*`, `anthropic-skills:*`…) — eklenti önbelleğinde değiller
+ve kapatma düğmesi kullanıcıda değil. Yani **kaldıraç sanıldığı yerde değil.**
+Bizim ödediğimiz 345 token ve o iki skill eklentinin tetiklenme yüzeyi; kısaltmak
+maliyeti değil işlevi keser.
+
+Bir ölçüm hatası da buradan çıktı: tarama ilk koşuda 144 skill saydı, çünkü eklenti
+önbelleğinde her sürüm için ayrı klasör duruyor ve `teknesyum-ui` beş kez sayıldı.
+Ada göre tekilleştirildi. **Ham dosya sayımı sürüm klasörlerini ayırt etmez.**
+
+### 6.4 En kırılgan yer
+
+Fable'ın kendi hükmü: **oturum şekli varsayımı** (60 tur · 6 alt ajan × 12 tur).
+Alt ajan sayısı artarsa skill listesi maliyeti lineer büyür ve tablodaki sıralama
+değişir. Betik `--tur=`, `--ajan=`, `--ajantur=` bayraklarıyla yeniden koşulur;
+sayılar bu üç girdinin fonksiyonudur, sabit değil.

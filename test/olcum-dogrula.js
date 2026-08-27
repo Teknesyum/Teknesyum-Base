@@ -77,7 +77,7 @@ function dosyalar(dizin, biriktir) {
     return biriktir;
   }
   for (const g of girdiler) {
-    if (g.name === '_coplik' || g.name === 'node_modules') continue;
+    if (g.name === 'trash' || g.name === 'node_modules') continue;
     const tam = path.join(dizin, g.name);
     if (g.isDirectory()) dosyalar(tam, biriktir);
     else if (/\.(js|md|json)$/.test(g.name)) biriktir.push(tam);

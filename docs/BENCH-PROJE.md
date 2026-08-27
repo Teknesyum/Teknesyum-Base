@@ -154,7 +154,8 @@ Dört bağımsız incelemenin çıkardığı bulguların özeti. Ayrıntı: `doc
   izolasyonu — hepsi prompt'a enjekte edilen cümleler. `agents/*.md` frontmatter'ında
   `model:` alanı yok. Tek yaptırım `kimlikDenetle()`, sapmayı log'a yazar, bloklamaz.
 - **(E) Eklenti yükleniyor ama davranışı değiştirmiyor.** Sistem promptu native'e göre
-  belirgin şişiyor; 21 skill ve 7 ajan tanımı yükleniyor. Buna karşılık 12/12 koşuda sıfır
+  belirgin şişiyor; 2 skill, 22 komut ve 7 ajan tanımı yükleniyor (komut sayısı o ölçümün
+  yapıldığı andaki değerdir). Buna karşılık 12/12 koşuda sıfır
   Agent çağrısı, sıfır Skill çağrısı; araç kümesi her yerde aynı.
 - **(F) Görev eklentinin iddiasını sınamıyor.** Tek oturum, tek ajan, temiz fixture, tek
   atışta bitecek iş. Relay orkestrasyonu, oturum sürekliliği, sözleşme akışı tetiklenemez;

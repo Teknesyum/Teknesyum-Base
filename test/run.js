@@ -311,7 +311,7 @@ ol('yuzeyden cikan alti is calisiyor ve erisim yolu help.md govdesinde', () => {
     icerir(h, komut, komut + ' help govdesinde anilmali');
     icerir(h, yol, komut + ' erisim yolu yazilmali');
     esit(
-      fs.existsSync(path.join(__dirname, '..', '_coplik', 'komutlar', komut.slice(1) + '.md')),
+      fs.existsSync(path.join(__dirname, '..', 'trash', 'komutlar', komut.slice(1) + '.md')),
       true,
       komut + '.md coplige tasinmali, silinmemeli'
     );

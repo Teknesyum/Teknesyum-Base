@@ -1,4 +1,4 @@
-# Çöplük
+# Trash
 
 İşi bitmiş dosyalar burada bekler. Proje ağacında ölü dosya durmaz.
 
@@ -9,12 +9,12 @@ kullanıcının olur.
 
 **Buraya taşınma şartı:** dosyaya `teknesyum/`, `scripts/`, `test/`, `bench/`,
 `.github/` ya da `README.md` içinden atıf **yok**. Atıf varsa dosya canlıdır,
-taşınmaz.
+taşınmaz. Şartı elle değil sayarak doğrula.
 
 **Silmek için:**
 
 ```powershell
-Remove-Item -Recurse -Force _coplik; git add -A; git commit -m "coplik bosaltildi"
+Remove-Item -Recurse -Force trash; git add -A; git commit -m "trash bosaltildi"
 ```
 
-Geri almak için: `git log --diff-filter=D -- _coplik` ile taşındığı commit bulunur.
+Geri almak için: `git log --diff-filter=D -- trash` ile taşındığı commit bulunur.

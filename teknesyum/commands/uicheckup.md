@@ -1,5 +1,5 @@
 ---
-description: Scans the interface standard read-only and hands the approved plan over as a verified manifest
+description: Read-only interface scan — produces an approved, verified manifest
 argument-hint: <hedef-kökü>
 allowed-tools: Bash, Read
 ---

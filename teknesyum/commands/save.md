@@ -1,5 +1,5 @@
 ---
-description: Saves this session to disk — conversation, context, git state, unsent text
+description: Saves this session to disk — conversation, context, git state
 argument-hint: <kayıt adı — boş bırakılırsa tarih>
 allowed-tools: Bash
 ---
@@ -34,7 +34,7 @@ Kaydın içinde ne var:
 gibi bölümler orada kelimesi kelimesine durur. `ozet.md` kırpar, `devir.md` kırpmaz; araç
 çağrıları girmez, kullanıcıya görünen metin girer.
 
-**Kayıt özel aynaya da gider.** Ayna kuruluysa (`/ozel kur`) betik şu dördünü push eder:
+**Kayıt özel aynaya da gider.** Ayna kuruluysa (`scripts/ozel.js kur`) betik şu dördünü push eder:
 `ozet.md`, `durum.json`, `calisma.diff`, `devir.md`. **`ham.jsonl` gönderilmez** — bu
 dosya megabaytlarca olur ve git'te delta'lanmaz; yerelde kalır. Böylece bir makinede
 `/save`, başka makinede `/load` yeter, elle veri taşımak gerekmez.

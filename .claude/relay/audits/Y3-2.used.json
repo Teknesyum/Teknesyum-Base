@@ -1,0 +1,27 @@
+{
+  "contractId": "Y3",
+  "auditorRunId": "a62c12d659efde36d",
+  "headSha": "415a1bd7061fc6f5525e1e69bd84f6c3b514505b",
+  "diffHash": "75f685639b6a412e85244d73067652824593ac8f1f56530eb7bce15b176e130d",
+  "owns": [
+    "teknesyum/hooks/relay-watch.js",
+    "teknesyum/hooks/dil.js",
+    "teknesyum/skills/relay/SKILL.md",
+    "teknesyum/scripts/statusline.js",
+    "test/run.js"
+  ],
+  "verification": [
+    "GECTI  T2  · sartname ✓ · kalite ✓",
+    "✓ §6 supurme her turda kosuyor — relay-watch.js:79 kosulsuz, test/run.js:4693-4713 ajan acmayan oturumda dogruluyor",
+    "✓ §6 arsivle() tasiyor silmiyor — relay-watch.js:1895-1928 renameSync, yalniz ended dolu ve 24 saati gecmis",
+    "✓ §6 okuyan alti yer de izKaydi suzgecinden geciyor — :515 :610 :1014 :1976 :1992 :2156, statusline.js:155-157",
+    "✓ §4 oksuz taramasi koda bagli — test/run.js:6036-6053 dil.js anahtarlarini regexle cikarip teknesyum/ altini tariyor, 83/83",
+    "✓ §4 siradaAlindi silinmesi bir seyi kirmiyor — depoda cagri yok",
+    "✓ Iki borc kapandi — kopya eco iddiasi tek iddiaya indi, metne bagli sinir uc yerde de girdinin kendi kapanisina baglandi",
+    "✓ §1 §2 §3 §5 regresyon yok"
+  ],
+  "result": "passed",
+  "createdAt": "2026-08-26T23:44:05.718Z",
+  "usedAt": "2026-08-26T23:44:05.776Z",
+  "completedSha": "415a1bd7061fc6f5525e1e69bd84f6c3b514505b"
+}

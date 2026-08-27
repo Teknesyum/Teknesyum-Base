@@ -96,7 +96,7 @@ and renamed into place, and if any step fails the whole set is rolled back. A
 > **Language.** Command names, agent roles and contract fields are English. What the base
 > *writes back to you* — reports, explanations, agent output — follows the language you
 > choose during setup, stored in `~/.claude/teknesyum.json`, defaulting to Turkish.
-> Asking for `/report` does not mean you want an English report.
+> Asking for `/update` does not mean you want an English report.
 
 ---
 
@@ -396,15 +396,12 @@ than silently passing.
 
 | Command | When |
 |---|---|
-| `/report` | "Where are we?" Contract progress, running agents, what is left |
 | `/rule` | "Don't do that again." Records a permanent rule in the right layer |
 | `/setup` | Wires this machine up. Once, at install time |
 | `/uisetup` | Sets up your UI standard — ready-made template or your own — or turns it off |
 | `/uicheckup` | Scans UI files and prepares an approved relay manifest |
 | `/premium` | Switches between the premium, normal and eco profiles, and reports which one is live |
-| `/beep` | Plays a short sound when a turn needs you, finishes, or fails — bypasses the OS notification system |
 | `/log` | Lists open bug logs written from any project, reads them, and closes them as they are solved |
-| `/ozel` | Keeps personal files in one private repo — only the current project's folder is ever downloaded |
 | `/pusla` | Tests, public repo, then the private mirror — two repos in one push flow |
 | `/scan` | "Does this project meet the premium standard?" Certifies it against a profile and lists what is missing |
 | `/save` | Writes this session to disk — transcript, context, git state, unsent text |
@@ -412,13 +409,26 @@ than silently passing.
 | `/saveall` | Saves every project's last session into its own folder |
 | `/loadall` | Loads the state of every project onto one screen |
 | `/rc` | Opens a remote-control session so the project can be driven from a phone |
-| `/rcall` | Does the same for every project in the parent folder |
-| `/rcadvanced` | Remote control with the choices left to you: mode, permissions, capacity |
 | `/update` | Checks whether a newer version is out and hands you the update command |
 | `/help` | What the base does and when, on one screen |
 
 There is no command to set a relay up and none to resume interrupted work — both happen on
 their own.
+
+
+### Kept as scripts, not as commands
+
+Some features are not worth a permanent line in every session's context. The script stays,
+the slash command does not:
+
+| Feature | How to run it |
+|---|---|
+| Turn sounds | `node teknesyum/scripts/beep.js` |
+| Compaction window | `node teknesyum/scripts/autocompact.js` |
+| Private file mirror | `node teknesyum/scripts/ozel.js` |
+| Remote control, all projects | `/rc --hepsi` |
+| Remote control, options | `/rc --gelismis` |
+| Contract progress | `/update` |
 
 ### Certifying a project against a profile
 
@@ -661,7 +671,7 @@ chat has a record waiting. `/load hepsi` opens all of them; anything else opens 
 ```
 
 `/saveall` and `/loadall` work across the whole folder of projects, with the same
-exclusion rule as `/rcall` — `!`, `.` and `_` folders stay out. Saving writes each
+exclusion rule as `/rc --hepsi` — `!`, `.` and `_` folders stay out. Saving writes each
 project's own record under its `.claude/oturumlar/`, never into a shared pile, and the
 folder gitignores itself so a multi-megabyte transcript never reaches a repository.
 Loading reads nothing back into context wholesale: per project you get its folder path,
@@ -697,16 +707,16 @@ than restarting.
 ```
 /rc                    open remote control for this project, no questions
 /rc kur                install the terminal client first, then open
-/rcall                 open one session per project in the parent folder
-/rcadvanced            pick the spawn mode, permission mode, capacity yourself
-/rcadvanced metin      print the command instead of opening a window
-/rcadvanced kaydetme   open without saving the chat first
+/rc --hepsi                 open one session per project in the parent folder
+/rc --gelismis            pick the spawn mode, permission mode, capacity yourself
+/rc --gelismis metin      print the command instead of opening a window
+/rc --gelismis kaydetme   open without saving the chat first
 ```
 
-`/rcall` walks the folder above the project and puts every project in it on remote
+`/rc --hepsi` walks the folder above the project and puts every project in it on remote
 control. Folders whose name starts with `!`, `.` or `_` — where archived and finished
 work lives — stay out; anything else you want skipped goes into the `rcAtla` list in
-`~/.claude/teknesyum.json`. The default cap is twelve windows (`/rcall tavan 30`).
+`~/.claude/teknesyum.json`. The default cap is twelve windows (`/rc --hepsi tavan 30`).
 
 If a window cannot be opened, the command prints one copy-pasteable line rather than
 handing you a set of instructions. This command exists only until the desktop app grows a

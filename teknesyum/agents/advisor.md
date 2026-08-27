@@ -1,6 +1,6 @@
 ---
 name: advisor
-description: Relay second opinion. Gives one short opinion at a single node where T0 does not know the right call - which way I would go, why, and what the asker is missing. Writes no plan, no code, creates no file; its only output is a message under three headings, at most 20 lines. One member for one question - use the planner council for a whole plan.
+description: Relay second opinion on one decision node. Short message only, no plan or code. A whole plan goes to the planner council.
 tools: Read, Grep, Glob, LSP, WebSearch, WebFetch
 effort: medium
 maxTurns: 15

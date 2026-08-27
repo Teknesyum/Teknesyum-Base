@@ -1,5 +1,5 @@
 ---
-description: Restores a saved session — pick up where you left off
+description: Restores a saved session
 argument-hint: <kayıt adı · son · hepsi — boş bırakılırsa en son kayıt>
 allowed-tools: Bash, Read
 ---

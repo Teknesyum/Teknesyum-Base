@@ -136,8 +136,8 @@ const S = {
       ' Tokens',
   },
   aciktaKuyruk: {
-    tr: (n) => 'Açıkta ' + n + ' madde — listesi `/report` ile açılır.',
-    en: (n) => n + ' item(s) still open — list them with `/report`.',
+    tr: (n) => 'Açıkta ' + n + ' madde — listesi `/update` ile açılır.',
+    en: (n) => n + ' item(s) still open — list them with `/update`.',
   },
 
   aciktaEngel: {
@@ -520,8 +520,8 @@ const S = {
     en: (f, yer) => 'Route: docs/' + f + (yer ? ' — you stopped at:' + yer : ''),
   },
   sikismaAjan: {
-    tr: (liste) => 'Bitmemiş ajan: ' + liste + '. /report ile durumlarını doğrula.',
-    en: (liste) => 'Unfinished agents: ' + liste + '. Verify them with /report.',
+    tr: (liste) => 'Bitmemiş ajan: ' + liste + '. /update ile durumlarını doğrula.',
+    en: (liste) => 'Unfinished agents: ' + liste + '. Verify them with /update.',
   },
 
   gerileme: {
@@ -707,11 +707,11 @@ const S = {
     tr: (ad) =>
       'özel ayna kurulu (`' +
       ad +
-      '`) ama kayıtlı dosya yok · dokunulmaz dosyalar yedeksiz — `/ozel ekle <yol>`',
+      '`) ama kayıtlı dosya yok · dokunulmaz dosyalar yedeksiz — `node teknesyum/scripts/ozel.js ekle <yol>`',
     en: (ad) =>
       'private mirror is set up (`' +
       ad +
-      '`) but holds no files · untouchable files are unbacked — `/ozel ekle <path>`',
+      '`) but holds no files · untouchable files are unbacked — `node teknesyum/scripts/ozel.js ekle <path>`',
   },
 
   dakikaOnce: { tr: (n) => n + ' dakika önce', en: (n) => n + ' minutes ago' },
@@ -873,7 +873,7 @@ const S = {
         : ['Uzak denetime açılacak projeler:']
       ).concat(
         elenen.length ? ['', 'Dışarıda kalan klasörler: ' + elenen.join(' · ')] : [],
-        artan > 0 ? ['', artan + ' proje tavanın dışında kaldı · `/rcall tavan 30`'] : [],
+        artan > 0 ? ['', artan + ' proje tavanın dışında kaldı · `/rc --hepsi tavan 30`'] : [],
         kalan.length
           ? ['', 'Bunlar için pencere açılmadı, komutu sen çalıştıracaksın:', ''].concat(
               kalan.map((x) => '    ' + x)
@@ -887,7 +887,7 @@ const S = {
         : ['Projects to put on remote control:']
       ).concat(
         elenen.length ? ['', 'Folders left out: ' + elenen.join(' · ')] : [],
-        artan > 0 ? ['', artan + ' projects hit the cap · `/rcall tavan 30`'] : [],
+        artan > 0 ? ['', artan + ' projects hit the cap · `/rc --hepsi tavan 30`'] : [],
         kalan.length
           ? ['', 'No window opened for these — run the command yourself:', ''].concat(
               kalan.map((x) => '    ' + x)

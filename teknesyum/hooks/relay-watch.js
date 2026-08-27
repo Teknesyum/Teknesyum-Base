@@ -73,6 +73,10 @@ function run(j) {
   const kapDurum = kap
     ? path.join(genelKok(), safe(j.session_id || 'oturum') + '.kapsayici')
     : null;
+  // Süpürme olay dallarından önce: `UserPromptSubmit` ve `Stop` kendi dallarında
+  // dönüyor ve eskiden süpürme onların altında kalıyordu — ajan açmayan bir oturumda
+  // hiç çalışmıyordu (Y3 §6). Damga saat başına bir kez geçirdiği için bedeli bir stat.
+  supur(root);
   turDamga(j);
   if (j.hook_event_name === 'PostToolUse') {
     if (kap) kapsayici.izle(kap, kapDurum, j);
@@ -130,7 +134,6 @@ function run(j) {
   } catch {
     return;
   }
-  supur(root);
   saglikTara(live, root);
 
   if (debugAcik()) iz(live, j);
@@ -1885,6 +1888,10 @@ const SUPUR_MUAF = { 'kullanim.json': 1, [SUPUR_DAMGA]: 1 };
 // beş günde 363 kayıt birikti ve her istemde hepsi okundu. Bir günü geçmiş **bitmiş**
 // kayıt `arsiv/` altına taşınır — silinmez, çünkü `_sorun.log` soruşturması geriye
 // bakabilmeli. Canlı kayıt ve `_` önekli durum dosyaları yerinde kalır.
+//
+// Sınır 24 saat çünkü `statusline.js` `taze()` penceresi de 24 saat: bundan eski bitmiş
+// kayıt zaten hiçbir yerde gösterilmiyor, yalnız okunuyordu. İki sınır ayrılırsa
+// arşivleme statusline'dan hâlâ görünen bir kaydı kaçırır.
 function arsivle(root) {
   if (!root) return;
   const live = izYolu(root);

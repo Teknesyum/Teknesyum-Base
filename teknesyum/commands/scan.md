@@ -1,5 +1,5 @@
 ---
-description: Audits the project against a profile standard — eco, normal or premium certificate; `ui` scans the interface
+description: Audits the project against a profile standard; `ui` scans the interface
 argument-hint: eco | normal | premium | ui [--tamamla] [--json] [--proje <yol>]
 allowed-tools: Bash, Read, Glob, Grep, Edit, Write, Agent
 ---
@@ -138,7 +138,7 @@ Faz 2 yalnız Faz 1 temiz bittiğinde (açık ihlal sıfır) koşar ve **önce b
 dener** (`standartlar.md` doğrulamayı başsız ister): package.json test betiği ya da
 test csproj varsa betik onu kendisi koşar, pencere açılmaz. Başsız yol yoksa gerekçesi
 rapora yazılır ve ekran yolu kalır — **program açmak ekran kapısının kapsamındadır.**
-Kapı kapalıysa Faz 2 koşmaz, raporda `/ekran` gerektiği tek satırla söylenir ve Faz 1
+Kapı kapalıysa Faz 2 koşmaz, raporda ekran kapısının açılması gerektiği tek satırla söylenir (`node <eklenti>/hooks/ekran-kapisi.js --ac`) ve Faz 1
 sonucu yine geçerlidir; kapıyı kendin açma, kullanıcıdan iste. Kapı açıksa ekran
 doğrulamasını sen yürütürsün: programı aç, ekran görüntüsü al, gördüğünü `teknesyum-ui`
 standardına karşı denetle.

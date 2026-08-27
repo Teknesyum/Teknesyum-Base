@@ -1,5 +1,5 @@
 ---
-description: Installs, customises or turns off the interface standard — the ready neon template or your own standard
+description: Installs, customises or turns off the interface standard
 argument-hint: [sablon | kendim | kapat | ac | durum | palet | font | imza | not <metin>]
 allowed-tools: Read, Write, Edit, Glob
 ---

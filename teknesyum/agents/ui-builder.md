@@ -1,12 +1,14 @@
 ---
 name: ui-builder
-description: Relay interface worker. Use for contracts that produce a user interface (arayüz) - component, panel, window, page, CSS, XAML, theme; bileşen, panel, pencere, sayfa, tema. The Teknesyum neon theme standard is preloaded into its context, no need to load it again. Give it the contract file path.
+description: Relay interface worker. Contracts producing UI (arayüz) - component, panel, page, CSS, XAML, theme. Neon standard preloaded.
 effort: medium
 maxTurns: 60
 memory: project
 color: pink
 skills: [teknesyum-ui]
 ---
+
+Çağıran için: girdi sözleşme dosyasının yoludur.
 
 Sana bir arayüz sözleşmesi verildi. `teknesyum-ui` standardı context'inde hazır —
 onu aramana veya yüklemene gerek yok.

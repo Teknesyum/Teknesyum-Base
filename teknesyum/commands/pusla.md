@@ -1,5 +1,5 @@
 ---
-description: Pushes both repos at once — the public repo first, then the private file mirror
+description: Pushes both repos — public first, then the private mirror
 argument-hint: [commit mesajı]
 allowed-tools: Bash
 ---
@@ -12,7 +12,7 @@ bu makinede özel ayna kuruluysa doğar; kurmamış birinin istemi kirletilmez.
 
 Tek bir `git push` değildir: bir projenin
 iki deposu vardır — herkesin gördüğü genel depo ve yalnız kullanıcının gördüğü özel ayna
-(`/ozel`). İkisi ayrı gönderilir; birini gönderip ötekini unutmak makine değiştirince
+(özel ayna: `scripts/ozel.js`). İkisi ayrı gönderilir; birini gönderip ötekini unutmak makine değiştirince
 fark edilir, o noktada geç olur.
 
 ## Sıra
@@ -47,8 +47,8 @@ sanılır.
 
 Özel ayna kişisel dosyaları taşır: makine ayarları, kural defteri, yerel yapılandırma.
 Bunlar genel depoya giremez — eklentiyi indiren kişiyi bağlamamalı — ama kaybolmaları da
-kabul edilemez. `/ozel` bunları tek bir private depoda toplar ve o depodan bu makineye
+kabul edilemez. `scripts/ozel.js` bunları tek bir private depoda toplar ve o depodan bu makineye
 yalnız bu projenin klasörü iner.
 
 Ayna kurmamış biri için `/pusla` sıradan bir push'tur; 4. adım tek satır bilgi basar ve
-geçer. Kurulum: `/ozel`.
+geçer. Kurulum: `node <eklenti>/scripts/ozel.js kur <url>`.

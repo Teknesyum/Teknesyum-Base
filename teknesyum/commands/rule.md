@@ -1,5 +1,5 @@
 ---
-description: Records a new rule — writes it to the right layer
+description: Records a new rule in the right layer
 argument-hint: <kural veya takıldığın şey>
 allowed-tools: Read, Edit, Write
 ---

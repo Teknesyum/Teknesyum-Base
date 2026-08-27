@@ -1,5 +1,5 @@
 ---
-description: Switches the profile — premium, normal or eco; tells you which one is in force
+description: Switches the profile — premium, normal or eco
 argument-hint: premium | normal | eco | durum | <profil> this | this sil
 allowed-tools: Bash
 ---

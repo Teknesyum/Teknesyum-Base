@@ -1,5 +1,5 @@
 ---
-description: Opens remote control with options — mode, permission, capacity, name, unsaved start
+description: Remote control with options — mode, permission, capacity, name
 argument-hint: <ad · kip same-dir|worktree|session · izin <mod> · kapasite N · kaydetme · metin>
 allowed-tools: Bash
 ---

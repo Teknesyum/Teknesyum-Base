@@ -1,5 +1,5 @@
 ---
-description: Manages the sound alert — which sound on which event, on or off, in which scope
+description: Sound alert — which sound on which event, on or off
 argument-hint: [on | off | dinle | <olay> on|off | <olay> <dosya> | <olay> bip <hz> <ms>] [this | this sil]
 allowed-tools: Bash
 ---

@@ -1,5 +1,5 @@
 ---
-description: Keeps personal files in one private repo — pulled piece by piece, never whole
+description: Keeps personal files in one private repo
 argument-hint: [kur <url> [ad] | ekle <yol>... | cikar <yol>... | pusla | cek [--zorla] | projeler | ac <ad>]
 allowed-tools: Bash
 ---

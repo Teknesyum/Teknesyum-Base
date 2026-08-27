@@ -1,5 +1,5 @@
 ---
-description: Saves the last session of every project into its own folder
+description: Saves the last session of every project
 argument-hint: <boş · kok <üst klasör>>
 allowed-tools: Bash
 ---
@@ -18,7 +18,7 @@ bir üstü). `${CLAUDE_PLUGIN_ROOT}` çözülmezse betik
 
 Her proje için o projenin **en son oturumunun** transkripti kaydedilir; kayıt projenin
 kendi `.claude/oturumlar/<ad>/` klasörüne yazılır ve depoya girmez. Eleme kuralı
-`/rcall` ile aynı: `!`, `.` veya `_` ile başlayan klasörler — arşivlenmiş ve tamamlanmış
+`/rc --hepsi` ile aynı: `!`, `.` veya `_` ile başlayan klasörler — arşivlenmiş ve tamamlanmış
 işler — dışarıda kalır.
 
 Çıktıdan sonra kendi cümlelerinle özet geçme; kaç projenin kaydedildiği betiğin ilk

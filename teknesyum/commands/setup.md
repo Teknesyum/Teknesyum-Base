@@ -1,5 +1,5 @@
 ---
-description: Connects this machine — finds what is missing itself, asks only what needs a decision
+description: Connects this machine — finds what is missing, asks only decisions
 allowed-tools: Read, Write, Edit, Bash, Glob
 ---
 
@@ -63,7 +63,7 @@ gerektireni sor — hepsini tek mesajda, numaralı.
    ```
 
    Anahtar **zaten varsa dokunma** — o kullanıcının tercihidir, eksiklik değil. Profilden
-   bağımsız tek bir sayı istenirse `/autocompact <sayı>`.
+   bağımsız tek bir sayı istenirse aynı betiğe sayıyı ekle: `... premium.js" autocompact <sayı>`.
 
 ## Sorulacaklar — yalnızca bunlar
 

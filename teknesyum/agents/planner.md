@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Relay plan council member. Reads the job description and returns an independent plan proposal. Writes no code, contract or file; its only output is the proposal returned by message. Never called alone, two members open together. For a short second opinion on a single decision node use advisor, not this agent.
+description: Relay plan council member. Returns an independent plan proposal, writes nothing. Opens in pairs; one question goes to advisor.
 tools: Read, Grep, Glob, LSP, WebSearch, WebFetch
 effort: medium
 maxTurns: 40

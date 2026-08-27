@@ -236,7 +236,7 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
     .sort();
   esit(
     v.join(','),
-    'autocompact.md,beep.md,ekran.md,help.md,load.md,loadall.md,log.md,ozel.md,premium.md,pusla.md,rc.md,rcadvanced.md,rcall.md,report.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
+    'ekran.md,help.md,load.md,loadall.md,log.md,premium.md,pusla.md,rc.md,rule.md,save.md,saveall.md,scan.md,setup.md,uicheckup.md,uisetup.md,update.md'
   );
   const yuru = (d) =>
     fs
@@ -284,6 +284,37 @@ ol('komut kümesi eksiksiz ve eski adlar hiçbir yerde geçmiyor', () => {
         eski === '/durum' ? /\/durum(?![a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ-])/.test(s) : s.includes(eski);
       if (vurdu) throw new Error(path.basename(f) + ' hâlâ "' + eski.trim() + '" içeriyor');
     }
+  }
+});
+
+// ÖLÇÜLDÜ (27.08.2026, Y5): yedi komut sabit yüzeyden çıktı — 194 token, her oturumda
+// ve her alt ajan bağlamında yeniden yükleniyordu. Komut gitti, özellik gitmedi: betik
+// yerinde duruyor ve çağrı yolu help.md gövdesinde yazılı. Bu test o iki şartı tutar;
+// düşerse bir özellik sessizce kaybolmuştur.
+// DUZELTILDI 27.08.2026 (T0): `/ekran` yuzeye geri alindi. Kesim onu da almisti ama
+// ekran kapisi kullaniciya ISMEN `/ekran` demesini soyluyor (dil.js:930-986); komut
+// yoksa o izin yolu kapaniyordu. Bir riza kapisini 21 token icin feda etmek yanlis.
+// Tanim kisaltildi, sabit yuzey yine esigin altinda: 1.396.
+ol('yuzeyden cikan alti is calisiyor ve erisim yolu help.md govdesinde', () => {
+  const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
+  const v = fs.readdirSync(path.join(KOK, 'commands'));
+  for (const [komut, betik, yol] of [
+    ['/beep', 'scripts/beep.js', 'scripts/beep.js'],
+    ['/ozel', 'scripts/ozel.js', 'scripts/ozel.js'],
+    ['/autocompact', 'scripts/premium.js', 'scripts/premium.js autocompact'],
+    ['/report', null, '`/update`'],
+    ['/rcadvanced', 'scripts/rc.js', '`/rc --gelismis`'],
+    ['/rcall', 'scripts/rc.js', '`/rc --hepsi`'],
+  ]) {
+    esit(v.includes(komut.slice(1) + '.md'), false, komut + ' hala yuzeyde');
+    if (betik) esit(fs.existsSync(path.join(KOK, ...betik.split('/'))), true, betik + ' silinmis');
+    icerir(h, komut, komut + ' help govdesinde anilmali');
+    icerir(h, yol, komut + ' erisim yolu yazilmali');
+    esit(
+      fs.existsSync(path.join(__dirname, '..', '_coplik', 'komutlar', komut.slice(1) + '.md')),
+      true,
+      komut + '.md coplige tasinmali, silinmemeli'
+    );
   }
 });
 
@@ -4295,14 +4326,19 @@ ol('rc komutu betigi cagirir ve pencere acmayi kendine birakmaz', () => {
   const k = fs.readFileSync(path.join(KOK, 'commands', 'rc.md'), 'utf8');
   icerir(k, 'scripts/rc.js');
   icerir(k, '--kur');
-  esit(/--metin|kaydetme/.test(k), false, 'rc yuzeyi sade kalmali');
   esit(/pencere açmaya/.test(k) || /pencere açma/.test(k), true, 'model pencere acmamali');
-  const g = fs.readFileSync(path.join(KOK, 'commands', 'rcadvanced.md'), 'utf8');
-  icerir(g, '--gelismis');
-  icerir(g, '--kaydetme');
-  const h = fs.readFileSync(path.join(KOK, 'commands', 'rcall.md'), 'utf8');
-  icerir(h, '--hepsi');
-  icerir(h, 'rcAtla');
+  // Y5: uc kapi teke indi. Eski `/rcadvanced` ve `/rcall` govdeleri `rc.md` icinde
+  // yasiyor; yuzey bir satir, secenekler bayrak.
+  icerir(k, '--gelismis');
+  icerir(k, '--kaydetme');
+  icerir(k, '--hepsi');
+  icerir(k, 'rcAtla');
+  icerir(k, '--tavan');
+  esit(
+    (k.match(/^description:\s*(.+)$/m) || [])[1],
+    'Opens a remote control session — drive this project from your phone',
+    'rc aciklamasi buyumemeli — sabit yuzey tavani ince'
+  );
 });
 
 ol('kayit baska klasorde acilan oturumun transkriptini bulur', () => {
@@ -4672,6 +4708,60 @@ ol('role kurulu projede de genel kok supurulur, kullanim sayaci korunur', () => 
   );
   esit(fs.existsSync(bayat), false, 'role kurulu projede bayat iz duruyor');
   esit(fs.existsSync(sayac), true, 'birikimli kullanim sayaci supurulmemeli');
+});
+
+// ÖLÇÜLDÜ 27.08 (Y3 §6): proje `live/` dizini hiç budanmıyordu — beş günde 363 ajan
+// kaydı birikti, 361'i bitmişti ve her istemde hepsi okunuyordu. Bitmiş ve bir günü
+// geçmiş kayıt `arsiv/` altına iner; silinmez, çünkü `_sorun.log` soruşturması geriye
+// bakabilmeli. Canlı kayıt ve `_` önekli durum dosyaları yerinde kalır.
+function eskit(f) {
+  const gun = (Date.now() - 30 * 60 * 60 * 1000) / 1000;
+  fs.utimesSync(f, gun, gun);
+}
+
+function izKur(live, ad, kayit) {
+  fs.mkdirSync(live, { recursive: true });
+  const f = path.join(live, ad);
+  fs.writeFileSync(f, JSON.stringify({ agent_id: ad.slice(0, -5), ...kayit }));
+  return f;
+}
+
+ol('proje live dizini de supurulur, biten kayit arsive iner', () => {
+  const { p, live } = proje(1, 0);
+  eskit(izKur(live, 'bitmis.json', { ended: '2026-08-20 10:00:00', stop_reason: 'end_turn' }));
+  eskit(izKur(live, 'canli.json', { ended: null, stop_reason: null, last_seen: '2026-08-27 10:00:00' }));
+  const taze = izKur(live, 'taze.json', { ended: '2026-08-27 10:00:00' });
+  const durum = izKur(live, '_makbuz.json', {});
+  eskit(durum);
+  // Süpürme damgası saat başına bir kez çalışmaya izin veriyor ve damga genel kökte
+  // duruyor; paylaşılan `BOS_CFG` ile bu test öteki testlerin damgasına takılırdı.
+  calistir(
+    IZLE,
+    { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'merhaba' },
+    { CLAUDE_CONFIG_DIR: fs.mkdtempSync(path.join(KOKTEMP, 'teknesyum-supur-')) }
+  );
+  const arsiv = path.join(live, 'arsiv');
+  esit(fs.existsSync(path.join(arsiv, 'bitmis.json')), true, 'biten eski kayit arsive inmeliydi');
+  esit(fs.existsSync(path.join(live, 'bitmis.json')), false, 'kayit live icinde kalmis');
+  esit(fs.existsSync(path.join(live, 'canli.json')), true, 'canli kayit tasinmamali');
+  esit(fs.existsSync(taze), true, 'gunu dolmamis kayit tasinmamali');
+  esit(fs.existsSync(durum), true, '_ onekli durum dosyasi tasinmamali');
+});
+
+ol('arsivdeki kayit taramalara karismaz', () => {
+  const { p, live } = proje(0, 0);
+  const arsiv = path.join(live, 'arsiv');
+  // Kasten **bitmemiş** kayıt: arşiv okunsaydı röle kapısı açılır ve enjeksiyon yazılırdı.
+  izKur(arsiv, 'a1.json', { ended: null, stop_reason: null, last_seen: '2026-08-27 10:00:00' });
+  const r = calistir(IZLE, { ...ort(p), hook_event_name: 'UserPromptSubmit', prompt: 'merhaba' });
+  esit(enjeksiyonBoyu(r.out), 0, 'arsivdeki kayit role kapisini acti');
+  const s = calistir(DURUM, {
+    cwd: p,
+    session_id: 'oturum-1',
+    model: { display_name: 'Opus' },
+    workspace: { current_dir: p },
+  });
+  icermez(s.out || '', 'a1', 'arsivdeki kayit statusline sayimina girdi');
 });
 
 ol('debug gunlugu tavani asinca son satirlara kirpilir', () => {
@@ -5974,6 +6064,36 @@ ol('yururlukteki bildirim bicimi satir ve makbuzda ters tirnak yok', () => {
   esit(m.split('\n').length, 1, 'makbuz tek satır olmalı');
 });
 
+// Y3 §4: kesim sırasında çağıran yeri kalkan girdiler dil.js'te öksüz kaldı — beyan
+// "hepsinin kullanımı var" diyordu ama `turOzetiYonerge` ve `siradaAlindi` çağrılmıyordu.
+// Elle sayım bir daha yapılmaz; tarama teste bağlandı. Öksüz girdi ölü koddur ve
+// kesimin geri sızdığını gizler: metin dosyada durdukça kaldırıldığı görünmez.
+ol('dil.js te oksuz girdi kalmaz', () => {
+  const anahtar = [...fs.readFileSync(DIL, 'utf8').matchAll(/^ {2}([A-Za-z][A-Za-z0-9_]*):/gm)].map(
+    (m) => m[1]
+  );
+  esit(anahtar.length > 50, true, 'dil.js anahtarlari okunamadi: ' + anahtar.length);
+  const govde = [];
+  (function tara(d) {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const y = path.join(d, e.name);
+      if (e.isDirectory()) {
+        if (e.name !== 'node_modules') tara(y);
+      } else if (/\.(js|md)$/.test(e.name) && y !== DIL) {
+        govde.push(fs.readFileSync(y, 'utf8'));
+      }
+    }
+  })(KOK);
+  const metin = govde.join('\n');
+  const oksuz = anahtar.filter((k) => !new RegExp("['\"]" + k + "['\"]").test(metin));
+  esit(oksuz.length, 0, 'dil.js oksuz girdi: ' + oksuz.join(', '));
+  const kaynak = fs.readFileSync(DIL, 'utf8');
+  // Makbuz `_makbuz.json` üzerinden statusline'a gidiyor; modele yazan girdi geri gelirse
+  // `docs/HATA-tur-makbuzu-tekrari.md` hatası da geri gelir.
+  icermez(kaynak, 'turOzetiYonerge:', 'silinen girdi geri gelmis');
+  icermez(kaynak, 'siradaAlindi:', 'silinen girdi geri gelmis');
+});
+
 // Arka planda ajan varken makbuz basılmaz ve ses çalmaz: kullanıcının ekranında nokta
 // hâlâ yanıp söner ve "N running tasks" yazar. Damga erteleme dalında **silinmez** —
 // silinirse ertelenen turun süresi ve token tabanı kaybolur (fable, 23.08.2026).
@@ -7194,10 +7314,8 @@ ol('ekran kapisi hooks.json ile baglidir ve tek blokla sokulur', () => {
   icerir(blok[0].matcher, 'Bash');
   icerir(blok[0].matcher, 'computer-use');
   icerir(blok[0].matcher, 'Windows-MCP');
-  const k = fs.readFileSync(path.join(KOK, 'commands', 'ekran.md'), 'utf8');
-  icerir(k, 'hooks/ekran-kapisi.js');
-  icerir(k, 'argument-hint: [dakika]');
-  icerir(k, 'ekran_kapisi');
+  const k = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
+  icerir(k, 'hooks/ekran-kapisi.js --ac');
   icermez(fs.readFileSync(IZLE, 'utf8'), 'ekran-kapisi');
   const d = fs.readFileSync(path.join(__dirname, '..', 'docs', 'masaustu-izolasyon.md'), 'utf8');
   icerir(d, 'ekran_kapisi');
@@ -8103,16 +8221,15 @@ ol('bitis sesi tur makbuzuyla ayni yerden cikar', () => {
   icerir(govde, "hook_event_name: 'Stop'", 'beep.js olay adiyla cozer');
 });
 
-ol('beep.md ve help.md komutu anlatir', () => {
-  const k = fs.readFileSync(path.join(KOK, 'commands', 'beep.md'), 'utf8');
-  icerir(k, 'scripts/beep.js');
+// Y5: `/beep` yuzeyden cikti, dogrulama komut govdesinden betigin kendisine tasindi —
+// ayni gercekler, artik anlatildigi yerde degil yasadigi yerde olculuyor.
+ol('beep betigi calar yollarini tasir, help.md erisim yolunu verir', () => {
+  const k = fs.readFileSync(BEEP, 'utf8');
   icerir(k, 'Media.SoundPlayer');
-  icerir(k, '/beep this sil');
-  icerir(k, '/beep dinle');
-  icerir(k, 'O üç satırı kısaltma');
   icerir(k, 'PushNotification');
-  icerir(k, '`Stop` kancasına bağlı değildir', 'bitis sesinin kaynagi anlatilmali');
-  icerir(fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8'), '/beep');
+  const h = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
+  icerir(h, '/beep');
+  icerir(h, 'scripts/beep.js');
 });
 
 ol('beep dinle uc sesi sirayla bildirir', () => {
@@ -8783,13 +8900,12 @@ ol('log.md ve openlogs README yordami anlatir', () => {
   icerir(fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8'), '/log');
 });
 
-ol('ozel.md ve pusla.md akisi anlatir', () => {
-  const o = fs.readFileSync(path.join(KOK, 'commands', 'ozel.md'), 'utf8');
-  icerir(o, 'scripts/ozel.js');
+// Y5: `/ozel` yuzeyden cikti. Kismi cekim kurali komut govdesinde anlatiliyordu, artik
+// betikte olculuyor — depo tamami inmesin diye konulan iki bayrak yerinde mi.
+ol('ozel betigi kismi ceker, pusla.md akisi anlatir', () => {
+  const o = fs.readFileSync(path.join(KOK, 'scripts', 'ozel.js'), 'utf8');
   icerir(o, '--filter=blob:none');
   icerir(o, 'sparse-checkout');
-  icerir(o, 'Deponun tamamı hiçbir zaman çekilmez');
-  icerir(o, '/ozel cek --zorla');
   const p = fs.readFileSync(path.join(KOK, 'commands', 'pusla.md'), 'utf8');
   icerir(p, 'scripts/ozel.js" pusla');
   icerir(p, 'koşullu değildir');
@@ -9673,7 +9789,7 @@ ol('depo-surum.js require edilince CLI calismaz, sonuc nesne olarak okunur', () 
 
 console.log('\nKesinti kuyruğu');
 
-const RAPOR_KOMUT = path.join(KOK, 'commands', 'report.md');
+const RAPOR_KOMUT = path.join(KOK, 'commands', 'update.md');
 function relayMetin() {
   const d = path.join(KOK, 'skills', 'relay');
   let k = fs.readFileSync(path.join(d, 'SKILL.md'), 'utf8');
@@ -9945,7 +10061,7 @@ ol('yonlendirme tavani ve kuyruk satiri dil.js ten gelir, tr ve en var', () => {
   icerir(JSON.parse(en.out).systemMessage, '1 item(s) still open');
 });
 
-ol('/report acik maddeleri listeler', () => {
+ol('/update panosu acik maddeleri listeler', () => {
   const g = fs.readFileSync(RAPOR_KOMUT, 'utf8');
   icerir(g, 'live/_acik.json');
   icerir(g, 'AÇIKTA');

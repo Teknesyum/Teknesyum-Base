@@ -27,15 +27,11 @@ sadece ne istediğini söyle.
 
 | Komut | Ne zaman |
 |---|---|
-| `/report` | "Nerede kaldık?" Açık sözleşmeler, çalışan ajanlar, kalan iş |
 | `/rule` | "Bunu bir daha yapma." Kalıcı kural kaydeder, doğru katmana yazar |
 | `/setup` | Makineyi bağlar: statusline, dil tercihi, dil sunucusu. Kurulumda bir kez |
 | `/uisetup` | Arayüz standardını değiştirir veya tamamen kapatır |
 | `/premium` | Max 20x profili: opus, xhigh efor, altı paralel ajan, plan konseyi. `durum` ile bak |
-| `/beep` | Sesli bildirim: izin beklerken, tur biterken, tur hata verirken kısa ses çalar |
-| `/ekran` | Ekran kapısını bir tur açar: ajan masaüstüne dokunabilir, sonraki turda kapanır |
 | `/log` | Açık hata günlüklerini listeler, okur ve çözüldükçe kapatır |
-| `/ozel` | Kişisel dosyaları tek private depoda tutar; depo parça parça çekilir, tamamı inmez |
 | `/pusla` | "Puşla." Testler, genel depo, sonra özel ayna — iki depo tek akışta |
 | `/scan` | "Bu proje premium standardını karşılıyor mu?" Eksikleri madde madde sayar |
 | `/save` | Bu oturumu diske yazar: konuşma, bağlam, git durumu, gönderilmemiş metin |
@@ -43,10 +39,23 @@ sadece ne istediğini söyle.
 | `/saveall` | Bütün projelerin son oturumunu kendi klasörlerine kaydeder |
 | `/loadall` | Bütün projelerin genel durumunu tek ekranda yükler |
 | `/rc` | Bu projeyi telefondan sürülebilir yapar: uzak denetim oturumu açar |
-| `/rcall` | Aynısını üst klasördeki bütün projeler için yapar |
-| `/rcadvanced` | Uzak denetimi seçenekleriyle açar: kip, izin, kapasite |
-| `/update` | Yeni sürüm çıkmış mı bakar, güncelleme komutunu kopyalanabilir verir |
+| `/update` | Sürüm, depo, profil, açık iş, son kayıt — ve röle durumu |
+| `/ekran` | Ekran kapısını bir tur açar — ajan masaüstüne dokunabilir |
 | `/help` | Bu ekran |
+
+**Komut değil ama duruyor**
+
+Altı iş slash komutu olarak yüklenmiyor; hepsi çalışıyor, çağırma yolu şu.
+`<eklenti>` = `${CLAUDE_PLUGIN_ROOT}`, çözülmezse `~/.claude/plugins/**/teknesyum`.
+
+| İş | Çağrı |
+|---|---|
+| `/beep` sesli bildirim | `node <eklenti>/scripts/beep.js` — argümanlar eski komutla aynı |
+| `/ozel` kişisel depo | `node <eklenti>/scripts/ozel.js` — `kur`, `ekle`, `cek`, `projeler` |
+| `/autocompact` sıkıştırma penceresi | `node <eklenti>/scripts/premium.js autocompact` |
+| `/report` röle ilerlemesi | `/update` panosunun röle bölümü · statusline |
+| `/rcadvanced` seçenekli uzak denetim | `/rc --gelismis` |
+| `/rcall` bütün projeler | `/rc --hepsi` |
 
 **Bilmek işine yarayacak iki sınır**
 

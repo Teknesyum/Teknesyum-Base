@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Prior-art worker. When starting a project from scratch, studies repositories that solved the same problem and extracts the ideas worth taking. Copies no code, writes no code - its only output is the review file under docs/taramalar/. You are given 2-3 repository names and what the project will do.
+description: Prior-art worker. Studies repos that solved the same problem, writes docs/taramalar/. No code. Give 2-3 repo names.
 tools: Read, Grep, Glob, WebSearch, WebFetch, Bash, Write
 effort: high
 maxTurns: 45

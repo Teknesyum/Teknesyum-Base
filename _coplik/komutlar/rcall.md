@@ -1,5 +1,5 @@
 ---
-description: Makes every project drivable from your phone — opens remote control for each
+description: Opens remote control for every project
 argument-hint: <boş · tavan N · kok <klasör>>
 allowed-tools: Bash
 ---

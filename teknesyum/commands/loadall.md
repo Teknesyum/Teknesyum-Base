@@ -1,5 +1,5 @@
 ---
-description: Loads the overall state of every project — where each was left, what is open
+description: Loads the state of every project — where each was left
 argument-hint: <boş · kok <üst klasör>>
 allowed-tools: Bash
 ---

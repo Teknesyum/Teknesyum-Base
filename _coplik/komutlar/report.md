@@ -1,5 +1,5 @@
 ---
-description: Shows relay progress and the agent progress bars
+description: Relay progress and agent bars
 allowed-tools: Read, Glob, Bash
 ---
 

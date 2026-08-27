@@ -1,5 +1,5 @@
 ---
-description: Lists, reads and closes open bug logs as they are solved
+description: Lists, reads and closes open bug logs
 argument-hint: [oku <ad> | al <ad> | kapat <ad> | arsivle <ad> | yaz --baslik "..." --belirti "..." --kaynak "..."]
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write
 ---

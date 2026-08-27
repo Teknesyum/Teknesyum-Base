@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: Relay mechanical worker. Use for bulk work that needs no decisions - filling in AGENTS.md pointer files, renaming, formatting, text/translation editing, taking inventory, repetitive fixes. Does not touch code logic.
+description: Relay mechanical worker. Bulk work with no decisions - renaming, formatting, text edits, inventory. No code logic.
 effort: low
 maxTurns: 40
 memory: project

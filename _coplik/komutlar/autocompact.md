@@ -1,5 +1,5 @@
 ---
-description: Derives the auto-compact window from the profile, or pins it to a value by hand
+description: Sets the auto-compact window — from the profile or by hand
 argument-hint: <100000-1000000> | auto | (boş — profilden türet)
 allowed-tools: Bash
 ---

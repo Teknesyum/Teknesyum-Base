@@ -7314,8 +7314,11 @@ ol('ekran kapisi hooks.json ile baglidir ve tek blokla sokulur', () => {
   icerir(blok[0].matcher, 'Bash');
   icerir(blok[0].matcher, 'computer-use');
   icerir(blok[0].matcher, 'Windows-MCP');
+  // DUZELTILDI 27.08.2026: kapi yeniden slash komutu. Kesif sarti artik betik yolu
+  // degil komutun kendisi — kanca kullaniciya ismen `/ekran` demesini soyluyor.
   const k = fs.readFileSync(path.join(KOK, 'commands', 'help.md'), 'utf8');
-  icerir(k, 'hooks/ekran-kapisi.js --ac');
+  icerir(k, '`/ekran`');
+  esit(fs.existsSync(path.join(KOK, 'commands', 'ekran.md')), true, 'ekran komutu yuzeyde olmali');
   icermez(fs.readFileSync(IZLE, 'utf8'), 'ekran-kapisi');
   const d = fs.readFileSync(path.join(__dirname, '..', 'docs', 'masaustu-izolasyon.md'), 'utf8');
   icerir(d, 'ekran_kapisi');

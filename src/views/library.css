@@ -52,7 +52,8 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--tk-sp-3);
-  padding: var(--tk-sp-3) var(--tk-sp-5);
+  padding: var(--tk-sp-2) var(--tk-sp-5);
+  --tk-input-h: calc(var(--tk-sp-5) * 1.5);
 }
 
 .segmented {
@@ -317,14 +318,48 @@ article.row > .card__foot {
   white-space: pre-wrap;
 }
 
-.row--installed {
-  grid-template-columns: minmax(0, 1fr) auto auto auto auto minmax(0, auto);
+.rows--installed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(10, auto);
+  column-gap: var(--tk-sp-3);
 }
 
-.row__actions {
+.row--installed {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.row--installed .row__actions {
+  display: contents;
+}
+
+.row__slot--update {
+  grid-column: 6;
+}
+
+.row__slot--launch {
+  grid-column: 7;
+}
+
+.row__slot--folder {
+  grid-column: 8;
+}
+
+.row__slot--desktop {
+  grid-column: 9;
+}
+
+.row__slot--github {
+  grid-column: 10;
   display: flex;
-  justify-content: flex-end;
-  gap: var(--tk-sp-2);
+}
+
+.row__slot--uninstall {
+  grid-column: 11;
+}
+
+.row__slot--progress {
+  grid-column: 6 / -1;
 }
 
 .card__title {
@@ -423,12 +458,59 @@ article.row > .card__foot {
   line-height: var(--tk-lh-heading);
 }
 
-.uses__lead {
-  margin: 0 0 var(--tk-sp-2);
+.card__titleline,
+.sheet__titleline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--tk-sp-3);
+  min-width: 0;
+}
+
+.card__lead {
+  flex: 1 1 calc(var(--tk-sidebar-w) / 1.5);
+  margin: 0;
+  min-width: 0;
   color: var(--tk-text);
-  font-size: var(--tk-fs-2);
+  font-size: var(--tk-fs-1);
   font-weight: var(--tk-fw-semi);
   line-height: var(--tk-lh-heading);
+}
+
+.uses {
+  padding-inline-start: var(--tk-sp-3);
+  border-inline-start: var(--tk-focus-w) solid var(--tk-renk-1);
+}
+
+.app-icon-btn {
+  flex: none;
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  border-radius: var(--tk-r);
+  background: transparent;
+  cursor: zoom-in;
+  transition: transform var(--tk-t-instant) var(--tk-e-out);
+}
+
+.app-icon-btn:hover {
+  transform: scale(var(--tk-scale-hover));
+}
+
+.app-icon-btn:focus-visible {
+  outline: var(--tk-focus-w) solid var(--tk-renk-1);
+  outline-offset: var(--tk-focus-offset);
+  box-shadow: 0 0 0 var(--tk-focus-w) var(--tk-bg-from);
+}
+
+.app-icon-btn:active {
+  background: color-mix(in srgb, var(--tk-renk-1) 20%, transparent);
+  transform: scale(var(--tk-scale-press));
+}
+
+.app-icon-btn:disabled {
+  cursor: not-allowed;
+  transform: none;
 }
 
 .sheet__points {
@@ -471,6 +553,10 @@ article.row > .card__foot {
 
 .toolbar > .field:not(.field--grow) {
   flex: none;
+}
+
+.toolbar .tk-input {
+  min-height: var(--tk-input-h);
 }
 
 .toolbar select.tk-input {

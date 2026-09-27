@@ -650,6 +650,17 @@ body {
   background: var(--tk-surface);
 }
 
+.modal-scrim:has(> .viewer) {
+  cursor: zoom-out;
+}
+
+.viewer__img--icon {
+  width: min(calc(var(--tk-icon-4) * 8), calc(100vmin - var(--tk-sp-5) * 4));
+  height: auto;
+  aspect-ratio: 1;
+  padding: var(--tk-sp-5);
+}
+
 .viewer__close {
   position: absolute;
   top: var(--tk-sp-2);

@@ -11,11 +11,26 @@ import { useStore } from '../store';
 import { isRunning, primaryOf, uiState, type Opener } from './actions';
 
 export function AppIcon({ repo }: { repo: Repo }) {
+  const { t } = useI18n();
   const name = repo.name;
   const remote = useRepoMedia(repo, 'icon');
   const [broken, setBroken] = useState<string>();
+  const [viewer, setViewer] = useState<HTMLElement | null>(null);
   const src = remote && remote !== broken ? remote : appIcon(name);
-  if (src) return <img className="app-icon" src={src} alt="" aria-hidden="true" loading="lazy" onError={() => remote && setBroken(remote)} />;
+  if (src) {
+    const label = t('library.iconOpen', { name });
+    return (
+      <>
+        <button type="button" className="app-icon-btn" aria-label={label} title={label} onClick={(e) => {
+          e.stopPropagation();
+          setViewer(e.currentTarget);
+        }}>
+          <img className="app-icon" src={src} alt="" aria-hidden="true" loading="lazy" onError={() => remote && setBroken(remote)} />
+        </button>
+        <ImageDialog open={!!viewer} src={src} alt={label} returnTo={viewer} onClose={() => setViewer(null)} icon />
+      </>
+    );
+  }
   return (
     <span className="app-icon app-icon--letter" aria-hidden="true">
       {name.charAt(0).toLocaleUpperCase('tr')}
@@ -42,7 +57,6 @@ export function Uses({ repo, className }: { repo: Repo; className: string }) {
   if (!uses?.length) return <p className={className}>{repo.summary || repo.description || t('library.noDescription')}</p>;
   return (
     <section className={className + ' uses'} aria-label={t('library.uses')}>
-      {repo.lead ? <p className="uses__lead">{repo.lead}</p> : null}
       <h4 className="uses__title">{t('library.uses')}</h4>
       <ul className="points">
         {uses.map((p) => (
@@ -178,11 +192,14 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
       <div className="card__head">
         <AppIcon repo={repo} />
         <div className="card__heading">
-          <h3 className="card__title">
-            <button type="button" className="card__open" data-name={repo.name} {...item} onClick={(e) => onOpen(e.currentTarget)}>
-              {repo.name}
-            </button>
-          </h3>
+          <div className="card__titleline">
+            <h3 className="card__title">
+              <button type="button" className="card__open" data-name={repo.name} {...item} onClick={(e) => onOpen(e.currentTarget)}>
+                {repo.name}
+              </button>
+            </h3>
+            {repo.lead ? <p className="card__lead">{repo.lead}</p> : null}
+          </div>
           <span className="card__category">{t('category.' + repo.category)}</span>
         </div>
       </div>

@@ -81,9 +81,10 @@ type ImageProps = {
   alt: string;
   returnTo: HTMLElement | null;
   onClose: () => void;
+  icon?: boolean;
 };
 
-export function ImageDialog({ open, src, alt, returnTo, onClose }: ImageProps) {
+export function ImageDialog({ open, src, alt, returnTo, onClose, icon }: ImageProps) {
   const { t } = useI18n();
   const { mounted, phase } = usePresence(open);
   const ref = useRef<HTMLDivElement>(null);
@@ -93,10 +94,16 @@ export function ImageDialog({ open, src, alt, returnTo, onClose }: ImageProps) {
   useMotion(ref, phase, animation);
   if (!mounted) return null;
   return createPortal(
-    <div className="tk-modal-scrim modal-scrim" data-tk-modal="info" data-tk-kapaniyor={phase === 'exit' ? '1' : undefined} onClick={onClose}>
-      <div ref={ref} className="viewer" role="dialog" aria-modal="true" aria-label={alt} onKeyDown={(e) => onKey(e, onClose)} onClick={(e) => e.stopPropagation()}>
-        <img className="viewer__img" src={src} alt={alt} />
-        <button ref={closeRef} type="button" className="btn btn--ghost btn--icon viewer__close" aria-label={t('common.close')} title={t('common.close')} onClick={onClose}>
+    <div className="tk-modal-scrim modal-scrim" data-tk-modal="info" data-tk-kapaniyor={phase === 'exit' ? '1' : undefined} onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}>
+      <div ref={ref} className="viewer" role="dialog" aria-modal="true" aria-label={alt} onKeyDown={(e) => {
+        e.stopPropagation();
+        onKey(e, onClose);
+      }}>
+        <img className={icon ? 'viewer__img viewer__img--icon' : 'viewer__img'} src={src} alt={alt} />
+        <button ref={closeRef} type="button" className="btn btn--ghost btn--icon viewer__close" aria-label={t('common.close')} title={t('common.close')}>
           <IconClose />
         </button>
       </div>

@@ -40,15 +40,15 @@
   flex: 1;
 }
 
-.statusbar[data-sync='live'] .statusbar__item:first-child {
+.statusbar[data-sync='live'] .statusbar__item:first-child:not(.statusbar__item--versions) {
   color: var(--tk-success);
 }
 
-.statusbar[data-sync='syncing'] .statusbar__item:first-child {
+.statusbar[data-sync='syncing'] .statusbar__item:first-child:not(.statusbar__item--versions) {
   color: var(--tk-renk-1);
 }
 
-.statusbar[data-sync='error'] .statusbar__item:first-child {
+.statusbar[data-sync='error'] .statusbar__item:first-child:not(.statusbar__item--versions) {
   color: var(--tk-danger-text);
 }
 
@@ -90,7 +90,12 @@
 
 .statusbar__item--versions {
   margin-inline-start: auto;
-  color: var(--tk-text-label);
+  color: var(--tk-label-title-color, var(--tk-text));
+  font-weight: var(--tk-fw-semi);
+}
+
+.statusbar__accent {
+  color: var(--tk-label-title-accent, var(--tk-renk-2-text));
 }
 
 .statusbar[data-sikis] .statusbar__item--versions,

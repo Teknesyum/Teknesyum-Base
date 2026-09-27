@@ -84,7 +84,7 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
     body = <EmptyState title={t('installed.emptyTitle')} body={t('installed.emptyBody')} action={{ label: t('installed.goLibrary'), run: onLibrary }} />;
   else
     body = (
-      <ul ref={listRef} className="rows" aria-label={t('tabs.installed')} onKeyDown={roving.onKeyDown}>
+      <ul ref={listRef} className="rows rows--installed" aria-label={t('tabs.installed')} onKeyDown={roving.onKeyDown}>
         {rows.map(({ item, repo }, i) => {
           const task = store.tasks[repo.fullName];
           const running = isRunning(task);
@@ -105,31 +105,33 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
               <StateBadge repo={repo} />
               <div className="row__actions">
                 {running && task ? (
-                  <div className="card__progress">
+                  <div className="card__progress row__slot--progress">
                     <TaskProgress task={task} />
                   </div>
                 ) : (
                   <>
                     {repo.installState === 'update-available' ? (
-                      <button type="button" className="btn btn--primary" tabIndex={rp.tabIndex} onClick={() => void store.start(repo, 'install')}>
+                      <button type="button" className="btn btn--primary row__slot--update" tabIndex={rp.tabIndex} onClick={() => void store.start(repo, 'install')}>
                         {t('actions.update')}
                       </button>
                     ) : null}
                     {item.exe ? (
-                      <button type="button" className="btn btn--ghost" tabIndex={rp.tabIndex} onClick={() => store.launch(repo.fullName)}>
+                      <button type="button" className="btn btn--ghost row__slot--launch" tabIndex={rp.tabIndex} onClick={() => store.launch(repo.fullName)}>
                         {t('actions.launch')}
                       </button>
                     ) : null}
-                    <button type="button" className="btn btn--ghost" tabIndex={rp.tabIndex} onClick={() => store.openFolder(repo.fullName)}>
+                    <button type="button" className="btn btn--ghost row__slot--folder" tabIndex={rp.tabIndex} onClick={() => store.openFolder(repo.fullName)}>
                       {t('actions.folder')}
                     </button>
                     {item.exe && !item.desktopShortcut ? (
-                      <button type="button" className="btn btn--icon btn--quiet" tabIndex={rp.tabIndex} aria-label={t('actions.desktopOf', { name: repo.name })} title={t('actions.desktopOf', { name: repo.name })} onClick={() => void store.desktopShortcut(repo.fullName, repo.name)}>
+                      <button type="button" className="btn btn--icon btn--quiet row__slot--desktop" tabIndex={rp.tabIndex} aria-label={t('actions.desktopOf', { name: repo.name })} title={t('actions.desktopOf', { name: repo.name })} onClick={() => void store.desktopShortcut(repo.fullName, repo.name)}>
                         <IconDesktop />
                       </button>
                     ) : null}
-                    <GithubButton repo={repo} tabIndex={rp.tabIndex} />
-                    <button type="button" className="btn btn--ghost btn--danger-outline" tabIndex={rp.tabIndex} onClick={(e) => onUninstall(repo, e.currentTarget)}>
+                    <span className="row__slot--github">
+                      <GithubButton repo={repo} tabIndex={rp.tabIndex} />
+                    </span>
+                    <button type="button" className="btn btn--ghost btn--danger-outline row__slot--uninstall" tabIndex={rp.tabIndex} onClick={(e) => onUninstall(repo, e.currentTarget)}>
                       {t('actions.uninstall')}
                     </button>
                   </>

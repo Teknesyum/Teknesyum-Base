@@ -137,11 +137,14 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
     <>
       <header className="sheet__head divider-bottom">
         <div className="sheet__titles">
-          <h2 id="sheet-title" className="sheet__title">
-            <AppIcon repo={repo} />
-            {repo.name}
-            {repo.latestTag ? <span className="sheet__tag">{repo.latestTag}</span> : null}
-          </h2>
+          <div className="sheet__titleline">
+            <h2 id="sheet-title" className="sheet__title">
+              <AppIcon repo={repo} />
+              {repo.name}
+              {repo.latestTag ? <span className="sheet__tag">{repo.latestTag}</span> : null}
+            </h2>
+            {repo.lead ? <p className="card__lead">{repo.lead}</p> : null}
+          </div>
           <Uses repo={repo} className="sheet__desc" />
           <ul className="chips sheet__class" aria-label={t('library.tags')}>
             <li className="chip chip--category">{t('category.' + repo.category)}</li>

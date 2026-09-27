@@ -1,0 +1,319 @@
+/* teknesyum-ui template ustcubuk/react/titlebar.css */
+.tk-titlebar {
+  display: flex;
+  align-items: stretch;
+  gap: var(--tk-sp-4);
+  height: var(--tk-titlebar-h-min);
+  padding-left: var(--tk-sp-4);
+  background: var(--tk-surface);
+  border-bottom: var(--tk-border-w) solid var(--tk-border-strong);
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+.tk-titlebar a,
+.tk-titlebar button,
+.tk-titlebar select,
+.tk-titlebar__language {
+  -webkit-app-region: no-drag;
+}
+
+.tk-titlebar__brand,
+.tk-titlebar__tabs,
+.tk-titlebar__tools,
+.tk-titlebar__language {
+  display: flex;
+  align-items: stretch;
+  gap: var(--tk-sp-1);
+  min-width: 0;
+}
+
+.tk-titlebar__brand {
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--tk-sp-2);
+}
+
+.tk-titlebar__tabs {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.tk-titlebar__tools,
+.tk-titlebar__tools > * {
+  flex-shrink: 0;
+}
+
+.tk-titlebar__tools:has(.tk-titlebar__status:not(:empty)) .tk-titlebar__chip-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tk-titlebar__logo {
+  width: min(var(--tk-icon-3), calc(var(--tk-titlebar-h-min) - var(--tk-sp-2)));
+  height: min(var(--tk-icon-3), calc(var(--tk-titlebar-h-min) - var(--tk-sp-2)));
+  object-fit: contain;
+}
+
+.tk-titlebar__name {
+  color: var(--tk-text);
+  font-size: min(var(--tk-fs-3), calc(var(--tk-titlebar-h-min) - var(--tk-sp-2)));
+  font-weight: var(--tk-fw-semi);
+  line-height: 1;
+  letter-spacing: var(--tk-tr-h2);
+  white-space: nowrap;
+}
+
+.tk-titlebar__accent {
+  color: var(--tk-renk-2-text);
+}
+
+.tk-titlebar__tab,
+.tk-titlebar__chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tk-sp-2);
+  min-width: var(--tk-target-min);
+  padding: 0 var(--tk-sp-3);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--tk-renk-1);
+  font: inherit;
+  font-size: min(var(--tk-fs-1), calc(var(--tk-titlebar-h-min) - var(--tk-sp-2)));
+  font-weight: var(--tk-fw-semi);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--tk-t-fast) var(--tk-e-out);
+}
+
+.tk-titlebar__tab::after,
+.tk-titlebar__chip::after {
+  content: '';
+  position: absolute;
+  left: var(--tk-sp-3);
+  right: var(--tk-sp-3);
+  bottom: calc(50% - 0.5em - var(--tk-sp-1) - var(--tk-focus-w));
+  height: var(--tk-focus-w);
+  border-radius: var(--tk-focus-w);
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--tk-t-base) var(--tk-e-emphasized);
+}
+
+.tk-titlebar__chip--support {
+  color: var(--tk-renk-3-text);
+}
+
+.tk-titlebar__tab:hover,
+.tk-titlebar__tab:focus-visible,
+.tk-titlebar__chip:hover,
+.tk-titlebar__chip:focus-visible {
+  color: var(--tk-renk-2-text);
+}
+
+.tk-titlebar__tab:hover::after,
+.tk-titlebar__tab:focus-visible::after,
+.tk-titlebar__chip:hover::after,
+.tk-titlebar__chip:focus-visible::after,
+.tk-titlebar__tab[aria-current='page']::after {
+  transform: scaleX(1);
+}
+
+.tk-titlebar__tab:active::after,
+.tk-titlebar__chip:active::after {
+  background: var(--tk-renk-2);
+  transform: scaleX(1);
+}
+
+.tk-titlebar__tab[aria-current='page'] {
+  color: var(--tk-text);
+}
+
+.tk-titlebar__tab:active,
+.tk-titlebar__chip:active {
+  color: var(--tk-renk-2-text);
+  transform: scale(var(--tk-scale-press));
+  transition-duration: var(--tk-t-instant);
+}
+
+.tk-titlebar__tab:focus-visible,
+.tk-titlebar__chip:focus-visible {
+  outline: var(--tk-focus-w) solid var(--tk-renk-2-text);
+  outline-offset: calc(var(--tk-focus-w) * -1);
+  box-shadow: inset 0 0 0 calc(var(--tk-focus-w) * 2) var(--tk-bg-from);
+}
+
+.tk-titlebar__tab[aria-disabled='true'],
+.tk-titlebar__chip[aria-disabled='true'],
+.tk-titlebar__chip:disabled {
+  color: var(--tk-disabled);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tk-titlebar__tab[aria-disabled='true']::after,
+.tk-titlebar__chip[aria-disabled='true']::after,
+.tk-titlebar__chip:disabled::after {
+  cursor: not-allowed;
+  transform: scaleX(0);
+}
+
+.tk-titlebar__chip--outlined {
+  align-self: center;
+  height: calc(var(--tk-titlebar-h-min) - var(--tk-sp-1) * 2);
+  border: var(--tk-border-w) solid currentColor;
+  border-radius: var(--tk-r-btn);
+}
+
+.tk-titlebar__chip--outlined::after {
+  display: none;
+}
+
+.tk-titlebar__icon {
+  flex: none;
+  width: var(--tk-icon-2);
+  height: var(--tk-icon-2);
+}
+
+.tk-titlebar__window {
+  display: flex;
+  align-items: stretch;
+  margin-left: var(--tk-sp-1);
+}
+
+.tk-titlebar__control {
+  display: grid;
+  place-items: center;
+  width: var(--tk-titlebar-h-max);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--tk-renk-1);
+  cursor: pointer;
+  transition:
+    color var(--tk-t-instant) var(--tk-e-out),
+    background-color var(--tk-t-instant) var(--tk-e-out);
+}
+
+.tk-titlebar__control--close {
+  color: var(--tk-text);
+}
+
+.tk-titlebar__control:hover {
+  background-color: color-mix(in srgb, var(--tk-renk-3) 30%, transparent);
+  color: var(--tk-on-renk-3-30, var(--tk-text));
+}
+
+.tk-titlebar__control--close:hover {
+  background-color: var(--tk-danger-text);
+  color: var(--tk-on-danger-text);
+}
+
+.tk-titlebar__control:focus-visible {
+  outline: var(--tk-focus-w) solid var(--tk-renk-2-text);
+  outline-offset: calc(var(--tk-focus-w) * -1);
+  box-shadow: inset 0 0 0 calc(var(--tk-focus-w) * 2) var(--tk-bg-from);
+}
+
+.tk-titlebar__control:active {
+  background-color: color-mix(in srgb, var(--tk-renk-2) 30%, transparent);
+  color: var(--tk-on-renk-2-30, var(--tk-text));
+}
+
+.tk-titlebar__control:disabled {
+  color: var(--tk-disabled);
+  cursor: not-allowed;
+}
+
+.tk-titlebar__minimize {
+  width: var(--tk-sp-3);
+  height: var(--tk-border-w);
+  background: currentColor;
+}
+
+.tk-titlebar__maximize {
+  width: var(--tk-sp-3);
+  height: var(--tk-sp-3);
+  border: var(--tk-border-w) solid currentColor;
+}
+
+.tk-titlebar__close {
+  position: relative;
+  width: var(--tk-sp-3);
+  height: var(--tk-sp-3);
+}
+
+.tk-titlebar__close::before,
+.tk-titlebar__close::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 141.42%;
+  height: var(--tk-border-w);
+  margin-left: -20.71%;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+.tk-titlebar__close::after {
+  transform: rotate(-45deg);
+}
+
+.tk-titlebar__restore {
+  position: relative;
+  width: var(--tk-sp-3);
+  height: var(--tk-sp-3);
+}
+
+.tk-titlebar__restore::before,
+.tk-titlebar__restore::after {
+  content: '';
+  position: absolute;
+  width: calc(100% - var(--tk-sp-1));
+  height: calc(100% - var(--tk-sp-1));
+  border: var(--tk-border-w) solid currentColor;
+}
+
+.tk-titlebar__restore::before {
+  top: 0;
+  right: 0;
+  border-bottom: 0;
+  border-left: 0;
+}
+
+.tk-titlebar__restore::after {
+  bottom: 0;
+  left: 0;
+}
+
+.tk-window-edge {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  border: var(--tk-border-w) solid var(--tk-window-edge, var(--tk-border-strong));
+  pointer-events: none;
+}
+
+[data-window='maximized'] .tk-window-edge,
+[data-window='fullscreen'] .tk-window-edge {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tk-titlebar__tab::after,
+  .tk-titlebar__chip::after {
+    transition: none;
+  }
+}

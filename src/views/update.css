@@ -1,0 +1,76 @@
+.tk-titlebar__status {
+  display: flex;
+  align-items: center;
+}
+
+.update-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-sp-4);
+  width: var(--tk-modal-w);
+}
+
+.update-panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-sp-2);
+  min-width: 0;
+}
+
+.update-panel__logo {
+  flex: none;
+  width: var(--tk-icon-3);
+  height: var(--tk-icon-3);
+}
+
+.update-panel__title {
+  margin: 0;
+}
+
+.update-panel__dry {
+  margin-left: auto;
+}
+
+.update-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-sp-1);
+}
+
+.update-panel__status {
+  margin: 0;
+  color: var(--tk-text);
+  line-height: var(--tk-lh-body);
+}
+
+.update-panel__version {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-sp-2);
+}
+
+.update-panel__notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-sp-1);
+  margin-top: var(--tk-sp-2);
+}
+
+.update-panel__notes-text {
+  margin: 0;
+  color: var(--tk-text);
+  font-size: var(--tk-fs-1);
+  line-height: var(--tk-lh-body);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.update-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tk-sp-3);
+}
+
+.update-panel__actions:empty {
+  display: none;
+}

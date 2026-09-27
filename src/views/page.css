@@ -1,0 +1,37 @@
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-section-gap);
+  padding: var(--tk-sp-5);
+}
+
+.page--narrow {
+  align-items: center;
+}
+
+.page--narrow > * {
+  width: 100%;
+  max-width: calc(var(--tk-measure) + var(--tk-sp-5) * 4);
+}
+
+.page__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--tk-sp-4);
+}
+
+.page__title {
+  margin: 0;
+  font-size: var(--tk-fs-4);
+  font-weight: var(--tk-fw-semi);
+  line-height: var(--tk-lh-heading);
+}
+
+.page__actions {
+  display: flex;
+  gap: var(--tk-sp-3);
+}

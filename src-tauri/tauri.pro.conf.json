@@ -1,0 +1,21 @@
+{
+  "productName": "Teknesyum Base Pro",
+  "identifier": "com.teknesyum.base.pro",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Teknesyum Base Pro",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 720,
+        "minHeight": 520,
+        "decorations": false,
+        "transparent": false,
+        "visible": false,
+        "center": true,
+        "backgroundColor": "#000000"
+      }
+    ]
+  }
+}

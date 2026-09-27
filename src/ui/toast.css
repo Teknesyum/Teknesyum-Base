@@ -1,0 +1,44 @@
+.toast-stack {
+  right: var(--tk-toast-inset);
+  bottom: calc(var(--tk-toast-inset) + var(--app-btn-h));
+  gap: var(--tk-toast-gap);
+  z-index: 3;
+}
+
+.toast-stack > .toast:nth-last-child(n + 4) {
+  display: none;
+}
+
+.toast {
+  width: var(--tk-toast-w);
+  border: var(--tk-border-w) solid var(--tk-border);
+  border-radius: var(--tk-r-box);
+  background: var(--tk-surface);
+}
+
+.toast .tk-toast-icon .icon {
+  width: var(--tk-icon-2);
+  height: var(--tk-icon-2);
+}
+
+.toast__text {
+  color: var(--tk-text);
+  overflow-wrap: anywhere;
+}
+
+.toast__action {
+  margin-top: var(--tk-sp-2);
+}
+
+.tk-toast-close .icon {
+  width: var(--tk-icon-1);
+  height: var(--tk-icon-1);
+}
+
+.tk-toast-close:focus-visible {
+  color: var(--tk-renk-1);
+}
+
+.tk-toast-close {
+  transition: color var(--tk-t-instant) var(--tk-e-out);
+}

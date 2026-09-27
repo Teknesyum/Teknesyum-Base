@@ -1,0 +1,114 @@
+.tk-installer {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-sp-4);
+  width: min(560px, 100%);
+  min-height: 424px;
+  padding: var(--tk-sp-5);
+  background: var(--tk-surface);
+  border: var(--tk-border-w) solid var(--tk-border);
+  border-radius: var(--tk-r-window);
+  color: var(--tk-text);
+  animation: tk-installer-in var(--tk-t-base) var(--tk-e-out);
+}
+
+@keyframes tk-installer-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--tk-sp-2));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tk-installer {
+    animation: none;
+  }
+}
+
+.tk-installer__head {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-sp-3);
+  min-width: 0;
+}
+
+.tk-installer__icon {
+  flex: none;
+  width: 48px;
+  height: 48px;
+}
+
+.tk-installer__titles {
+  min-width: 0;
+}
+
+.tk-installer__title {
+  margin: 0;
+  font-size: var(--tk-fs-4);
+  font-weight: var(--tk-fw-semi);
+  line-height: var(--tk-lh-heading);
+  white-space: nowrap;
+}
+
+.tk-installer__accent {
+  color: var(--tk-renk-2-text);
+}
+
+.tk-installer__sub,
+.tk-installer__step,
+.tk-installer__log li {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tk-installer__sub {
+  margin: 0;
+  color: var(--tk-disabled);
+  font-size: var(--tk-fs-1);
+}
+
+.tk-installer__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--tk-sp-3);
+  font-size: var(--tk-fs-2);
+}
+
+.tk-installer__step {
+  min-width: 0;
+}
+
+[data-status='done'] .tk-installer__step {
+  color: var(--tk-success);
+}
+
+[data-status='error'] .tk-installer__step {
+  color: var(--tk-danger-text);
+}
+
+.tk-installer__percent {
+  color: var(--tk-renk-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.tk-installer__log {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--tk-disabled);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--tk-fs-1);
+  line-height: var(--tk-lh-mono);
+}
+
+.tk-installer__log li:last-child {
+  color: var(--tk-renk-1);
+}
+
+.tk-installer__actions {
+  display: flex;
+  gap: var(--tk-sp-3);
+}

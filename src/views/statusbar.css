@@ -1,0 +1,106 @@
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-sp-4);
+  box-sizing: border-box;
+  height: var(--app-status-h);
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 var(--tk-sp-3);
+  color: var(--tk-text);
+  font-size: var(--tk-fs-1);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+}
+
+.statusbar__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tk-sp-2);
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.statusbar__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusbar[data-rate='out'] .statusbar__item--rate {
+  color: var(--tk-warning);
+}
+
+.statusbar > .btn {
+  flex: none;
+}
+
+.statusbar__spacer {
+  flex: 1;
+}
+
+.statusbar[data-sync='live'] .statusbar__item:first-child {
+  color: var(--tk-success);
+}
+
+.statusbar[data-sync='syncing'] .statusbar__item:first-child {
+  color: var(--tk-renk-1);
+}
+
+.statusbar[data-sync='error'] .statusbar__item:first-child {
+  color: var(--tk-danger-text);
+}
+
+.statusbar[data-sync='live'] .badge__dot,
+.statusbar[data-sync='syncing'] .badge__dot {
+  background: currentColor;
+}
+
+.sync-progress {
+  position: absolute;
+  top: calc(var(--tk-border-w) * -1);
+  left: 0;
+  right: 0;
+  height: var(--tk-focus-w);
+  overflow: hidden;
+}
+
+.sync-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, var(--tk-renk-1), transparent);
+  transform: translateX(-100%);
+  animation: sync-progress var(--tk-loading-loop-min) var(--tk-e-in-out) infinite;
+}
+
+@keyframes sync-progress {
+  to {
+    transform: translateX(200%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-progress::after {
+    animation: none;
+  }
+}
+
+.statusbar[data-sikis] .statusbar__item--sync .statusbar__text,
+.statusbar[data-sikis] .statusbar__item--fetched {
+  display: none;
+}
+
+.statusbar:is([data-sikis='hesap'], [data-sikis='tazele'], [data-sikis='token']) .statusbar__item--account {
+  display: none;
+}
+
+.statusbar:is([data-sikis='tazele'], [data-sikis='token']) .statusbar__refresh-label {
+  display: none;
+}
+
+.statusbar[data-sikis='token'] .statusbar__token {
+  display: none;
+}

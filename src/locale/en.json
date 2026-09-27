@@ -1,0 +1,341 @@
+{
+  "app": {
+    "first": "Teknesyum ",
+    "second": "Base",
+    "secondPro": "Base Pro"
+  },
+  "titlebar": {
+    "sponsor": "Buy me a coffee",
+    "brand": "by Teknesyum",
+    "minimize": "Minimize",
+    "maximize": "Maximize or restore",
+    "close": "Close",
+    "tabs": "Main sections"
+  },
+  "tabs": {
+    "library": "Library",
+    "installed": "Installed",
+    "settings": "Settings"
+  },
+  "time": {
+    "justNow": "Just now"
+  },
+  "units": {
+    "kb": "{n} KB",
+    "mb": "{n} MB"
+  },
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "retry": "Try again",
+    "undo": "Undo",
+    "save": "Save",
+    "revert": "Revert changes",
+    "ackFirst": "Tick the confirmation box first"
+  },
+  "state": {
+    "not-installed": "Not installed",
+    "installed": "Installed",
+    "update-available": "Update available",
+    "cloned": "Cloned",
+    "archived": "Archived"
+  },
+  "steps": {
+    "resolve": "Finding release",
+    "download": "Downloading",
+    "verify": "Verifying",
+    "install": "Installing",
+    "shortcut": "Creating shortcut",
+    "done": "Done"
+  },
+  "actions": {
+    "install": "Install",
+    "update": "Update",
+    "clone": "Clone",
+    "launch": "Open",
+    "folder": "Open folder",
+    "uninstall": "Uninstall",
+    "github": "Open on GitHub",
+    "aria": "{name}: {action}"
+  },
+  "task": {
+    "busy": "A task is running for this repo",
+    "cancelled": "{name} task cancelled",
+    "running": {
+      "install": "Installing",
+      "update": "Updating",
+      "clone": "Cloning",
+      "uninstall": "Uninstalling"
+    },
+    "done": {
+      "install": "{name} installed",
+      "update": "{name} updated",
+      "clone": "{name} cloned",
+      "uninstall": "{name} uninstalled"
+    },
+    "failed": {
+      "install": "{name} could not be installed",
+      "update": "{name} could not be updated",
+      "clone": "{name} could not be cloned",
+      "uninstall": "{name} could not be uninstalled"
+    }
+  },
+  "errors": {
+    "logAt": "Detailed log: {path}",
+    "network": {
+      "title": "Could not reach GitHub",
+      "next": "Check your connection and try again."
+    },
+    "rate-limit": {
+      "title": "Rate limit reached",
+      "next": "Try again after the reset, or add a token in Settings."
+    },
+    "auth": {
+      "title": "Token is invalid",
+      "next": "Renew or remove the token in Settings."
+    },
+    "not-found": {
+      "title": "Not found",
+      "next": "Check the account or repo name."
+    },
+    "no-asset": {
+      "title": "No Windows package",
+      "next": "This release has no installable file; you can clone the repo."
+    },
+    "checksum": {
+      "title": "File could not be verified",
+      "next": "The download may be corrupt; try again."
+    },
+    "io": {
+      "title": "File operation failed",
+      "next": "Check folder permissions and free space."
+    },
+    "git-missing": {
+      "title": "Git not found",
+      "next": "Install Git to clone, then reopen the app."
+    },
+    "cancelled": {
+      "title": "Task cancelled",
+      "next": "You can start it again."
+    },
+    "unknown": {
+      "title": "Something unexpected happened",
+      "next": "Try again; if it persists, share the log."
+    }
+  },
+  "library": {
+    "sidebar": "Categories and tags",
+    "account": "Account",
+    "all": "All",
+    "categories": "Categories",
+    "localTags": "Local tags",
+    "noTags": "No tags yet. Add them from the detail panel.",
+    "search": "Search",
+    "searchHelp": "Searches name, description, topics and tags.",
+    "language": "Language",
+    "any": "Any",
+    "status": "Status",
+    "archive": "Archive",
+    "archiveHide": "Hide archived",
+    "archiveAll": "All",
+    "archiveOnly": "Archived only",
+    "sort": "Sort",
+    "sortStars": "Stars",
+    "sortDate": "Last updated",
+    "sortName": "Name",
+    "view": "View",
+    "viewGrid": "Cards",
+    "viewList": "List",
+    "loading": "Loading repos",
+    "results": "{n} repos",
+    "noDescription": "No description.",
+    "emptyTitle": "No repos to show for {account}",
+    "emptyBody": "Check the account name, or turn on archived repos and forks.",
+    "openSettings": "Open settings",
+    "noMatchTitle": "No matching repos",
+    "noMatchBody": "Loosen the search or the filters.",
+    "clearFilters": "Clear filters",
+    "showCategories": "Show categories",
+    "hideCategories": "Hide categories",
+    "anyLanguage": "All languages",
+    "anyStatus": "All states",
+    "labeled": "{label}: {value}"
+  },
+  "stats": {
+    "stars": "Stars",
+    "forks": "Forks",
+    "issues": "Open issues",
+    "license": "License",
+    "noLicense": "No license",
+    "size": "Size",
+    "language": "Language",
+    "none": "None",
+    "pushed": "Last push",
+    "installedTag": "Installed version",
+    "topics": "Topics"
+  },
+  "detail": {
+    "localTags": "Local tags",
+    "removeTag": "Remove tag {tag}",
+    "tagRemoved": "Tag {tag} removed",
+    "noTags": "This repo has no local tags.",
+    "newTag": "New tag",
+    "newTagHelp": "Tags are kept on this computer only.",
+    "newTagEmpty": "Type a tag name first",
+    "addTag": "Add",
+    "sections": "Repo sections",
+    "readme": "README",
+    "releases": "Releases",
+    "noReadme": "This repo has no README.",
+    "noReleases": "No published releases yet.",
+    "prerelease": "Pre-release",
+    "assets": "Files",
+    "downloads": "{n} downloads"
+  },
+  "install": {
+    "source": "source",
+    "sub": {
+      "install": "Will be installed from {repo}",
+      "update": "{repo} will be updated to the latest release",
+      "clone": "{repo} will be cloned"
+    },
+    "ready": "Ready to start",
+    "finished": "Done",
+    "cancelled": "Cancelled",
+    "stepState": {
+      "todo": "waiting",
+      "active": "in progress",
+      "done": "done",
+      "error": "error"
+    },
+    "progress": "Install progress",
+    "log": "Install log",
+    "errorBody": "The task stopped: {reason}",
+    "installTo": "Install location",
+    "cloneTo": "Clone location",
+    "change": "Change",
+    "openProgram": "Open program",
+    "rateOut": "GitHub request limit reached. Downloads do not count against it and release info is read from the cache; if the release cannot be resolved, try again after {time}.",
+    "rateOutNoTime": "GitHub request limit reached. Downloads do not count against it and release info is read from the cache; if the release cannot be resolved, try again once the limit resets."
+  },
+  "uninstall": {
+    "title": "Uninstall {name}?",
+    "body": "Program files and its shortcut are deleted. Settings and data inside the program folder go too.",
+    "ack": "I understand the files will be deleted"
+  },
+  "installed": {
+    "summary": "{n} programs installed, {u} awaiting update.",
+    "updateAll": "Update all",
+    "bulkRunning": "Updating {done}/{total}",
+    "bulkDone": "{ok} of {total} programs updated",
+    "nothingToUpdate": "Nothing to update",
+    "versions": "{from} → {to}",
+    "emptyTitle": "No programs installed",
+    "emptyBody": "Pick a program in the library and install it.",
+    "goLibrary": "Go to library",
+    "method": {
+      "zip": "ZIP",
+      "msi": "MSI",
+      "exe": "Installer",
+      "portable": "Portable",
+      "clone": "Clone"
+    }
+  },
+  "settings": {
+    "accountSection": "Account",
+    "account": "GitHub account",
+    "accountHelp": "The user or organisation whose repos are listed.",
+    "accountEmpty": "Account name cannot be empty",
+    "extraAccounts": "Extra accounts",
+    "noExtra": "No extra accounts.",
+    "newAccount": "Add account",
+    "newAccountEmpty": "Type an account name first",
+    "addAccount": "Add",
+    "removeAccount": "Remove account {name}",
+    "tokenSection": "Access token",
+    "token": "New token",
+    "tokenHelp": "The token is kept in the Windows credential store and never shown again.",
+    "tokenStored": "Token stored",
+    "tokenMissing": "No token stored",
+    "tokenEmpty": "Paste a token first",
+    "tokenSave": "Save token",
+    "tokenSaved": "Token saved",
+    "tokenClear": "Delete token",
+    "tokenClearTitle": "Delete the token?",
+    "tokenClearBody": "Private repos disappear and the hourly request limit drops.",
+    "folderSection": "Folders",
+    "installDir": "Install folder",
+    "cloneDir": "Clone folder",
+    "generalSection": "General",
+    "language": "Interface language",
+    "lang": {
+      "tr": "Türkçe",
+      "en": "English"
+    },
+    "showArchived": "Show archived repos",
+    "showArchivedHelp": "Archived repos are listed in the library.",
+    "showForks": "Show forks",
+    "showForksHelp": "Repos forked from others are listed too.",
+    "closeToTray": "Hide to tray on close",
+    "closeToTrayHelp": "The window closes and the app keeps running in the notification area.",
+    "saved": "Settings saved",
+    "noChanges": "No changes",
+    "about": "About",
+    "version": "Version",
+    "edition": "Edition",
+    "editions": {
+      "normal": "Base",
+      "pro": "Base Pro"
+    },
+    "git": "Git",
+    "gitFound": "Found",
+    "gitMissing": "Not found"
+  },
+  "status": {
+    "idle": "Waiting",
+    "cache": "Showing cached data",
+    "syncing": "Syncing",
+    "live": "Up to date",
+    "error": "Sync failed",
+    "syncError": "Sync failed: {reason}",
+    "account": "Account: {name}",
+    "rate": "Requests left: {n}",
+    "resetAt": "Request limit resets at {time}",
+    "fetched": "Last refresh: {when}",
+    "refresh": "Refresh",
+    "rateOut": "Request limit reached, resets at {time}",
+    "rateOutNoTime": "Request limit reached",
+    "previousScan": "Showing the previous scan, limit resets at {time}",
+    "previousScanNoTime": "Showing the previous scan, request limit reached",
+    "previousScanHint": "The remaining requests are not enough for this scan or fall below the share left for other programs; the list comes from the last scan. {n} requests left.",
+    "rateHint": "Without a token GitHub allows 60 requests an hour; once used up the list is shown from cache. Add a read-only token in Settings to raise the limit to 5000 an hour.",
+    "rateHintToken": "The token's hourly request limit is used up; the list is shown from cache and refreshes once the limit resets.",
+    "addToken": "Add token",
+    "cacheHint": "Showing the list last fetched from GitHub; press Refresh for new data."
+  },
+  "update": {
+    "title": "Update",
+    "versionLabel": "New version",
+    "notes": "Release notes",
+    "available": "A new version is out. Would you like to download it?",
+    "downloading": "The new version is downloading; you can keep working.",
+    "ready": "The new version has downloaded and is ready to install.",
+    "installing": "The new version is here, restarting the program…",
+    "failed": "The update could not finish: {reason}",
+    "failedTitle": "The update could not finish",
+    "dryRun": "Dry run",
+    "download": "Download",
+    "downloadInstall": "Download and install",
+    "cancel": "Cancel",
+    "install": "Install",
+    "progress": "Update download progress",
+    "badge": {
+      "available": "Update",
+      "ready": "Ready to install",
+      "percent": "{n}%",
+      "availableAria": "Update available, version {version}. Open the panel",
+      "downloadingAria": "New version downloading, {n}%. Open the panel",
+      "readyAria": "New version ready to install. Open the panel"
+    }
+  }
+}

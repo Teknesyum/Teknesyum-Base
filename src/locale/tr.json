@@ -1,0 +1,341 @@
+{
+  "app": {
+    "first": "Teknesyum ",
+    "second": "Base",
+    "secondPro": "Base Pro"
+  },
+  "titlebar": {
+    "sponsor": "Buy me a coffee",
+    "brand": "by Teknesyum",
+    "minimize": "Simge durumuna küçült",
+    "maximize": "Büyüt ya da eski boyuta getir",
+    "close": "Kapat",
+    "tabs": "Ana bölümler"
+  },
+  "tabs": {
+    "library": "Kütüphane",
+    "installed": "Kurulu",
+    "settings": "Ayarlar"
+  },
+  "time": {
+    "justNow": "Az önce"
+  },
+  "units": {
+    "kb": "{n} KB",
+    "mb": "{n} MB"
+  },
+  "common": {
+    "close": "Kapat",
+    "cancel": "Vazgeç",
+    "retry": "Yeniden dene",
+    "undo": "Geri al",
+    "save": "Kaydet",
+    "revert": "Değişiklikleri geri al",
+    "ackFirst": "Önce onay kutusunu işaretleyin"
+  },
+  "state": {
+    "not-installed": "Kurulu değil",
+    "installed": "Kurulu",
+    "update-available": "Güncelleme var",
+    "cloned": "Klonlandı",
+    "archived": "Arşivde"
+  },
+  "steps": {
+    "resolve": "Sürüm bulunuyor",
+    "download": "İndiriliyor",
+    "verify": "Doğrulanıyor",
+    "install": "Kuruluyor",
+    "shortcut": "Kısayol oluşturuluyor",
+    "done": "Tamamlandı"
+  },
+  "actions": {
+    "install": "Kur",
+    "update": "Güncelle",
+    "clone": "Klonla",
+    "launch": "Aç",
+    "folder": "Klasörü aç",
+    "uninstall": "Kaldır",
+    "github": "GitHub'da aç",
+    "aria": "{name}: {action}"
+  },
+  "task": {
+    "busy": "Bu repo için bir işlem sürüyor",
+    "cancelled": "{name} işlemi iptal edildi",
+    "running": {
+      "install": "Kuruluyor",
+      "update": "Güncelleniyor",
+      "clone": "Klonlanıyor",
+      "uninstall": "Kaldırılıyor"
+    },
+    "done": {
+      "install": "{name} kuruldu",
+      "update": "{name} güncellendi",
+      "clone": "{name} klonlandı",
+      "uninstall": "{name} kaldırıldı"
+    },
+    "failed": {
+      "install": "{name} kurulamadı",
+      "update": "{name} güncellenemedi",
+      "clone": "{name} klonlanamadı",
+      "uninstall": "{name} kaldırılamadı"
+    }
+  },
+  "errors": {
+    "logAt": "Ayrıntılı günlük: {path}",
+    "network": {
+      "title": "GitHub'a ulaşılamadı",
+      "next": "İnternet bağlantınızı denetleyip yeniden deneyin."
+    },
+    "rate-limit": {
+      "title": "İstek sınırı doldu",
+      "next": "Sınır sıfırlanınca yeniden deneyin ya da Ayarlar'dan bir token ekleyin."
+    },
+    "auth": {
+      "title": "Token geçersiz",
+      "next": "Ayarlar'da token'ı yenileyin ya da silin."
+    },
+    "not-found": {
+      "title": "Bulunamadı",
+      "next": "Hesap adını ya da repo adını denetleyin."
+    },
+    "no-asset": {
+      "title": "Windows paketi yok",
+      "next": "Bu sürümde kurulabilir dosya yok; repoyu klonlayabilirsiniz."
+    },
+    "checksum": {
+      "title": "Dosya doğrulanamadı",
+      "next": "İndirme bozulmuş olabilir; yeniden deneyin."
+    },
+    "io": {
+      "title": "Dosya işlemi başarısız",
+      "next": "Klasör izinlerini ve boş alanı denetleyin."
+    },
+    "git-missing": {
+      "title": "Git bulunamadı",
+      "next": "Klonlamak için Git'i kurun, sonra uygulamayı yeniden açın."
+    },
+    "cancelled": {
+      "title": "İşlem iptal edildi",
+      "next": "İsterseniz yeniden başlatabilirsiniz."
+    },
+    "unknown": {
+      "title": "Beklenmeyen bir hata oldu",
+      "next": "Yeniden deneyin; sürerse günlüğü paylaşın."
+    }
+  },
+  "library": {
+    "sidebar": "Kategoriler ve etiketler",
+    "account": "Hesap",
+    "all": "Tümü",
+    "categories": "Kategoriler",
+    "localTags": "Yerel etiketler",
+    "noTags": "Henüz etiket yok. Detay panelinden ekleyebilirsiniz.",
+    "search": "Ara",
+    "searchHelp": "Ad, açıklama, konu ya da etikette arar.",
+    "language": "Dil",
+    "any": "Hepsi",
+    "status": "Durum",
+    "archive": "Arşiv",
+    "archiveHide": "Arşivi gizle",
+    "archiveAll": "Hepsi",
+    "archiveOnly": "Yalnız arşiv",
+    "sort": "Sırala",
+    "sortStars": "Yıldız",
+    "sortDate": "Son güncelleme",
+    "sortName": "Ad",
+    "view": "Görünüm",
+    "viewGrid": "Kart",
+    "viewList": "Liste",
+    "loading": "Repolar yükleniyor",
+    "results": "{n} repo",
+    "noDescription": "Açıklama yok.",
+    "emptyTitle": "{account} hesabında gösterilecek repo yok",
+    "emptyBody": "Hesap adını denetleyin ya da arşiv ve çatalları göstermeyi açın.",
+    "openSettings": "Ayarları aç",
+    "noMatchTitle": "Eşleşen repo yok",
+    "noMatchBody": "Aramayı ya da filtreleri gevşetin.",
+    "clearFilters": "Filtreleri temizle",
+    "showCategories": "Kategorileri göster",
+    "hideCategories": "Kategorileri gizle",
+    "anyLanguage": "Tüm diller",
+    "anyStatus": "Tüm durumlar",
+    "labeled": "{label}: {value}"
+  },
+  "stats": {
+    "stars": "Yıldız",
+    "forks": "Çatal",
+    "issues": "Açık konu",
+    "license": "Lisans",
+    "noLicense": "Lisans yok",
+    "size": "Boyut",
+    "language": "Dil",
+    "none": "Yok",
+    "pushed": "Son gönderim",
+    "installedTag": "Kurulu sürüm",
+    "topics": "Konular"
+  },
+  "detail": {
+    "localTags": "Yerel etiketler",
+    "removeTag": "{tag} etiketini kaldır",
+    "tagRemoved": "{tag} etiketi kaldırıldı",
+    "noTags": "Bu repoda yerel etiket yok.",
+    "newTag": "Yeni etiket",
+    "newTagHelp": "Etiketler yalnız bu bilgisayarda tutulur.",
+    "newTagEmpty": "Önce bir etiket adı yazın",
+    "addTag": "Ekle",
+    "sections": "Repo bölümleri",
+    "readme": "README",
+    "releases": "Sürümler",
+    "noReadme": "Bu repoda README yok.",
+    "noReleases": "Henüz yayınlanmış sürüm yok.",
+    "prerelease": "Ön sürüm",
+    "assets": "Dosyalar",
+    "downloads": "{n} indirme"
+  },
+  "install": {
+    "source": "kaynak",
+    "sub": {
+      "install": "{repo} deposundan kurulacak",
+      "update": "{repo} son sürüme güncellenecek",
+      "clone": "{repo} klonlanacak"
+    },
+    "ready": "Başlamaya hazır",
+    "finished": "Tamamlandı",
+    "cancelled": "İptal edildi",
+    "stepState": {
+      "todo": "sırada",
+      "active": "sürüyor",
+      "done": "tamam",
+      "error": "hata"
+    },
+    "progress": "Kurulum ilerlemesi",
+    "log": "Kurulum günlüğü",
+    "errorBody": "İşlem durdu: {reason}",
+    "installTo": "Kurulum yeri",
+    "cloneTo": "Klon yeri",
+    "change": "Değiştir",
+    "openProgram": "Programı aç",
+    "rateOut": "GitHub istek sınırı dolu. İndirme bu sınıra sayılmaz ve sürüm bilgisi önbellekten okunur; sürüm bulunamazsa {time} sonrasında yeniden deneyin.",
+    "rateOutNoTime": "GitHub istek sınırı dolu. İndirme bu sınıra sayılmaz ve sürüm bilgisi önbellekten okunur; sürüm bulunamazsa sınır yenilenince yeniden deneyin."
+  },
+  "uninstall": {
+    "title": "{name} kaldırılsın mı?",
+    "body": "Program dosyaları ve kısayolu silinir. Ayarları ve verileri programın kendi klasöründeyse onlar da gider.",
+    "ack": "Dosyaların silineceğini anladım"
+  },
+  "installed": {
+    "summary": "{n} program kurulu, {u} güncelleme bekliyor.",
+    "updateAll": "Hepsini güncelle",
+    "bulkRunning": "Güncelleniyor {done}/{total}",
+    "bulkDone": "{total} programdan {ok} tanesi güncellendi",
+    "nothingToUpdate": "Güncellenecek program yok",
+    "versions": "{from} → {to}",
+    "emptyTitle": "Kurulu program yok",
+    "emptyBody": "Kütüphaneden bir program seçip kurabilirsiniz.",
+    "goLibrary": "Kütüphaneye git",
+    "method": {
+      "zip": "ZIP",
+      "msi": "MSI",
+      "exe": "Kurulum dosyası",
+      "portable": "Taşınabilir",
+      "clone": "Klon"
+    }
+  },
+  "settings": {
+    "accountSection": "Hesap",
+    "account": "GitHub hesabı",
+    "accountHelp": "Repoları listelenecek kullanıcı ya da kuruluş.",
+    "accountEmpty": "Hesap adı boş olamaz",
+    "extraAccounts": "Ek hesaplar",
+    "noExtra": "Ek hesap yok.",
+    "newAccount": "Hesap ekle",
+    "newAccountEmpty": "Önce bir hesap adı yazın",
+    "addAccount": "Ekle",
+    "removeAccount": "{name} hesabını çıkar",
+    "tokenSection": "Erişim token'ı",
+    "token": "Yeni token",
+    "tokenHelp": "Token Windows kimlik kasasında saklanır ve bir daha gösterilmez.",
+    "tokenStored": "Token kayıtlı",
+    "tokenMissing": "Token kayıtlı değil",
+    "tokenEmpty": "Önce bir token yapıştırın",
+    "tokenSave": "Token'ı kaydet",
+    "tokenSaved": "Token kaydedildi",
+    "tokenClear": "Token'ı sil",
+    "tokenClearTitle": "Token silinsin mi?",
+    "tokenClearBody": "Özel repolar görünmez olur ve saatlik istek sınırı düşer.",
+    "folderSection": "Klasörler",
+    "installDir": "Kurulum klasörü",
+    "cloneDir": "Klon klasörü",
+    "generalSection": "Genel",
+    "language": "Arayüz dili",
+    "lang": {
+      "tr": "Türkçe",
+      "en": "English"
+    },
+    "showArchived": "Arşivleri göster",
+    "showArchivedHelp": "Arşivlenmiş repolar kütüphanede listelenir.",
+    "showForks": "Çatalları göster",
+    "showForksHelp": "Başka repolardan çatallananlar da listelenir.",
+    "closeToTray": "Kapatınca tepsiye gizle",
+    "closeToTrayHelp": "Pencere kapanır, uygulama bildirim alanında çalışmayı sürdürür.",
+    "saved": "Ayarlar kaydedildi",
+    "noChanges": "Değişiklik yok",
+    "about": "Hakkında",
+    "version": "Sürüm",
+    "edition": "Baskı",
+    "editions": {
+      "normal": "Base",
+      "pro": "Base Pro"
+    },
+    "git": "Git",
+    "gitFound": "Bulundu",
+    "gitMissing": "Bulunamadı"
+  },
+  "status": {
+    "idle": "Bekliyor",
+    "cache": "Önbellekten gösteriliyor",
+    "syncing": "Eşitleniyor",
+    "live": "Güncel",
+    "error": "Eşitlenemedi",
+    "syncError": "Eşitlenemedi: {reason}",
+    "account": "Hesap: {name}",
+    "rate": "Kalan istek: {n}",
+    "resetAt": "İstek sınırının yenilenme saati {time}",
+    "fetched": "Son tazeleme: {when}",
+    "refresh": "Tazele",
+    "rateOut": "İstek sınırı doldu, yenilenme saati {time}",
+    "rateOutNoTime": "İstek sınırı doldu",
+    "previousScan": "Önceki tarama gösteriliyor, sınır {time}'de sıfırlanır",
+    "previousScanNoTime": "Önceki tarama gösteriliyor, istek sınırı doldu",
+    "previousScanHint": "Kalan istek bu tarama için yetmiyor ya da başka programlara bırakılan payın altında; liste son taramadan gösteriliyor. {n} istek kaldı.",
+    "rateHint": "GitHub token'sız saatte 60 istek verir; sınır dolunca liste önbellekten gösterilir. Ayarlar'a okuma token'ı eklerseniz sınır saatte 5000'e çıkar.",
+    "rateHintToken": "Token'ın saatlik istek sınırı doldu; liste önbellekten gösteriliyor ve sınır yenilenince kendiliğinden tazelenir.",
+    "addToken": "Token ekle",
+    "cacheHint": "GitHub'dan son alınan liste gösteriliyor; yeni bilgi için Tazele'ye basın."
+  },
+  "update": {
+    "title": "Güncelleme",
+    "versionLabel": "Yeni sürüm",
+    "notes": "Sürüm notları",
+    "available": "Yeni sürüm yayımlandı, indirmek ister misin?",
+    "downloading": "Yeni sürüm iniyor, çalışmana devam edebilirsin.",
+    "ready": "Yeni sürüm indi, yüklemeye hazır.",
+    "installing": "Yeni sürüm geldi, program yenileniyor…",
+    "failed": "Güncelleme tamamlanamadı: {reason}",
+    "failedTitle": "Güncelleme tamamlanamadı",
+    "dryRun": "Prova kipi",
+    "download": "İndir",
+    "downloadInstall": "İndir ve yükle",
+    "cancel": "İptal",
+    "install": "Yükle",
+    "progress": "Güncelleme indirme ilerlemesi",
+    "badge": {
+      "available": "Güncelleme",
+      "ready": "Yüklemeye hazır",
+      "percent": "%{n}",
+      "availableAria": "Güncelleme var, sürüm {version}. Paneli aç",
+      "downloadingAria": "Yeni sürüm iniyor, %{n}. Paneli aç",
+      "readyAria": "Yeni sürüm yüklemeye hazır. Paneli aç"
+    }
+  }
+}

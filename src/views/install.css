@@ -1,0 +1,108 @@
+.install-dialog {
+  max-height: calc(100vh - var(--tk-sp-5) * 2);
+  overflow-y: auto;
+}
+
+.install-steps {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--tk-sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--tk-fs-1);
+}
+
+.install-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tk-sp-1);
+  min-width: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
+  color: var(--tk-text);
+  transition: color var(--tk-t-fast) var(--tk-e-out);
+}
+
+.install-step__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tk-target-min);
+  height: var(--tk-target-min);
+  border: var(--tk-border-w) solid currentColor;
+  border-radius: 50%;
+  font-variant-numeric: tabular-nums;
+}
+
+.install-step__mark .icon {
+  width: var(--tk-icon-1);
+  height: var(--tk-icon-1);
+}
+
+.install-step[data-state='active'] {
+  color: var(--tk-renk-1);
+}
+
+.install-step[data-state='done'] {
+  color: var(--tk-success);
+}
+
+.install-step[data-state='error'] {
+  color: var(--tk-danger-text);
+}
+
+.install-log {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: calc(var(--tk-fs-1) * var(--tk-lh-mono) * 7);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent, var(--tk-surface) 40%);
+}
+
+.install-location {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.install-location__label {
+  flex: none;
+  color: var(--tk-text);
+  font-size: var(--tk-fs-1);
+}
+
+.install-location__path {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: var(--tk-fs-1);
+  overflow-wrap: anywhere;
+}
+
+.tk-installer__actions {
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+.tk-installer__sub,
+.tk-installer__log {
+  color: var(--tk-text);
+}
+
+.install-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tk-sp-2);
+  margin: 0;
+  color: var(--tk-warning);
+  font-size: var(--tk-fs-1);
+  line-height: var(--tk-lh-body);
+}
+
+.install-note > svg {
+  flex: none;
+  margin-top: var(--tk-sp-1);
+}

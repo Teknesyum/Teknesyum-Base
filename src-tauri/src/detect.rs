@@ -113,6 +113,196 @@ pub fn detect_external(roots: &[PathBuf], skip: &[PathBuf], targets: &[Target]) 
         .collect()
 }
 
+#[derive(Debug, Default, PartialEq)]
+pub struct LnkInfo {
+    pub target: Option<String>,
+    pub working_dir: Option<String>,
+    pub args: Option<String>,
+}
+
+fn u16_at(b: &[u8], i: usize) -> Option<usize> {
+    b.get(i..i + 2).map(|s| u16::from_le_bytes([s[0], s[1]]) as usize)
+}
+
+fn u32_at(b: &[u8], i: usize) -> Option<usize> {
+    b.get(i..i + 4).map(|s| u32::from_le_bytes([s[0], s[1], s[2], s[3]]) as usize)
+}
+
+fn wide_z(b: &[u8], i: usize) -> Option<String> {
+    let units: Vec<u16> = b.get(i..)?.chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).take_while(|&u| u != 0).collect();
+    Some(String::from_utf16_lossy(&units))
+}
+
+pub fn parse_lnk(b: &[u8]) -> Option<LnkInfo> {
+    if u32_at(b, 0)? != 0x4C {
+        return None;
+    }
+    let flags = u32_at(b, 0x14)?;
+    let unicode = flags & 0x80 != 0;
+    let mut pos: usize = 0x4C;
+    if flags & 0x1 != 0 {
+        pos = pos.checked_add(2 + u16_at(b, pos)?)?;
+    }
+    let mut info = LnkInfo::default();
+    if flags & 0x2 != 0 {
+        let size = u32_at(b, pos)?;
+        let header = u32_at(b, pos + 4)?;
+        if header >= 0x24 {
+            let off = u32_at(b, pos + 0x1C)?;
+            if off != 0 {
+                info.target = wide_z(b, pos.checked_add(off)?).filter(|s| !s.is_empty());
+            }
+        }
+        if info.target.is_none() {
+            let off = u32_at(b, pos + 0x10)?;
+            if off != 0 {
+                let raw: Vec<u8> = b.get(pos.checked_add(off)?..)?.iter().copied().take_while(|&c| c != 0).collect();
+                info.target = Some(String::from_utf8_lossy(&raw).into_owned()).filter(|s| !s.is_empty());
+            }
+        }
+        pos = pos.checked_add(size)?;
+    }
+    let mut read = |present: bool| -> Option<Option<String>> {
+        if !present {
+            return Some(None);
+        }
+        let n = u16_at(b, pos)?;
+        pos += 2;
+        let s = if unicode {
+            let units: Vec<u16> = b.get(pos..pos + n * 2)?.chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).collect();
+            pos += n * 2;
+            String::from_utf16_lossy(&units)
+        } else {
+            let s = String::from_utf8_lossy(b.get(pos..pos + n)?).into_owned();
+            pos += n;
+            s
+        };
+        Some(Some(s))
+    };
+    read(flags & 0x4 != 0)?;
+    read(flags & 0x8 != 0)?;
+    info.working_dir = read(flags & 0x10 != 0)?;
+    info.args = read(flags & 0x20 != 0)?;
+    Some(info)
+}
+
+fn git_root(start: &Path) -> Option<PathBuf> {
+    start
+        .ancestors()
+        .take(6)
+        .find(|d| d.join(".git").join("config").is_file())
+        .map(Path::to_path_buf)
+}
+
+pub fn origin_of(git_dir: &Path) -> Option<(String, String)> {
+    let text = fs::read_to_string(git_dir.join(".git").join("config")).ok()?;
+    let mut in_origin = false;
+    for line in text.lines().map(str::trim) {
+        if line.starts_with('[') {
+            in_origin = line == "[remote \"origin\"]";
+        } else if in_origin {
+            if let Some(url) = line.strip_prefix("url").map(str::trim_start).and_then(|l| l.strip_prefix('=')) {
+                let url = url.trim().trim_end_matches('/').trim_end_matches(".git");
+                let rest = url
+                    .strip_prefix("https://github.com/")
+                    .or_else(|| url.strip_prefix("git@github.com:"))?;
+                let (o, n) = rest.split_once('/')?;
+                return Some((o.to_string(), n.to_string()));
+            }
+        }
+    }
+    None
+}
+
+fn collect_lnks(dir: &Path, depth: u8, out: &mut Vec<PathBuf>) {
+    let Ok(rd) = fs::read_dir(dir) else {
+        return;
+    };
+    for e in rd.filter_map(Result::ok) {
+        let p = e.path();
+        if p.is_dir() {
+            if depth > 0 {
+                collect_lnks(&p, depth - 1, out);
+            }
+        } else if p.extension().is_some_and(|x| x.eq_ignore_ascii_case("lnk")) {
+            out.push(p);
+        }
+    }
+}
+
+pub fn shortcut_dirs() -> Vec<PathBuf> {
+    let mut dirs_out = Vec::new();
+    if let Some(r) = dirs::data_dir() {
+        dirs_out.push(r.join("Microsoft").join("Windows").join("Start Menu").join("Programs"));
+    }
+    if let Some(pd) = std::env::var_os("ProgramData") {
+        dirs_out.push(PathBuf::from(pd).join("Microsoft").join("Windows").join("Start Menu").join("Programs"));
+    }
+    if let Some(d) = dirs::desktop_dir() {
+        dirs_out.push(d);
+    }
+    dirs_out
+}
+
+pub fn detect_checkouts(lnk_dirs: &[PathBuf], targets: &[Target]) -> Vec<InstalledRecord> {
+    let mut lnks = Vec::new();
+    for d in lnk_dirs {
+        collect_lnks(d, 2, &mut lnks);
+    }
+    let mut out: Vec<InstalledRecord> = Vec::new();
+    for lnk in lnks {
+        let Some(info) = fs::read(&lnk).ok().and_then(|b| parse_lnk(&b)) else {
+            continue;
+        };
+        let args = info.args.as_deref().map(|a| a.trim().trim_matches('"').to_string());
+        let candidates = [info.working_dir.clone(), args, info.target.clone()];
+        let Some(root) = candidates
+            .iter()
+            .flatten()
+            .filter(|c| !c.is_empty() && Path::new(c.as_str()).exists())
+            .find_map(|c| git_root(Path::new(c)))
+        else {
+            continue;
+        };
+        let Some((o, n)) = origin_of(&root) else {
+            continue;
+        };
+        let Some(t) = targets
+            .iter()
+            .find(|t| t.owner.eq_ignore_ascii_case(&o) && t.name.eq_ignore_ascii_case(&n))
+        else {
+            continue;
+        };
+        let full = format!("{}/{}", t.owner, t.name);
+        if out.iter().any(|r| r.info.full_name.eq_ignore_ascii_case(&full)) {
+            continue;
+        }
+        out.push(InstalledRecord {
+            info: Installed {
+                full_name: full,
+                tag: String::new(),
+                method: InstallMethod::Clone,
+                path: root.to_string_lossy().into_owned(),
+                installed_at: modified_iso(&lnk),
+                desktop_shortcut: false,
+                exe: Some(lnk.to_string_lossy().into_owned()),
+            },
+            shortcut: None,
+            package: None,
+        });
+    }
+    out
+}
+
+pub fn is_checkout_link(rec: &InstalledRecord) -> bool {
+    rec.info.method == InstallMethod::Clone
+        && rec
+            .info
+            .exe
+            .as_deref()
+            .is_some_and(|e| e.to_ascii_lowercase().ends_with(".lnk"))
+}
+
 pub fn own_record() -> Option<InstalledRecord> {
     let exe = std::env::current_exe().ok()?;
     let dir = exe.parent()?.to_path_buf();
@@ -238,6 +428,58 @@ pub fn exe_version(_path: &Path) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn lnk_bytes(workdir: &str, args: &str) -> Vec<u8> {
+        let mut b = vec![0u8; 0x4C];
+        b[0] = 0x4C;
+        let flags: u32 = 0x10 | 0x20 | 0x80;
+        b[0x14..0x18].copy_from_slice(&flags.to_le_bytes());
+        for s in [workdir, args] {
+            let u: Vec<u16> = s.encode_utf16().collect();
+            b.extend((u.len() as u16).to_le_bytes());
+            for c in u {
+                b.extend(c.to_le_bytes());
+            }
+        }
+        b
+    }
+
+    #[test]
+    fn parses_lnk_strings() {
+        let info = parse_lnk(&lnk_bytes(r"C:\Asistan\Nöbet", r#""C:\Asistan\Nöbet""#)).unwrap();
+        assert_eq!(info.working_dir.as_deref(), Some(r"C:\Asistan\Nöbet"));
+        assert_eq!(info.args.as_deref(), Some(r#""C:\Asistan\Nöbet""#));
+        assert!(parse_lnk(b"junk").is_none());
+    }
+
+    #[test]
+    fn finds_checkout_through_shortcut() {
+        let tmp = std::env::temp_dir().join(format!("tk-lnk-{}", std::process::id()));
+        let repo = tmp.join("Asistan");
+        let tool = repo.join("Nobet");
+        let menu = tmp.join("menu");
+        fs::create_dir_all(repo.join(".git")).unwrap();
+        fs::create_dir_all(&tool).unwrap();
+        fs::create_dir_all(&menu).unwrap();
+        fs::write(repo.join(".git").join("config"), "[core]\n\tbare = false\n[remote \"origin\"]\n\turl = https://github.com/Teknesyum/Asistan.git\n").unwrap();
+        fs::write(menu.join("Asistan.lnk"), lnk_bytes(tool.to_str().unwrap(), "")).unwrap();
+        let targets = vec![Target { owner: "Teknesyum".into(), name: "Asistan".into(), manifest_name: None }];
+        let found = detect_checkouts(&[menu.clone()], &targets);
+        let _ = fs::remove_dir_all(&tmp);
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].info.full_name, "Teknesyum/Asistan");
+        assert!(is_checkout_link(&found[0]));
+        assert!(same_path(Path::new(&found[0].info.path), &repo));
+    }
+
+    #[test]
+    #[ignore]
+    fn shortcuts_on_this_machine() {
+        let targets = vec![Target { owner: "Teknesyum".into(), name: "Asistan".into(), manifest_name: None }];
+        for r in detect_checkouts(&shortcut_dirs(), &targets) {
+            println!("{} {} {:?}", r.info.full_name, r.info.path, r.info.exe);
+        }
+    }
 
     fn tmp_dir(tag: &str) -> PathBuf {
         let d = std::env::temp_dir().join(format!("tkb-detect-{tag}-{}", std::process::id()));

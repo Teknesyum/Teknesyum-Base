@@ -799,6 +799,9 @@ pub async fn uninstall(env: Env, task: Task, rec: InstalledRecord) -> AppResult<
     let full_name = rec.info.full_name.clone();
     task.log(TaskStep::Resolve, 5, &format!("{full_name} kaydı okunuyor"));
     let path = PathBuf::from(&rec.info.path);
+    if detect::is_checkout_link(&rec) {
+        return Err(AppError::io("Bu program kaynak klasöründen çalışıyor; Base bu klasörü silmez."));
+    }
     if rec.info.method != InstallMethod::Clone && detect::is_running_from(&path) {
         return Err(AppError::io(SELF_UNINSTALL));
     }

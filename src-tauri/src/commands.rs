@@ -12,7 +12,7 @@ use crate::installer::{self, Env, Task};
 use crate::logic;
 use crate::claude;
 use crate::detect;
-use crate::model::{AppInfo, Edition, InstallMethod, Installed, Release, Repo, RepoList, TaskEvent, TaskKind};
+use crate::model::{AppInfo, Edition, InstallMethod, InstallState, Installed, Release, Repo, RepoList, TaskEvent, TaskKind};
 use crate::paths::{read_json, write_json, Paths};
 use crate::settings::{self, Settings};
 use crate::store::{self, InstalledRecord};
@@ -119,6 +119,7 @@ pub fn installed_view(paths: &Paths, install_dir: &Path, targets: &[detect::Targ
     let skip = vec![paths.shared.clone(), install_dir.to_path_buf()];
     let mut extra: Vec<InstalledRecord> = detect::own_record().into_iter().collect();
     extra.extend(detect::detect_external(&paths.scan_roots, &skip, targets));
+    extra.extend(detect::detect_checkouts(&detect::shortcut_dirs(), targets));
     store::merge_installed(store::load_installed(paths), extra)
 }
 
@@ -161,6 +162,9 @@ fn decorate(state: &AppState, list: &mut RepoList) {
             rec.map(|r| (r.info.method, r.info.tag.as_str())),
             repo.latest_tag.as_deref(),
         );
+        if rec.is_some_and(detect::is_checkout_link) {
+            repo.install_state = InstallState::Installed;
+        }
         repo.installed_tag = rec
             .filter(|r| r.info.method != InstallMethod::Clone)
             .map(|r| r.info.tag.clone());
@@ -512,6 +516,11 @@ pub async fn uninstall_repo(app: AppHandle, state: State<'_, AppState>, full_nam
     let rec = state
         .find_installed(&full_name)
         .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."))?;
+    if detect::is_checkout_link(&rec) {
+        return Err(AppError::io(
+            "Bu program kaynak klasöründen çalışıyor; Base bu klasörü silmez. Kısayolu ve klasörü elle kaldırın.",
+        ));
+    }
     if rec.info.method != InstallMethod::Clone && detect::is_running_from(Path::new(&rec.info.path)) {
         return Err(AppError::io(installer::SELF_UNINSTALL));
     }

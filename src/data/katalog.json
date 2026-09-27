@@ -675,6 +675,61 @@
       ]
     }
   },
+  "MurphyEngine": {
+    "category": "games",
+    "tags": {
+      "tr": [
+        "satranç",
+        "motor",
+        "rust",
+        "gambit"
+      ],
+      "en": [
+        "chess",
+        "engine",
+        "rust",
+        "gambit"
+      ]
+    },
+    "summary": {
+      "tr": "İnsana karşı hücum oynayan romantik bir satranç motoru. Viridithas'ın arama, NNUE ve UCI katmanının üstüne gelişim, şah avı, alan ve taviz karşılığını ödüllendiren bir değerlendirme ekler. Kök hamleleri insan benzeri cevaplara karşı beklenen sonuca göre yeniden sıralar, Lichess 1800-2500 istatistikleriyle dolu bir gambit kitabı kullanır ve derin aramaları kalıcı bir hafızada biriktirir. Bilgisayarda yerel sunucu olarak çalışır; bir Tampermonkey betiği hamlelerini tarayıcıdaki tahtada gösterir. Rust ile yazıldı, yönetici yetkisi istemez.",
+      "en": "A romantic chess engine that plays for the attack against a human. On top of Viridithas' search, NNUE and UCI it adds an eval layer that pays for development, king hunts, space and compensation. It re-ranks root moves by the expected result against human-like replies, uses a gambit book built from Lichess 1800-2500 statistics and keeps deep searches in a persistent memory. It runs as a local server; a Tampermonkey userscript shows its moves on the board in your browser. Written in Rust, no admin rights needed."
+    },
+    "lead": {
+      "tr": "İnsana Karşı Hücum Oynayan Romantik Satranç Motoru",
+      "en": "Romantic Chess Engine That Attacks Human Opponents"
+    },
+    "uses": {
+      "tr": [
+        "Tarayıcıdaki tahtada hamle önerisi al",
+        "Gambit ve şah avı odaklı oyna",
+        "Kendi oyunlarınla motor hafızasını büyüt"
+      ],
+      "en": [
+        "Get move hints on the board in your browser",
+        "Play gambits and king hunts",
+        "Grow the engine memory from your games"
+      ]
+    },
+    "points": {
+      "tr": [
+        "Gelişim, şah avı, alan ve taviz karşılığını ödüllendiren değerlendirme",
+        "İnsan cevap modeline göre kök hamle seçimi",
+        "Lichess 1800-2500 istatistikleriyle gambit kitabı",
+        "Derin aramaları saklayan kalıcı hafıza",
+        "Yerel sunucu ve Tampermonkey tahta betiği",
+        "Kurulum için yönetici yetkisi gerekmez"
+      ],
+      "en": [
+        "Eval that pays for development, king hunts, space and compensation",
+        "Root move selection against a human reply model",
+        "Gambit book from Lichess 1800-2500 statistics",
+        "Persistent memory of deep searches",
+        "Local server and a Tampermonkey board script",
+        "No admin rights needed to install"
+      ]
+    }
+  },
   "ProcWitness": {
     "category": "system",
     "tags": {
@@ -820,85 +875,6 @@
         "Full keyboard control",
         "Windows, macOS, Linux desktop builds",
         "Automatic update checks"
-      ]
-    }
-  },
-  "Reclatch": {
-    "category": "video",
-    "tags": {
-      "tr": [
-        "ekran-kaydı",
-        "windows",
-        "planlama"
-      ],
-      "en": [
-        "screen-recorder",
-        "windows",
-        "planning"
-      ]
-    },
-    "summary": {
-      "tr": "Windows için hafif bir ekran kaydedici projesi. Sahne düzeni, yayın altyapısı, filigran ya da hesap yok; yalnız ekranı kaydedip dosyayı size verir. İlk sürüm için tam ekran, tek pencere ve seçili bölge kaydı, sistem sesi ile mikrofonun ayrı izlere yazılması, NVENC, QuickSync ve AMF donanım kodlaması, genel kısayol tuşları ve çökmeye dayanıklı kayıt planlanıyor. Şu an planlama aşamasında; kurulacak bir sürüm henüz yok. OBS'i fazla bulan ve yalnız kayıt almak isteyenler için.",
-      "en": "A lightweight screen recorder project for Windows. No scene graph, no streaming stack, no watermark and no account: it records the screen and hands you the file. The first version plans full-screen, single-window and region capture, system audio and microphone on separate tracks, NVENC, QuickSync and AMF hardware encoding, global hotkeys and recordings that survive a crash. Currently in planning; there is nothing to install yet. For people who find OBS too much and only want a recording."
-    },
-    "lead": {
-      "tr": "Hafif Ekran ve Ses Kaydedici",
-      "en": "Lightweight Screen and Audio Recorder"
-    },
-    "uses": {
-      "tr": [
-        "Ekranı, pencereyi ya da bölgeyi kaydet",
-        "Sistem sesini ve mikrofonu ayrı al",
-        "Kısayollarla başlat, duraklat, durdur",
-        "Çökmede bile oynatılabilir dosya al"
-      ],
-      "en": [
-        "Record screen, window or region",
-        "Capture system audio and mic separately",
-        "Start, pause, stop with hotkeys",
-        "Keep a playable file after crashes"
-      ]
-    },
-    "points": {
-      "tr": [
-        "Tam ekran, tek pencere ya da bölge kaydı",
-        "Birden çok monitör için açık seçim",
-        "İmleç göster/gizle, tıklama vurgusu",
-        "Kare hızı ve çıktı ölçeği seçilebilir",
-        "WASAPI loopback ile sistem sesi kaydı",
-        "Mikrofon girişi, ayrı ayrı açılıp kapanır",
-        "Ses ve mikrofon için seviye göstergesi",
-        "İsteğe bağlı ayrı ses izleri",
-        "NVENC, QuickSync, AMF donanım kodlama",
-        "Donanım yoksa yazılım kodlamaya düşüş",
-        "MP4 içinde H.264, kalite ya da bit hızı hedefi",
-        "Başlat/durdur/duraklat için genel kısayollar",
-        "Süre, dosya boyutu, düşen kare canlı gösterimi",
-        "Kayıt öncesi geri sayım, tepsiye küçültme",
-        "Çökme sonrası oynatılabilir dosya",
-        "Kayıt öncesi ve sırasında boş alan kontrolü",
-        "Dosya adı şablonu, kalıcı ayarlar",
-        "Kayıt bitince dosyaya atlama"
-      ],
-      "en": [
-        "Full screen, single window or region capture",
-        "Multiple monitors with explicit picker",
-        "Cursor show/hide, click highlighting",
-        "Selectable frame rate and output scale",
-        "System audio via WASAPI loopback",
-        "Microphone input, toggled independently",
-        "Level meter for audio and microphone",
-        "Optional separate audio tracks",
-        "NVENC, QuickSync, AMF hardware encoding",
-        "Software fallback when no hardware available",
-        "H.264 in MP4, quality or bitrate targeted",
-        "Global hotkeys for start, stop, pause",
-        "Live status: elapsed time, file size, dropped frames",
-        "Countdown before recording, minimise to tray",
-        "Crash-safe: file on disk stays playable",
-        "Free space check before and during recording",
-        "Filename template, persisted settings",
-        "Jump to finished file when recording ends"
       ]
     }
   },
@@ -1090,15 +1066,15 @@
     },
     "points": {
       "tr": [
-        "14 açık kaynak depoyu tanıtan profil README'si",
-        "Masaüstü araçlar tablosu: VidShrink, Ghostlist, ProcWitness, Runly, Usb-Guard, Reclatch, Quizloop",
+        "Açık kaynak depoları tanıtan profil README'si",
+        "Masaüstü araçlar tablosu: VidShrink, Ghostlist, ProcWitness, Runly, Usb-Guard, Quizloop",
         "Öğrenme ve oyun projeleri: CodeXRay, Gothic 1 LockPicker",
         "Geliştirici araçları: Teknesyum Core, Teknesyum UI, RepoWarden",
         "Sponsor ve lisans rozetleri"
       ],
       "en": [
-        "Profile README showcasing 14 public repositories",
-        "Desktop tools table: VidShrink, Ghostlist, ProcWitness, Runly, Usb-Guard, Reclatch, Quizloop",
+        "Profile README showcasing the public repositories",
+        "Desktop tools table: VidShrink, Ghostlist, ProcWitness, Runly, Usb-Guard, Quizloop",
         "Learning and game projects: CodeXRay, Gothic 1 LockPicker",
         "Developer tools: Teknesyum Core, Teknesyum UI, RepoWarden",
         "Sponsor and license badges"

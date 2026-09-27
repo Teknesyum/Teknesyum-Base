@@ -22,6 +22,9 @@ function Write-Sha($file) {
 
 "Base $version"
 
+node scripts/catalog-audit.cjs
+if ($LASTEXITCODE -ne 0) { throw "catalog is out of date" }
+
 npx tauri build --no-bundle
 if ($LASTEXITCODE -ne 0) { throw "normal build failed" }
 $normal = Join-Path $out "Teknesyum-Base.exe"

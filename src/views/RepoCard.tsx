@@ -42,6 +42,7 @@ export function Uses({ repo, className }: { repo: Repo; className: string }) {
   if (!uses?.length) return <p className={className}>{repo.summary || repo.description || t('library.noDescription')}</p>;
   return (
     <section className={className + ' uses'} aria-label={t('library.uses')}>
+      {repo.lead ? <p className="uses__lead">{repo.lead}</p> : null}
       <h4 className="uses__title">{t('library.uses')}</h4>
       <ul className="points">
         {uses.map((p) => (

@@ -7,6 +7,7 @@ type Entry = {
   summary: { tr: string; en: string };
   points?: { tr: string[]; en: string[] };
   uses?: { tr: string[]; en: string[] };
+  lead?: { tr: string; en: string };
   icon?: string;
   shot?: string;
   fork?: Fork;
@@ -31,7 +32,7 @@ function hidden(repo: Repo): boolean {
 function enrichRepo(repo: Repo, lang: 'tr' | 'en'): Repo {
   const e = entries[repo.name];
   if (!e) return { ...repo, category: CATEGORIES.includes(repo.category) ? repo.category : 'other', summary: repo.description, tags: repo.topics.slice(0, 5) };
-  return { ...repo, category: e.category, summary: e.summary[lang] || repo.description, points: e.points?.[lang], uses: e.uses?.[lang], tags: e.tags[lang] ?? [] };
+  return { ...repo, category: e.category, summary: e.summary[lang] || repo.description, points: e.points?.[lang], uses: e.uses?.[lang], lead: e.lead?.[lang], tags: e.tags[lang] ?? [] };
 }
 
 export function mediaPath(repo: Repo, kind: 'icon' | 'shot'): string | undefined {

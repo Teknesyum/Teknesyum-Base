@@ -423,6 +423,14 @@ article.row > .card__foot {
   line-height: var(--tk-lh-heading);
 }
 
+.uses__lead {
+  margin: 0 0 var(--tk-sp-2);
+  color: var(--tk-text);
+  font-size: var(--tk-fs-2);
+  font-weight: var(--tk-fw-semi);
+  line-height: var(--tk-lh-heading);
+}
+
 .sheet__points {
   margin: 0;
 }

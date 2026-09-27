@@ -61,6 +61,7 @@ export type Repo = {
   summary?: string;
   points?: string[];
   uses?: string[];
+  lead?: string;
   tags?: string[];
   uiVersion?: string | null;
 };

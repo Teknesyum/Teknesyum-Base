@@ -383,12 +383,22 @@ article.row > .card__foot {
 }
 
 .points {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tk-sp-1);
+  display: block;
+  columns: 3 calc(var(--tk-measure) / 3.4);
+  column-gap: var(--tk-sp-5);
   padding-inline-start: var(--tk-sp-4);
   list-style: disc;
   overflow: visible;
+  -webkit-line-clamp: none;
+}
+
+.row .points {
+  max-width: none;
+}
+
+.points li {
+  break-inside: avoid;
+  margin-block-end: var(--tk-sp-1);
 }
 
 .points li::marker {

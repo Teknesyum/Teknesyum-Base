@@ -19,14 +19,16 @@
     },
     "points": {
       "tr": [
-        "Hesabın ortak topluluk dosyalarını barındırır",
-        "FUNDING, SECURITY, CONTRIBUTING, DCO içerir",
-        "Depolar kopyası yoksa buradan devralır"
+        "Tüm Teknesyum depoları için ortak sağlık dosyaları",
+        "FUNDING.yml, SECURITY.md, CONTRIBUTING.md, DCO",
+        "Profil README'sini profile/ altında barındırır",
+        "Bir deponun kendi kopyası varsa buradakini geçersiz kılar"
       ],
       "en": [
-        "Hosts the account's shared community files",
-        "Includes FUNDING, SECURITY, CONTRIBUTING, DCO",
-        "Repos without their own copy inherit these"
+        "Default community health files for all Teknesyum repos",
+        "FUNDING.yml, SECURITY.md, CONTRIBUTING.md, DCO",
+        "Hosts the profile README under profile/",
+        "A repo's own copy overrides the one here"
       ]
     }
   },
@@ -54,16 +56,28 @@
     "shot": "docs/ui-denetim/2026-09-27/b3-tkp-varsayilan.png",
     "points": {
       "tr": [
-        "Sendroma göre ampirik antibiyotik önerisi bulur",
-        "Alerji, gebelik, böbrek kısıtlarını gerekçesiyle eler",
-        "Reçete yazmaz, yapay zekâ kullanmaz",
-        "Erken aşamada, bilgi tabanı henüz boş"
+        "Sendrom seçip adım adım soruyla daralan karar ağacı",
+        "İlk seçenek, alternatif rejimler, doz, yol, süre gösterimi",
+        "Her satırda kaynak bölüm, tarih ve inceleme tarihi",
+        "Alerji, gebelik, böbrek işlevine göre sert kısıtlar",
+        "Kapsanan spektrumu gösteren şerit",
+        "Bilgi tabanı koddan ayrı JSON kaynağında",
+        "Yalnız kılavuzu yansıtır, tanı ya da skor koymaz",
+        "Özel başlık çubuğu: sürükle, Aero Snap, Alt+F4",
+        "Windows masaüstü ve Android sürümü",
+        "Türkçe ve İngilizce aynı veriden"
       ],
       "en": [
-        "Finds empiric antibiotic advice by syndrome",
-        "Filters unsuitable regimens with allergy, renal reasons",
-        "Writes no prescriptions, uses no AI",
-        "Early stage, knowledge base still empty"
+        "Step-by-step syndrome decision path",
+        "First choice, alternatives, dose, route, duration",
+        "Every line cites source section and review date",
+        "Hard constraints for allergy, pregnancy, renal function",
+        "Spectrum strip showing regimen coverage",
+        "Knowledge base kept as data, not code",
+        "Mirrors the guideline only, no diagnosis or scoring",
+        "Custom title bar with drag, Aero Snap, Alt+F4",
+        "Windows desktop and Android builds",
+        "Turkish and English from the same data"
       ]
     }
   },
@@ -91,16 +105,22 @@
     "shot": "docs/ui-denetim/2026-09-27-tur2/liste-a-150-sonra.png",
     "points": {
       "tr": [
-        "Ham ameliyat dökümünü günlük listeye çevirir",
-        "Planlama, analiz ve PNG dışa aktarma sunar",
-        "Hasta verisi yerelde kalır, dışarı çıkmaz",
-        "Özel, yalnız belirli kişilerle paylaşılan araç"
+        "HBYS ham .xls çıktısını günlük A/B Blok listesine dönüştürür",
+        "Ameliyat planlama ve analiz görünümleri",
+        "Listeyi PNG olarak dışa aktarır",
+        "Makro çalışma kitabının yerini alır",
+        "Hasta verisini hiçbir yere göndermez, .xls dosyaları yerelde kalır",
+        "Kurulan her makine yeni sürümü otomatik çeker ve günceller",
+        "Türkçe arayüz, yalnız yetkili kişilerle paylaşılan özel depo"
       ],
       "en": [
-        "Turns raw surgery export into daily list",
-        "Adds planning, analytics and PNG export",
-        "Patient data stays local, never leaves",
-        "Private tool shared only with named people"
+        "Turns raw HBYS surgery export (.xls) into a daily OR list",
+        "Planning and analytics views for the schedule",
+        "Exports the list as PNG",
+        "Replaces the old macro workbook",
+        "Never sends patient data anywhere, .xls files stay local",
+        "Installed machines auto-pull and update to new releases",
+        "Turkish UI, private repo shared only with named people"
       ]
     }
   },
@@ -128,16 +148,32 @@
     "shot": "docs/ui-denetim/2026-09-27-2/gorevlendirme/asistanlar-100-sonra.png",
     "points": {
       "tr": [
-        "Aylık nöbet listesini kısıtlara göre üretir",
-        "Boş kalan görevleri kıdeme göre atar",
-        "Veriler git ile makineler arasında eşitlenir",
-        "Özel, anesteziyoloji asistanlarına yönelik depo"
+        "Aylık nöbet ve izin listesinden boş zorunlu yerlere kişi atar",
+        "Kıdem ve dengeli dağılım gözeten atama motoru",
+        "Toplu/CLI ile en dengeli ağırlığı otomatik bulma",
+        "Gösterge panelinde gün, ay matrisi ve uyarı şeridi",
+        "Sürükle-bırak ile kişi/yer değişimi",
+        "Resmi listeyi görsel olarak kopyalama ve QR ile paylaşma",
+        "Nöbet listesini sıfırdan üreten ayrı motor (kota, nöbet ertesi izni, istek/izin)",
+        "CLI ve arayüz motoru birebir aynı sonucu üretir",
+        "Değişim ve refakat kurallarını hesaba katar",
+        "Veri ve ilerleme makineler arası git ile otomatik senkronize olur",
+        "Tamamen çevrimdışı çalışır",
+        "Özel depo, yalnız yetkili kişilerle paylaşılır"
       ],
       "en": [
-        "Builds monthly duty roster within constraints",
-        "Assigns leftover posts by seniority",
-        "Data syncs between machines via git",
-        "Private repo for anaesthesiology residents"
+        "Assigns staff to unfilled mandatory duty slots from monthly roster",
+        "Seniority-aware, balanced assignment engine",
+        "Batch/CLI mode auto-searches the most balanced weighting",
+        "Dashboard with day view, month grid and warning strip",
+        "Drag-and-drop to swap people or posts",
+        "Copies the official list as an image and shares it via QR",
+        "Separate engine builds the on-call roster from scratch (quotas, post-duty leave, requests)",
+        "CLI and UI engines produce byte-identical results",
+        "Accounts for shift swaps and companion/backup assignments",
+        "Data and progress auto-sync across machines via git",
+        "Works fully offline",
+        "Private repo shared only with authorized people"
       ]
     }
   },
@@ -165,16 +201,40 @@
     "shot": "docs/ui-denetim/2026-09-24/katalog-100-sonra.png",
     "points": {
       "tr": [
-        "Algoritmaların her adımını görselleştirir",
-        "60 belirlenimci simülatör ve sürükle bırak düzenleyici",
-        "Yerel yapay zekâ rehberli tur sunar",
-        "Tarayıcı ve Windows masaüstünde çalışır"
+        "Algoritmaları adım adım görselleştirir",
+        "60 benzetim: graf, sıralama, DP, dizgi, ağaç, sayı",
+        "En kısa yol, MST, SCC, maksimum akış, eşleme",
+        "Değişkenler ve iz eksiksiz, kesilmeden",
+        "Sürüklenebilir düğümlü görsel ağaç ve graf kurucu",
+        "Yönlü ve ağırlıklı kenarlar, JSON içe-dışa aktarma",
+        "Zaman çizelgesiyle oynatma ve satır vurgusu",
+        "Cihaz içinde çalışan isteğe bağlı yapay zekâ asistanı",
+        "Ollama ve LM Studio gibi yerel sunuculara bağlanır",
+        "Asistan önemli adımlarda rehberli tur yapar",
+        "Titan Modu: doğrulanmış, geri alınabilir değişiklikler",
+        "Değişken sabitleme ve canlı izleme şeridi",
+        "Boyutlanıp katlanabilen paneller",
+        "CodeXRay Radyo",
+        "Tarayıcıda ve Windows masaüstünde",
+        "Anında Türkçe-İngilizce geçişi"
       ],
       "en": [
-        "Visualizes every step of an algorithm",
-        "Has 60 deterministic simulators, drag-drop editor",
-        "Optional local AI gives guided tours",
-        "Runs in browser and on Windows desktop"
+        "Visualises algorithms one step at a time",
+        "60 simulators: graphs, sorting, DP, strings, trees, numbers",
+        "Shortest paths, MST, SCC, max flow, matching",
+        "Complete variables and trace, never truncated",
+        "Visual tree and graph builder with draggable nodes",
+        "Directed and weighted edges, JSON import and export",
+        "Timeline playback and line highlighting",
+        "Optional on-device AI assistant",
+        "Connects to local servers such as Ollama and LM Studio",
+        "The assistant gives guided tours of key steps",
+        "Titan Mode: verified, undoable changes",
+        "Variable pins and a live watch strip",
+        "Resizable, collapsible panels",
+        "CodeXRay Radio",
+        "In the browser and on Windows desktop",
+        "Instant Turkish-English switching"
       ]
     }
   },
@@ -202,16 +262,40 @@
     "shot": "docs/ui-denetim/2026-09-27/genel-100-sonra.png",
     "points": {
       "tr": [
-        "Kullanılmayan dosyaları amacına göre listeler",
-        "Silineni karantinaya alır, geri alınabilir",
-        "Kaldırma sonrası artıkları da bulur",
-        "Telemetri yok"
+        "Diski iki tarayıcıyla okur: hızlı ve NTFS MFT",
+        "Dosyaları amaca göre gruplar: oyun, program, film, önbellek",
+        "Boyut ve son kullanıma göre silinebilecekleri sıralar",
+        "Steam, Epic, GOG ve Windows kayıtlarından kullanım okur",
+        "Yapay zekâ modeli ve geliştirici önbelleklerini tanır",
+        "Silinen öğeler karantinaya gider, geri alınabilir",
+        "7 gün sonra karantinayı kendiliğinden boşaltır",
+        "Win32, MSI ve MSIX programları kaldırır",
+        "Kaldırma sonrası artıkları bulup puanlar",
+        "23 kurallı temizlik: tarayıcı, geçici, döküm dosyaları",
+        "Windows Update ve DISM bileşen temizliği",
+        "Korumalı sistem yollarına asla dokunmaz",
+        "Tıklayıp derine inilen ağaç haritası",
+        "Tek tıkla kaldırma, geri al bildirimi",
+        "İmza doğrulamalı kendi kendini güncelleme",
+        "Türkçe ve İngilizce, Windows 10/11"
       ],
       "en": [
-        "Lists unused files grouped by purpose",
-        "Quarantines removals so they're reversible",
-        "Also finds post-uninstall leftovers",
-        "No telemetry"
+        "Reads the disk with two scanners: fast and NTFS MFT",
+        "Groups files by purpose: games, programs, films, caches",
+        "Ranks removable items by size and last use",
+        "Reads usage from Steam, Epic, GOG and Windows records",
+        "Recognises AI model and developer caches",
+        "Removed items go to quarantine and can be restored",
+        "Empties quarantine on its own after 7 days",
+        "Uninstalls Win32, MSI and MSIX programs",
+        "Finds and scores leftovers after uninstall",
+        "23-rule cleaning: browser, temp and dump files",
+        "Windows Update and DISM component cleanup",
+        "Never touches protected system paths",
+        "Treemap you click to drill down",
+        "One-click removal with an undo toast",
+        "Signature-verified self-update",
+        "Turkish and English, Windows 10/11"
       ]
     }
   },
@@ -239,16 +323,32 @@
     "shot": "assets/ghostlist-english-ui.png",
     "points": {
       "tr": [
-        "Kaldırma sonrası kalan artıkları bulur",
-        "Her bulguyu kanıt ve güven puanıyla gösterir",
-        "Yedekli ve geri alınabilir şekilde temizler",
-        "Komut satırı sürümü de vardır"
+        "Kaldırılmış programların artıklarını (kayıt, kısayol, görev) tarar",
+        "Her bulgu için kanıt listesi ve güven skoru gösterir",
+        "Okunamayan yerleri eksik değil belirsiz sayar",
+        "Toplu düzeltme yalnız yüksek güven ve çift kanıtlı bulgularda",
+        "Silmeden önce her şeyi yedekler, geri alınabilir",
+        "Kaldırma komutlarını yalnız çözer, çalıştırmaz",
+        "MSIX paketlerini asla kendisi kaldırmaz, komutu gösterir",
+        "Düzeltmeden önce sistem geri yükleme noktası ister",
+        "Komut satırı arayüzü: tara, düzelt, geri yükle, JSON çıktı",
+        "Kullanıcı verilerine (belgeler, kayıtlı oyun) hiç dokunmaz",
+        "Türkçe/İngilizce arasında anında dil değişimi",
+        "Yönetici olmadan kurulum, gerektiğinde yönetici yeniden başlatma"
       ],
       "en": [
-        "Finds leftovers after an uninstall",
-        "Shows each finding with evidence, confidence score",
-        "Cleans with an undoable backup",
-        "Also ships a command-line version"
+        "Scans leftovers from uninstalled programs (registry, shortcuts, tasks)",
+        "Shows an evidence list and confidence score per finding",
+        "Treats unreadable data as inconclusive, not missing",
+        "Bulk fix only for high-confidence, dual-evidence findings",
+        "Backs up everything before deleting, fully reversible",
+        "Resolves uninstall commands but never runs them",
+        "Never removes MSIX packages itself, just shows the command",
+        "Requests a system restore point before bulk fixes",
+        "CLI: scan, fix, restore, JSON output",
+        "Never touches user data like documents or saved games",
+        "Instant Turkish/English language switch",
+        "Installs without admin rights, restarts as admin when needed"
       ]
     }
   },
@@ -274,16 +374,26 @@
     },
     "points": {
       "tr": [
-        "Gothic 1 Remake kilit bulmacasını çözer",
-        "En kısa hamle dizisini bulup uygulayabilir",
-        "Oyun içinde F9 ile açılıp kapanır",
-        "Otomatik ve gizli çalışan kipleri var"
+        "Gothic 1 Remake kilit açma mini oyununu çözer",
+        "Oyun penceresi üstünde saydam kaplama",
+        "Levha başlangıç konumu ve etkileşim yönü girişi",
+        "En kısa hamle dizisini hesaplar",
+        "Çözümü WASD tuşlarıyla otomatik uygular",
+        "Ekran şablonunu tanıyıp paneli otomatik gösterir (Otomatik Mod)",
+        "Pasif modda köşe imleci gizli kalır, üstüne gelince açılır",
+        "Kısayol tuşlarıyla panel açma ve acil durdurma",
+        "Her açılışta güncelleme kontrolü"
       ],
       "en": [
-        "Solves the Gothic 1 Remake lock puzzle",
-        "Finds and can apply shortest move sequence",
-        "Toggles in game with F9 hotkey",
-        "Has auto and hidden passive modes"
+        "Solves the Gothic 1 Remake lock-picking mini-game",
+        "Transparent overlay on top of the game window",
+        "Enter each plate's start position and interaction directions",
+        "Computes the shortest move sequence",
+        "Auto-applies the solution via WASD keystrokes",
+        "Auto Mode detects the lock screen and shows the panel",
+        "Passive Mode keeps the corner cue hidden until hovered",
+        "Hotkeys to toggle the panel and emergency-stop",
+        "Checks for updates on every launch"
       ]
     }
   },
@@ -309,16 +419,30 @@
     },
     "points": {
       "tr": [
-        "Kulaklık pil düzeyini sistem tepsisinde gösterir",
-        "Kırk kadar kulaklık modelini tanır",
-        "Arctis Nova Pro için tek pencerede ayarlar",
-        "Kurulum gerektirmeyen tek exe"
+        "Sistem tepsisinde pil yüzdesini rakam olarak gösterir",
+        "Şarj ve düşük pil için renk ve uyarı kodlaması",
+        "Nova Pro için tam panel: pil, ses, ANC, şeffaflık, mikrofon",
+        "Kulaklık-Windows arası ses seviyesi aktarımı (%20-80)",
+        "Cihazın %12,5'lik adımları arası %1 pil tahmini",
+        "Üç kaynaktan pil okuma: doğrudan HID, HeadsetControl, Bluetooth",
+        "HeadsetControl ile ~40 kablolu/dongle kulaklık desteği",
+        "Tam klavye kontrolü ve ekran ölçeğine uyum",
+        "Ayarlar cihaza kaydedilir, güç kesintisinde kalıcı",
+        "Windows ile otomatik başlatma",
+        "Bağımlılıksız, .NET Framework 4 ile çalışır"
       ],
       "en": [
-        "Shows headset battery level in tray",
-        "Recognizes about forty headset models",
-        "Gathers Arctis Nova Pro settings in one window",
-        "Single exe with no install"
+        "Tray icon shows battery percentage as a digit",
+        "Color and warning coding for charge and low battery",
+        "Full panel for Nova Pro: battery, volume, ANC, transparency, mic",
+        "Volume transfer between headset and Windows (20-80%)",
+        "1% battery estimate between the device's 12.5% steps",
+        "Reads battery from three sources: direct HID, HeadsetControl, Bluetooth",
+        "Supports about 40 wired/dongle headsets via HeadsetControl",
+        "Full keyboard control and display-scale awareness",
+        "Settings saved to the device, survive power cycles",
+        "Starts automatically with Windows",
+        "Zero dependencies, runs on .NET Framework 4"
       ]
     }
   },
@@ -344,16 +468,24 @@
     },
     "points": {
       "tr": [
-        "Eseri özgün sayfa düzenini koruyarak çevirir",
-        "Kaynak metni kutu içinde çeviriyle değiştirir",
-        "Taranmış PDF ve görselleri OCR'dan geçirir",
-        "Depoda yalnız araçlar bulunur, eserler yerel kalır"
+        "Kaynak sayfa düzenini piksel piksel koruyarak çeviri",
+        "Metni aynı kutuya sığdırarak yazar, görsel ve tablolar dokunulmaz kalır",
+        "Taranmış PDF ve görsellerde OCR, EPUB/DOCX yeniden akış",
+        "Her esere özel kural, terim sözlüğü ve bellek",
+        "Birim çıkarma, çeviri, kural tabanlı QA, mizanpaj, bölüm ayırma hattı",
+        "Tek bölümlük pilotla önce token/süre/maliyet ölçümü",
+        "Yan yana görsel kalite kontrolü",
+        "Eser dosyaları depoya girmez, yerelde ve git-ignored kalır"
       ],
       "en": [
-        "Translates a work while keeping original layout",
-        "Replaces source text in place within boxes",
-        "Runs scanned PDFs and images through OCR",
-        "Repo holds only tools, works stay local"
+        "Translates while preserving source layout pixel-for-pixel",
+        "Redacts source text and writes translation into the same box, images/tables untouched",
+        "OCR for scanned PDFs/images, reflow for EPUB/DOCX",
+        "Per-work rules, terminology glossary and memory",
+        "Pipeline: unit extraction, translation, rule-based QA, mirror typeset, chapter split",
+        "Single-chapter pilot measures token/time/cost before scaling",
+        "Side-by-side visual QA",
+        "Source works stay local and git-ignored, never committed"
       ]
     }
   },
@@ -381,16 +513,34 @@
     "shot": "docs/screenshots/procwitness-main-v090.jpg",
     "points": {
       "tr": [
-        "Süreç davranışını sessizce kayıt altına alır",
-        "Kaydı yapay zekâya verilecek kanıta çevirir",
-        "Ağır ilişkilendirmeyi cihaz üzerinde yapar",
-        "Tek satır komutla kurulur, .NET gerektirmez"
+        "Süreçleri zaman içinde izleyip yerelde kanıt paketi oluşturur",
+        "Anlık tarama: risk skoru, dosya yolu, SHA-256, imzalı yayıncı",
+        "Zamanlı kayıtla (1-20 dk veya özel süre) davranış korelasyonu",
+        "Görev Yöneticisi kaçış desenlerini tespit eder",
+        "Kalıcılık envanteri: başlangıç, görev, servis, cron, launchd",
+        "Kaydedilen taban ile karşılaştırma: eklenen/silinen/değişen",
+        "Windows'ta ETW ile süreç başına yükleme/indirme trafiği",
+        "Yapay zekaya yapıştırılacak hazır analiz istemi üretir",
+        "Codex ve Claude Code için MCP sunucusu",
+        "Opsiyonel doğrudan AI raporu, anahtar güvenli depoda saklanır",
+        "Windows, Linux, macOS desteği",
+        "Komut satırı arayüzü, JSON çıktı",
+        "Süreç öldürmez, dosya silmez, karantinaya almaz"
       ],
       "en": [
-        "Records process behaviour silently",
-        "Turns the record into AI-ready evidence",
-        "Does heavy correlation on the device",
-        "Installs with one command, no .NET needed"
+        "Records process behavior over time into a local evidence bundle",
+        "Instant scan: risk score, file path, SHA-256, signed publisher",
+        "Timed capture (1-20 min or custom) correlates behavior",
+        "Detects Task Manager evasion patterns",
+        "Persistence inventory: startup, tasks, services, cron, launchd",
+        "Baseline comparison shows added/removed/changed entries",
+        "Per-process upload/download bytes via ETW on Windows",
+        "Generates a ready-to-paste AI analysis prompt",
+        "MCP server for Codex and Claude Code",
+        "Optional direct AI report, key stored securely",
+        "Supports Windows, Linux, macOS",
+        "CLI with JSON output",
+        "Never kills processes, deletes files, or quarantines anything"
       ]
     }
   },
@@ -418,16 +568,32 @@
     "shot": "docs/ui-denetim/2026-09-27/kutuphane-100-sonra.png",
     "points": {
       "tr": [
-        "Kitap ya da PDF'i soru modülüne çevirir",
-        "Yanlış seçeneği düşürüp özel açıklama gösterir",
-        "Zamanlamayı FSRS-6 ile ayarlar",
-        "Windows, macOS ve Linux masaüstü uygulaması"
+        "Kitaptan üretilen soru modülüyle aralıklı tekrar",
+        "Soru önce seçeneksiz gösterilir, önce düşünmeye teşvik eder",
+        "Yanlış cevaba o seçeneğe özel açıklama yazılır",
+        "Çözüm kaynağıyla oynatılır: dosya, sayfa, alıntı",
+        "Kitap diskteyse pasaj vurgulu sayfa görüntüleyici açılır",
+        "FSRS-6 ile anlaşıldı/anlaşılmadı zamanlamalı tekrar",
+        "Soru bankası her sorunun durumunu listeler, bozuk soru işaretlenir",
+        "PDF'ten modül üretim hattı (quizforge)",
+        "Taşıma paketiyle ilerleme, modül ve ayarları başka bilgisayara aktarma",
+        "Klavye ile tam kontrol",
+        "Windows, macOS, Linux masaüstü sürümleri",
+        "Otomatik güncelleme kontrolü"
       ],
       "en": [
-        "Turns a book or PDF into a question module",
-        "Drops wrong options and shows tailored explanations",
-        "Schedules repetition with FSRS-6",
-        "Desktop app for Windows, macOS and Linux"
+        "Spaced-repetition quizzes generated from a book",
+        "Question shown without options first, to encourage thinking",
+        "Wrong answers get an explanation for that specific mistake",
+        "Solution replays with its source: file, pages, quote",
+        "Built-in page viewer highlights the passage if the book is local",
+        "FSRS-6 scheduling with understood/not-understood tracking",
+        "Question bank lists every question's state, flags broken ones",
+        "PDF-to-module generation pipeline (quizforge)",
+        "Move-to-another-computer package for progress, modules, settings",
+        "Full keyboard control",
+        "Windows, macOS, Linux desktop builds",
+        "Automatic update checks"
       ]
     }
   },
@@ -451,16 +617,44 @@
     },
     "points": {
       "tr": [
-        "Ekranı kaydedip dosyayı doğrudan verecek",
-        "Tam ekran, pencere ve bölge kaydı planlanıyor",
-        "Donanım kodlama ve genel kısayollar hedefleniyor",
-        "Şu an yalnız planlama aşamasında"
+        "Tam ekran, tek pencere ya da bölge kaydı",
+        "Birden çok monitör için açık seçim",
+        "İmleç göster/gizle, tıklama vurgusu",
+        "Kare hızı ve çıktı ölçeği seçilebilir",
+        "WASAPI loopback ile sistem sesi kaydı",
+        "Mikrofon girişi, ayrı ayrı açılıp kapanır",
+        "Ses ve mikrofon için seviye göstergesi",
+        "İsteğe bağlı ayrı ses izleri",
+        "NVENC, QuickSync, AMF donanım kodlama",
+        "Donanım yoksa yazılım kodlamaya düşüş",
+        "MP4 içinde H.264, kalite ya da bit hızı hedefi",
+        "Başlat/durdur/duraklat için genel kısayollar",
+        "Süre, dosya boyutu, düşen kare canlı gösterimi",
+        "Kayıt öncesi geri sayım, tepsiye küçültme",
+        "Çökme sonrası oynatılabilir dosya",
+        "Kayıt öncesi ve sırasında boş alan kontrolü",
+        "Dosya adı şablonu, kalıcı ayarlar",
+        "Kayıt bitince dosyaya atlama"
       ],
       "en": [
-        "Will record the screen and hand you the file",
-        "Plans full-screen, window and region capture",
-        "Targets hardware encoding and global hotkeys",
-        "Currently only in the planning stage"
+        "Full screen, single window or region capture",
+        "Multiple monitors with explicit picker",
+        "Cursor show/hide, click highlighting",
+        "Selectable frame rate and output scale",
+        "System audio via WASAPI loopback",
+        "Microphone input, toggled independently",
+        "Level meter for audio and microphone",
+        "Optional separate audio tracks",
+        "NVENC, QuickSync, AMF hardware encoding",
+        "Software fallback when no hardware available",
+        "H.264 in MP4, quality or bitrate targeted",
+        "Global hotkeys for start, stop, pause",
+        "Live status: elapsed time, file size, dropped frames",
+        "Countdown before recording, minimise to tray",
+        "Crash-safe: file on disk stays playable",
+        "Free space check before and during recording",
+        "Filename template, persisted settings",
+        "Jump to finished file when recording ends"
       ]
     }
   },
@@ -486,16 +680,36 @@
     },
     "points": {
       "tr": [
-        "Hesaptaki depoların yayın katmanını denetler",
-        "Sürüm, README, lisans ve kırık bağlantıları bulur",
-        "Bulguları önem sırasına ve komutla raporlar",
-        "Yıkıcı hiçbir işlemi kendisi yapmaz"
+        "Hesaptaki tüm depoları tek geçişte tarar",
+        "Ham gh api çıktısını kanıt olarak saklar",
+        "Bulguları önem derecesine göre sıralar",
+        "Sürüm tutarsızlıklarını çapraz kontrol eder",
+        "Belgeleri belge olarak okur, kırık bağlantı bulur",
+        ".github deposu eksikliği gibi hesap düzeyi kontrol",
+        "Depo başına kopyala-yapıştır düzeltme promptu",
+        "Her depoya denetim notu bırakır",
+        "Yıkıcı işlemleri uygulamadan onaya sunar",
+        "Kuru koşum ve rapor dosyası üretir",
+        "--issues ile depo başına issue açar ve günceller",
+        "--repo ile tek depo denetimi",
+        "Kurallar rules.json ile özelleştirilir",
+        "İngilizce ve Türkçe rapor çıktısı"
       ],
       "en": [
-        "Audits the publishing layer of an account's repos",
-        "Flags versions, README, licence, broken links",
-        "Reports findings by severity with fix commands",
-        "Never runs a destructive action itself"
+        "Scans every repository in the account in one pass",
+        "Keeps raw gh api output as evidence",
+        "Groups findings by severity",
+        "Cross-checks version numbers across sources",
+        "Reads documents as documents, finds broken links",
+        "Account-level checks like a missing .github repo",
+        "Copy-paste fix prompt per repository",
+        "Leaves an audit note in each repository",
+        "Queues destructive actions for approval, never runs them",
+        "Dry run prints and writes a report file",
+        "--issues opens and updates one issue per repository",
+        "--repo audits a single repository",
+        "Rules customizable via rules.json",
+        "English and Turkish report output"
       ]
     }
   },
@@ -523,16 +737,40 @@
     "shot": "docs/screenshots/runly-settings-v0.1.3.png",
     "points": {
       "tr": [
-        "Betikleri çift tıklamayla programa çevirir",
-        "Doğru yorumlayıcıyı bulup güvenlik denetimi yapar",
-        "Sağ tık menüsüne çalıştırma seçeneği ekler",
-        "Windows 10 ve 11 için"
+        "Betiğe doğru yorumlayıcıyı kendisi bulur",
+        "Önce shebang satırını, sonra uzantıyı okur",
+        "Eksik yorumlayıcıyı tahmin etmeden bildirir",
+        "Çalıştırmadan önce internet işaretini denetler",
+        "Güvenilir klasör ve dosya listesi",
+        "Ayarlanabilir güvenlik modu",
+        "Sağ tık menüsündeki tüm girdileri listeler",
+        "İstenmeyen sağ tık girdilerini gizler",
+        "Kayıt defteri değişikliklerini yedekler",
+        "Kaldırınca eski durumu geri yükler",
+        "Dosyayı kilitleyen süreci bulup kapatmayı önerir",
+        "Hata kodunda konsol penceresini açık tutar",
+        "Her uzantının bağlı olup olmadığını gösterir",
+        "Tek PowerShell komutuyla, SHA-256 doğrulamalı kurulum",
+        "Açılışta güncelleme denetimi",
+        "Windows 10/11, Türkçe arayüz"
       ],
       "en": [
-        "Runs scripts like programs on double-click",
-        "Finds the right interpreter, checks safety first",
-        "Adds a run option to the context menu",
-        "Built for Windows 10 and 11"
+        "Finds the right interpreter for a script itself",
+        "Reads the shebang first, then the extension",
+        "Reports a missing interpreter instead of guessing",
+        "Checks the downloaded-file mark before running",
+        "Trusted folder and file list",
+        "Configurable security mode",
+        "Lists every entry in the right-click menu",
+        "Hides unwanted right-click entries",
+        "Backs up registry changes",
+        "Restores the previous state on uninstall",
+        "Finds the process locking a file and offers to end it",
+        "Keeps the console open on an error exit code",
+        "Shows whether each extension is really bound",
+        "One PowerShell command, SHA-256 verified install",
+        "Update check on startup",
+        "Windows 10/11, Turkish interface"
       ]
     }
   },
@@ -554,16 +792,18 @@
     },
     "points": {
       "tr": [
-        "Teknesyum hesabının profil README'sidir",
-        "Açık projeleri kategorilere ayırıp listeler",
-        "Her proje için tek satırlık açıklama içerir",
-        "Çalıştırılacak bir programı yoktur"
+        "14 açık kaynak depoyu tanıtan profil README'si",
+        "Masaüstü araçlar tablosu: VidShrink, Ghostlist, ProcWitness, Runly, Usb-Guard, Reclatch, Quizloop",
+        "Öğrenme ve oyun projeleri: CodeXRay, Gothic 1 LockPicker",
+        "Geliştirici araçları: Teknesyum Core, Teknesyum UI, RepoWarden",
+        "Sponsor ve lisans rozetleri"
       ],
       "en": [
-        "Is the README for the Teknesyum profile",
-        "Lists public projects grouped by category",
-        "Gives each project a one-line description",
-        "Has no program to run itself"
+        "Profile README showcasing 14 public repositories",
+        "Desktop tools table: VidShrink, Ghostlist, ProcWitness, Runly, Usb-Guard, Reclatch, Quizloop",
+        "Learning and game projects: CodeXRay, Gothic 1 LockPicker",
+        "Developer tools: Teknesyum Core, Teknesyum UI, RepoWarden",
+        "Sponsor and license badges"
       ]
     }
   },
@@ -591,16 +831,44 @@
     "shot": "assets/screens/library.png",
     "points": {
       "tr": [
-        "GitHub hesabındaki programları tek listede gösterir",
-        "Windows derlemelerini indirip yönetici izinsiz kurar",
-        "Kurulu ve yeni sürümü listede işaretler",
-        "GitHub'a hiçbir şey yazmaz"
+        "Bir GitHub hesabının programlarını tek kütüphanede toplar",
+        "Kart ve liste görünümü",
+        "Ad, açıklama ve etikette arama",
+        "Kategori, dil, etiket ve duruma göre süzme",
+        "Yıldız, tarih ya da ada göre sıralama",
+        "Canlı simge ve tam boy ekran görüntüleri",
+        "README ve sürüm geçmişi detay panelinde",
+        "Tek tıkla kurma, güncelleme ve kaldırma",
+        "SHA-256 doğrulamalı indirme",
+        "Kurulu programları tek tıkla açma",
+        "Hepsini güncelle düğmesi",
+        "Masaüstü kısayolu ve GitHub sayfası düğmesi",
+        "Depoyu git ile istediğin klasöre klonlama",
+        "Kendini güncelleyen uygulama",
+        "Çevrimdışıyken son listeyi gösterir",
+        "Birden çok hesap, sistem tepsisine küçülme",
+        "Yönetici izni istemeden kullanıcı kurulumu",
+        "Türkçe ve İngilizce, Windows"
       ],
       "en": [
-        "Lists programs published in a GitHub account",
-        "Downloads and installs Windows builds without admin",
-        "Marks installed and available new versions",
-        "Never writes anything back to GitHub"
+        "Gathers a GitHub account's programs in one library",
+        "Card and list views",
+        "Search by name, description and tags",
+        "Filter by category, language, tag and state",
+        "Sort by stars, date or name",
+        "Live icons and full-size screenshots",
+        "README and release history in the detail sheet",
+        "One-click install, update and uninstall",
+        "SHA-256 verified downloads",
+        "Open installed programs in one click",
+        "Update-all button",
+        "Desktop shortcut and GitHub page buttons",
+        "Clone a repository with git to any folder",
+        "Updates itself",
+        "Shows the last list while offline",
+        "Several accounts, minimise to tray",
+        "Per-user install without admin rights",
+        "Turkish and English, Windows"
       ]
     }
   },
@@ -624,16 +892,26 @@
     },
     "points": {
       "tr": [
-        "Teknesyum Base'in arşivlenmiş eski sürümü",
-        "Çok ajanlı iş dağıtımı ve neon arayüz içeriyordu",
-        "İşlevleri Core ve UI'a bölünerek ayrıldı",
-        "Yalnız geçmiş için saklanıyor, güncellenmiyor"
+        "Arşivlendi: Teknesyum-Core ve Teknesyum-UI olarak bölündü",
+        "Büyük işi sözleşmelere bölüp paralel ajanlara verir",
+        "Her sözleşmeyi bağımsız denetçi doğrular",
+        "İşin boyunu kendisi sınıflandırır",
+        "Takılan ajanları kendiliğinden yeniden başlatır",
+        "Eco, normal ve premium profilleri",
+        "Oturum kaydetme ve yükleme",
+        "Telefondan uzaktan yönetim",
+        "Bağlam ve ilerlemeyi gösteren durum çubuğu"
       ],
       "en": [
-        "Is the archived old edition of Teknesyum Base",
-        "Had a multi-agent work relay and neon UI",
-        "Split into separate Core and UI projects",
-        "Kept for history only, receives no updates"
+        "Archived: split into Teknesyum-Core and Teknesyum-UI",
+        "Splits big jobs into contracts for parallel agents",
+        "An independent auditor verifies every contract",
+        "Classifies the size of a job itself",
+        "Restarts stalled agents on its own",
+        "Eco, normal and premium profiles",
+        "Session save and load",
+        "Remote control from a phone",
+        "Statusline with context and progress"
       ]
     }
   },
@@ -659,16 +937,44 @@
     },
     "points": {
       "tr": [
-        "Claude Code için oturum token'larını sayar",
-        "Çok ajanlı çalışmayı düzenleyip iş kapısı tutar",
-        "Tehlikeli komutları durduran yasak listesi içerir",
-        "Cursor ve Gemini CLI'da da çalışır"
+        "Değişen dosya ve satırları sessizce sayar",
+        "Eşikte tek satırla uyarır",
+        "Durum çubuğunda dosya, test ve bağlam yüzdesi",
+        "Sonsuz bekleme döngülerini engeller",
+        "Tehlikeli komutları gerekçeyle reddeder",
+        "Oturum sonunda devir teslim dosyası yazar",
+        "İş listesini izler, açık kalanı deftere taşır",
+        "Kod değişince test ya da derleme kanıtı ister",
+        "Arayüz değişince gerçek pencere incelemesi ister",
+        "Yanıt dilini denetler",
+        "Onay beklerken sesli uyarı",
+        "1.968 kitaplık yerel kütüphanede arama",
+        "Özel raf, ajans rolleri ve danışma kayıtları",
+        "İçe aktarma grafiği: merkez, döngü, yetim dosya",
+        "Hata, yöntem ve teklif günlükleri",
+        "Proje sağlık taraması",
+        "Sürüm yükseltip GitHub yayını açar",
+        "Claude Code, Cursor ve Gemini CLI"
       ],
       "en": [
-        "Counts session tokens for Claude Code",
-        "Organises multi-agent work with a job gate",
-        "Includes a denylist stopping dangerous commands",
-        "Also runs inside Cursor and Gemini CLI"
+        "Silently counts changed files and lines",
+        "Speaks one line at a threshold",
+        "Files, tests and context percent in the statusline",
+        "Blocks unbounded wait loops",
+        "Denies destructive commands with a reason",
+        "Writes a handoff file at session end",
+        "Tracks the job list, carries open items to a ledger",
+        "Asks for test or build evidence after code changes",
+        "Asks for a real-window review after UI changes",
+        "Checks the reply language",
+        "Chime while waiting for approval",
+        "Search across a 1,968-book local library",
+        "Private shelf, agency roles and consult records",
+        "Import graph: hubs, cycles, orphan files",
+        "Bug, method and proposal logs",
+        "Project health scan",
+        "Bumps versions and publishes GitHub releases",
+        "Claude Code, Cursor and Gemini CLI"
       ]
     }
   },
@@ -692,16 +998,16 @@
     },
     "points": {
       "tr": [
-        "Projelerin gizli dosyalarını özel depoda tutar",
-        "Her proje kendi klasöründe seyrek çekimle alınır",
-        "Hiçbir şey açık depoya geçmez",
-        "Base Pro derlemesini de burada yayımlar"
+        "Her proje için özel dosyaları tek depoda tutar",
+        "Proje adına göre kök klasör düzeni",
+        "Sparse-checkout ile parça parça çekilir",
+        "Çalışma usulünü oku-private.md içinde belgeler"
       ],
       "en": [
-        "Holds secret project files in a private repo",
-        "Each project's folder is pulled via sparse checkout",
-        "Nothing here ever reaches a public repo",
-        "Also publishes the Base Pro build here"
+        "Holds private files for every project in one repo",
+        "One root folder per project, named after it",
+        "Pulled piece by piece via sparse-checkout",
+        "Working procedure documented in oku-private.md"
       ]
     }
   },
@@ -729,16 +1035,24 @@
     "shot": "docs/onizleme/05-bilesenler-izgara.png",
     "points": {
       "tr": [
-        "Claude Code için arayüz standardını tek dosyada tutar",
-        "Yüzü aşkın kuralla renk ve kontrast sorunlarını denetler",
-        "Birçoğunu kendiliğinden düzeltir",
-        "Düzeni Electron önizlemede canlı ayarlar"
+        "Tek token dosyasından üretilen tasarım sistemi",
+        "15 canlı panelli önizleme uygulaması",
+        "Kendi düzenini kaydeden kişisel token dosyası",
+        "Otomatik düzeltmeli 102 kurallı tarayıcı",
+        "0-100 arası okunurluk puanı",
+        "CSS, React, WPF, Avalonia, WinForms için kod üretir",
+        "Kurulum, başlık çubuğu ve güncelleme şablonları",
+        "9 tema, hepsi 7:1 kontrast"
       ],
       "en": [
-        "Keeps the UI standard in one token file",
-        "Checks colour, contrast issues with 100+ rules",
-        "Fixes many of them automatically",
-        "Edits layout live in an Electron preview"
+        "Design system generated from one token file",
+        "Preview app with 15 live panels",
+        "Personal token file that keeps your layout",
+        "102-rule scanner with auto-fix",
+        "0-100 readability score",
+        "Generates code for CSS, React, WPF, Avalonia, WinForms",
+        "Installer, title bar and update templates",
+        "9 themes, all at 7:1 contrast"
       ]
     }
   },
@@ -765,16 +1079,48 @@
     "shot": "docs/ui-denetim/2026-09-27/02-ana-menu-100-sonra.png",
     "points": {
       "tr": [
-        "USB kısayol ve autorun solucanlarını temizler",
-        "Belleği gelecek bulaşmalara karşı bağışıklar",
-        "Bilgisayarın kendisinin bulaşıp bulaşmadığını denetler",
-        "Kurulum gerektirmeyen tek .bat dosyası"
+        "Kısayol solucanlarını tanır, zararlı .lnk siler",
+        "Gizli klasördeki gerçek dosyaları geri taşır",
+        "Gizli yükleri (vbs/js/bat/hta/scr/url/scf) karantinaya alır",
+        "Dosya içeriğine bakar, uzantıya değil (magic byte kontrolü)",
+        "Kısayol argümanlarını izleyip hedef dosyaları çözer",
+        "Sistem nesnesi kılığındaki (Geri Dönüşüm Kutusu vb) klasörleri açar",
+        "System Volume Information ve $RECYCLE.BIN içini tarar",
+        "Sağdan sola yazım (RTLO) hile adlarını yakalar",
+        "Alt klasörleri üç seviye derinlikte tarar",
+        "Karantina geçmişinden geri yükleme sunar",
+        "Sahte kilitli klasörlerle USB'yi aşılar (FAT32/exFAT/NTFS)",
+        "NTFS'te Deny ACL ile yazma/silmeyi engeller",
+        "Bilgisayarı kalıcılık noktaları için tarar (Run, servisler, görevler, Winlogon)",
+        "İmzalı program yanına eklenmiş imzasız DLL'i tespit eder",
+        "Windows Defender dışlama kayıtlarını denetler",
+        "USB'den çalıştırmayı ilke ile kapatır",
+        "Windows Script Host'u kayıt defterinden kapatır",
+        "İsteğe bağlı arka plan izleyici, takılan USB'yi otomatik sorar",
+        "Kendini güncelleyen tek .bat dosyası, kurulum gerektirmez",
+        "Sürüm ve dosya bütünlüğü GitHub üzerinden doğrulanır"
       ],
       "en": [
-        "Cleans shortcut and autorun worms off USB drives",
-        "Immunises the drive against future infections",
-        "Also checks whether the computer itself is infected",
-        "Single self-elevating .bat file, no install"
+        "Detects shortcut worms, deletes malicious .lnk files",
+        "Restores real files from the hidden folder",
+        "Quarantines hidden payloads (vbs/js/bat/hta/scr/url/scf)",
+        "Checks file content, not extension (magic byte check)",
+        "Follows shortcut arguments to resolve target files",
+        "Opens folders disguised as system objects (Recycle Bin, etc.)",
+        "Scans inside System Volume Information and $RECYCLE.BIN",
+        "Catches right-to-left override (RTLO) name tricks",
+        "Scans subfolders three levels deep",
+        "Restores items from past quarantine folders",
+        "Immunizes USB with locked decoy folders (FAT32/exFAT/NTFS)",
+        "Blocks write/delete via Deny ACL on NTFS",
+        "Scans PC for persistence points (Run, services, tasks, Winlogon)",
+        "Detects unsigned DLL sideloaded next to a signed program",
+        "Audits Windows Defender exclusion entries",
+        "Disables USB execute access via policy",
+        "Disables Windows Script Host via registry",
+        "Optional background watcher prompts on USB insertion",
+        "Single self-updating .bat file, no install",
+        "Version and file integrity verified via GitHub"
       ]
     }
   },
@@ -800,16 +1146,40 @@
     },
     "points": {
       "tr": [
-        "Bir dil modeliyle video kurgusu yönetir",
-        "Videoyu yazıya döküp ses ve sahne ölçer",
-        "Onayınız olmadan hiçbir şey işlenmez",
-        "Şu an yalnız planlama aşamasında"
+        "Kaynak videoyu yt-dlp ile en yüksek kalitede indirir",
+        "Konuşmayı yazıya döker, üç ASR motoru",
+        "ASR motorlarını aynı seste karşılaştırır",
+        "Sessizlik, RMS ve LUFS ölçümü tek geçişte",
+        "Metni bloklara bölüp önem sırası çıkarır",
+        "Kurgu betiği (kurgu.json) üretir ve doğrular",
+        "Onay damgalı analiz raporu",
+        "ffmpeg ile kesme, katman ve son render",
+        "Dört geçiş: kesme, karartma, çapraz, filmik",
+        "Panel, alıntı, başlık ve altyazı katmanları",
+        "Açılış fragmanı seçer ve altyazısını yazar",
+        "Müzik yatağı ve ses kitaplığı",
+        "Yüz takibiyle hareketli karakter etiketleri",
+        "NVENC ya da libx264 arasında otomatik seçim",
+        "Yarıda kalan işi kaldığı yerden sürdürür",
+        "Türkçe ve İngilizce"
       ],
       "en": [
-        "Runs video editing driven by a language model",
-        "Transcribes video and measures audio, scenes",
-        "Renders nothing before you approve the brief",
-        "Currently only in the planning stage"
+        "Downloads the source at top quality via yt-dlp",
+        "Transcribes speech with three ASR engines",
+        "Compares ASR engines on the same audio",
+        "Silence, RMS and LUFS measured in one pass",
+        "Splits the transcript and ranks what matters",
+        "Writes and validates an edit script (kurgu.json)",
+        "Analysis report with an approval stamp",
+        "Cutting, layering and final render with ffmpeg",
+        "Four transitions: cut, fade, cross, filmic",
+        "Panel, quote, title and subtitle layers",
+        "Picks an opening teaser and writes its subtitles",
+        "Music bed and sound library",
+        "Moving character labels via face tracking",
+        "Chooses NVENC or libx264 automatically",
+        "Resumes an interrupted job where it stopped",
+        "Turkish and English"
       ]
     }
   },
@@ -837,16 +1207,58 @@
     "shot": "docs/gorseller/T191-kucult-tr.png",
     "points": {
       "tr": [
-        "Videoyu hedef boyutun altına küçültür",
-        "Kodek, kalite ve çözünürlüğü kendisi seçer",
-        "Ekran kaydı ve paylaşımı da içerir",
-        "42 dil ve 26 renk temasıyla gelir"
+        "Videoyu seçtiğin MB değerinin hemen altına küçültür",
+        "Hazır boyutlar: e-posta 8, WhatsApp 16, Gmail 25 MB",
+        "Kodek, kalite, çözünürlük ve kare hızını kendisi seçer",
+        "Sonuç boyutunu başlamadan önce söyler",
+        "NVENC, Quick Sync, AMF dahil 12 kodlayıcı",
+        "Kodlayıcıları önce senin makinende sınar",
+        "Ekran kaydı: tüm ekran, tek pencere ya da bölge",
+        "Mikrofon ve sistem sesini adıyla seçerek kaydeder",
+        "Kaydediciyi de otomatik ayarlar",
+        "Hızlı ileri-geri saran dahili oynatıcı",
+        "Öncesi-sonrası karşılaştırma paneli",
+        "Tek tıkla paylaşım bağlantısı: storage.to (25 GB), uguu.se",
+        "Paylaşılan video tarayıcıda doğrudan oynar",
+        "Bağlantının ne kadar kalacağını seçip silebilirsin",
+        "Gezgin sağ tık menüsünden \"VidShrink ile aç\"",
+        "Dönüştürme: MP4, MKV, WebM, MOV, AVI, GIF",
+        "Ses çıkarma: MP3, M4A, WAV",
+        "H.264, H.265, VP9, AV1 ya da akış kopyası",
+        "Kırpma ve zaman aralığı kesme",
+        "Gizli Gelişmiş sekmede tam ffmpeg komutu",
+        "Klasör izleme: gelen videoları kendiliğinden küçültür",
+        "Aynı motoru kullanan komut satırı aracı",
+        "Tamamen çevrimdışı ve ücretsiz",
+        "42 dil ve 26 renk teması",
+        "Windows, macOS ve Linux"
       ],
       "en": [
-        "Shrinks a video under a target size",
-        "Picks codec, quality and resolution itself",
-        "Also records the screen and shares video",
-        "Ships in 42 languages with 26 themes"
+        "Shrinks a video just under the MB you pick",
+        "Preset sizes: e-mail 8, WhatsApp 16, Gmail 25 MB",
+        "Picks codec, quality, resolution and frame rate itself",
+        "Tells you the result size before it starts",
+        "12 encoders including NVENC, Quick Sync, AMF",
+        "Probes encoders on your own machine first",
+        "Screen recording: full screen, one window or a region",
+        "Records microphone and system sound chosen by name",
+        "Tunes the recorder automatically too",
+        "Built-in player with fast seeking",
+        "Before-and-after comparison panel",
+        "One-click share link: storage.to (25 GB), uguu.se",
+        "Shared videos play straight in the browser",
+        "Choose how long the link lives, and delete it",
+        "\"Open with VidShrink\" in the Explorer right-click menu",
+        "Convert: MP4, MKV, WebM, MOV, AVI, GIF",
+        "Audio extraction: MP3, M4A, WAV",
+        "H.264, H.265, VP9, AV1 or stream copy",
+        "Trimming and time-range cutting",
+        "Exact ffmpeg command in the hidden Advanced tab",
+        "Watch folder: shrinks incoming videos on its own",
+        "Command-line tool on the same engine",
+        "Fully offline and free",
+        "42 languages and 26 colour themes",
+        "Windows, macOS and Linux"
       ]
     }
   },
@@ -879,16 +1291,36 @@
     },
     "points": {
       "tr": [
-        "Tarayıcıda çalışan tek sayfalık RPG-strateji oyunu",
-        "Yordamsal Calradia haritası ve ordu yönetimi sunar",
-        "Kurulum, sunucu ya da bağımlılık gerektirmez",
-        "Türkçe, İngilizce ve Endonezce arayüzlü"
+        "Tarayıcıda tek sayfada çalışan Warband tarzı RPG-strateji",
+        "Beş krallık, 23 lord, 12 leydiyle prosedürel Calradia haritası",
+        "Formasyonlu, moralli, gerçek zamanlı üstten görünüş savaşlar",
+        "Kuşatmalar, hasar tipleri, kalkanlar",
+        "Arz-talebe dayalı pazar, kervanlar, haydut avlayan köylü kafileleri",
+        "Görevler, bahisli turnuvalar, arenalar",
+        "Kur yapma, evlilik, köy yağması, tımarlar, vasallık",
+        "Oyuncudan bağımsız süren savaş simülasyonu",
+        "Dokunmatik ekranda çift analog kontrol (yürüme ve nişan/vuruş)",
+        "localStorage'da üç manuel slot artı otomatik kayıt, JSON dışa aktarım",
+        "Android/iOS için Capacitor tabanlı native paket",
+        "PWA: ana ekrana eklenip çevrimdışı çalışır",
+        "Windows için güncellemeyi kendi kontrol eden başlatıcı script",
+        "Türkçe, İngilizce, Endonezce arayüz"
       ],
       "en": [
-        "A single-page browser RPG-strategy game",
-        "Offers a procedural Calradia map, army management",
-        "Needs no install, server or dependencies",
-        "Turkish, English and Indonesian interface"
+        "Single-page browser Warband-style RPG-strategy",
+        "Procedural Calradia map with five kingdoms, 23 lords, 12 ladies",
+        "Real-time top-down battles with formations and morale",
+        "Sieges, damage types, shields",
+        "Supply-demand market, caravans, villager convoys bandits hunt",
+        "Quests, tournaments with betting, arenas",
+        "Courtship, marriage, village raiding, fiefs, vassals",
+        "War simulation that runs independent of the player",
+        "Dual-stick touch controls (movement and aim/strike)",
+        "Three manual saves plus autosave in localStorage, JSON export",
+        "Capacitor-based native Android/iOS package",
+        "PWA: installs to home screen, works offline",
+        "Windows launcher that self-checks for updates",
+        "Turkish, English, Indonesian interface"
       ]
     }
   },
@@ -914,16 +1346,32 @@
     },
     "points": {
       "tr": [
-        "WhatsApp'ta komutla otomatik yanıt gönderir",
-        "Yanıtı tek bir Claude Code çağrısıyla üretir",
-        "Küçük bir bilgisayarda arka planda çalışır",
-        "Kişisel kullanım için özel bir proje"
+        "WhatsApp sohbetinde komutla Claude'dan otomatik yanıt üretir",
+        "Son N mesajı okuyup 🤖 önekiyle yanıt gönderir",
+        "Opus, Sonnet, Fable modelleri arasında komutla seçim",
+        "Web aramalı soru-cevap komutu",
+        "Claude'un çizdiği SVG'yi PNG'ye çevirip gönderir",
+        "Web'den fotoğraf bulup indirip gönderir",
+        "Komutla botu yeniden başlatıp son sürümü çeker",
+        "Sabit stil promptuyla (style.md) araçsız, oturumsuz tek seferlik çağrı",
+        "Windows mini PC'de başsız (headless) çalışır",
+        "Depo değiştikçe kendini otomatik günceller",
+        "Tek satırlık uzaktan kurulum betiği",
+        "Oturum açılışında kendiliğinden yeniden başlar"
       ],
       "en": [
-        "Sends automatic WhatsApp replies on command",
-        "Generates each reply via one Claude Code call",
-        "Runs headless on a small dedicated machine",
-        "A private project for personal use"
+        "Generates automatic Claude replies via WhatsApp chat commands",
+        "Reads last N messages and replies prefixed with 🤖",
+        "Command-selectable Opus, Sonnet, or Fable model",
+        "Web-search-backed question answering command",
+        "Renders Claude's drawn SVG to PNG and sends it",
+        "Finds and sends a photo fetched from the web",
+        "Command to restart the bot and pull the latest version",
+        "Fixed style prompt, tool-free, sessionless one-off call",
+        "Runs headless on a Windows mini PC",
+        "Self-updates whenever the repository changes",
+        "One-line remote install script",
+        "Survives reboot via a hidden logon task"
       ]
     }
   }

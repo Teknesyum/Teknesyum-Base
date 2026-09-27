@@ -175,7 +175,7 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
         </button>
       ) : null}
       {shot ? <ImageDialog open={!!viewer} src={liveShot ?? appShotFull(repo.name) ?? shot} alt={shotAlt} returnTo={viewer} onClose={() => setViewer(null)} /> : null}
-      <Points repo={repo} className="card__desc" max={3} />
+      <Points repo={repo} className="card__desc" max={view === 'grid' ? 6 : undefined} />
       {tags.length ? (
         <p className="card__tags" aria-label={t('library.tags')}>
           {'#' + tags.join('   #')}

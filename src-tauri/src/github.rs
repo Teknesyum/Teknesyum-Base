@@ -332,6 +332,22 @@ impl GitHub {
         Some(snap)
     }
 
+    async fn get_recent(&self, url: &str, accept: &str) -> AppResult<Resp> {
+        let file = store::http_cache_file(&self.cache_dir, url, accept, self.token.is_some());
+        let secs = if self.token.is_some() { 30 * 60 } else { 6 * 60 * 60 };
+        let recent = std::fs::metadata(&file)
+            .and_then(|m| m.modified())
+            .ok()
+            .and_then(|t| t.elapsed().ok())
+            .is_some_and(|age| age.as_secs() < secs);
+        if recent {
+            if let Some(c) = store::load_http(&file) {
+                return Ok(Resp { status: 200, body: c.body, next: c.next });
+            }
+        }
+        self.get(url, accept).await
+    }
+
     async fn get(&self, url: &str, accept: &str) -> AppResult<Resp> {
         let is_github = url.starts_with(API) || url.starts_with("https://raw.githubusercontent.com/");
         let cache_file = store::http_cache_file(&self.cache_dir, url, accept, self.token.is_some());
@@ -372,6 +388,7 @@ impl GitHub {
         if status == StatusCode::NOT_MODIFIED {
             if let Some(c) = cached {
                 self.counters.not_modified.fetch_add(1, Ordering::Relaxed);
+                let _ = store::save_http(&cache_file, &c);
                 return Ok(Resp {
                     status: 200,
                     body: c.body,
@@ -637,7 +654,7 @@ impl GitHub {
                 let memo_file = store::memo_file(&this.cache_dir, &gh.full_name, this.token.is_some());
                 let now = chrono::Utc::now().timestamp();
                 if let Some(m) = store::load_memo::<MemoData>(&memo_file) {
-                    if m.data.ui_checked && m.usable(gh.pushed_at.as_deref(), now) {
+                    if m.data.ui_checked && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
                         return Ok(RepoDetails {
                             gh,
                             release: m.data.release,
@@ -680,7 +697,7 @@ impl GitHub {
 
     pub async fn releases(&self, owner: &str, name: &str) -> AppResult<Vec<Release>> {
         let r = self
-            .get(
+            .get_recent(
                 &format!("{API}/repos/{owner}/{name}/releases?per_page=30"),
                 ACCEPT_HTML,
             )
@@ -698,7 +715,7 @@ impl GitHub {
 
     pub async fn readme(&self, owner: &str, name: &str) -> AppResult<String> {
         let r = self
-            .get(&format!("{API}/repos/{owner}/{name}/readme"), ACCEPT_HTML)
+            .get_recent(&format!("{API}/repos/{owner}/{name}/readme"), ACCEPT_HTML)
             .await?;
         if r.status == 404 {
             return Ok(String::new());

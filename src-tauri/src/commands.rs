@@ -289,7 +289,7 @@ pub async fn load_list(
     let now = chrono::Utc::now().timestamp();
     let stay_offline = match &cached {
         Some(_) if !force => true,
-        Some(list) => auto && store::list_is_fresh(&list.fetched_at, now),
+        Some(list) => store::list_is_fresh(&list.fetched_at, now, store::list_window(authed, auto)),
         None => false,
     };
     if stay_offline {

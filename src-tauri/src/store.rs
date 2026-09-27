@@ -181,6 +181,11 @@ pub fn save_http(file: &Path, entry: &HttpCacheEntry) -> AppResult<()> {
 }
 
 pub const MEMO_TTL_SECS: i64 = 6 * 60 * 60;
+pub const MEMO_TTL_ANON_SECS: i64 = 3 * 24 * 60 * 60;
+
+pub fn memo_ttl(authed: bool) -> i64 {
+    if authed { MEMO_TTL_SECS } else { MEMO_TTL_ANON_SECS }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -191,9 +196,9 @@ pub struct RepoMemo<T> {
 }
 
 impl<T> RepoMemo<T> {
-    pub fn usable(&self, pushed_at: Option<&str>, now: i64) -> bool {
+    pub fn usable(&self, pushed_at: Option<&str>, now: i64, authed: bool) -> bool {
         let age = now - self.saved_at;
-        pushed_at.is_some_and(|p| !p.is_empty() && p == self.pushed_at) && (0..MEMO_TTL_SECS).contains(&age)
+        pushed_at.is_some_and(|p| !p.is_empty() && p == self.pushed_at) && (0..memo_ttl(authed)).contains(&age)
     }
 }
 
@@ -216,7 +221,19 @@ pub fn save_memo<T: Serialize>(file: &Path, memo: &RepoMemo<T>) -> AppResult<()>
 }
 
 pub const RATE_BUFFER: u64 = 5;
-pub const LIST_FRESH_SECS: i64 = 10 * 60;
+pub const LIST_FRESH_SECS: i64 = 60 * 60;
+pub const LIST_FRESH_ANON_SECS: i64 = 6 * 60 * 60;
+pub const MANUAL_GAP_SECS: i64 = 2 * 60;
+pub const MANUAL_GAP_ANON_SECS: i64 = 15 * 60;
+
+pub fn list_window(authed: bool, auto: bool) -> i64 {
+    match (authed, auto) {
+        (true, true) => LIST_FRESH_SECS,
+        (false, true) => LIST_FRESH_ANON_SECS,
+        (true, false) => MANUAL_GAP_SECS,
+        (false, false) => MANUAL_GAP_ANON_SECS,
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -262,9 +279,9 @@ pub fn budget_allows(remaining: u64, cost: u64) -> bool {
     remaining >= RATE_BUFFER && remaining - RATE_BUFFER >= cost
 }
 
-pub fn list_is_fresh(fetched_at: &str, now: i64) -> bool {
+pub fn list_is_fresh(fetched_at: &str, now: i64, window: i64) -> bool {
     chrono::DateTime::parse_from_rfc3339(fetched_at)
-        .map(|d| (0..LIST_FRESH_SECS).contains(&(now - d.timestamp())))
+        .map(|d| (0..window).contains(&(now - d.timestamp())))
         .unwrap_or(false)
 }
 
@@ -280,7 +297,7 @@ pub fn refresh_cost(cached: Option<&RepoList>, dir: &Path, authed: bool, now: i6
         .iter()
         .filter(|r| {
             let memo = load_memo::<serde::de::IgnoredAny>(&memo_file(dir, &r.full_name, authed));
-            !memo.is_some_and(|m| (0..MEMO_TTL_SECS).contains(&(now - m.saved_at)))
+            !memo.is_some_and(|m| (0..memo_ttl(authed)).contains(&(now - m.saved_at)))
         })
         .count() as u64;
     login + pages + stale * per_repo
@@ -410,11 +427,16 @@ mod tests {
     #[test]
     fn list_freshness() {
         let t = chrono::DateTime::parse_from_rfc3339("2026-09-27T03:00:00Z").unwrap().timestamp();
-        assert!(list_is_fresh("2026-09-27T03:00:00Z", t));
-        assert!(list_is_fresh("2026-09-27T03:00:00Z", t + LIST_FRESH_SECS - 1));
-        assert!(!list_is_fresh("2026-09-27T03:00:00Z", t + LIST_FRESH_SECS));
-        assert!(!list_is_fresh("2026-09-27T03:00:00Z", t - 5));
-        assert!(!list_is_fresh("bozuk", t));
+        assert!(list_is_fresh("2026-09-27T03:00:00Z", t, LIST_FRESH_SECS));
+        assert!(list_is_fresh("2026-09-27T03:00:00Z", t + LIST_FRESH_SECS - 1, LIST_FRESH_SECS));
+        assert!(!list_is_fresh("2026-09-27T03:00:00Z", t + LIST_FRESH_SECS, LIST_FRESH_SECS));
+        assert!(!list_is_fresh("2026-09-27T03:00:00Z", t - 5, LIST_FRESH_SECS));
+        assert!(!list_is_fresh("bozuk", t, LIST_FRESH_SECS));
+        assert!(list_is_fresh("2026-09-27T03:00:00Z", t + 5 * 60 * 60, list_window(false, true)));
+        assert!(!list_is_fresh("2026-09-27T03:00:00Z", t + 5 * 60 * 60, list_window(true, true)));
+        assert!(list_is_fresh("2026-09-27T03:00:00Z", t + 10 * 60, list_window(false, false)));
+        assert!(!list_is_fresh("2026-09-27T03:00:00Z", t + 10 * 60, list_window(true, false)));
+        assert!(memo_ttl(false) > memo_ttl(true));
     }
 
     #[test]
@@ -462,7 +484,7 @@ mod tests {
         };
         save_memo(&memo_file(&dir, "Teknesyum/A", false), &memo).unwrap();
         assert_eq!(refresh_cost(Some(&list), &dir, false, 1_000), 2);
-        assert_eq!(refresh_cost(Some(&list), &dir, false, 900 + MEMO_TTL_SECS), 3);
+        assert_eq!(refresh_cost(Some(&list), &dir, false, 900 + MEMO_TTL_ANON_SECS), 3);
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -473,12 +495,12 @@ mod tests {
             saved_at: 1_000_000,
             data: 7u8,
         };
-        assert!(m.usable(Some("2026-09-20T10:00:00Z"), 1_000_000));
-        assert!(m.usable(Some("2026-09-20T10:00:00Z"), 1_000_000 + MEMO_TTL_SECS - 1));
-        assert!(!m.usable(Some("2026-09-20T10:00:00Z"), 1_000_000 + MEMO_TTL_SECS));
-        assert!(!m.usable(Some("2026-09-21T10:00:00Z"), 1_000_100));
-        assert!(!m.usable(None, 1_000_100));
-        assert!(!m.usable(Some("2026-09-20T10:00:00Z"), 999_000));
+        assert!(m.usable(Some("2026-09-20T10:00:00Z"), 1_000_000, true));
+        assert!(m.usable(Some("2026-09-20T10:00:00Z"), 1_000_000 + MEMO_TTL_SECS - 1, true));
+        assert!(!m.usable(Some("2026-09-20T10:00:00Z"), 1_000_000 + MEMO_TTL_SECS, true));
+        assert!(!m.usable(Some("2026-09-21T10:00:00Z"), 1_000_100, true));
+        assert!(!m.usable(None, 1_000_100, true));
+        assert!(!m.usable(Some("2026-09-20T10:00:00Z"), 999_000, true));
     }
 
     #[test]

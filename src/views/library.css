@@ -419,7 +419,7 @@ article.row > .card__foot {
 
 .points {
   display: block;
-  columns: 3 calc(var(--tk-measure) / 3.4);
+  columns: 2 calc(var(--tk-measure) / 3.4);
   column-gap: var(--tk-sp-5);
   padding-inline-start: var(--tk-sp-4);
   list-style: disc;
@@ -480,8 +480,10 @@ article.row > .card__foot {
 }
 
 .uses {
-  padding-inline-start: var(--tk-sp-3);
-  border-inline-start: var(--tk-focus-w) solid var(--tk-renk-1);
+  padding: var(--tk-sp-3);
+  border: var(--tk-border-w) solid var(--tk-border);
+  border-radius: var(--tk-r);
+  background: color-mix(in srgb, var(--tk-renk-1) 6%, transparent);
 }
 
 .app-icon-btn {

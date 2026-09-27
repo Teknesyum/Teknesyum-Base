@@ -471,9 +471,11 @@ article.row > .card__foot {
   flex: 1 1 calc(var(--tk-sidebar-w) / 1.5);
   margin: 0;
   min-width: 0;
-  color: var(--tk-text);
+  padding-inline-start: var(--tk-sp-3);
+  border-inline-start: var(--tk-focus-w) solid var(--tk-renk-2);
+  color: color-mix(in srgb, var(--tk-text) 80%, transparent);
   font-size: var(--tk-fs-1);
-  font-weight: var(--tk-fw-semi);
+  font-weight: var(--tk-fw-body);
   line-height: var(--tk-lh-heading);
 }
 

@@ -2,7 +2,7 @@ export type Edition = 'normal' | 'pro';
 
 export type InstallState = 'not-installed' | 'installed' | 'update-available' | 'cloned';
 
-export type InstallMethod = 'zip' | 'msi' | 'exe' | 'portable' | 'clone';
+export type InstallMethod = 'zip' | 'msi' | 'exe' | 'portable' | 'clone' | 'external';
 
 export type Manifest = {
   name?: string;
@@ -56,6 +56,9 @@ export type Repo = {
   installState: InstallState;
   installedTag: string | null;
   localTags: string[];
+  summary?: string;
+  tags?: string[];
+  uiVersion?: string | null;
 };
 
 export type RepoList = {
@@ -65,6 +68,7 @@ export type RepoList = {
   rateRemaining: number | null;
   rateResetAt: string | null;
   budgetSkipped: boolean;
+  uiLatest?: string | null;
   repos: Repo[];
 };
 

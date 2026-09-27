@@ -24,6 +24,7 @@ pub enum InstallMethod {
     Exe,
     Portable,
     Clone,
+    External,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -92,6 +93,8 @@ pub struct Repo {
     pub install_state: InstallState,
     pub installed_tag: Option<String>,
     pub local_tags: Vec<String>,
+    #[serde(default)]
+    pub ui_version: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -104,6 +107,8 @@ pub struct RepoList {
     pub rate_reset_at: Option<String>,
     #[serde(default)]
     pub budget_skipped: bool,
+    #[serde(default)]
+    pub ui_latest: Option<String>,
     pub repos: Vec<Repo>,
 }
 

@@ -88,19 +88,22 @@
   }
 }
 
-.statusbar[data-sikis] .statusbar__item--sync .statusbar__text,
 .statusbar[data-sikis] .statusbar__item--fetched {
   display: none;
 }
 
-.statusbar:is([data-sikis='hesap'], [data-sikis='tazele'], [data-sikis='token']) .statusbar__item--account {
+.statusbar:is([data-sikis='hesap'], [data-sikis='tazele'], [data-sikis='token'], [data-sikis='senk']) .statusbar__item--account {
   display: none;
 }
 
-.statusbar:is([data-sikis='tazele'], [data-sikis='token']) .statusbar__refresh-label {
+.statusbar:is([data-sikis='tazele'], [data-sikis='token'], [data-sikis='senk']) .statusbar__refresh-label {
   display: none;
 }
 
-.statusbar[data-sikis='token'] .statusbar__token {
+.statusbar:is([data-sikis='token'], [data-sikis='senk']) .statusbar__token {
+  display: none;
+}
+
+.statusbar[data-sikis='senk'] .statusbar__item--sync .statusbar__text {
   display: none;
 }

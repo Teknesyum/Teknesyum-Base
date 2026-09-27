@@ -2,15 +2,18 @@
   "app": {
     "first": "Teknesyum ",
     "second": "Base",
-    "secondPro": "Base Pro"
+    "secondPro": "Base Pro",
+    "name": "Teknesyum Base",
+    "namePro": "Teknesyum Base Pro"
   },
   "titlebar": {
-    "sponsor": "Buy me a coffee",
-    "brand": "by Teknesyum",
     "minimize": "Minimize",
-    "maximize": "Maximize or restore",
+    "maximize": "Maximize",
     "close": "Close",
-    "tabs": "Main sections"
+    "tabs": "Main sections",
+    "restore": "Restore",
+    "language": "Language",
+    "syncedAt": "{label} · {time}"
   },
   "tabs": {
     "library": "Library",
@@ -51,12 +54,12 @@
   "actions": {
     "install": "Install",
     "update": "Update",
-    "clone": "Clone",
     "launch": "Open",
     "folder": "Open folder",
     "uninstall": "Uninstall",
     "github": "Open on GitHub",
-    "aria": "{name}: {action}"
+    "aria": "{name}: {action}",
+    "source": "View source"
   },
   "task": {
     "busy": "A task is running for this repo",
@@ -159,7 +162,10 @@
     "hideCategories": "Hide categories",
     "anyLanguage": "All languages",
     "anyStatus": "All states",
-    "labeled": "{label}: {value}"
+    "labeled": "{label}: {value}",
+    "tags": "Tags",
+    "shot": "{name} screenshot",
+    "shotOpen": "Enlarge {name} screenshot"
   },
   "stats": {
     "stars": "Stars",
@@ -172,7 +178,8 @@
     "none": "None",
     "pushed": "Last push",
     "installedTag": "Installed version",
-    "topics": "Topics"
+    "topics": "Topics",
+    "ui": "Teknesyum UI"
   },
   "detail": {
     "localTags": "Local tags",
@@ -238,7 +245,8 @@
       "msi": "MSI",
       "exe": "Installer",
       "portable": "Portable",
-      "clone": "Clone"
+      "clone": "Clone",
+      "external": "Installed externally"
     }
   },
   "settings": {
@@ -314,7 +322,6 @@
     "cacheHint": "Showing the list last fetched from GitHub; press Refresh for new data."
   },
   "update": {
-    "title": "Update",
     "versionLabel": "New version",
     "notes": "Release notes",
     "available": "A new version is out. Would you like to download it?",
@@ -330,12 +337,33 @@
     "install": "Install",
     "progress": "Update download progress",
     "badge": {
-      "available": "Update",
       "ready": "Ready to install",
       "percent": "{n}%",
       "availableAria": "Update available, version {version}. Open the panel",
       "downloadingAria": "New version downloading, {n}%. Open the panel",
       "readyAria": "New version ready to install. Open the panel"
     }
+  },
+  "category": {
+    "video": "Video & Media",
+    "medical": "Medical & Health",
+    "productivity": "Productivity",
+    "ai": "AI",
+    "developer": "Developer Tools",
+    "system": "System Tools",
+    "games": "Games",
+    "other": "Other"
+  },
+  "ui": {
+    "chip": "UI {version}",
+    "current": "Teknesyum UI is current",
+    "old": "Teknesyum UI is behind; latest is {latest}",
+    "unknown": "Could not read the latest Teknesyum UI version",
+    "short": {
+      "current": "current",
+      "old": "behind",
+      "unknown": "unknown"
+    },
+    "stat": "{version} · {state}"
   }
 }

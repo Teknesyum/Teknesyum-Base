@@ -11,7 +11,6 @@ import { UpdateBadge } from './ui/UpdateBadge';
 import { UpdateProvider, useUpdate } from './ui/useUpdate';
 import { defaultFilter, primaryOf, type LibFilter, type Opener } from './views/actions';
 import { DetailSheet } from './views/DetailSheet';
-import { InstallDialog } from './views/InstallDialog';
 import { InstalledView } from './views/InstalledView';
 import { Library } from './views/Library';
 import { SettingsView } from './views/SettingsView';
@@ -21,20 +20,21 @@ import { UpdatePanel } from './views/UpdatePanel';
 type Tab = 'library' | 'installed' | 'settings';
 type Target = { fullName: string; opener: Opener };
 
-const LINKS = { sponsor: 'https://github.com/sponsors/Teknesyum', brand: 'https://github.com/Teknesyum' };
+const LINKS = { sponsor: 'https://github.com/sponsors/Teknesyum', brand: 'https://github.com/Teknesyum', site: 'https://teknesyum.com' };
 
 function Frame() {
-  const { t, lang } = useI18n();
+  const { t, lang, clock } = useI18n();
   const store = useStore();
   const appRef = useRef<HTMLDivElement>(null);
   useTitlebarFit(appRef, lang + (store.info?.edition ?? ''));
   const [tab, setTab] = useState<Tab>('library');
   const [filter, setFilter] = useState<LibFilter>(defaultFilter);
   const [detail, setDetail] = useState<Target | null>(null);
-  const [install, setInstall] = useState<(Target & { kind: 'install' | 'clone' }) | null>(null);
   const [removal, setRemoval] = useState<Target | null>(null);
   const [clearing, setClearing] = useState<Opener | undefined>(undefined);
   const [updateFrom, setUpdateFrom] = useState<HTMLElement | null | undefined>(undefined);
+  const [maximized, setMaximized] = useState(false);
+  const pro = store.info?.edition === 'pro';
   const updatePhase = useUpdate().state?.phase;
   useEffect(() => {
     if (updatePhase === 'idle' || updatePhase === 'checking') setUpdateFrom(undefined);
@@ -43,8 +43,30 @@ function Frame() {
   const find = (x: Target | null): Repo | null => (x ? (store.list?.repos.find((r) => r.fullName === x.fullName) ?? null) : null);
 
   useEffect(() => {
+    document.title = t(pro ? 'app.namePro' : 'app.name');
+  }, [t, pro]);
+
+  useEffect(() => {
+    const sync = () => void windowControls.isMaximized().then(setMaximized);
+    sync();
+    const off = windowControls.onResized(sync);
+    return () => void off.then((f) => f());
+  }, []);
+
+  useEffect(() => {
     const id = requestAnimationFrame(() => void windowControls.show());
     return () => cancelAnimationFrame(id);
+  }, []);
+
+  useEffect(() => {
+    const on = (e: Event) => (e.target as Element | null)?.setAttribute?.('data-tk-scrolling', '');
+    const off = (e: Event) => (e.target as Element | null)?.removeAttribute?.('data-tk-scrolling');
+    document.addEventListener('scroll', on, true);
+    document.addEventListener('scrollend', off, true);
+    return () => {
+      document.removeEventListener('scroll', on, true);
+      document.removeEventListener('scrollend', off, true);
+    };
   }, []);
 
   useEffect(() => {
@@ -60,29 +82,61 @@ function Frame() {
     return () => document.removeEventListener('click', onClick);
   }, []);
 
-  const onPrimary = (repo: Repo, opener: Opener) => {
+  const onPrimary = (repo: Repo) => {
     const p = primaryOf(repo);
     if (p === 'launch') store.launch(repo.fullName);
     else if (p === 'folder') store.openFolder(repo.fullName);
-    else setInstall({ fullName: repo.fullName, opener, kind: p === 'clone' ? 'clone' : 'install' });
+    else if (p === 'source') void openExternal(repo.htmlUrl);
+    else void store.start(repo, 'install');
   };
+  const setLang = (next: 'tr' | 'en') => {
+    if (store.settings && store.settings.language !== next) void store.saveSettings({ ...store.settings, language: next });
+  };
+  const list = store.list;
+  const syncState = store.syncing ? 'syncing' : store.syncError ? 'offline' : 'synced';
+  const syncText = store.syncing ? t('sync.now') : store.syncError ? t('sync.offline') : list ? t('titlebar.syncedAt', { label: t('sync.synced'), time: clock(list.fetchedAt) }) : '';
   const onUninstall = (repo: Repo, opener: Opener) => setRemoval({ fullName: repo.fullName, opener });
   const onOpen = (repo: Repo, opener: Opener) => setDetail({ fullName: repo.fullName, opener });
 
   const removeRepo = find(removal);
-  const installRepo = find(install);
 
   return (
     <div ref={appRef} className="app">
       <TitleBar
         first={t('app.first')}
-        second={t(store.info?.edition === 'pro' ? 'app.secondPro' : 'app.second')}
+        second={t(pro ? 'app.secondPro' : 'app.second')}
         logo="/logo-32.png"
         links={LINKS}
         badge={<UpdateBadge onOpen={(el) => setUpdateFrom(el)} />}
+        sync={{ state: syncState, text: syncText, title: store.syncError ? t('status.syncError', { reason: t('errors.' + store.syncError.code + '.title') }) : syncText ? syncText + ' · ' + t('sync.now') : t('sync.now'), onClick: () => void store.refresh() }}
+        language={
+          <div
+            className="lang-switch"
+            role="radiogroup"
+            aria-label={t('titlebar.language')}
+            onKeyDown={(e) => {
+              if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+              e.preventDefault();
+              setLang(lang === 'tr' ? 'en' : 'tr');
+            }}
+          >
+            <button type="button" role="radio" aria-checked={lang === 'tr'} tabIndex={lang === 'tr' ? 0 : -1} className="tk-titlebar__tab" lang="tr" onClick={() => setLang('tr')}>
+              TR
+            </button>
+            <button type="button" role="radio" aria-checked={lang === 'en'} tabIndex={lang === 'en' ? 0 : -1} className="tk-titlebar__tab" lang="en" onClick={() => setLang('en')}>
+              EN
+            </button>
+          </div>
+        }
+        maximized={maximized}
         labels={{
-          sponsor: t('titlebar.sponsor'),
-          brand: t('titlebar.brand'),
+          sponsor: t('sig.support'),
+          sponsorTitle: t('sig.supportTitle'),
+          brand: t('sig.brand'),
+          brandTitle: t('sig.brandTitle'),
+          site: t('sig.site'),
+          siteTitle: t('sig.siteTitle'),
+          restore: t('titlebar.restore'),
           minimize: t('titlebar.minimize'),
           maximize: t('titlebar.maximize'),
           close: t('titlebar.close'),
@@ -94,7 +148,11 @@ function Frame() {
           { id: 'settings', label: t('tabs.settings') },
         ]}
         current={tab}
-        onTab={(id) => setTab(id as Tab)}
+        onTab={(id) => {
+          setDetail(null);
+          setUpdateFrom(undefined);
+          setTab(id as Tab);
+        }}
         onMinimize={() => void windowControls.minimize()}
         onMaximize={() => void windowControls.toggleMaximize()}
         onClose={() => void windowControls.close()}
@@ -112,24 +170,11 @@ function Frame() {
 
       <DetailSheet
         repo={find(detail)}
-        open={!!detail && !install && !removal}
+        open={!!detail && !removal}
         returnTo={detail?.opener ?? null}
         onClose={() => setDetail(null)}
         onPrimary={onPrimary}
-        onClone={(repo, opener) => setInstall({ fullName: repo.fullName, opener, kind: 'clone' })}
         onUninstall={onUninstall}
-      />
-      <InstallDialog
-        repo={installRepo}
-        kind={install?.kind ?? 'install'}
-        open={!!install}
-        returnTo={install?.opener ?? null}
-        onClose={() => setInstall(null)}
-        onChangeLocation={() => {
-          setInstall(null);
-          setDetail(null);
-          setTab('settings');
-        }}
       />
       <UpdatePanel open={updateFrom !== undefined} returnTo={updateFrom ?? null} onClose={() => setUpdateFrom(undefined)} />
       <ConfirmDialog

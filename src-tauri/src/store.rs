@@ -26,12 +26,6 @@ pub fn load_installed(paths: &Paths) -> Vec<InstalledRecord> {
     read_json(&paths.installed_file()).unwrap_or_default()
 }
 
-pub fn find_installed(paths: &Paths, full_name: &str) -> Option<InstalledRecord> {
-    load_installed(paths)
-        .into_iter()
-        .find(|r| r.info.full_name.eq_ignore_ascii_case(full_name))
-}
-
 pub fn upsert_installed(paths: &Paths, record: InstalledRecord) -> AppResult<()> {
     let _g = LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let mut all = load_installed(paths);
@@ -46,6 +40,51 @@ pub fn remove_installed(paths: &Paths, full_name: &str) -> AppResult<()> {
     let mut all = load_installed(paths);
     all.retain(|r| !r.info.full_name.eq_ignore_ascii_case(full_name));
     write_json(&paths.installed_file(), &all)
+}
+
+pub fn migrate_installed(paths: &Paths) -> AppResult<usize> {
+    let _g = LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let legacy: Vec<PathBuf> = paths
+        .legacy_installed_files()
+        .into_iter()
+        .filter(|p| p.is_file())
+        .collect();
+    if legacy.is_empty() {
+        return Ok(0);
+    }
+    let mut all = load_installed(paths);
+    for file in &legacy {
+        for rec in read_json::<Vec<InstalledRecord>>(file).unwrap_or_default() {
+            match all
+                .iter_mut()
+                .find(|r| r.info.full_name.eq_ignore_ascii_case(&rec.info.full_name))
+            {
+                Some(cur) if rec.info.installed_at > cur.info.installed_at => *cur = rec,
+                Some(_) => {}
+                None => all.push(rec),
+            }
+        }
+    }
+    all.sort_by_key(|r| r.info.full_name.to_lowercase());
+    write_json(&paths.installed_file(), &all)?;
+    for file in &legacy {
+        std::fs::rename(file, file.with_extension("json.tasindi"))?;
+    }
+    Ok(legacy.len())
+}
+
+pub fn merge_installed(own: Vec<InstalledRecord>, extra: Vec<InstalledRecord>) -> Vec<InstalledRecord> {
+    let mut all = own;
+    for rec in extra {
+        if !all
+            .iter()
+            .any(|r| r.info.full_name.eq_ignore_ascii_case(&rec.info.full_name))
+        {
+            all.push(rec);
+        }
+    }
+    all.sort_by_key(|r| r.info.full_name.to_lowercase());
+    all
 }
 
 pub fn load_tags(paths: &Paths) -> BTreeMap<String, Vec<String>> {
@@ -293,8 +332,67 @@ mod tests {
             rate_remaining: Some(42),
             rate_reset_at: Some("2026-09-27T01:00:00Z".into()),
             budget_skipped: false,
+            ui_latest: None,
             repos: Vec::new(),
         }
+    }
+
+    fn rec(name: &str, method: crate::model::InstallMethod, at: &str) -> InstalledRecord {
+        InstalledRecord {
+            info: Installed {
+                full_name: name.into(),
+                tag: "v1".into(),
+                method,
+                path: String::new(),
+                exe: None,
+                installed_at: at.into(),
+            },
+            shortcut: None,
+            package: None,
+        }
+    }
+
+    #[test]
+    fn shared_installed_file_and_migration() {
+        use crate::model::InstallMethod;
+        let root = tmp_dir("migrate");
+        let paths = Paths::under_root(root.clone());
+        assert_eq!(paths.installed_file(), root.join("installed.json"));
+        assert_eq!(migrate_installed(&paths).unwrap(), 0);
+        let legacy = paths.legacy_installed_files();
+        write_json(&legacy[0], &vec![rec("Teknesyum/A", InstallMethod::Zip, "2026-01-01T00:00:00Z")]).unwrap();
+        write_json(
+            &legacy[1],
+            &vec![
+                rec("Teknesyum/A", InstallMethod::Portable, "2026-02-01T00:00:00Z"),
+                rec("Teknesyum/B", InstallMethod::Zip, "2026-01-01T00:00:00Z"),
+            ],
+        )
+        .unwrap();
+        upsert_installed(&paths, rec("Teknesyum/C", InstallMethod::Msi, "2026-03-01T00:00:00Z")).unwrap();
+        assert_eq!(migrate_installed(&paths).unwrap(), 2);
+        let all = load_installed(&paths);
+        let names: Vec<&str> = all.iter().map(|r| r.info.full_name.as_str()).collect();
+        assert_eq!(names, vec!["Teknesyum/A", "Teknesyum/B", "Teknesyum/C"]);
+        assert_eq!(all[0].info.method, InstallMethod::Portable);
+        assert!(legacy.iter().all(|f| !f.exists() && f.with_extension("json.tasindi").exists()));
+        assert_eq!(migrate_installed(&paths).unwrap(), 0);
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn own_records_win_over_detected() {
+        use crate::model::InstallMethod;
+        let merged = merge_installed(
+            vec![rec("Teknesyum/VidShrink", InstallMethod::Zip, "")],
+            vec![
+                rec("teknesyum/vidshrink", InstallMethod::External, ""),
+                rec("Teknesyum/Ghostlist", InstallMethod::External, ""),
+            ],
+        );
+        assert_eq!(merged.len(), 2);
+        assert_eq!(merged[0].info.full_name, "Teknesyum/Ghostlist");
+        assert_eq!(merged[1].info.method, InstallMethod::Zip);
     }
 
     #[test]

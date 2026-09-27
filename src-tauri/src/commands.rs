@@ -10,10 +10,11 @@ use crate::error::{AppError, AppResult, ErrorCode};
 use crate::github::{self, GitHub};
 use crate::installer::{self, Env, Task};
 use crate::logic;
-use crate::model::{AppInfo, Edition, InstallMethod, Installed, Release, RepoList, TaskEvent, TaskKind};
+use crate::detect;
+use crate::model::{AppInfo, Edition, InstallMethod, Installed, Release, Repo, RepoList, TaskEvent, TaskKind};
 use crate::paths::{read_json, write_json, Paths};
 use crate::settings::{self, Settings};
-use crate::store;
+use crate::store::{self, InstalledRecord};
 
 pub const TASK_EVENT: &str = "task://progress";
 
@@ -38,6 +39,7 @@ fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
 impl AppState {
     pub fn new() -> Self {
         let paths = Paths::detect();
+        let _ = store::migrate_installed(&paths);
         let token = settings::read_token();
         let s = settings::load(&paths, token.is_some());
         Self {
@@ -100,8 +102,54 @@ impl Default for AppState {
     }
 }
 
-fn decorate(paths: &Paths, list: &mut RepoList) {
-    let installed = store::load_installed(paths);
+fn targets_of(repos: &[Repo]) -> Vec<detect::Target> {
+    repos
+        .iter()
+        .map(|r| detect::Target {
+            owner: r.owner.clone(),
+            name: r.name.clone(),
+            manifest_name: r.manifest.as_ref().and_then(|m| m.name.clone()),
+        })
+        .collect()
+}
+
+pub fn installed_view(paths: &Paths, install_dir: &Path, targets: &[detect::Target]) -> Vec<InstalledRecord> {
+    let skip = vec![paths.shared.clone(), install_dir.to_path_buf()];
+    let mut extra: Vec<InstalledRecord> = detect::own_record().into_iter().collect();
+    extra.extend(detect::detect_external(&paths.scan_roots, &skip, targets));
+    store::merge_installed(store::load_installed(paths), extra)
+}
+
+impl AppState {
+    fn known_targets(&self) -> Vec<detect::Target> {
+        let s = self.settings();
+        let mut accounts = vec![s.account.clone()];
+        accounts.extend(s.extra_accounts.iter().cloned());
+        let mut repos: Vec<Repo> = Vec::new();
+        for a in accounts {
+            if let Some(list) = read_json::<RepoList>(&self.list_cache_file(&a)) {
+                repos.extend(list.repos);
+            }
+        }
+        targets_of(&repos)
+    }
+
+    fn installed(&self) -> Vec<InstalledRecord> {
+        let install_dir = PathBuf::from(self.settings().install_dir);
+        installed_view(&self.paths, &install_dir, &self.known_targets())
+    }
+
+    fn find_installed(&self, full_name: &str) -> Option<InstalledRecord> {
+        self.installed()
+            .into_iter()
+            .find(|r| r.info.full_name.eq_ignore_ascii_case(full_name))
+    }
+}
+
+fn decorate(state: &AppState, list: &mut RepoList) {
+    let paths = &state.paths;
+    let install_dir = PathBuf::from(state.settings().install_dir);
+    let installed = installed_view(paths, &install_dir, &targets_of(&list.repos));
     let tags = store::load_tags(paths);
     for repo in &mut list.repos {
         let rec = installed
@@ -222,7 +270,7 @@ pub async fn list_repos(
         auto.unwrap_or(false),
     )
     .await?;
-    decorate(&state.paths, &mut list);
+    decorate(&state, &mut list);
     Ok(list)
 }
 
@@ -297,7 +345,8 @@ pub async fn load_list(
         }
     };
     let repos = details.iter().map(github::to_repo).collect();
-    let list = github::new_list(account, repos, rate);
+    let mut list = github::new_list(account, repos, rate);
+    list.ui_latest = gh.ui_latest().await.or_else(|| cached.as_ref().and_then(|c| c.ui_latest.clone()));
     let _ = write_json(cache_file, &list);
     Ok(list)
 }
@@ -354,10 +403,7 @@ pub async fn clear_token(state: State<'_, AppState>) -> AppResult<Settings> {
 
 #[tauri::command]
 pub async fn list_installed(state: State<'_, AppState>) -> AppResult<Vec<Installed>> {
-    Ok(store::load_installed(&state.paths)
-        .into_iter()
-        .map(|r| r.info)
-        .collect())
+    Ok(state.installed().into_iter().map(|r| r.info).collect())
 }
 
 #[tauri::command]
@@ -365,23 +411,28 @@ pub async fn install_repo(app: AppHandle, state: State<'_, AppState>, owner: Str
     check_part(&owner, "hesap adı")?;
     check_part(&name, "depo adı")?;
     let full = format!("{owner}/{name}");
-    let kind = match store::find_installed(&state.paths, &full) {
+    let existing = state.find_installed(&full);
+    let prefer_setup = matches!(&existing, Some(r) if r.info.method == InstallMethod::External);
+    let kind = match existing {
         Some(r) if r.info.method != InstallMethod::Clone => TaskKind::Update,
         _ => TaskKind::Install,
     };
     start_task(&app, &state, full, kind, move |env, task| {
-        installer::install(env, task, owner, name)
+        installer::install(env, task, owner, name, prefer_setup)
     })
 }
 
 #[tauri::command]
 pub async fn uninstall_repo(app: AppHandle, state: State<'_, AppState>, full_name: String) -> AppResult<String> {
     split_full(&full_name)?;
-    if store::find_installed(&state.paths, &full_name).is_none() {
-        return Err(AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."));
+    let rec = state
+        .find_installed(&full_name)
+        .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."))?;
+    if rec.info.method != InstallMethod::Clone && detect::is_running_from(Path::new(&rec.info.path)) {
+        return Err(AppError::io(installer::SELF_UNINSTALL));
     }
-    start_task(&app, &state, full_name.clone(), TaskKind::Uninstall, move |env, task| {
-        installer::uninstall(env, task, full_name)
+    start_task(&app, &state, full_name, TaskKind::Uninstall, move |env, task| {
+        installer::uninstall(env, task, rec)
     })
 }
 
@@ -414,7 +465,8 @@ pub async fn cancel_task(state: State<'_, AppState>, task_id: String) -> AppResu
 
 #[tauri::command]
 pub async fn launch_installed(state: State<'_, AppState>, full_name: String) -> AppResult<()> {
-    let rec = store::find_installed(&state.paths, &full_name)
+    let rec = state
+        .find_installed(&full_name)
         .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."))?;
     let exe = rec
         .info
@@ -447,7 +499,10 @@ pub async fn open_path(app: AppHandle, state: State<'_, AppState>, path: String)
     let target = PathBuf::from(&path);
     let install = PathBuf::from(&s.install_dir);
     let clone = PathBuf::from(&s.clone_dir);
-    if !installer::path_allowed(&target, &[&install, &clone]) {
+    let known: Vec<PathBuf> = state.installed().into_iter().map(|r| PathBuf::from(r.info.path)).collect();
+    let mut roots: Vec<&Path> = vec![install.as_path(), clone.as_path()];
+    roots.extend(known.iter().filter(|p| !p.as_os_str().is_empty()).map(|p| p.as_path()));
+    if !installer::path_allowed(&target, &roots) {
         return Err(AppError::io(
             "Yalnız kurulum ve klon klasörlerinin altındaki yollar açılabilir.",
         ));

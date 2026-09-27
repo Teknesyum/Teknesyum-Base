@@ -60,18 +60,21 @@ export function Sidebar({ id, repos, category, tag, onCategory, onTag }: Props) 
       for (const n of nodes) {
         const parent = n.children.length > 0;
         const expanded = parent && !collapsed.has(n.path);
-        out.push({ id: 'cat:' + n.path, kind: 'cat', value: n.path, label: n.label, count: n.count, level: n.level, parent, expanded });
+        const named = t('category.' + n.label);
+        out.push({ id: 'cat:' + n.path, kind: 'cat', value: n.path, label: named === 'category.' + n.label ? n.label : named, count: n.count, level: n.level, parent, expanded });
         if (expanded) walk(n.children);
       }
     };
     walk(buildTree(repos));
     const tags = new Map<string, number>();
-    repos.forEach((r) => r.localTags.forEach((x) => tags.set(x, (tags.get(x) ?? 0) + 1)));
+    repos.forEach((r) => new Set([...(r.tags ?? []), ...r.localTags]).forEach((x) => tags.set(x, (tags.get(x) ?? 0) + 1)));
+    const local = new Set(repos.flatMap((r) => r.localTags));
     [...tags.entries()]
+      .filter(([name, count]) => count > 1 || local.has(name) || name === tag)
       .sort((a, b) => a[0].localeCompare(b[0], lang))
       .forEach(([name, count]) => out.push({ id: 'tag:' + name, kind: 'tag', value: name, label: name, count, level: 1, parent: false, expanded: false }));
     return out;
-  }, [repos, collapsed, t, lang]);
+  }, [repos, collapsed, t, lang, tag]);
 
   const current = rows.some((r) => r.id === focusId) ? focusId : 'cat:';
   const selected = (r: Row) => (r.kind === 'cat' ? r.value === category && !tag : r.value === tag);
@@ -181,7 +184,7 @@ export function Sidebar({ id, repos, category, tag, onCategory, onTag }: Props) 
         {cats.map((r) => item(r, r.id === (cats.some((c) => c.id === current) ? current : 'cat:'), 'treeitem'))}
       </ul>
       <h2 className="tk-label sidebar__heading" id="tag-heading">
-        {t('library.localTags')}
+        {t('library.tags')}
       </h2>
       {tags.length ? (
         <ul className="tree" role="listbox" aria-labelledby="tag-heading" onKeyDown={(e) => onKey(e, tags)}>

@@ -2,10 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n';
 import { useStore } from '../store';
 import { useFit } from '../ui/hooks';
-import { IconRefresh } from '../ui/icons';
 import './statusbar.css';
 
-const LEVELS = ['durum', 'hesap', 'tazele', 'token'];
+const LEVELS = ['durum', 'hesap', 'token'];
 
 export function StatusBar({ onSettings }: { onSettings: () => void }) {
   const { t, rel, num, clock, lang } = useI18n();
@@ -32,13 +31,6 @@ export function StatusBar({ onSettings }: { onSettings: () => void }) {
 
   return (
     <footer ref={ref} className="statusbar divider-top" role="status" data-sync={sync} data-rate={out ? 'out' : undefined}>
-      <span className="statusbar__item statusbar__item--sync" title={sync === 'cache' ? t('status.cacheHint') : syncText}>
-        <span className="badge__dot" aria-hidden="true" />
-        <span className="statusbar__text" aria-hidden="true">
-          {syncText}
-        </span>
-        <span className="tk-sr-only">{syncText}</span>
-      </span>
       {store.syncing ? <span className="sync-progress" aria-hidden="true" /> : null}
       {rateText ? (
         <span className="statusbar__item statusbar__item--rate" title={rateTitle}>
@@ -60,11 +52,6 @@ export function StatusBar({ onSettings }: { onSettings: () => void }) {
           <span className="statusbar__text">{fetchedText}</span>
         </span>
       ) : null}
-      <span className="statusbar__spacer" />
-      <button type="button" className="btn btn--quiet btn--small" aria-label={t('status.refresh')} disabled={store.syncing} title={store.syncing ? t('status.syncing') : t('status.refresh')} onClick={() => void store.refresh()}>
-        <IconRefresh />
-        <span className="statusbar__refresh-label">{t('status.refresh')}</span>
-      </button>
     </footer>
   );
 }

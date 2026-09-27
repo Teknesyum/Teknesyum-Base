@@ -2,6 +2,7 @@ import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useI18n } from '../i18n';
 import { useDialogFocus, useMotion, usePresence } from './hooks';
+import { IconClose } from './icons';
 
 type ConfirmProps = {
   open: boolean;
@@ -68,6 +69,36 @@ export function ConfirmDialog({ open, title, body, confirmLabel, ack, danger, re
             {confirmLabel}
           </button>
         </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+type ImageProps = {
+  open: boolean;
+  src: string;
+  alt: string;
+  returnTo: HTMLElement | null;
+  onClose: () => void;
+};
+
+export function ImageDialog({ open, src, alt, returnTo, onClose }: ImageProps) {
+  const { t } = useI18n();
+  const { mounted, phase } = usePresence(open);
+  const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const onKey = useDialogFocus(ref, mounted && open, returnTo, closeRef);
+  const animation = useMemo(() => [{ opacity: 0, transform: 'scale(0.98)' }, { opacity: 1, transform: 'none' }], []);
+  useMotion(ref, phase, animation);
+  if (!mounted) return null;
+  return createPortal(
+    <div className="tk-modal-scrim modal-scrim" data-tk-modal="info" data-tk-kapaniyor={phase === 'exit' ? '1' : undefined} onClick={onClose}>
+      <div ref={ref} className="viewer" role="dialog" aria-modal="true" aria-label={alt} onKeyDown={(e) => onKey(e, onClose)} onClick={(e) => e.stopPropagation()}>
+        <img className="viewer__img" src={src} alt={alt} />
+        <button ref={closeRef} type="button" className="btn btn--ghost btn--icon viewer__close" aria-label={t('common.close')} title={t('common.close')} onClick={onClose}>
+          <IconClose />
+        </button>
       </div>
     </div>,
     document.body,

@@ -23,10 +23,12 @@
 }
 
 :root {
-  --app-btn-h: calc(var(--tk-sp-5) + var(--tk-sp-1));
-  --app-btn-px: calc(var(--tk-sp-2) + var(--tk-sp-1) / 2);
+  --app-btn-h: var(--tk-btn-h);
+  --app-btn-px: var(--tk-btn-px);
   --app-card-min: calc(var(--tk-sidebar-w) + var(--tk-sp-5) * 2);
-  --app-sheet-w: min(calc(var(--tk-measure) + var(--tk-sp-5) * 4), 100vw);
+  --app-sheet-w: 100vw;
+  --app-detail-w: calc(var(--tk-measure) + var(--tk-sp-5) * 8);
+  --app-shot-w: calc(var(--tk-icon-4) * 5);
   --app-status-h: calc(var(--app-btn-h) + var(--tk-sp-2));
   --app-dar-w: calc(var(--tk-sidebar-w) + var(--app-card-min) * 2 + var(--tk-sp-5) * 3);
 }
@@ -39,26 +41,6 @@ body,
 
 body {
   overflow: hidden;
-}
-
-::-webkit-scrollbar-thumb {
-  background: transparent;
-  transition: background-color var(--tk-t-fast) var(--tk-e-out);
-}
-
-:hover::-webkit-scrollbar-thumb,
-:focus-visible::-webkit-scrollbar-thumb,
-:focus-within::-webkit-scrollbar-thumb {
-  background: var(--tk-border-decorative);
-}
-
-::-webkit-scrollbar-thumb:active {
-  background: var(--tk-border);
-}
-
-:disabled::-webkit-scrollbar-thumb {
-  background: transparent;
-  cursor: not-allowed;
 }
 
 .divider-top {
@@ -95,21 +77,30 @@ body {
   flex-shrink: 0;
 }
 
-.tk-titlebar[data-sikis] .tk-titlebar__accent {
+.tk-titlebar[data-sikis] .tk-titlebar__chip:not(.tk-titlebar__chip--brand, .tk-titlebar__chip--support) {
   display: none;
 }
 
-.tk-titlebar:is([data-sikis='simge'], [data-sikis='logo']) .tk-titlebar__chip:not(.tk-titlebar__chip--support) {
+.tk-titlebar[data-sikis]:not([data-sikis='site']) .tk-titlebar__accent {
   display: none;
 }
 
-.tk-titlebar:is([data-sikis='simge'], [data-sikis='logo']) .tk-titlebar__chip--support {
+.tk-titlebar:is([data-sikis='simge'], [data-sikis='logo'], [data-sikis='senk']) .tk-titlebar__chip:not(.tk-titlebar__chip--support) {
+  display: none;
+}
+
+.tk-titlebar:is([data-sikis='simge'], [data-sikis='logo'], [data-sikis='senk']) .tk-titlebar__chip--support {
   gap: 0;
   font-size: 0;
 }
 
-.tk-titlebar[data-sikis='logo'] .tk-titlebar__name {
+.tk-titlebar:is([data-sikis='logo'], [data-sikis='senk']) .tk-titlebar__name {
   display: none;
+}
+
+.tk-titlebar[data-sikis='senk'] .tk-sync {
+  gap: 0;
+  font-size: 0;
 }
 
 .app__main {
@@ -556,8 +547,8 @@ body {
 }
 
 .check__box {
-  width: var(--tk-icon-2);
-  height: var(--tk-icon-2);
+  width: var(--tk-target-min);
+  height: var(--tk-target-min);
   margin: 0;
   accent-color: var(--tk-danger-text);
   cursor: pointer;
@@ -568,4 +559,41 @@ body {
   .skeleton::after {
     animation: none;
   }
+}
+
+.lang-switch {
+  display: flex;
+  align-items: stretch;
+}
+
+.lang-switch .tk-titlebar__tab[aria-checked='true'] {
+  color: var(--tk-text);
+}
+
+.lang-switch .tk-titlebar__tab[aria-checked='true']::after {
+  transform: scaleX(1);
+}
+
+.viewer {
+  position: relative;
+  display: grid;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.viewer__img {
+  display: block;
+  max-width: calc(100vw - var(--tk-sp-5) * 2);
+  max-height: calc(100vh - var(--tk-sp-5) * 2);
+  object-fit: contain;
+  border: var(--tk-border-w) solid var(--tk-border);
+  border-radius: var(--tk-r);
+  background: var(--tk-surface);
+}
+
+.viewer__close {
+  position: absolute;
+  top: var(--tk-sp-2);
+  right: var(--tk-sp-2);
+  background: var(--tk-glass);
 }

@@ -1,14 +1,46 @@
 import { useRef, useState } from 'react';
-import type { Repo } from '../api/types';
+import type { Installed, Repo } from '../api/types';
 import { useI18n } from '../i18n';
 import { useStore } from '../store';
 import { stagger, useFlip, useRoving } from '../ui/hooks';
-import { EmptyState, SkeletonCards } from '../ui/States';
+import { EmptyState, ErrorState, SkeletonCards } from '../ui/States';
 import { useToast } from '../ui/Toasts';
 import { isRunning, type Opener } from './actions';
-import { StateBadge, TaskProgress } from './RepoCard';
+import { AppIcon, StateBadge, TaskProgress } from './RepoCard';
 import './library.css';
 import './page.css';
+
+function stub(item: Installed): Repo {
+  const [owner = '', name = item.fullName] = item.fullName.split('/');
+  return {
+    owner,
+    name,
+    fullName: item.fullName,
+    description: '',
+    private: false,
+    archived: false,
+    fork: false,
+    stars: 0,
+    forks: 0,
+    openIssues: 0,
+    language: null,
+    topics: [],
+    license: null,
+    homepage: null,
+    htmlUrl: 'https://github.com/' + item.fullName,
+    pushedAt: item.installedAt,
+    updatedAt: item.installedAt,
+    sizeKb: 0,
+    latestTag: null,
+    latestPublishedAt: null,
+    hasWindowsAsset: false,
+    manifest: null,
+    category: 'other',
+    installState: 'installed',
+    installedTag: item.tag,
+    localTags: [],
+  };
+}
 
 type Props = {
   onOpen: (repo: Repo, o: Opener) => void;
@@ -22,9 +54,7 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
   const toast = useToast();
   const [bulk, setBulk] = useState<{ done: number; total: number } | null>(null);
   const repos = store.list?.repos ?? [];
-  const rows = store.installed
-    .map((item) => ({ item, repo: repos.find((r) => r.fullName === item.fullName) }))
-    .filter((x): x is { item: (typeof store.installed)[number]; repo: Repo } => !!x.repo);
+  const rows = store.installed.map((item) => ({ item, repo: repos.find((r) => r.fullName.toLocaleLowerCase('tr') === item.fullName.toLocaleLowerCase('tr')) ?? stub(item) }));
   const updatable = rows.filter((x) => x.repo.installState === 'update-available' && !isRunning(store.tasks[x.repo.fullName]));
   const listRef = useRef<HTMLUListElement>(null);
   useFlip(listRef, rows.map((x) => x.item.fullName).join('|'));
@@ -47,7 +77,8 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
   };
 
   let body;
-  if (!store.list) body = <SkeletonCards count={4} view="list" />;
+  if (!store.list && store.loadError) body = <ErrorState error={store.loadError} action={{ label: t('common.retry'), run: store.reload }} />;
+  else if (!store.list && !store.installed.length) body = <SkeletonCards count={4} view="list" />;
   else if (!rows.length)
     body = <EmptyState title={t('installed.emptyTitle')} body={t('installed.emptyBody')} action={{ label: t('installed.goLibrary'), run: onLibrary }} />;
   else
@@ -59,9 +90,12 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
           const rp = roving.itemProps(i);
           return (
             <li key={item.fullName} className="row row--installed" data-flip={item.fullName} style={stagger(i)}>
-              <button type="button" className="card__open" data-name={repo.name} {...rp} onClick={(e) => onOpen(repo, e.currentTarget)}>
-                {repo.name}
-              </button>
+              <span className="card__head">
+                <AppIcon name={repo.name} />
+                <button type="button" className="card__open" data-name={repo.name} {...rp} onClick={(e) => onOpen(repo, e.currentTarget)}>
+                  {repo.name}
+                </button>
+              </span>
               <span className="meta">
                 {repo.installState === 'update-available' ? t('installed.versions', { from: item.tag, to: repo.latestTag ?? '' }) : item.tag}
               </span>

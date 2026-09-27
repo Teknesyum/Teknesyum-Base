@@ -9,11 +9,13 @@ pub const TEST_ROOT_ENV: &str = "TEKNESYUM_BASE_ROOT";
 
 #[derive(Debug, Clone)]
 pub struct Paths {
+    pub shared: PathBuf,
     pub data: PathBuf,
     pub cache: PathBuf,
     pub default_install: PathBuf,
     pub default_clone: PathBuf,
     pub shortcuts: PathBuf,
+    pub scan_roots: Vec<PathBuf>,
     pub dry_run: bool,
 }
 
@@ -33,6 +35,8 @@ impl Paths {
             default_install: root.join("apps"),
             default_clone: root.join("clones"),
             shortcuts: root.join("shortcuts"),
+            scan_roots: vec![root.join("programs")],
+            shared: root,
             dry_run: true,
         }
     }
@@ -46,6 +50,8 @@ impl Paths {
         Self {
             cache: data.join("cache"),
             data,
+            shared: teknesyum.clone(),
+            scan_roots: vec![local.join("Programs"), local.clone()],
             default_install: teknesyum.join("apps"),
             default_clone: home.join("Teknesyum"),
             shortcuts: roaming
@@ -63,7 +69,14 @@ impl Paths {
     }
 
     pub fn installed_file(&self) -> PathBuf {
-        self.data.join("installed.json")
+        self.shared.join("installed.json")
+    }
+
+    pub fn legacy_installed_files(&self) -> Vec<PathBuf> {
+        ["Base", "Base Pro"]
+            .iter()
+            .map(|d| self.shared.join(d).join("installed.json"))
+            .collect()
     }
 
     pub fn tags_file(&self) -> PathBuf {

@@ -71,6 +71,7 @@ const repos: Repo[] = seeds.map((s) => ({
   installState: s.state,
   installedTag: s.installedTag ?? null,
   localTags: s.tags ?? [],
+  uiVersion: s.tag ? (s.stars % 2 ? '0.23.0' : '0.20.0') : null,
 }));
 
 let settings: Settings = {
@@ -98,8 +99,11 @@ function installedList(): Installed[] {
     .map((r) => ({
       fullName: r.fullName,
       tag: r.installedTag ?? 'main',
-      method: r.installState === 'cloned' ? 'clone' : 'zip',
-      path: (r.installState === 'cloned' ? settings.cloneDir : settings.installDir) + '\\' + r.name,
+      method: r.installState === 'cloned' ? 'clone' : r.name === 'VidShrink' ? 'external' : 'zip',
+      path:
+        r.name === 'VidShrink'
+          ? 'C:\\Users\\Kullanici\\AppData\\Local\\Programs\\VidShrink'
+          : (r.installState === 'cloned' ? settings.cloneDir : settings.installDir) + '\\' + r.name,
       exe: r.installState === 'cloned' ? null : r.name + '.exe',
       installedAt: iso(20 * day),
     }));
@@ -286,6 +290,7 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
         rateRemaining: durum === 'sinir' ? 0 : rate,
         rateResetAt: new Date(Date.now() + 42 * 60000).toISOString(),
         budgetSkipped: durum === 'sinir',
+        uiLatest: '0.23.0',
         repos: durum === 'bos' ? [] : repos.map((r) => ({ ...r, topics: [...r.topics], localTags: [...r.localTags] })),
       };
       return out(list);

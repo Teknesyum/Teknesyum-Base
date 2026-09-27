@@ -88,4 +88,6 @@ export const windowControls = {
   show: async () => {
     if (isTauri) await (await win()).show();
   },
+  isMaximized: async () => (isTauri ? (await win()).isMaximized() : false),
+  onResized: async (fn: () => void) => (isTauri ? (await win()).onResized(fn) : () => {}),
 };

@@ -1,12 +1,15 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import tr from './locale/tr.json';
 import en from './locale/en.json';
+import labelsTr from '../teknesyum-ui/react/labels.tr.json';
+import labelsEn from '../teknesyum-ui/react/labels.en.json';
 
 export type Lang = 'tr' | 'en';
 export type Vars = Record<string, string | number>;
 export type T = (key: string, vars?: Vars) => string;
 
 const dicts: Record<Lang, unknown> = { tr, en };
+const labels: Record<Lang, Record<string, string>> = { tr: labelsTr, en: labelsEn };
 
 function lookup(dict: unknown, key: string): string | undefined {
   let node: unknown = dict;
@@ -19,7 +22,7 @@ function lookup(dict: unknown, key: string): string | undefined {
 
 export function makeT(lang: Lang): T {
   return (key, vars) => {
-    const raw = lookup(dicts[lang], key) ?? lookup(dicts.tr, key) ?? key;
+    const raw = labels[lang][key] ?? lookup(dicts[lang], key) ?? lookup(dicts.tr, key) ?? key;
     if (!vars) return raw;
     return raw.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
   };

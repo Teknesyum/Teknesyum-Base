@@ -29,8 +29,8 @@
 
 .sheet__title {
   display: flex;
-  align-items: baseline;
-  gap: var(--tk-sp-2);
+  align-items: center;
+  gap: var(--tk-sp-3);
   margin: 0;
   font-size: var(--tk-fs-4);
   font-weight: var(--tk-fw-semi);
@@ -193,6 +193,7 @@
 }
 
 .prose a {
+  padding-block: max(0px, calc((var(--tk-target-min) - 1em) / 2));
   color: var(--tk-renk-1);
   text-underline-offset: var(--tk-focus-offset);
   transition: color var(--tk-t-instant) var(--tk-e-out);
@@ -309,4 +310,23 @@
   .tab-panel {
     animation: none;
   }
+}
+
+.sheet__head,
+.sheet__body > * {
+  width: 100%;
+  max-width: var(--app-detail-w);
+  margin-inline: auto;
+}
+
+.sheet__head {
+  max-width: calc(var(--app-detail-w) + var(--tk-sp-5) * 2);
+}
+
+.sheet__class {
+  margin-top: var(--tk-sp-3);
+}
+
+.chip--category {
+  color: var(--tk-renk-1);
 }

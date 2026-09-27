@@ -2,7 +2,33 @@ import type { Repo, TaskEvent } from '../api/types';
 import { useI18n } from '../i18n';
 import { ProgressBar } from '../ui/Progress';
 import { IconStar } from '../ui/icons';
-import { isRunning, primaryOf, type Opener } from './actions';
+import { useState } from 'react';
+import { appIcon, appShot, appShotFull } from '../data/visuals';
+import { ImageDialog } from '../ui/Dialog';
+import { useStore } from '../store';
+import { isRunning, primaryOf, uiState, type Opener } from './actions';
+
+export function AppIcon({ name }: { name: string }) {
+  const src = appIcon(name);
+  if (src) return <img className="app-icon" src={src} alt="" aria-hidden="true" loading="lazy" />;
+  return (
+    <span className="app-icon app-icon--letter" aria-hidden="true">
+      {name.charAt(0).toLocaleUpperCase('tr')}
+    </span>
+  );
+}
+
+export function UiChip({ repo }: { repo: Repo }) {
+  const { t } = useI18n();
+  const latest = useStore().list?.uiLatest ?? null;
+  if (!repo.uiVersion) return null;
+  const state = uiState(repo.uiVersion, latest);
+  return (
+    <span className={state === 'old' ? 'chip chip--warn' : 'chip'} title={t('ui.' + state, { latest: latest ?? '' })}>
+      {t('ui.chip', { version: repo.uiVersion })}
+    </span>
+  );
+}
 
 export function StateBadge({ repo }: { repo: Repo }) {
   const { t } = useI18n();
@@ -60,18 +86,47 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
       </span>
       {repo.language ? <span className="meta">{repo.language}</span> : null}
       {repo.latestTag ? <span className="chip">{repo.latestTag}</span> : null}
+      <UiChip repo={repo} />
       <span className="meta">{rel(repo.pushedAt)}</span>
       {repo.archived ? <span className="chip chip--warn">{t('state.archived')}</span> : null}
     </div>
   );
+  const tags = repo.tags ?? [];
+  const shot = appShot(repo.name);
+  const [viewer, setViewer] = useState<HTMLElement | null>(null);
+  const shotAlt = t('library.shot', { name: repo.name });
   return (
-    <article className={view === 'grid' ? 'card' : 'row'} data-flip={repo.fullName} style={{ animationDelay: `calc(var(--tk-stagger) * min(${index}, var(--tk-stagger-max)))` }}>
-      <h3 className="card__title">
-        <button type="button" className="card__open" data-name={repo.name} {...item} onClick={(e) => onOpen(e.currentTarget)}>
-          {repo.name}
+    <article
+      className={view === 'grid' ? 'card' : 'row'}
+      data-flip={repo.fullName}
+      onClick={(e) => {
+        if ((e.target as Element).closest('button, a')) return;
+        onOpen(e.currentTarget.querySelector<HTMLButtonElement>('.card__open'));
+      }}
+      style={{ animationDelay: `calc(var(--tk-stagger) * min(${index}, var(--tk-stagger-max)))` }}>
+      <div className="card__head">
+        <AppIcon name={repo.name} />
+        <div className="card__heading">
+          <h3 className="card__title">
+            <button type="button" className="card__open" data-name={repo.name} {...item} onClick={(e) => onOpen(e.currentTarget)}>
+              {repo.name}
+            </button>
+          </h3>
+          <span className="card__category">{t('category.' + repo.category)}</span>
+        </div>
+      </div>
+      {shot ? (
+        <button type="button" className="card__shot" aria-label={t('library.shotOpen', { name: repo.name })} title={t('library.shotOpen', { name: repo.name })} onClick={(e) => setViewer(e.currentTarget)}>
+          <img className="card__shot-img" src={shot} alt="" loading="lazy" />
         </button>
-      </h3>
-      <p className="card__desc">{repo.description || t('library.noDescription')}</p>
+      ) : null}
+      {shot ? <ImageDialog open={!!viewer} src={appShotFull(repo.name) ?? shot} alt={shotAlt} returnTo={viewer} onClose={() => setViewer(null)} /> : null}
+      <p className="card__desc">{repo.summary || repo.description || t('library.noDescription')}</p>
+      {tags.length ? (
+        <p className="card__tags" aria-label={t('library.tags')}>
+          {'#' + tags.join('   #')}
+        </p>
+      ) : null}
       {meta}
       <div className="card__foot">
         <StateBadge repo={repo} />

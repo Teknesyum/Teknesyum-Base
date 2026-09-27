@@ -16,15 +16,15 @@
   },
   "brand": {
     "renk-1": {
-      "value": "#6fb7ff",
+      "value": "#4da6ff",
       "rationale": "Primary brand colour: primary button fill, heading, label, focus ring."
     },
     "renk-2": {
-      "value": "#cba7d2",
-      "rationale": "The FILL cut of the secondary brand colour; as text it gives 10.00:1, so text work goes to renk-2-text."
+      "value": "#de7ef1",
+      "rationale": "The FILL cut of the secondary brand colour; as text it gives 8.36:1, so text work goes to renk-2-text."
     },
     "renk-3": {
-      "value": "#c3a3ff",
+      "value": "#b68fff",
       "rationale": "Tertiary brand colour: decoration, scrollbar, ghost button."
     },
     "renk-2-text": {
@@ -33,7 +33,7 @@
     },
     "renk-3-text": {
       "value": "#ac7fff",
-      "rationale": "The TEXT cut of renk-3; the fill renk-3 does not clear the 7:1 text threshold."
+      "rationale": "The TEXT cut of renk-3; the fill renk-3 now clears 7:1 as well, the text cut is kept for continuity."
     },
     "surface": {
       "value": "#000000",
@@ -68,7 +68,7 @@
     "warning-border": {
       "ref": "warning",
       "alpha": 0.5,
-      "rationale": "3.96:1 on #000000 — clears 1.4.11's 3:1 threshold; renk-2 /50 (3.02) and renk-3 /50 (3.01) did not."
+      "rationale": "3.96:1 on #000000 — clears 1.4.11's 3:1 threshold; renk-2 /50 (2.66) and renk-3 /50 (2.67) did not."
     },
     "text": {
       "value": "#ffffff",
@@ -92,6 +92,7 @@
     "glass": {
       "ref": "glass-base",
       "alpha": 0.9,
+      "blur": 0,
       "rationale": "Glass surface (dark-glass); title bar and translucent layers."
     },
     "border": {
@@ -139,8 +140,8 @@
     },
     "shadow-panel": {
       "ref": "black",
-      "alpha": 0.8,
-      "blur": 40,
+      "alpha": 0,
+      "blur": 0,
       "rationale": "Panel drop shadow; separates the panel from the background gradient without a second border (components.md Panel)."
     },
     "scrim": {
@@ -152,34 +153,42 @@
       "from": "black",
       "to": "surface",
       "stops": 16,
+      "type": "flat",
+      "angle": 160,
+      "rotate": false,
+      "halo-alpha": [0.18, 0.14, 0.14],
+      "grid-alpha": 0.08,
+      "grid-size": 32,
       "rationale": "Not a flat colour but an 11-stop gradient (SKILL §2); the stops are linearly interpolated in the script, which closes banding."
-    }
+    },
+    "scrollbar-thumb": { "ref": "renk-3-text", "hover-ref": "renk-2", "rationale": "Scrollbar thumb and its hover colour. No glow: a halo on a thin moving bar smears." },
+    "scrollbar-track": { "ref": "black", "alpha": 0.3, "rationale": "Scrollbar track under the thumb." }
   },
   "on": {
     "_": ["Which text colour sits on each fill. on names an existing colour; null means the fill carries no text.","generate.js composites a translucent fill over surface, measures the pair and refuses to generate below 7:1."],
-    "renk-1": { "on": "black", "rationale": "black on renk 1%: 9.89:1." },
-    "renk-2": { "on": "black", "rationale": "black on renk 2%: 10.00:1." },
-    "renk-3": { "on": "black", "rationale": "black on renk 3%: 10.00:1." },
+    "renk-1": { "on": "black", "rationale": "black on renk 1%: 8.21:1." },
+    "renk-2": { "on": "black", "rationale": "black on renk 2%: 8.36:1." },
+    "renk-3": { "on": "black", "rationale": "black on renk 3%: 8.36:1." },
     "success": { "on": "black", "rationale": "black on success: 14.50:1." },
-    "danger": { "on": "black", "rationale": "black on danger: 10.00:1." },
+    "danger": { "on": "black", "rationale": "black on danger: 8.36:1." },
     "danger-text": { "on": "black", "rationale": "black on danger-text: 10.26:1." },
     "panel": { "on": "text", "rationale": "text on panel over surface: 21.00:1." },
     "glass": { "on": "text", "rationale": "text on glass over surface: 19.12:1." },
-    "renk-1-10": { "on": "text", "rationale": "text on renk-1 10% over surface: 18.79:1." },
-    "renk-1-20": { "on": "text", "rationale": "text on renk-1 20% over surface: 15.65:1." },
-    "renk-1-30": { "on": "text", "rationale": "text on renk-1 30% over surface: 12.24:1." },
-    "renk-1-50": { "on": "text", "rationale": "text on renk-1 50% over surface: 7.03:1." },
-    "renk-1-60": { "on": null, "rationale": "Carries no text: the best pair, text on renk-1 60% over surface, is 5.36:1, below 7:1." },
-    "renk-2-10": { "on": "text", "rationale": "text on renk-2 10% over surface: 18.76:1." },
-    "renk-2-20": { "on": "text", "rationale": "text on renk-2 20% over surface: 15.58:1." },
-    "renk-2-30": { "on": "text", "rationale": "text on renk-2 30% over surface: 12.16:1." },
-    "renk-2-50": { "on": null, "rationale": "Carries no text: the best pair, text on renk-2 50% over surface, is 6.96:1, below 7:1." },
-    "renk-2-60": { "on": null, "rationale": "Carries no text: the best pair, text on renk-2 60% over surface, is 5.31:1, below 7:1." },
-    "renk-3-10": { "on": "text", "rationale": "text on renk-3 10% over surface: 18.77:1." },
-    "renk-3-20": { "on": "text", "rationale": "text on renk-3 20% over surface: 15.59:1." },
-    "renk-3-30": { "on": "text", "rationale": "text on renk-3 30% over surface: 12.16:1." },
-    "renk-3-50": { "on": null, "rationale": "Carries no text: the best pair, text on renk-3 50% over surface, is 6.97:1, below 7:1." },
-    "renk-3-60": { "on": null, "rationale": "Carries no text: the best pair, text on renk-3 60% over surface, is 5.31:1, below 7:1." }
+    "renk-1-10": { "on": "text", "rationale": "text on renk-1 10% over surface: 19.05:1." },
+    "renk-1-20": { "on": "text", "rationale": "text on renk-1 20% over surface: 16.30:1." },
+    "renk-1-30": { "on": "text", "rationale": "text on renk-1 30% over surface: 13.16:1." },
+    "renk-1-50": { "on": "text", "rationale": "text on renk-1 50% over surface: 7.98:1." },
+    "renk-1-60": { "on": null, "rationale": "Carries no text: the best pair, text on renk-1 60% over surface, is 6.20:1, below 7:1." },
+    "renk-2-10": { "on": "text", "rationale": "text on renk-2 10% over surface: 19.03:1." },
+    "renk-2-20": { "on": "text", "rationale": "text on renk-2 20% over surface: 16.25:1." },
+    "renk-2-30": { "on": "text", "rationale": "text on renk-2 30% over surface: 13.08:1." },
+    "renk-2-50": { "on": "text", "rationale": "text on renk-2 50% over surface: 7.89:1." },
+    "renk-2-60": { "on": null, "rationale": "Carries no text: the best pair, text on renk-2 60% over surface, is 6.12:1, below 7:1." },
+    "renk-3-10": { "on": "text", "rationale": "text on renk-3 10% over surface: 19.00:1." },
+    "renk-3-20": { "on": "text", "rationale": "text on renk-3 20% over surface: 16.20:1." },
+    "renk-3-30": { "on": "text", "rationale": "text on renk-3 30% over surface: 13.04:1." },
+    "renk-3-50": { "on": "text", "rationale": "text on renk-3 50% over surface: 7.87:1." },
+    "renk-3-60": { "on": null, "rationale": "Carries no text: the best pair, text on renk-3 60% over surface, is 6.11:1, below 7:1." }
   },
   "duration": {
     "instant": { "ms": 40, "rationale": "Press/release response." },
@@ -189,7 +198,7 @@
     "bg-rotate": { "ms": 48000, "rationale": "Background rotation — the one named exception to the infinite-loop ban (SKILL §5.4)." }
   },
   "easing": {
-    "out": { "bezier": [0.2, 0, 0, 1], "rationale": "Default for entering/settling elements (§5.4)." },
+    "out": { "bezier": [0.05, 0.7, 0.1, 1], "rationale": "Default for entering/settling elements (§5.4)." },
     "in": { "bezier": [0.4, 0, 1, 1], "rationale": "Element leaving the scene." },
     "spring": { "bezier": [0.34, 1.36, 0.64, 1], "rationale": "Emphasis spring; used on the web side only." },
     "in-out": { "bezier": [0.4, 0, 0.2, 1], "rationale": "Slow start, fast middle, slow end: an element moving from one place to another on screen." },
@@ -232,21 +241,28 @@
     "toast-gap": { "ref": "space.3", "rationale": "Gap between two stacked toasts." }
   },
   "shape": {
-    "r": { "value": 3, "unit": "px", "rationale": "The single radius (SKILL \u00a75, layout.md \u00a75.1). The exception is the circle: badge, slider thumb, status dot." },
-    "r-window": { "value": 3, "unit": "px", "rationale": "Window shell radius, drawn title bar included (desktop.md \u00a710)." },
+    "r": { "value": 4, "unit": "px", "rationale": "The single radius (SKILL \u00a75, layout.md \u00a75.1). The exception is the circle: badge, slider thumb, status dot." },
+    "r-window": { "value": 4, "unit": "px", "rationale": "Window shell radius, drawn title bar included (desktop.md \u00a710)." },
     "border-w": { "value": 1, "unit": "px", "rationale": "Default border width; the tab outline sits 1 DIP inset with the same width." },
+    "window-edge": { "ref": "none", "rationale": "Window shell outline colour; none draws no edge." },
     "focus-w": { "value": 2, "unit": "px", "rationale": "Focus ring outline width; the inner layer is black (SKILL \u00a75.3)." },
     "focus-offset": { "value": 2, "unit": "px", "rationale": "Focus ring offset. The ring never animates." }
   },
   "metric": {
     "target-min": { "value": 24, "unit": "px", "rationale": "Minimum interactive target, 24\u00d724 DIP (SKILL \u00a75.3); the checkbox cell takes the same value." },
     "scrollbar-w": { "value": 3, "unit": "px", "rationale": "Scrollbar track width and height (SKILL \u00a75.3)." },
-    "titlebar-h-min": { "value": 32, "unit": "px", "rationale": "Drawn title bar floor (SKILL \u00a74, desktop.md \u00a710)." },
-    "titlebar-h-max": { "value": 40, "unit": "px", "rationale": "Drawn title bar ceiling; the source gives a range, not one number." },
+    "scrollbar-style": { "value": "fade", "rationale": "Scrollbar look: solid, thin, pill, hover, fade or shrink." },
+    "scroll-behavior": { "value": "auto", "rationale": "Programmatic scroll: auto or smooth. Reduced motion forces auto." },
+    "titlebar-h-min": { "value": 28, "unit": "px", "rationale": "Drawn title bar floor (SKILL \u00a74, desktop.md \u00a710)." },
+    "titlebar-h-max": { "value": 28, "unit": "px", "rationale": "Drawn title bar ceiling; the source gives a range, not one number." },
     "sidebar-w": { "value": 240, "unit": "px", "rationale": "Open sidebar width (layout.md \u00a75.7)." },
     "sidebar-collapsed-w": { "value": 48, "unit": "px", "rationale": "Collapsed sidebar width; icon only." },
     "input-h": { "value": 40, "unit": "px", "rationale": "Text input minimum height (forms.md \u00a71)." },
+    "btn-h": { "value": 28, "unit": "px", "rationale": "Button minimum height." },
+    "btn-px": { "value": 10, "unit": "px", "rationale": "Button horizontal padding." },
     "modal-w": { "value": 560, "unit": "px", "vw-max": 90, "rationale": "Modal width: 560, capped at 90% of the viewport (forms.md \u00a73)." },
+    "installer-w": { "value": 720, "unit": "px", "rationale": "Installer window width; every installer takes the same window (AmeliyatListe reference)." },
+    "installer-h": { "value": 540, "unit": "px", "rationale": "Installer window height." },
     "modal-max-ratio": { "value": 0.85, "rationale": "Modal maximum height as a share of the viewport." },
     "toast-w": { "value": 360, "unit": "px", "gutter-ref": "space.5", "rationale": "Toast width: 360, capped at the viewport minus one inset per side (forms.md \u00a74)." },
     "toast-max": { "value": 3, "rationale": "Maximum toasts visible at once; the stack cap is enforced by the scanner." },
@@ -285,5 +301,14 @@
       "css-quote": false,
       "rationale": "Every number, key and piece of code is written in mono (SKILL §3)."
     }
+  },
+  "label": {
+    "_": "Every piece of chrome text the apps share: the words (tr, en) and their look (colour ref, size step, weight step). The preview edits them; setup writes labels.tr.json and labels.en.json next to each target so every app reads the same words.",
+    "brand": { "tr": "Teknesyum", "en": "Teknesyum", "hint-tr": "Teknesyum GitHub sayfasını aç", "hint-en": "Open the Teknesyum GitHub page", "ref": "renk-1", "fs": "fs-1", "weight": "fw-semi", "rationale": "Signature brand chip; colour and weight match the titlebar chip." },
+    "support": { "tr": "Destek Ol", "en": "Buy me a coffee", "hint-tr": "Projeyi desteklemek için tıkla", "hint-en": "Click to support the project", "ref": "renk-3-text", "fs": "fs-1", "weight": "fw-semi", "rationale": "Support chip; renk-3-text as in the titlebar support chip." },
+    "site": { "tr": "teknesyum.com", "en": "teknesyum.com", "hint-tr": "Teknesyum sitesini aç", "hint-en": "Open the Teknesyum site", "ref": "renk-1", "fs": "fs-1", "weight": "fw-semi", "rationale": "Site chip beside the support chip." },
+    "update": { "tr": "Güncelleme", "en": "Update", "download-tr": "Yeni sürüm var, indirmek için tıklayın", "download-en": "New version available, click to download", "install-tr": "İndirildi, kurmak için tıklayın", "install-en": "Downloaded, click to install", "ref": "text", "fs": "fs-1", "weight": "fw-semi", "rationale": "Two-step update badge: the label and the hint for each step." },
+    "sync": { "tr": "Eşitlendi", "en": "Synced", "offline-tr": "Çevrimdışı", "offline-en": "Offline", "hint-tr": "Şimdi eşitle", "hint-en": "Sync now", "ref": "text", "fs": "fs-1", "weight": "fw-semi", "rationale": "Sync badge states; the state colour comes from the role tokens." },
+    "title": { "tr": "Uygulama adı", "en": "Application name", "ref": "text", "accent-ref": "renk-2-text", "fs": "fs-3", "weight": "fw-semi", "rationale": "Window title: the app name, its accent part and their look." }
   }
 }

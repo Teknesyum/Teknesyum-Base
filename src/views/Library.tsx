@@ -56,13 +56,13 @@ export function Library({ filter, setFilter, onOpen, onPrimary, onSettings }: Pr
     const q = filter.q.trim().toLocaleLowerCase(lang);
     const out = base.filter((r) => {
       if (filter.category && r.category !== filter.category && !r.category.startsWith(filter.category + '/')) return false;
-      if (filter.tag && !r.localTags.includes(filter.tag)) return false;
+      if (filter.tag && !r.localTags.includes(filter.tag) && !(r.tags ?? []).includes(filter.tag)) return false;
       if (filter.lang && r.language !== filter.lang) return false;
       if (filter.status && r.installState !== filter.status) return false;
       if (showArchived && filter.archive === 'hide' && r.archived) return false;
       if (showArchived && filter.archive === 'only' && !r.archived) return false;
       if (!q) return true;
-      return [r.name, r.description, ...r.topics, ...r.localTags].some((s) => s.toLocaleLowerCase(lang).includes(q));
+      return [r.name, r.description, r.summary ?? '', ...r.topics, ...(r.tags ?? []), ...r.localTags].some((s) => s.toLocaleLowerCase(lang).includes(q));
     });
     const by: Record<LibFilter['sort'], (a: Repo, b: Repo) => number> = {
       stars: (a, b) => b.stars - a.stars,

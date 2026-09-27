@@ -76,7 +76,7 @@ function Panel({ open, returnTo, onClose, state, phase }: Props & { state: Updat
         <div className="update-panel__head">
           <img className="update-panel__logo" src="/logo-32.png" alt="" />
           <h2 id={titleId} className="tk-h3 update-panel__title">
-            {t('update.title')}
+            {t('update.label')}
           </h2>
           {state.dryRun ? <span className="chip chip--warn update-panel__dry">{t('update.dryRun')}</span> : null}
         </div>

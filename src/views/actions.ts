@@ -1,6 +1,20 @@
 import type { Repo, TaskEvent } from '../api/types';
 
-export type Primary = 'install' | 'update' | 'clone' | 'launch' | 'folder';
+export type UiState = 'current' | 'old' | 'unknown';
+
+export function uiState(version: string | null | undefined, latest: string | null | undefined): UiState {
+  if (!version || !latest) return 'unknown';
+  const parts = (v: string) => v.replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
+  const a = parts(version);
+  const b = parts(latest);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const d = (a[i] ?? 0) - (b[i] ?? 0);
+    if (d !== 0) return d < 0 ? 'old' : 'current';
+  }
+  return 'current';
+}
+
+export type Primary = 'install' | 'update' | 'source' | 'launch' | 'folder';
 
 export function primaryOf(repo: Repo): Primary {
   switch (repo.installState) {
@@ -11,7 +25,7 @@ export function primaryOf(repo: Repo): Primary {
     case 'cloned':
       return 'folder';
     default:
-      return repo.hasWindowsAsset ? 'install' : 'clone';
+      return repo.hasWindowsAsset ? 'install' : 'source';
   }
 }
 
@@ -30,6 +44,6 @@ export type LibFilter = {
   tag: string;
 };
 
-export const defaultFilter: LibFilter = { q: '', lang: '', status: '', archive: 'hide', sort: 'stars', view: 'grid', category: '', tag: '' };
+export const defaultFilter: LibFilter = { q: '', lang: '', status: '', archive: 'hide', sort: 'stars', view: 'list', category: '', tag: '' };
 
 export type Opener = HTMLElement | null;

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { api, onTaskProgress } from './api/client';
 import type { AppError, AppInfo, Installed, Repo, RepoList, Settings, TaskEvent } from './api/types';
+import { enrich } from './data/catalog';
 import { makeT } from './i18n';
 import { useToast } from './ui/Toasts';
 
@@ -69,10 +70,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const refreshInstalled = useCallback(async () => {
     try {
       setInstalled(await api.listInstalled());
-    } catch {
-      return;
+    } catch (e) {
+      const err = e as AppError;
+      const t = makeT(langRef.current);
+      toast({ kind: 'danger', title: t('errors.' + err.code + '.title'), body: err.message });
     }
-  }, []);
+  }, [toast]);
 
   const fetchList = useCallback(async (acc: string | undefined, force: boolean, auto = false) => {
     if (force) setSyncing(true);
@@ -169,11 +172,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [fail],
   );
 
+  const shownList = useMemo(() => enrich(list, settings?.language ?? 'tr'), [list, settings?.language]);
+
   const value = useMemo<Store>(
     () => ({
       info,
       settings,
-      list,
+      list: shownList,
       account,
       loadError,
       syncing,
@@ -245,7 +250,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (item) void api.openPath(item.path).catch(fail);
       },
     }),
-    [info, settings, list, account, loadError, syncing, syncError, installed, tasks, logs, dialogFor, fetchList, boot, start, fail],
+    [info, settings, shownList, account, loadError, syncing, syncError, installed, tasks, logs, dialogFor, fetchList, boot, start, fail],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

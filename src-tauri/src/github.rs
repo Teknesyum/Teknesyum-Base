@@ -20,6 +20,8 @@ const ACCEPT_JSON: &str = "application/vnd.github+json";
 const ACCEPT_HTML: &str = "application/vnd.github.html+json";
 const ACCEPT_RAW: &str = "application/vnd.github.raw+json";
 const CONCURRENCY: usize = 6;
+const UI_OWNER: &str = "Teknesyum";
+const UI_REPO: &str = "Teknesyum-UI";
 
 #[derive(Debug, Clone, Default)]
 pub struct RateInfo {
@@ -164,6 +166,10 @@ impl GhRelease {
 struct MemoData {
     release: Option<GhRelease>,
     manifest: Option<Manifest>,
+    #[serde(default)]
+    ui_checked: bool,
+    #[serde(default)]
+    ui: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -171,6 +177,7 @@ pub struct RepoDetails {
     pub gh: GhRepo,
     pub release: Option<GhRelease>,
     pub manifest: Option<Manifest>,
+    pub ui: Option<String>,
 }
 
 pub fn build_http() -> reqwest::Client {
@@ -212,6 +219,12 @@ fn parse_next(h: &HeaderMap) -> Option<String> {
         rel.contains("rel=\"next\"")
             .then(|| url.trim().trim_start_matches('<').trim_end_matches('>').to_string())
     })
+}
+
+pub fn parse_ui_version(text: &str) -> Option<String> {
+    let v: serde_json::Value = serde_json::from_str(text.trim_start_matches('\u{feff}')).ok()?;
+    let pick = |x: &serde_json::Value| x.as_str().map(str::trim).filter(|s| !s.is_empty()).map(str::to_string);
+    v.get("plugin").and_then(pick).or_else(|| v.get("uc").and_then(|u| u.get("surum")).and_then(pick))
 }
 
 pub fn parse_manifest(text: &str) -> Option<Manifest> {
@@ -512,6 +525,31 @@ impl GitHub {
         Ok(parse_manifest(&r.body))
     }
 
+    async fn repo_file(&self, owner: &str, name: &str, private: bool, path: &str) -> AppResult<Option<String>> {
+        let r = if self.token.is_some() || private {
+            self.get(&format!("{API}/repos/{owner}/{name}/contents/{path}"), ACCEPT_RAW).await?
+        } else {
+            self.get(&format!("https://raw.githubusercontent.com/{owner}/{name}/HEAD/{path}"), "text/plain").await?
+        };
+        Ok((r.status == 200).then_some(r.body))
+    }
+
+    pub async fn ui_version(&self, owner: &str, name: &str, private: bool) -> AppResult<Option<String>> {
+        Ok(self
+            .repo_file(owner, name, private, ".claude/teknesyum-ui.json")
+            .await?
+            .and_then(|b| parse_ui_version(&b)))
+    }
+
+    pub async fn ui_latest(&self) -> Option<String> {
+        let body = self
+            .repo_file(UI_OWNER, UI_REPO, false, "ui/.claude-plugin/plugin.json")
+            .await
+            .ok()??;
+        let v: serde_json::Value = serde_json::from_str(body.trim_start_matches('\u{feff}')).ok()?;
+        v.get("version")?.as_str().map(str::to_string)
+    }
+
     pub async fn repo_details(&self, account: &str) -> AppResult<Vec<RepoDetails>> {
         let repos = self.list_account_repos(account).await?;
         let results: Vec<AppResult<RepoDetails>> = stream::iter(repos.into_iter().map(|gh| {
@@ -521,16 +559,18 @@ impl GitHub {
                 let memo_file = store::memo_file(&this.cache_dir, &gh.full_name, this.token.is_some());
                 let now = chrono::Utc::now().timestamp();
                 if let Some(m) = store::load_memo::<MemoData>(&memo_file) {
-                    if m.usable(gh.pushed_at.as_deref(), now) {
+                    if m.data.ui_checked && m.usable(gh.pushed_at.as_deref(), now) {
                         return Ok(RepoDetails {
                             gh,
                             release: m.data.release,
                             manifest: m.data.manifest,
+                            ui: m.data.ui,
                         });
                     }
                 }
                 let release = this.latest_release(&owner, &gh.name).await?;
                 let manifest = this.manifest(&owner, &gh.name, gh.private).await?;
+                let ui = this.ui_version(&owner, &gh.name, gh.private).await?;
                 if let Some(pushed_at) = gh.pushed_at.clone().filter(|p| !p.is_empty()) {
                     let _ = store::save_memo(
                         &memo_file,
@@ -540,6 +580,8 @@ impl GitHub {
                             data: MemoData {
                                 release: release.clone(),
                                 manifest: manifest.clone(),
+                                ui_checked: true,
+                                ui: ui.clone(),
                             },
                         },
                     );
@@ -548,6 +590,7 @@ impl GitHub {
                     gh,
                     release,
                     manifest,
+                    ui,
                 })
             }
         }))
@@ -676,6 +719,7 @@ pub fn to_repo(d: &RepoDetails) -> Repo {
         install_state: crate::model::InstallState::NotInstalled,
         installed_tag: None,
         local_tags: Vec::new(),
+        ui_version: d.ui.clone(),
     }
 }
 
@@ -687,6 +731,7 @@ pub fn new_list(account: &str, repos: Vec<Repo>, rate: RateInfo) -> RepoList {
         rate_remaining: rate.remaining,
         rate_reset_at: rate.reset_at,
         budget_skipped: false,
+        ui_latest: None,
         repos,
     }
 }

@@ -1,4 +1,5 @@
 mod commands;
+mod detect;
 mod error;
 mod github;
 mod installer;
@@ -187,6 +188,9 @@ pub fn run() {
                 let _ = window.restore_state(state_flags());
                 keep_on_screen(&window);
                 fit_to_monitor(&window);
+                if let Some(z) = std::env::var("TEKNESYUM_BASE_UI_SCALE").ok().and_then(|v| v.parse::<f64>().ok()) {
+                    let _ = window.set_zoom(z);
+                }
                 window.show()?;
                 let _ = window.set_focus();
             }

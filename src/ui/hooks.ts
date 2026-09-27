@@ -211,7 +211,7 @@ export function useTitlebarFit(root: RefObject<HTMLElement | null>, signature: s
   useLayoutEffect(() => {
     const bar = root.current?.querySelector<HTMLElement>('.tk-titlebar');
     if (!bar) return;
-    return fitLevels(bar, ['ad', 'simge', 'logo'], '.tk-titlebar__tabs, .tk-titlebar__tab');
+    return fitLevels(bar, ['site', 'ad', 'simge', 'logo', 'senk'], '.tk-titlebar__tabs, .tk-titlebar__tab');
   }, [root, signature]);
 }
 

@@ -10,6 +10,7 @@ use futures_util::StreamExt;
 use reqwest::header::{ACCEPT, AUTHORIZATION, USER_AGENT};
 use sha2::{Digest, Sha256};
 
+use crate::detect;
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::github::{GhAsset, GitHub, UA};
 use crate::logic::{self, AssetKind};
@@ -272,27 +273,6 @@ fn single_root(dir: &Path) -> PathBuf {
     }
 }
 
-fn collect_exes(root: &Path, dir: &Path, depth: u8, out: &mut Vec<(String, u64)>) {
-    let Ok(rd) = fs::read_dir(dir) else {
-        return;
-    };
-    for e in rd.filter_map(Result::ok) {
-        let p = e.path();
-        if p.is_dir() {
-            if depth > 0 {
-                collect_exes(root, &p, depth - 1, out);
-            }
-        } else if p
-            .extension()
-            .is_some_and(|x| x.eq_ignore_ascii_case("exe"))
-        {
-            let rel = p.strip_prefix(root).unwrap_or(&p).to_string_lossy().into_owned();
-            let size = e.metadata().map(|m| m.len()).unwrap_or(0);
-            out.push((rel, size));
-        }
-    }
-}
-
 fn find_main_exe(dir: &Path, repo: &str, run: Option<&str>) -> Option<PathBuf> {
     if let Some(run) = run.map(str::trim).filter(|r| !r.is_empty()) {
         let p = dir.join(run.trim_start_matches(['/', '\\']));
@@ -301,7 +281,7 @@ fn find_main_exe(dir: &Path, repo: &str, run: Option<&str>) -> Option<PathBuf> {
         }
     }
     let mut exes = Vec::new();
-    collect_exes(dir, dir, 3, &mut exes);
+    detect::collect_runnables(dir, dir, 3, &mut exes);
     logic::pick_main_exe(repo, &exes).map(|rel| dir.join(rel))
 }
 
@@ -357,6 +337,97 @@ fn run_visible(program: &Path, args: &[String], cwd: &Path) -> AppResult<Option<
     }
 }
 
+fn quote_arg(a: &str) -> String {
+    if a.is_empty() || a.contains([' ', '\t', '"']) {
+        format!("\"{}\"", a.replace('"', "\\\""))
+    } else {
+        a.to_string()
+    }
+}
+
+#[cfg(windows)]
+fn shell_run_wait(program: &Path, params: &str, cwd: &Path) -> AppResult<i32> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Foundation::CloseHandle;
+    use windows_sys::Win32::System::Threading::{GetExitCodeProcess, WaitForSingleObject, INFINITE};
+    use windows_sys::Win32::UI::Shell::{
+        ShellExecuteExW, SEE_MASK_NOASYNC, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW,
+    };
+    use windows_sys::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+
+    let wide = |s: &std::ffi::OsStr| -> Vec<u16> { s.encode_wide().chain(Some(0)).collect() };
+    let file = wide(program.as_os_str());
+    let args = wide(std::ffi::OsStr::new(params));
+    let dir = wide(cwd.as_os_str());
+    let mut info = SHELLEXECUTEINFOW {
+        cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as u32,
+        fMask: SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC,
+        lpFile: file.as_ptr(),
+        lpParameters: args.as_ptr(),
+        lpDirectory: dir.as_ptr(),
+        nShow: SW_SHOWNORMAL,
+        ..Default::default()
+    };
+    unsafe {
+        if ShellExecuteExW(&mut info) == 0 {
+            return Err(AppError::unknown(format!(
+                "Program başlatılamadı: {}",
+                std::io::Error::last_os_error()
+            )));
+        }
+        if info.hProcess.is_null() {
+            return Ok(0);
+        }
+        WaitForSingleObject(info.hProcess, INFINITE);
+        let mut code = 0u32;
+        GetExitCodeProcess(info.hProcess, &mut code);
+        CloseHandle(info.hProcess);
+        Ok(code as i32)
+    }
+}
+
+#[cfg(not(windows))]
+fn shell_run_wait(_program: &Path, _params: &str, _cwd: &Path) -> AppResult<i32> {
+    Err(AppError::unknown("Yalnız Windows'ta desteklenir."))
+}
+
+fn run_wait(program: &Path, args: &[String], raw_tail: Option<&str>, cwd: &Path) -> AppResult<i32> {
+    let mut cmd = Command::new(program);
+    cmd.args(args).current_dir(cwd);
+    #[cfg(windows)]
+    if let Some(tail) = raw_tail {
+        use std::os::windows::process::CommandExt;
+        cmd.raw_arg(tail);
+    }
+    match cmd.status() {
+        Ok(s) => Ok(s.code().unwrap_or(-1)),
+        Err(e) if e.raw_os_error() == Some(740) => {
+            let mut params: Vec<String> = args.iter().map(|a| quote_arg(a)).collect();
+            if let Some(tail) = raw_tail {
+                params.push(tail.to_string());
+            }
+            shell_run_wait(program, &params.join(" "), cwd)
+        }
+        Err(e) => Err(AppError::unknown(format!("Program başlatılamadı: {e}"))),
+    }
+}
+
+pub const SELF_UNINSTALL: &str =
+    "Çalışan Teknesyum Base kendini kaldıramaz. Kapatıp Windows Ayarlar > Uygulamalar'dan kaldırın.";
+
+fn removable(path: &Path, env: &Env) -> bool {
+    let target = dunce(path);
+    let guarded = std::iter::once(&env.paths.shared)
+        .chain(env.paths.scan_roots.iter())
+        .chain(std::iter::once(&env.install_dir));
+    for g in guarded {
+        if is_within(g, path) || dunce(g) == target {
+            return false;
+        }
+    }
+    is_within(path, &env.install_dir) || env.paths.scan_roots.iter().any(|r| is_within(path, r))
+}
+
 fn msiexec(flag: &str, msi: &Path) -> AppResult<i32> {
     let status = Command::new("msiexec")
         .arg(flag)
@@ -396,7 +467,7 @@ fn write_shortcut(env: &Env, name: &str, exe: &Path) -> AppResult<PathBuf> {
     Ok(lnk)
 }
 
-pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppResult<String> {
+pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_setup: bool) -> AppResult<String> {
     let dry = env.paths.dry_run;
     task.log(TaskStep::Resolve, 1, &format!("{owner}/{name} için son sürüm aranıyor"));
     if dry {
@@ -415,7 +486,12 @@ pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppRe
     let manifest = env.gh.manifest(&owner, &name, false).await.ok().flatten();
     task.check()?;
     let refs = release.asset_refs();
-    let (chosen, kind) = logic::select_asset(&refs, manifest.as_ref()).ok_or_else(|| {
+    let picked = if prefer_setup && manifest.as_ref().and_then(|m| m.asset.as_deref()).is_none() {
+        logic::select_setup(&refs).or_else(|| logic::select_asset(&refs, manifest.as_ref()))
+    } else {
+        logic::select_asset(&refs, manifest.as_ref())
+    };
+    let (chosen, kind) = picked.ok_or_else(|| {
         AppError::new(
             ErrorCode::NoAsset,
             "Sürümde Windows için kurulabilir dosya (.zip, .exe, .msi) yok.",
@@ -452,8 +528,7 @@ pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppRe
         let Some(gh_asset) = release.assets.iter().find(|a| a.name == cand.name) else {
             continue;
         };
-        let single = !cand.name.to_ascii_lowercase().starts_with("sha256sums")
-            && !cand.name.eq_ignore_ascii_case("checksums.txt");
+        let single = !logic::is_multi_checksum(&cand.name);
         let text = fetch_text(&env, gh_asset).await?;
         if let Some(expected) = logic::parse_checksum(&text, &asset.name, single) {
             if expected != hash {
@@ -479,6 +554,7 @@ pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppRe
 
     let stage = scratch.join("yeni");
     let method = kind.method();
+    let mut installed_dir = target.clone();
     let (exe, package) = match kind {
         AssetKind::Zip => {
             task.log(TaskStep::Install, 89, "Arşiv açılıyor");
@@ -489,11 +565,19 @@ pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppRe
                 .await
                 .map_err(|e| AppError::unknown(format!("Arşiv açma durdu: {e}")))??;
             task.check()?;
-            fs::rename(single_root(&out), &stage)?;
+            let root = single_root(&out);
+            let run = manifest.as_ref().and_then(|m| m.run.as_deref());
+            let main = find_main_exe(&root, &name, run).ok_or_else(|| {
+                AppError::new(
+                    ErrorCode::NoAsset,
+                    "Arşivde Windows için çalıştırılabilir dosya (.exe, .bat) yok; kurulum yapılmadı.",
+                )
+            })?;
+            let rel = main.strip_prefix(&root).unwrap_or(&main).to_path_buf();
+            fs::rename(&root, &stage)?;
             swap_into(&stage, &target, &scratch)?;
             task.log(TaskStep::Install, 95, &format!("Dosyalar yerleşti: {}", target.display()));
-            let run = manifest.as_ref().and_then(|m| m.run.as_deref());
-            (find_main_exe(&target, &name, run), None)
+            (Some(target.join(rel)), None)
         }
         AssetKind::Portable => {
             fs::create_dir_all(&stage)?;
@@ -525,12 +609,39 @@ pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppRe
             fs::rename(&file, stage.join(&asset.name))?;
             swap_into(&stage, &target, &scratch)?;
             let setup = target.join(&asset.name);
-            let args = manifest
-                .as_ref()
-                .and_then(|m| m.silent_args.clone())
-                .unwrap_or_default();
+            let manifest_args = manifest.as_ref().and_then(|m| m.silent_args.clone());
+            let silent = match manifest_args {
+                Some(_) => None,
+                None => logic::silent_install_args(detect::installer_kind_of(&setup)),
+            };
+            let args = manifest_args.unwrap_or_default();
+            let mut found_exe = None;
             if dry {
                 task.log(TaskStep::Install, 95, "Prova: kurucu çalıştırılmadı");
+            } else if let Some(silent) = silent {
+                task.log(
+                    TaskStep::Install,
+                    90,
+                    &format!("Kurucu sessiz çalışıyor ({})", silent.join(" ")),
+                );
+                let (s, cwd) = (setup.clone(), target.clone());
+                let code = tauri::async_runtime::spawn_blocking(move || run_wait(&s, &silent, None, &cwd))
+                    .await
+                    .map_err(|e| AppError::unknown(e.to_string()))??;
+                if code != 0 {
+                    return Err(AppError::unknown(format!("Kurucu hata koduyla kapandı ({code}).")));
+                }
+                task.log(TaskStep::Install, 94, "Kurucu bitti");
+                let skip = vec![env.paths.shared.clone(), env.install_dir.clone()];
+                let manifest_name = manifest.as_ref().and_then(|m| m.name.as_deref());
+                match detect::find_in_roots(&env.paths.scan_roots, &skip, &name, manifest_name) {
+                    Some(found) => {
+                        task.log(TaskStep::Install, 95, &format!("Kurulan program: {}", found.exe.display()));
+                        installed_dir = found.dir;
+                        found_exe = Some(found.exe);
+                    }
+                    None => task.log(TaskStep::Install, 95, "Kurulan programın yeri bulunamadı"),
+                }
             } else {
                 task.log(TaskStep::Install, 90, "Kurucu kendi penceresinde açılıyor");
                 let (s, cwd) = (setup.clone(), target.clone());
@@ -551,7 +662,7 @@ pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppRe
                     }
                 }
             }
-            (None, Some(setup.to_string_lossy().into_owned()))
+            (found_exe, Some(setup.to_string_lossy().into_owned()))
         }
     };
 
@@ -580,7 +691,7 @@ pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppRe
                 full_name: format!("{owner}/{name}"),
                 tag: release.tag_name.clone(),
                 method,
-                path: target.to_string_lossy().into_owned(),
+                path: installed_dir.to_string_lossy().into_owned(),
                 exe: exe.map(|e| e.to_string_lossy().into_owned()),
                 installed_at: now_iso(),
             },
@@ -591,12 +702,55 @@ pub async fn install(env: Env, task: Task, owner: String, name: String) -> AppRe
     Ok(format!("{display} {} kuruldu", release.tag_name))
 }
 
-pub async fn uninstall(env: Env, task: Task, full_name: String) -> AppResult<String> {
+fn wait_gone(path: &Path, limit: Duration) {
+    let start = Instant::now();
+    while path.exists() && start.elapsed() < limit {
+        std::thread::sleep(Duration::from_millis(250));
+    }
+}
+
+async fn run_uninstaller(task: &Task, dir: &Path, exe: Option<&Path>) -> AppResult<bool> {
+    let Some(uninst) = detect::find_uninstaller(dir) else {
+        return Ok(false);
+    };
+    let file_name = uninst
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let kind = logic::uninstaller_kind(&file_name, detect::installer_kind_of(&uninst));
+    let args = logic::silent_uninstall_args(kind);
+    let tail = (kind == logic::InstallerKind::Nsis).then(|| format!("_?={}", dir.display()));
+    task.log(
+        TaskStep::Install,
+        30,
+        &format!("Kaldırıcı sessiz çalışıyor: {file_name} {}", args.join(" ")),
+    );
+    let (u, cwd) = (uninst.clone(), dir.to_path_buf());
+    let watch = exe.map(Path::to_path_buf);
+    let code = tauri::async_runtime::spawn_blocking(move || {
+        let code = run_wait(&u, &args, tail.as_deref(), &cwd);
+        if let Some(w) = watch {
+            wait_gone(&w, Duration::from_secs(30));
+        }
+        code
+    })
+    .await
+    .map_err(|e| AppError::unknown(e.to_string()))??;
+    if code != 0 {
+        return Err(AppError::unknown(format!("Kaldırıcı hata koduyla kapandı ({code}).")));
+    }
+    task.log(TaskStep::Install, 70, "Kaldırıcı bitti");
+    Ok(true)
+}
+
+pub async fn uninstall(env: Env, task: Task, rec: InstalledRecord) -> AppResult<String> {
     let dry = env.paths.dry_run;
+    let full_name = rec.info.full_name.clone();
     task.log(TaskStep::Resolve, 5, &format!("{full_name} kaydı okunuyor"));
-    let rec = store::find_installed(&env.paths, &full_name)
-        .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."))?;
     let path = PathBuf::from(&rec.info.path);
+    if rec.info.method != InstallMethod::Clone && detect::is_running_from(&path) {
+        return Err(AppError::io(SELF_UNINSTALL));
+    }
 
     if rec.info.method == InstallMethod::Clone {
         store::remove_installed(&env.paths, &full_name)?;
@@ -630,16 +784,29 @@ pub async fn uninstall(env: Env, task: Task, full_name: String) -> AppResult<Str
                 );
             }
         }
-        InstallMethod::Exe => task.log(
-            TaskStep::Install,
-            40,
-            "Bu program kendi kurucusuyla kuruldu; Windows Ayarlar > Uygulamalar'dan kaldırın",
-        ),
+        InstallMethod::Exe | InstallMethod::External => {
+            let exe = rec.info.exe.as_ref().map(PathBuf::from);
+            if dry {
+                task.log(TaskStep::Install, 50, "Prova: kaldırıcı çalıştırılmadı");
+            } else if !run_uninstaller(&task, &path, exe.as_deref()).await? {
+                task.log(TaskStep::Install, 40, "Kaldırıcı yok; klasör siliniyor");
+            }
+            if let Some(setup_dir) = rec
+                .package
+                .as_ref()
+                .map(PathBuf::from)
+                .and_then(|p| p.parent().map(Path::to_path_buf))
+                .filter(|d| d != &path && d.exists() && is_within(d, &env.install_dir))
+            {
+                let _ = fs::remove_dir_all(&setup_dir);
+                task.log(TaskStep::Install, 75, &format!("Kurucu klasörü silindi: {}", setup_dir.display()));
+            }
+        }
         _ => {}
     }
 
     if path.exists() {
-        if !is_within(&path, &env.install_dir) {
+        if !removable(&path, &env) {
             task.log(
                 TaskStep::Install,
                 80,
@@ -879,13 +1046,16 @@ mod tests {
         });
         let full = format!("Teknesyum/{repo}");
         let task = Task::new("t1".into(), full.clone(), TaskKind::Install, Arc::new(AtomicBool::new(false)), emit.clone());
-        let r = install(env.clone(), task.clone(), "Teknesyum".into(), repo.clone()).await;
+        let r = install(env.clone(), task.clone(), "Teknesyum".into(), repo.clone(), false).await;
         println!("install => {:?}", r.as_ref().map_err(|e| &e.message));
-        let rec = store::find_installed(&env.paths, &full).expect("record");
+        let rec = store::load_installed(&env.paths)
+            .into_iter()
+            .find(|r| r.info.full_name.eq_ignore_ascii_case(&full))
+            .expect("record");
         println!("record path={} exe={:?} method={:?}", rec.info.path, rec.info.exe, rec.info.method);
         assert!(r.is_ok());
         let task = Task::new("t2".into(), full.clone(), TaskKind::Uninstall, Arc::new(AtomicBool::new(false)), emit);
-        let r = uninstall(env.clone(), task, full.clone()).await;
+        let r = uninstall(env.clone(), task, rec.clone()).await;
         println!("uninstall => {:?}", r.as_ref().map_err(|e| &e.message));
         assert!(r.is_ok());
         assert!(!Path::new(&rec.info.path).exists());

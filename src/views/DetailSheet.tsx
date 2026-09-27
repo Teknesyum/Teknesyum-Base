@@ -9,8 +9,8 @@ import { tokenValue, useDialogFocus, useFlip, useMotion, usePresence, useRoving 
 import { IconClose, IconExternal, IconFolder } from '../ui/icons';
 import { ErrorState, SkeletonLines } from '../ui/States';
 import { useToast } from '../ui/Toasts';
-import { isRunning, type Opener } from './actions';
-import { PrimaryButton, StateBadge, TaskProgress } from './RepoCard';
+import { isRunning, uiState, type Opener } from './actions';
+import { AppIcon, PrimaryButton, StateBadge, TaskProgress } from './RepoCard';
 import './sheet.css';
 
 function clean(html: string): string {
@@ -57,11 +57,10 @@ type Props = {
   returnTo: HTMLElement | null;
   onClose: () => void;
   onPrimary: (repo: Repo, o: Opener) => void;
-  onClone: (repo: Repo, o: Opener) => void;
   onUninstall: (repo: Repo, o: Opener) => void;
 };
 
-export function DetailSheet({ repo, open, returnTo, onClose, onPrimary, onClone, onUninstall }: Props) {
+export function DetailSheet({ repo, open, returnTo, onClose, onPrimary, onUninstall }: Props) {
   const { mounted, phase } = usePresence(open && !!repo, '--tk-t-base');
   const ref = useRef<HTMLDivElement>(null);
   const scrimRef = useRef<HTMLDivElement>(null);
@@ -79,7 +78,7 @@ export function DetailSheet({ repo, open, returnTo, onClose, onPrimary, onClone,
   return createPortal(
     <div ref={scrimRef} className="sheet-scrim" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div ref={ref} className="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" onKeyDown={(e) => onKey(e, onClose)}>
-        <SheetBody repo={shown} closeRef={closeRef} onClose={onClose} onPrimary={onPrimary} onClone={onClone} onUninstall={onUninstall} />
+        <SheetBody repo={shown} closeRef={closeRef} onClose={onClose} onPrimary={onPrimary} onUninstall={onUninstall} />
       </div>
     </div>,
     document.body,
@@ -88,7 +87,7 @@ export function DetailSheet({ repo, open, returnTo, onClose, onPrimary, onClone,
 
 type BodyProps = Omit<Props, 'open' | 'returnTo' | 'repo'> & { repo: Repo; closeRef: RefObject<HTMLButtonElement | null> };
 
-function SheetBody({ repo, closeRef, onClose, onPrimary, onClone, onUninstall }: BodyProps) {
+function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProps) {
   const { t, num, rel, size, date, bytes } = useI18n();
   const store = useStore();
   const toast = useToast();
@@ -129,6 +128,7 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onClone, onUninstall }:
     [t('stats.language'), repo.language ?? t('stats.none')],
     [t('stats.pushed'), rel(repo.pushedAt)],
     [t('stats.installedTag'), repo.installedTag ?? t('stats.none')],
+    [t('stats.ui'), repo.uiVersion ? t('ui.stat', { version: repo.uiVersion, state: t('ui.short.' + uiState(repo.uiVersion, store.list?.uiLatest)) }) : t('stats.none')],
   ];
 
   return (
@@ -136,10 +136,19 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onClone, onUninstall }:
       <header className="sheet__head divider-bottom">
         <div className="sheet__titles">
           <h2 id="sheet-title" className="sheet__title">
+            <AppIcon name={repo.name} />
             {repo.name}
             {repo.latestTag ? <span className="sheet__tag">{repo.latestTag}</span> : null}
           </h2>
-          <p className="sheet__desc">{repo.description || t('library.noDescription')}</p>
+          <p className="sheet__desc">{repo.summary || repo.description || t('library.noDescription')}</p>
+          <ul className="chips sheet__class" aria-label={t('library.tags')}>
+            <li className="chip chip--category">{t('category.' + repo.category)}</li>
+            {(repo.tags ?? []).map((x) => (
+              <li key={x} className="chip">
+                {x}
+              </li>
+            ))}
+          </ul>
         </div>
         <button ref={closeRef} type="button" className="btn btn--icon btn--quiet" aria-label={t('common.close')} title={t('common.close')} onClick={onClose}>
           <IconClose />
@@ -158,11 +167,6 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onClone, onUninstall }:
               {repo.installState === 'update-available' ? (
                 <button type="button" className="btn btn--ghost" onClick={() => store.launch(repo.fullName)}>
                   {t('actions.launch')}
-                </button>
-              ) : null}
-              {store.info?.gitAvailable && repo.installState !== 'cloned' ? (
-                <button type="button" className="btn btn--ghost" onClick={(e) => onClone(repo, e.currentTarget)}>
-                  {t('actions.clone')}
                 </button>
               ) : null}
               {installed ? (
@@ -193,15 +197,6 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onClone, onUninstall }:
           ))}
         </dl>
 
-        {repo.topics.length ? (
-          <ul className="chips" aria-label={t('stats.topics')}>
-            {repo.topics.map((x) => (
-              <li key={x} className="chip">
-                {x}
-              </li>
-            ))}
-          </ul>
-        ) : null}
 
         <section className="tag-editor" aria-labelledby={tagId + '-h'}>
           <h3 id={tagId + '-h'} className="tk-label">

@@ -6,7 +6,7 @@
   gap: var(--tk-sp-2);
   min-height: var(--tk-target-min);
   padding: 0 var(--tk-sp-2);
-  border: var(--tk-border-w) solid var(--tk-border);
+  border: 0;
   border-radius: var(--tk-r-chip);
   background: transparent;
   color: var(--tk-text);
@@ -33,7 +33,7 @@
 
 .tk-sync:hover,
 .tk-update:hover {
-  border-color: var(--tk-border-strong);
+  color: var(--tk-renk-2-text);
   transform: scale(var(--tk-scale-hover));
 }
 
@@ -46,7 +46,7 @@
 
 .tk-sync:active,
 .tk-update:active {
-  border-color: var(--tk-border-strong);
+  color: var(--tk-renk-2-text);
   transform: scale(var(--tk-scale-press));
 }
 

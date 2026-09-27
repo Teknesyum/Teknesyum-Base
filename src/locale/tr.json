@@ -190,6 +190,8 @@
     "ui": "Teknesyum UI"
   },
   "detail": {
+    "readmeMain": "Ana README",
+    "readmeTr": "Türkçe README",
     "localTags": "Yerel etiketler",
     "removeTag": "{tag} etiketini kaldır",
     "tagRemoved": "{tag} etiketi kaldırıldı",
@@ -237,7 +239,8 @@
   "uninstall": {
     "title": "{name} kaldırılsın mı?",
     "body": "Program dosyaları ve kısayolu silinir. Ayarları ve verileri programın kendi klasöründeyse onlar da gider.",
-    "ack": "Dosyaların silineceğini anladım"
+    "ack": "Dosyaların silineceğini anladım",
+    "pluginBody": "Eklenti Claude Code'dan kaldırılır. Claude Code'u yeniden başlatınca devreden çıkar."
   },
   "installed": {
     "summary": "{n} program kurulu, {u} güncelleme bekliyor.",
@@ -385,5 +388,10 @@
     "long": "{name} istisnai bir proje: kardeşimiz {by} kendi deposunda ilerletiyor. Buradaki sürüm Teknesyum kopyası; yeni özellikler ve düzeltmeler önce {by}'ın sürümüne gelir. En günceli oynamak için {by}'ın sürümünü açın.",
     "play": "{by}'ın sürümünü aç",
     "repo": "{by}'ın deposu"
+  },
+  "claude": {
+    "title": "Önce Claude Code kurulsun mu?",
+    "body": "{name} bir Claude Code eklentisi ve bu bilgisayarda Claude Code bulunamadı. Base önce Claude Code'u winget ile kurar, ardından eklentiyi ekler.",
+    "confirm": "Claude Code ile kur"
   }
 }

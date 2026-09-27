@@ -511,9 +511,10 @@ impl GitHub {
     }
 
     pub async fn latest_release(&self, owner: &str, name: &str) -> AppResult<Option<GhRelease>> {
+        let (so, sn) = logic::source_of(owner, name);
         let r = self
             .get(
-                &format!("{API}/repos/{owner}/{name}/releases?per_page=10"),
+                &format!("{API}/repos/{so}/{sn}/releases?per_page=10"),
                 ACCEPT_JSON,
             )
             .await?;
@@ -521,7 +522,10 @@ impl GitHub {
             return Ok(None);
         }
         let list: Vec<GhRelease> = serde_json::from_str(&r.body)?;
-        Ok(list.into_iter().find(|x| !x.draft && !x.prerelease))
+        Ok(list
+            .into_iter()
+            .find(|x| !x.draft && !x.prerelease)
+            .map(|x| with_source_zip(owner, name, x)))
     }
 
     pub async fn manifest(&self, owner: &str, name: &str, private: bool) -> AppResult<Option<Manifest>> {
@@ -696,6 +700,7 @@ impl GitHub {
     }
 
     pub async fn releases(&self, owner: &str, name: &str) -> AppResult<Vec<Release>> {
+        let (owner, name) = logic::source_of(owner, name);
         let r = self
             .get_recent(
                 &format!("{API}/repos/{owner}/{name}/releases?per_page=30"),
@@ -713,15 +718,44 @@ impl GitHub {
             .collect())
     }
 
-    pub async fn readme(&self, owner: &str, name: &str) -> AppResult<String> {
-        let r = self
-            .get_recent(&format!("{API}/repos/{owner}/{name}/readme"), ACCEPT_HTML)
-            .await?;
+    pub async fn readme(&self, owner: &str, name: &str, path: Option<&str>) -> AppResult<String> {
+        let url = match path {
+            Some(p) => format!("{API}/repos/{owner}/{name}/contents/{p}"),
+            None => format!("{API}/repos/{owner}/{name}/readme"),
+        };
+        let r = self.get_recent(&url, ACCEPT_HTML).await?;
         if r.status == 404 {
             return Ok(String::new());
         }
-        Ok(absolutize_html(&r.body, owner, name))
+        let dir = path.and_then(|p| p.rsplit_once('/')).map(|(d, _)| d).unwrap_or("");
+        Ok(absolutize_html_in(&r.body, owner, name, dir))
     }
+}
+
+pub fn with_source_zip(owner: &str, name: &str, mut r: GhRelease) -> GhRelease {
+    if let Some(u) = logic::upstream_of(owner, name) {
+        if r.assets.is_empty() {
+            let url = format!("https://codeload.github.com/{}/{}/zip/refs/tags/{}", u.owner, u.name, r.tag_name);
+            r.assets.push(GhAsset {
+                id: 0,
+                name: format!("{}-{}.zip", u.name, r.tag_name),
+                size: 0,
+                browser_download_url: url.clone(),
+                url,
+                download_count: 0,
+            });
+        }
+    }
+    r
+}
+
+pub fn doc_path_ok(p: &str) -> bool {
+    !p.is_empty()
+        && p.len() <= 200
+        && p.to_ascii_lowercase().ends_with(".md")
+        && !p.starts_with('/')
+        && p.split('/').all(|s| !s.is_empty() && s != "." && s != "..")
+        && p.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-' | '/'))
 }
 
 fn is_absolute_ref(v: &str) -> bool {
@@ -736,7 +770,13 @@ fn is_absolute_ref(v: &str) -> bool {
         || l.starts_with("tel:")
 }
 
+#[cfg(test)]
 pub fn absolutize_html(html: &str, owner: &str, name: &str) -> String {
+    absolutize_html_in(html, owner, name, "")
+}
+
+pub fn absolutize_html_in(html: &str, owner: &str, name: &str, dir: &str) -> String {
+    let prefix = if dir.is_empty() { String::new() } else { format!("{dir}/") };
     let mut out = String::with_capacity(html.len() + 256);
     let mut rest = html;
     loop {
@@ -762,6 +802,7 @@ pub fn absolutize_html(html: &str, owner: &str, name: &str) -> String {
         };
         let value = &rest[..end];
         if preceded_ok && !is_absolute_ref(value) {
+            let rooted = value.starts_with('/');
             let path = value.trim_start_matches("./").trim_start_matches('/');
             let base = if attr == "href=\"" {
                 format!("https://github.com/{owner}/{name}/blob/HEAD/")
@@ -769,6 +810,9 @@ pub fn absolutize_html(html: &str, owner: &str, name: &str) -> String {
                 format!("https://raw.githubusercontent.com/{owner}/{name}/HEAD/")
             };
             out.push_str(&base);
+            if !rooted {
+                out.push_str(&prefix);
+            }
             out.push_str(path);
         } else {
             out.push_str(value);
@@ -780,7 +824,8 @@ pub fn absolutize_html(html: &str, owner: &str, name: &str) -> String {
 
 pub fn to_repo(d: &RepoDetails) -> Repo {
     let gh = &d.gh;
-    let assets = d.release.as_ref().map(|r| r.asset_refs()).unwrap_or_default();
+    let release = d.release.clone().map(|r| with_source_zip(&gh.owner.login, &gh.name, r));
+    let assets = release.as_ref().map(|r| r.asset_refs()).unwrap_or_default();
     let license = gh.license.as_ref().and_then(|l| {
         l.spdx_id
             .clone()
@@ -806,8 +851,8 @@ pub fn to_repo(d: &RepoDetails) -> Repo {
         pushed_at: gh.pushed_at.clone().unwrap_or_default(),
         updated_at: gh.updated_at.clone().unwrap_or_default(),
         size_kb: gh.size,
-        latest_tag: d.release.as_ref().map(|r| r.tag_name.clone()),
-        latest_published_at: d.release.as_ref().and_then(|r| r.published_at.clone()),
+        latest_tag: release.as_ref().map(|r| r.tag_name.clone()),
+        latest_published_at: release.as_ref().and_then(|r| r.published_at.clone()),
         has_windows_asset: logic::has_windows_asset(&assets, d.manifest.as_ref()),
         manifest: d.manifest.clone(),
         category: logic::category(d.manifest.as_ref(), &gh.topics, gh.language.as_deref()),
@@ -815,6 +860,7 @@ pub fn to_repo(d: &RepoDetails) -> Repo {
         installed_tag: None,
         local_tags: Vec::new(),
         ui_version: d.ui.clone(),
+        plugin: None,
     }
 }
 
@@ -829,6 +875,7 @@ pub fn new_list(account: &str, repos: Vec<Repo>, rate: RateInfo) -> RepoList {
         ui_latest: None,
 
         core_latest: None,
+        claude_code: false,
         repos,
     }
 }
@@ -845,6 +892,28 @@ mod tests {
         assert!(out.contains(r#"href="https://github.com/Teknesyum/Base/blob/HEAD/LICENSE""#));
         assert!(out.contains(r#"href="https://x.y""#));
         assert!(out.contains(r##"href="#top""##));
+    }
+
+    #[test]
+    fn absolutizes_in_subdir_and_checks_doc_path() {
+        let out = absolutize_html_in(r#"<a href="b.md">b</a><a href="/c.md">c</a>"#, "T", "B", "docs");
+        assert!(out.contains(r#"href="https://github.com/T/B/blob/HEAD/docs/b.md""#));
+        assert!(out.contains(r#"href="https://github.com/T/B/blob/HEAD/c.md""#));
+        assert!(doc_path_ok("README.tr.md"));
+        assert!(doc_path_ok("docs/README_TR.md"));
+        assert!(!doc_path_ok("../x.md"));
+        assert!(!doc_path_ok("README.tr.md?ref=x"));
+        assert!(!doc_path_ok("a.txt"));
+    }
+
+    #[test]
+    fn webband_takes_source_zip_from_upstream() {
+        let r: GhRelease = serde_json::from_str(r#"{"tag_name":"v2.4.0","draft":false,"prerelease":false,"assets":[]}"#).unwrap();
+        let out = with_source_zip("Teknesyum", "Webband", r.clone());
+        assert_eq!(out.assets[0].browser_download_url, "https://codeload.github.com/srknzl/Webband/zip/refs/tags/v2.4.0");
+        assert_eq!(out.assets[0].id, 0);
+        assert!(with_source_zip("Teknesyum", "Other", r).assets.is_empty());
+        assert_eq!(logic::source_of("teknesyum", "webband").0, "srknzl");
     }
 
     #[test]

@@ -330,3 +330,20 @@
 .chip--category {
   color: var(--tk-renk-1);
 }
+
+.doc-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-sp-3);
+  margin-block-end: var(--tk-sp-3);
+  min-width: 0;
+}
+
+.doc-bar__path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--tk-text) 70%, transparent);
+  font-size: var(--tk-fs-1);
+}

@@ -351,6 +351,7 @@ mod tests {
             budget_skipped: false,
             ui_latest: None,
             core_latest: None,
+            claude_code: false,
             repos: Vec::new(),
         }
     }

@@ -31,6 +31,7 @@ function Frame() {
   const [filter, setFilter] = useState<LibFilter>(defaultFilter);
   const [detail, setDetail] = useState<Target | null>(null);
   const [removal, setRemoval] = useState<Target | null>(null);
+  const [claudeAsk, setClaudeAsk] = useState<Target | null>(null);
   const [clearing, setClearing] = useState<Opener | undefined>(undefined);
   const [updateFrom, setUpdateFrom] = useState<HTMLElement | null | undefined>(undefined);
   const [maximized, setMaximized] = useState(false);
@@ -82,8 +83,12 @@ function Frame() {
     return () => document.removeEventListener('click', onClick);
   }, []);
 
-  const onPrimary = (repo: Repo) => {
+  const onPrimary = (repo: Repo, opener?: Opener) => {
     const p = primaryOf(repo);
+    if (repo.plugin && (p === 'install' || p === 'update') && !store.list?.claudeCode) {
+      setClaudeAsk({ fullName: repo.fullName, opener: opener ?? null });
+      return;
+    }
     if (p === 'launch') store.launch(repo.fullName);
     else if (p === 'folder') store.openFolder(repo.fullName);
     else if (p === 'source') void openExternal(repo.htmlUrl);
@@ -99,6 +104,7 @@ function Frame() {
   const onOpen = (repo: Repo, opener: Opener) => setDetail({ fullName: repo.fullName, opener });
 
   const removeRepo = find(removal);
+  const askRepo = find(claudeAsk);
 
   return (
     <div ref={appRef} className="app">
@@ -179,7 +185,7 @@ function Frame() {
       <ConfirmDialog
         open={!!removal && !!removeRepo}
         title={t('uninstall.title', { name: removeRepo?.name ?? '' })}
-        body={t('uninstall.body')}
+        body={t(removeRepo?.plugin ? 'uninstall.pluginBody' : 'uninstall.body')}
         ack={t('uninstall.ack')}
         confirmLabel={t('actions.uninstall')}
         danger
@@ -189,6 +195,18 @@ function Frame() {
           setRemoval(null);
         }}
         onClose={() => setRemoval(null)}
+      />
+      <ConfirmDialog
+        open={!!claudeAsk && !!askRepo}
+        title={t('claude.title')}
+        body={t('claude.body', { name: askRepo?.name ?? '' })}
+        confirmLabel={t('claude.confirm')}
+        returnTo={claudeAsk?.opener ?? null}
+        onConfirm={() => {
+          if (askRepo) void store.start(askRepo, 'install', true);
+          setClaudeAsk(null);
+        }}
+        onClose={() => setClaudeAsk(null)}
       />
       <ConfirmDialog
         open={clearing !== undefined}

@@ -447,6 +447,9 @@ article.row > .card__foot {
 }
 
 .uses .points {
+  display: grid;
+  grid-template-columns: repeat(2, fit-content(calc(var(--tk-measure) / 2)));
+  column-gap: var(--tk-sp-5);
   margin: 0;
 }
 
@@ -480,6 +483,9 @@ article.row > .card__foot {
 }
 
 .uses {
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: var(--tk-sp-3);
   border: var(--tk-border-w) solid var(--tk-border);
   border-radius: var(--tk-r);

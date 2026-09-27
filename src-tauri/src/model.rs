@@ -99,6 +99,8 @@ pub struct Repo {
     pub local_tags: Vec<String>,
     #[serde(default)]
     pub ui_version: Option<String>,
+    #[serde(default)]
+    pub plugin: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -115,6 +117,8 @@ pub struct RepoList {
     pub ui_latest: Option<String>,
     #[serde(default)]
     pub core_latest: Option<String>,
+    #[serde(default)]
+    pub claude_code: bool,
     pub repos: Vec<Repo>,
 }
 

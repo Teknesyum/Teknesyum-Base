@@ -23,7 +23,7 @@ type Store = {
   refresh: () => Promise<void>;
   reload: () => void;
   switchAccount: (account: string) => void;
-  start: (repo: Repo, kind: TaskKind) => Promise<string | null>;
+  start: (repo: Repo, kind: TaskKind, withClaude?: boolean) => Promise<string | null>;
   wait: (taskId: string) => Promise<TaskEvent>;
   cancel: (fullName: string) => void;
   saveSettings: (s: Settings) => Promise<boolean>;
@@ -157,9 +157,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const start = useCallback(
-    async (repo: Repo, kind: TaskKind) => {
+    async (repo: Repo, kind: TaskKind, withClaude?: boolean) => {
       try {
-        const id = kind === 'install' ? await api.install(repo.owner, repo.name) : kind === 'clone' ? await api.clone(repo.owner, repo.name) : await api.uninstall(repo.fullName);
+        const id = kind === 'install' ? await api.install(repo.owner, repo.name, withClaude) : kind === 'clone' ? await api.clone(repo.owner, repo.name) : await api.uninstall(repo.fullName);
         setTasks((cur) => ({
           ...cur,
           [repo.fullName]: { taskId: id, fullName: repo.fullName, kind: kind === 'install' && repo.installState === 'update-available' ? 'update' : kind, step: 'resolve', percent: 0, message: '', status: 'running' },

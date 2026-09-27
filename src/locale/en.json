@@ -190,6 +190,8 @@
     "ui": "Teknesyum UI"
   },
   "detail": {
+    "readmeMain": "Main README",
+    "readmeTr": "Turkish README",
     "localTags": "Local tags",
     "removeTag": "Remove tag {tag}",
     "tagRemoved": "Tag {tag} removed",
@@ -237,7 +239,8 @@
   "uninstall": {
     "title": "Uninstall {name}?",
     "body": "Program files and its shortcut are deleted. Settings and data inside the program folder go too.",
-    "ack": "I understand the files will be deleted"
+    "ack": "I understand the files will be deleted",
+    "pluginBody": "The plugin is removed from Claude Code. It stops working after Claude Code restarts."
   },
   "installed": {
     "summary": "{n} programs installed, {u} awaiting update.",
@@ -385,5 +388,10 @@
     "long": "{name} is an exception: {by} develops it in a separate repository. The version here is the Teknesyum copy; new features and fixes reach {by}'s version first. Open {by}'s version to play the newest.",
     "play": "Open {by}'s version",
     "repo": "{by}'s repository"
+  },
+  "claude": {
+    "title": "Install Claude Code first?",
+    "body": "{name} is a Claude Code plugin and Claude Code was not found on this computer. Base installs Claude Code with winget first, then adds the plugin.",
+    "confirm": "Install with Claude Code"
   }
 }

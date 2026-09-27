@@ -17,7 +17,30 @@ function clean(html: string): string {
   return DOMPurify.sanitize(html, { USE_PROFILES: { html: true }, FORBID_TAGS: ['style', 'form', 'input', 'button', 'iframe'], FORBID_ATTR: ['style'] });
 }
 
-function Html({ html, base }: { html: string; base: string }) {
+export function docPath(href: string, base: string): string | null {
+  try {
+    const u = new URL(href, base + '/blob/HEAD/');
+    const b = new URL(base);
+    if (u.host !== b.host) return null;
+    const own = b.pathname.replace(/\/+$/, '').toLocaleLowerCase('tr') + '/blob/';
+    const p = decodeURIComponent(u.pathname);
+    if (!p.toLocaleLowerCase('tr').startsWith(own)) return null;
+    const rest = p.slice(own.length).split('/').slice(1).join('/');
+    return /\.md$/i.test(rest) ? rest : null;
+  } catch {
+    return null;
+  }
+}
+
+export function trReadme(html: string, base: string): string | null {
+  for (const m of html.matchAll(/href="([^"]+)"/g)) {
+    const p = docPath(m[1], base);
+    if (p && /(^|\/)readme[._-]?tr\.md$/i.test(p)) return p;
+  }
+  return null;
+}
+
+function Html({ html, base, onDoc }: { html: string; base: string; onDoc?: (path: string) => void }) {
   const safe = useMemo(() => clean(html), [html]);
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
     const a = (e.target as Element).closest('a[href]');
@@ -25,6 +48,11 @@ function Html({ html, base }: { html: string; base: string }) {
     const href = a.getAttribute('href') ?? '';
     if (href.startsWith('#')) return;
     e.preventDefault();
+    const doc = onDoc ? docPath(href, base) : null;
+    if (doc) {
+      onDoc?.(doc);
+      return;
+    }
     try {
       void openExternal(new URL(href, base + '/blob/HEAD/').toString());
     } catch {
@@ -88,13 +116,22 @@ export function DetailSheet({ repo, open, returnTo, onClose, onPrimary, onUninst
 type BodyProps = Omit<Props, 'open' | 'returnTo' | 'repo'> & { repo: Repo; closeRef: RefObject<HTMLButtonElement | null> };
 
 function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProps) {
-  const { t, num, rel, size, date, bytes } = useI18n();
+  const { t, lang, num, rel, size, date, bytes } = useI18n();
   const store = useStore();
   const toast = useToast();
   const tabIds = repo.points?.length ? (['features', 'readme', 'releases'] as const) : (['readme', 'releases'] as const);
   const [tab, setTab] = useState<'features' | 'readme' | 'releases'>(tabIds[0]);
   const [nonce, setNonce] = useState(0);
   const readme = useLoad(() => api.readme(repo.owner, repo.name), 'r:' + repo.fullName, nonce);
+  const [doc, setDoc] = useState<string | null>(null);
+  const autoTr = lang === 'tr' && readme?.data ? trReadme(readme.data, repo.htmlUrl) : null;
+  const [picked, setPicked] = useState(false);
+  const docShown = picked ? doc : doc ?? autoTr;
+  const docLoad = useLoad(() => (docShown ? api.readme(repo.owner, repo.name, docShown) : Promise.resolve('')), 'd:' + repo.fullName + ':' + (docShown ?? ''), nonce);
+  const openDoc = (p: string | null) => {
+    setPicked(true);
+    setDoc(p);
+  };
   const releases = useLoad<Release[]>(() => api.releases(repo.owner, repo.name), 'l:' + repo.fullName, nonce);
   const task = store.tasks[repo.fullName];
   const running = isRunning(task);
@@ -169,12 +206,12 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
           ) : (
             <>
               <PrimaryButton repo={repo} task={task} onPrimary={(o) => onPrimary(repo, o)} />
-              {repo.installState === 'update-available' ? (
+              {repo.installState === 'update-available' && !repo.plugin ? (
                 <button type="button" className="btn btn--ghost" onClick={() => store.launch(repo.fullName)}>
                   {t('actions.launch')}
                 </button>
               ) : null}
-              {installed ? (
+              {installed && !repo.plugin ? (
                 <button type="button" className="btn btn--ghost" onClick={() => store.openFolder(repo.fullName)}>
                   <IconFolder />
                   {t('actions.folder')}
@@ -285,8 +322,33 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
               ) : (
                 <ErrorState error={readme.error} action={{ label: t('common.retry'), run: () => setNonce((n) => n + 1) }} />
               )
+            ) : docShown ? (
+              <>
+                <div className="doc-bar">
+                  <button type="button" className="btn btn--ghost" onClick={() => openDoc(null)}>
+                    {t('detail.readmeMain')}
+                  </button>
+                  <span className="doc-bar__path">{docShown}</span>
+                </div>
+                {!docLoad ? (
+                  <SkeletonLines lines={9} />
+                ) : docLoad.error ? (
+                  <ErrorState error={docLoad.error} action={{ label: t('common.retry'), run: () => setNonce((n) => n + 1) }} />
+                ) : (
+                  <Html html={docLoad.data ?? ''} base={repo.htmlUrl} onDoc={openDoc} />
+                )}
+              </>
             ) : (
-              <Html html={readme.data ?? ''} base={repo.htmlUrl} />
+              <>
+                {autoTr ? (
+                  <div className="doc-bar">
+                    <button type="button" className="btn btn--ghost" onClick={() => openDoc(autoTr)}>
+                      {t('detail.readmeTr')}
+                    </button>
+                  </div>
+                ) : null}
+                <Html html={readme.data ?? ''} base={repo.htmlUrl} onDoc={openDoc} />
+              </>
             )
           ) : !releases ? (
             <SkeletonLines lines={6} />

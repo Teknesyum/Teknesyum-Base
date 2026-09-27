@@ -159,13 +159,14 @@ async fn download(
     from: u8,
     to: u8,
 ) -> AppResult<String> {
-    let mut req = env.http.get(if env.gh.has_token() {
+    let authed = env.gh.has_token() && asset.id != 0;
+    let mut req = env.http.get(if authed {
         asset.url.as_str()
     } else {
         asset.browser_download_url.as_str()
     });
     req = req.header(USER_AGENT, UA);
-    if let Some(token) = env.gh.token() {
+    if let Some(token) = env.gh.token().filter(|_| authed) {
         req = req
             .header(AUTHORIZATION, format!("Bearer {token}"))
             .header(ACCEPT, "application/octet-stream");
@@ -458,14 +459,33 @@ fn write_shortcut(env: &Env, name: &str, exe: &Path) -> AppResult<PathBuf> {
         .paths
         .shortcuts
         .join(format!("{}.lnk", logic::safe_dir_name(name)));
-    let mut link = mslnk::ShellLink::new(exe)
-        .map_err(|e| AppError::io(format!("Kısayol hazırlanamadı: {e}")))?;
-    if let Some(dir) = exe.parent() {
-        link.set_working_dir(Some(dir.to_string_lossy().into_owned()));
-    }
-    link.create_lnk(&lnk)
-        .map_err(|e| AppError::io(format!("Kısayol yazılamadı: {e}")))?;
+    shell_link(exe, &lnk)?;
     Ok(lnk)
+}
+
+pub fn is_program(path: &Path) -> bool {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| ["exe", "bat", "cmd", "com"].contains(&e.to_ascii_lowercase().as_str()))
+}
+
+fn shell_link(target: &Path, lnk: &Path) -> AppResult<()> {
+    let mut link = mslnk::ShellLink::new(target)
+        .map_err(|e| AppError::io(format!("Kısayol hazırlanamadı: {e}")))?;
+    if let Some(dir) = target.parent() {
+        link.set_working_dir(Some(dir.to_string_lossy().into_owned()));
+        if !is_program(target) {
+            if let Some(ico) = fs::read_dir(dir).ok().and_then(|rd| {
+                rd.flatten()
+                    .map(|e| e.path())
+                    .find(|p| p.extension().is_some_and(|x| x.eq_ignore_ascii_case("ico")))
+            }) {
+                link.set_icon_location(Some(ico.to_string_lossy().into_owned()));
+            }
+        }
+    }
+    link.create_lnk(lnk)
+        .map_err(|e| AppError::io(format!("Kısayol yazılamadı: {e}")))
 }
 
 pub fn desktop_lnk(full_name: &str) -> Option<PathBuf> {
@@ -478,13 +498,7 @@ pub fn write_desktop_shortcut(full_name: &str, exe: &Path) -> AppResult<PathBuf>
     if !exe.is_file() {
         return Err(AppError::io("Programın exe dosyası bulunamadı."));
     }
-    let mut link = mslnk::ShellLink::new(exe)
-        .map_err(|e| AppError::io(format!("Kısayol hazırlanamadı: {e}")))?;
-    if let Some(dir) = exe.parent() {
-        link.set_working_dir(Some(dir.to_string_lossy().into_owned()));
-    }
-    link.create_lnk(&lnk)
-        .map_err(|e| AppError::io(format!("Kısayol yazılamadı: {e}")))?;
+    shell_link(exe, &lnk)?;
     Ok(lnk)
 }
 
@@ -587,7 +601,10 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
                 .map_err(|e| AppError::unknown(format!("Arşiv açma durdu: {e}")))??;
             task.check()?;
             let root = single_root(&out);
-            let run = manifest.as_ref().and_then(|m| m.run.as_deref());
+            let run = manifest
+                .as_ref()
+                .and_then(|m| m.run.as_deref())
+                .or(logic::upstream_of(&owner, &name).map(|u| u.entry));
             let main = find_main_exe(&root, &name, run).ok_or_else(|| {
                 AppError::new(
                     ErrorCode::NoAsset,

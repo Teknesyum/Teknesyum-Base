@@ -21,7 +21,7 @@ export function primaryOf(repo: Repo): Primary {
     case 'update-available':
       return 'update';
     case 'installed':
-      return 'launch';
+      return repo.plugin ? 'source' : 'launch';
     case 'cloned':
       return 'folder';
     default:

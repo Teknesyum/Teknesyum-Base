@@ -184,6 +184,27 @@ pub fn select_asset<'a>(
         .map(|(a, k, _)| (a, k))
 }
 
+pub struct Upstream {
+    pub owner: &'static str,
+    pub name: &'static str,
+    pub entry: &'static str,
+}
+
+pub fn upstream_of(owner: &str, name: &str) -> Option<Upstream> {
+    (owner.eq_ignore_ascii_case("Teknesyum") && name.eq_ignore_ascii_case("Webband")).then_some(Upstream {
+        owner: "srknzl",
+        name: "Webband",
+        entry: "index.html",
+    })
+}
+
+pub fn source_of(owner: &str, name: &str) -> (String, String) {
+    match upstream_of(owner, name) {
+        Some(u) => (u.owner.to_string(), u.name.to_string()),
+        None => (owner.to_string(), name.to_string()),
+    }
+}
+
 pub fn has_windows_asset(assets: &[AssetRef], manifest: Option<&Manifest>) -> bool {
     select_asset(assets, manifest).is_some()
 }

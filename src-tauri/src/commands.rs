@@ -10,6 +10,7 @@ use crate::error::{AppError, AppResult, ErrorCode};
 use crate::github::{self, GitHub};
 use crate::installer::{self, Env, Task};
 use crate::logic;
+use crate::claude;
 use crate::detect;
 use crate::model::{AppInfo, Edition, InstallMethod, Installed, Release, Repo, RepoList, TaskEvent, TaskKind};
 use crate::paths::{read_json, write_json, Paths};
@@ -164,7 +165,19 @@ fn decorate(state: &AppState, list: &mut RepoList) {
             .filter(|r| r.info.method != InstallMethod::Clone)
             .map(|r| r.info.tag.clone());
         repo.local_tags = store::tags_for(&tags, &repo.full_name);
+        if let Some(plugin) = claude::plugin_of(&repo.name) {
+            let latest = if plugin == "teknesyum-core" { list.core_latest.clone() } else { list.ui_latest.clone() };
+            let have = claude::installed_version(plugin);
+            repo.install_state = logic::install_state(
+                have.as_deref().map(|v| (InstallMethod::External, v)),
+                latest.as_deref(),
+            );
+            repo.installed_tag = have;
+            repo.plugin = Some(plugin.to_string());
+            repo.has_windows_asset = true;
+        }
     }
+    list.claude_code = claude::claude_exe().is_some();
 }
 
 fn check_part(v: &str, what: &str) -> AppResult<()> {
@@ -354,10 +367,15 @@ pub async fn load_list(
 }
 
 #[tauri::command]
-pub async fn repo_readme(state: State<'_, AppState>, owner: String, name: String) -> AppResult<String> {
+pub async fn repo_readme(state: State<'_, AppState>, owner: String, name: String, path: Option<String>) -> AppResult<String> {
     check_part(&owner, "hesap adı")?;
     check_part(&name, "depo adı")?;
-    state.gh().readme(&owner, &name).await
+    if let Some(p) = &path {
+        if !crate::github::doc_path_ok(p) {
+            return Err(AppError::new(ErrorCode::NotFound, format!("Geçersiz belge yolu: {p}")));
+        }
+    }
+    state.gh().readme(&owner, &name, path.as_deref()).await
 }
 
 #[tauri::command]
@@ -448,10 +466,25 @@ pub async fn list_installed(state: State<'_, AppState>) -> AppResult<Vec<Install
 }
 
 #[tauri::command]
-pub async fn install_repo(app: AppHandle, state: State<'_, AppState>, owner: String, name: String) -> AppResult<String> {
+pub async fn install_repo(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    owner: String,
+    name: String,
+    with_claude: Option<bool>,
+) -> AppResult<String> {
     check_part(&owner, "hesap adı")?;
     check_part(&name, "depo adı")?;
     let full = format!("{owner}/{name}");
+    if let Some(plugin) = claude::plugin_of(&name) {
+        let kind = if claude::installed_version(plugin).is_some() { TaskKind::Update } else { TaskKind::Install };
+        let with_claude = with_claude.unwrap_or(false);
+        return start_task(&app, &state, full, kind, move |_env, task| async move {
+            tauri::async_runtime::spawn_blocking(move || claude::install_plugin(&task, plugin, with_claude))
+                .await
+                .map_err(|e| AppError::unknown(e.to_string()))?
+        });
+    }
     let existing = state.find_installed(&full);
     let prefer_setup = matches!(&existing, Some(r) if r.info.method == InstallMethod::External);
     let kind = match existing {
@@ -465,7 +498,17 @@ pub async fn install_repo(app: AppHandle, state: State<'_, AppState>, owner: Str
 
 #[tauri::command]
 pub async fn uninstall_repo(app: AppHandle, state: State<'_, AppState>, full_name: String) -> AppResult<String> {
-    split_full(&full_name)?;
+    let (_, name) = split_full(&full_name)?;
+    if let Some(plugin) = claude::plugin_of(&name) {
+        if claude::installed_version(plugin).is_none() {
+            return Err(AppError::new(ErrorCode::NotFound, "Bu eklenti kurulu görünmüyor."));
+        }
+        return start_task(&app, &state, full_name, TaskKind::Uninstall, move |_env, task| async move {
+            tauri::async_runtime::spawn_blocking(move || claude::uninstall_plugin(&task, plugin))
+                .await
+                .map_err(|e| AppError::unknown(e.to_string()))?
+        });
+    }
     let rec = state
         .find_installed(&full_name)
         .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."))?;
@@ -520,6 +563,10 @@ pub async fn launch_installed(state: State<'_, AppState>, full_name: String) -> 
                 "Bu program için başlatılacak dosya bilinmiyor; Başlat menüsünden açın.",
             )
         })?;
+    if !installer::is_program(&exe) {
+        return tauri_plugin_opener::open_path(exe.to_string_lossy().as_ref(), None::<&str>)
+            .map_err(|e| AppError::io(format!("Program açılamadı: {e}")));
+    }
     let dir = exe.parent().map(Path::to_path_buf).unwrap_or_default();
     std::process::Command::new(&exe)
         .current_dir(dir)

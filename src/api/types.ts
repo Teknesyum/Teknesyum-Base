@@ -64,6 +64,7 @@ export type Repo = {
   lead?: string;
   tags?: string[];
   uiVersion?: string | null;
+  plugin?: string | null;
 };
 
 export type RepoList = {
@@ -75,6 +76,7 @@ export type RepoList = {
   budgetSkipped: boolean;
   uiLatest?: string | null;
   coreLatest?: string | null;
+  claudeCode?: boolean;
   repos: Repo[];
 };
 

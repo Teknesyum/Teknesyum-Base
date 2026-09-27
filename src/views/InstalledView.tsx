@@ -6,7 +6,8 @@ import { stagger, useFlip, useRoving } from '../ui/hooks';
 import { EmptyState, ErrorState, SkeletonCards } from '../ui/States';
 import { useToast } from '../ui/Toasts';
 import { isRunning, type Opener } from './actions';
-import { AppIcon, StateBadge, TaskProgress } from './RepoCard';
+import { AppIcon, GithubButton, StateBadge, TaskProgress } from './RepoCard';
+import { IconDesktop } from '../ui/icons';
 import './library.css';
 import './page.css';
 
@@ -91,7 +92,7 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
           return (
             <li key={item.fullName} className="row row--installed" data-flip={item.fullName} style={stagger(i)}>
               <span className="card__head">
-                <AppIcon name={repo.name} />
+                <AppIcon repo={repo} />
                 <button type="button" className="card__open" data-name={repo.name} {...rp} onClick={(e) => onOpen(repo, e.currentTarget)}>
                   {repo.name}
                 </button>
@@ -122,6 +123,12 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
                     <button type="button" className="btn btn--ghost" tabIndex={rp.tabIndex} onClick={() => store.openFolder(repo.fullName)}>
                       {t('actions.folder')}
                     </button>
+                    {item.exe && !item.desktopShortcut ? (
+                      <button type="button" className="btn btn--icon btn--quiet" tabIndex={rp.tabIndex} aria-label={t('actions.desktopOf', { name: repo.name })} title={t('actions.desktopOf', { name: repo.name })} onClick={() => void store.desktopShortcut(repo.fullName, repo.name)}>
+                        <IconDesktop />
+                      </button>
+                    ) : null}
+                    <GithubButton repo={repo} tabIndex={rp.tabIndex} />
                     <button type="button" className="btn btn--ghost btn--danger-outline" tabIndex={rp.tabIndex} onClick={(e) => onUninstall(repo, e.currentTarget)}>
                       {t('actions.uninstall')}
                     </button>

@@ -27,7 +27,8 @@ export function StatusBar({ onSettings }: { onSettings: () => void }) {
   const syncText = store.syncError && !store.syncing ? t('status.syncError', { reason: t('errors.' + store.syncError.code + '.title') }) : t('status.' + sync);
   const showToken = out && !store.settings?.hasToken;
   const fetchedText = list && !out ? t('status.fetched', { when: rel(list.fetchedAt) }) : null;
-  useFit(ref, LEVELS, '.statusbar__text', [lang, syncText, store.account, rateText, fetchedText, showToken].join('|'));
+  const versions = [list?.coreLatest ? 'Core ' + list.coreLatest : '', list?.uiLatest ? 'UI ' + list.uiLatest : ''].filter(Boolean).join(' · ');
+  useFit(ref, LEVELS, '.statusbar__text', [lang, syncText, store.account, rateText, fetchedText, showToken, versions].join('|'));
 
   return (
     <footer ref={ref} className="statusbar divider-top" role="status" data-sync={sync} data-rate={out ? 'out' : undefined}>
@@ -50,6 +51,11 @@ export function StatusBar({ onSettings }: { onSettings: () => void }) {
       {fetchedText ? (
         <span className="statusbar__item statusbar__item--fetched">
           <span className="statusbar__text">{fetchedText}</span>
+        </span>
+      ) : null}
+      {versions ? (
+        <span className="statusbar__item statusbar__item--versions" title={t('status.versionsHint')}>
+          <span className="statusbar__text">{versions}</span>
         </span>
       ) : null}
     </footer>

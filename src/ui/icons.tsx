@@ -89,3 +89,8 @@ export const IconSearch = () => (
     <path d="m20 20-4.5-4.5" />
   </Svg>
 );
+export const IconDesktop = () => (
+  <Svg>
+    <path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM9 20h6M12 16v4" />
+  </Svg>
+);

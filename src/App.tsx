@@ -20,7 +20,7 @@ import { UpdatePanel } from './views/UpdatePanel';
 type Tab = 'library' | 'installed' | 'settings';
 type Target = { fullName: string; opener: Opener };
 
-const LINKS = { sponsor: 'https://github.com/sponsors/Teknesyum', brand: 'https://github.com/Teknesyum', site: 'https://teknesyum.com' };
+const LINKS = { sponsor: 'https://github.com/sponsors/Teknesyum', brand: 'https://github.com/Teknesyum' };
 
 function Frame() {
   const { t, lang, clock } = useI18n();
@@ -108,10 +108,11 @@ function Frame() {
         logo="/logo-32.png"
         links={LINKS}
         badge={<UpdateBadge onOpen={(el) => setUpdateFrom(el)} />}
-        sync={{ state: syncState, text: syncText, title: store.syncError ? t('status.syncError', { reason: t('errors.' + store.syncError.code + '.title') }) : syncText ? syncText + ' · ' + t('sync.now') : t('sync.now'), onClick: () => void store.refresh() }}
+        sync={{ state: syncState, text: syncText, title: store.syncError ? t('status.syncError', { reason: t('errors.' + store.syncError.code + '.title') }) : syncText ? t('titlebar.syncTitle', { state: syncText, action: t('sync.now') }) : t('sync.now'), onClick: () => void store.refresh() }}
         language={
           <div
             className="lang-switch"
+            data-lang={lang}
             role="radiogroup"
             aria-label={t('titlebar.language')}
             onKeyDown={(e) => {
@@ -120,10 +121,10 @@ function Frame() {
               setLang(lang === 'tr' ? 'en' : 'tr');
             }}
           >
-            <button type="button" role="radio" aria-checked={lang === 'tr'} tabIndex={lang === 'tr' ? 0 : -1} className="tk-titlebar__tab" lang="tr" onClick={() => setLang('tr')}>
+            <button type="button" role="radio" aria-checked={lang === 'tr'} tabIndex={lang === 'tr' ? 0 : -1} className="lang-switch__opt" lang="tr" onClick={() => setLang('tr')}>
               TR
             </button>
-            <button type="button" role="radio" aria-checked={lang === 'en'} tabIndex={lang === 'en' ? 0 : -1} className="tk-titlebar__tab" lang="en" onClick={() => setLang('en')}>
+            <button type="button" role="radio" aria-checked={lang === 'en'} tabIndex={lang === 'en' ? 0 : -1} className="lang-switch__opt" lang="en" onClick={() => setLang('en')}>
               EN
             </button>
           </div>
@@ -134,8 +135,6 @@ function Frame() {
           sponsorTitle: t('sig.supportTitle'),
           brand: t('sig.brand'),
           brandTitle: t('sig.brandTitle'),
-          site: t('sig.site'),
-          siteTitle: t('sig.siteTitle'),
           restore: t('titlebar.restore'),
           minimize: t('titlebar.minimize'),
           maximize: t('titlebar.maximize'),

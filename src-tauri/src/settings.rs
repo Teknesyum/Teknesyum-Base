@@ -28,6 +28,7 @@ pub struct Settings {
     pub show_archived: bool,
     pub show_forks: bool,
     pub close_to_tray: bool,
+    pub desktop_shortcut: bool,
     pub has_token: bool,
 }
 
@@ -42,6 +43,7 @@ impl Default for Settings {
             show_archived: false,
             show_forks: false,
             close_to_tray: false,
+            desktop_shortcut: false,
             has_token: false,
         }
     }

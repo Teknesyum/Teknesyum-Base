@@ -22,6 +22,8 @@ const ACCEPT_RAW: &str = "application/vnd.github.raw+json";
 const CONCURRENCY: usize = 6;
 const UI_OWNER: &str = "Teknesyum";
 const UI_REPO: &str = "Teknesyum-UI";
+const CORE_REPO: &str = "Teknesyum-Core";
+const MEDIA_MAX: usize = 20 * 1024 * 1024;
 
 #[derive(Debug, Clone, Default)]
 pub struct RateInfo {
@@ -541,13 +543,89 @@ impl GitHub {
             .and_then(|b| parse_ui_version(&b)))
     }
 
-    pub async fn ui_latest(&self) -> Option<String> {
-        let body = self
-            .repo_file(UI_OWNER, UI_REPO, false, "ui/.claude-plugin/plugin.json")
-            .await
-            .ok()??;
+    async fn plugin_latest(&self, repo: &str, path: &str) -> Option<String> {
+        let body = self.repo_file(UI_OWNER, repo, false, path).await.ok()??;
         let v: serde_json::Value = serde_json::from_str(body.trim_start_matches('\u{feff}')).ok()?;
         v.get("version")?.as_str().map(str::to_string)
+    }
+
+    pub async fn ui_latest(&self) -> Option<String> {
+        self.plugin_latest(UI_REPO, "ui/.claude-plugin/plugin.json").await
+    }
+
+    pub async fn core_latest(&self) -> Option<String> {
+        self.plugin_latest(CORE_REPO, "core/.claude-plugin/plugin.json").await
+    }
+
+    pub async fn media(&self, owner: &str, name: &str, private: bool, path: &str) -> AppResult<Option<Vec<u8>>> {
+        let path = path.trim().trim_start_matches('/');
+        if path.is_empty() || path.contains("..") || path.contains(':') || path.contains('\\') {
+            return Err(AppError::io("Geçersiz görsel yolu."));
+        }
+        let api = self.token.is_some() || private;
+        let url = if api {
+            format!("{API}/repos/{owner}/{name}/contents/{path}")
+        } else {
+            format!("https://raw.githubusercontent.com/{owner}/{name}/HEAD/{path}")
+        };
+        let dir = self.cache_dir.join("media");
+        let key = store::http_cache_file(&dir, &url, "media", api);
+        let bin = key.with_extension("bin");
+        let tag_file = key.with_extension("etag");
+        let cached_tag = std::fs::read_to_string(&tag_file).ok().filter(|_| bin.exists());
+        let mut req = self
+            .http
+            .get(&url)
+            .header(USER_AGENT, UA)
+            .header(ACCEPT, if api { ACCEPT_RAW } else { "*/*" })
+            .timeout(Duration::from_secs(60));
+        if api {
+            req = req.header("X-GitHub-Api-Version", "2022-11-28");
+            if let Some(token) = &self.token {
+                req = req.header(AUTHORIZATION, format!("Bearer {token}"));
+            }
+        }
+        if let Some(tag) = &cached_tag {
+            req = req.header(reqwest::header::IF_NONE_MATCH, tag.as_str());
+        }
+        let resp = match req.send().await {
+            Ok(r) => r,
+            Err(e) => {
+                return match std::fs::read(&bin) {
+                    Ok(b) if cached_tag.is_some() => Ok(Some(b)),
+                    _ => Err(e.into()),
+                }
+            }
+        };
+        if api {
+            self.record_rate(resp.headers());
+        }
+        let status = resp.status();
+        if status == StatusCode::NOT_MODIFIED && cached_tag.is_some() {
+            return Ok(std::fs::read(&bin).ok());
+        }
+        if status == StatusCode::NOT_FOUND {
+            return Ok(None);
+        }
+        if !status.is_success() {
+            return Ok(std::fs::read(&bin).ok());
+        }
+        let etag = header_str(resp.headers(), ETAG);
+        let bytes = resp.bytes().await?.to_vec();
+        if bytes.len() > MEDIA_MAX {
+            return Err(AppError::io("Görsel çok büyük."));
+        }
+        if std::fs::create_dir_all(&dir).is_ok() && std::fs::write(&bin, &bytes).is_ok() {
+            match etag {
+                Some(t) => {
+                    let _ = std::fs::write(&tag_file, t);
+                }
+                None => {
+                    let _ = std::fs::remove_file(&tag_file);
+                }
+            }
+        }
+        Ok(Some(bytes))
     }
 
     pub async fn repo_details(&self, account: &str) -> AppResult<Vec<RepoDetails>> {
@@ -732,6 +810,8 @@ pub fn new_list(account: &str, repos: Vec<Repo>, rate: RateInfo) -> RepoList {
         rate_reset_at: rate.reset_at,
         budget_skipped: false,
         ui_latest: None,
+
+        core_latest: None,
         repos,
     }
 }

@@ -38,6 +38,7 @@ const seeds: Seed[] = [
   { name: 'SesKes', description: 'Ses dosyalarından sessiz bölümleri otomatik çıkarır.', language: 'Python', stars: 33, forks: 2, issues: 1, category: 'Medya/Ses', topics: ['audio'], tag: 'v0.4.2', daysAgo: 140, state: 'not-installed' },
   { name: 'EskiPanel', description: 'İlk yönetim paneli denemesi; artık bakımı yapılmıyor.', language: 'JavaScript', stars: 4, forks: 0, issues: 0, category: 'Arşiv', topics: [], tag: 'v0.2.0', daysAgo: 610, state: 'not-installed', archived: true, license: null },
   { name: 'ffmpeg-builds', description: 'Windows için hazır FFmpeg derlemeleri (çatal).', language: 'Shell', stars: 2, forks: 0, issues: 0, category: 'Medya', topics: ['ffmpeg'], tag: 'n7.1', daysAgo: 30, state: 'not-installed', fork: true },
+  { name: 'Webband', description: 'Tarayıcıda çalışan Warband tarzı strateji oyunu.', language: 'JavaScript', stars: 48, forks: 7, issues: 2, category: 'Oyun', topics: ['game', 'browser'], tag: null, daysAgo: 40, state: 'not-installed', windows: false },
   { name: 'Hesapla', description: 'Birimli hesap makinesi; geçmiş ve değişkenlerle.', language: 'TypeScript', stars: 71, forks: 5, issues: 3, category: 'Üretkenlik', topics: ['calculator'], tag: 'v1.1.0', daysAgo: 17, state: 'not-installed' },
 ];
 
@@ -83,6 +84,7 @@ let settings: Settings = {
   showArchived: false,
   showForks: false,
   closeToTray: true,
+  desktopShortcut: false,
   hasToken: false,
 };
 
@@ -290,7 +292,8 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
         rateRemaining: durum === 'sinir' ? 0 : rate,
         rateResetAt: new Date(Date.now() + 42 * 60000).toISOString(),
         budgetSkipped: durum === 'sinir',
-        uiLatest: '0.23.0',
+        uiLatest: '0.26.0',
+        coreLatest: '0.51.0',
         repos: durum === 'bos' ? [] : repos.map((r) => ({ ...r, topics: [...r.topics], localTags: [...r.localTags] })),
       };
       return out(list);
@@ -337,6 +340,7 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
       return out(undefined);
     case 'launch_installed':
     case 'open_path':
+    case 'desktop_shortcut':
       return out(undefined);
     case 'update_state':
       if (!updateBooted) {

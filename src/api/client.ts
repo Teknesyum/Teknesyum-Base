@@ -41,6 +41,7 @@ export const api = {
   launch: (fullName: string) => call<void>(commands.launch, { fullName }),
   setLocalTags: (fullName: string, tags: string[]) => call<void>(commands.setLocalTags, { fullName, tags }),
   openPath: (path: string) => call<void>(commands.openPath, { path }),
+  desktopShortcut: (fullName: string) => call<void>(commands.desktopShortcut, { fullName }),
   getUpdateState: () => call<UpdateState>(commands.updateState),
   checkUpdate: () => call<UpdateState>(commands.updateCheck),
   downloadUpdate: () => call<void>(commands.updateDownload),
@@ -58,6 +59,16 @@ export async function onUpdateState(handler: (s: UpdateState) => void): Promise<
   if (isTauri) return listen<UpdateState>(updateEvent, (ev) => handler(ev.payload));
   const mock = await import('./mock');
   return mock.subscribeUpdate(handler);
+}
+
+const MIME: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', ico: 'image/x-icon', svg: 'image/svg+xml' };
+
+export async function repoMedia(owner: string, name: string, isPrivate: boolean, path: string): Promise<string> {
+  const clean = path.replace(/^\/+/, '');
+  if (!isTauri) return `https://raw.githubusercontent.com/${owner}/${name}/HEAD/${clean.split('/').map(encodeURIComponent).join('/')}`;
+  const buf = await call<ArrayBuffer>(commands.repoMedia, { owner, name, private: isPrivate, path: clean });
+  const ext = clean.slice(clean.lastIndexOf('.') + 1).toLowerCase();
+  return URL.createObjectURL(new Blob([buf], { type: MIME[ext] ?? 'application/octet-stream' }));
 }
 
 export async function openExternal(url: string): Promise<void> {

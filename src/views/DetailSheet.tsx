@@ -6,11 +6,11 @@ import type { AppError, Release, Repo } from '../api/types';
 import { useI18n } from '../i18n';
 import { useStore } from '../store';
 import { tokenValue, useDialogFocus, useFlip, useMotion, usePresence, useRoving } from '../ui/hooks';
-import { IconClose, IconExternal, IconFolder } from '../ui/icons';
+import { IconClose, IconDesktop, IconExternal, IconFolder } from '../ui/icons';
 import { ErrorState, SkeletonLines } from '../ui/States';
 import { useToast } from '../ui/Toasts';
 import { isRunning, uiState, type Opener } from './actions';
-import { AppIcon, PrimaryButton, StateBadge, TaskProgress } from './RepoCard';
+import { AppIcon, ForkNote, Points, PrimaryButton, StateBadge, TaskProgress } from './RepoCard';
 import './sheet.css';
 
 function clean(html: string): string {
@@ -98,6 +98,7 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
   const task = store.tasks[repo.fullName];
   const running = isRunning(task);
   const installed = repo.installState !== 'not-installed';
+  const item = store.installed.find((x) => x.fullName.toLocaleLowerCase('tr') === repo.fullName.toLocaleLowerCase('tr'));
   const tabs = useRoving<HTMLButtonElement>(2, { orientation: 'horizontal' });
   const tagId = useId();
   const [draft, setDraft] = useState('');
@@ -136,11 +137,11 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
       <header className="sheet__head divider-bottom">
         <div className="sheet__titles">
           <h2 id="sheet-title" className="sheet__title">
-            <AppIcon name={repo.name} />
+            <AppIcon repo={repo} />
             {repo.name}
             {repo.latestTag ? <span className="sheet__tag">{repo.latestTag}</span> : null}
           </h2>
-          <p className="sheet__desc">{repo.summary || repo.description || t('library.noDescription')}</p>
+          <Points repo={repo} className="sheet__desc" />
           <ul className="chips sheet__class" aria-label={t('library.tags')}>
             <li className="chip chip--category">{t('category.' + repo.category)}</li>
             {(repo.tags ?? []).map((x) => (
@@ -175,6 +176,12 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
                   {t('actions.folder')}
                 </button>
               ) : null}
+              {item?.exe ? (
+                <button type="button" className="btn btn--ghost" disabled={item.desktopShortcut} title={item.desktopShortcut ? t('actions.desktopExists') : undefined} onClick={() => void store.desktopShortcut(repo.fullName, repo.name)}>
+                  <IconDesktop />
+                  {t(item.desktopShortcut ? 'actions.desktopExists' : 'actions.desktop')}
+                </button>
+              ) : null}
               {installed ? (
                 <button type="button" className="btn btn--ghost btn--danger-outline" onClick={(e) => onUninstall(repo, e.currentTarget)}>
                   {t('actions.uninstall')}
@@ -187,6 +194,8 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
             {t('actions.github')}
           </button>
         </div>
+
+        <ForkNote repo={repo} full />
 
         <dl className="stats">
           {stats.map(([k, v]) => (

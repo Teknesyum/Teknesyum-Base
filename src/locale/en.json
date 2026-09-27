@@ -7,6 +7,7 @@
     "namePro": "Teknesyum Base Pro"
   },
   "titlebar": {
+    "syncTitle": "{state} · {action}",
     "minimize": "Minimize",
     "maximize": "Maximize",
     "close": "Close",
@@ -59,7 +60,12 @@
     "uninstall": "Uninstall",
     "github": "Open on GitHub",
     "aria": "{name}: {action}",
-    "source": "View source"
+    "source": "View source",
+    "githubOf": "Open the {name} GitHub page",
+    "desktop": "Create desktop shortcut",
+    "desktopExists": "Desktop shortcut exists",
+    "desktopOf": "Create a desktop shortcut for {name}",
+    "desktopDone": "Desktop shortcut for {name} created"
   },
   "task": {
     "busy": "A task is running for this repo",
@@ -297,7 +303,11 @@
     },
     "git": "Git",
     "gitFound": "Found",
-    "gitMissing": "Not found"
+    "gitMissing": "Not found",
+    "desktopShortcut": "Create a desktop shortcut on install",
+    "desktopShortcutHelp": "Every installed program also gets a desktop shortcut; it is removed on uninstall.",
+    "coreLatest": "Latest Teknesyum Core",
+    "uiLatest": "Latest Teknesyum UI"
   },
   "status": {
     "idle": "Waiting",
@@ -319,7 +329,8 @@
     "rateHint": "Without a token GitHub allows 60 requests an hour; once used up the list is shown from cache. Add a read-only token in Settings to raise the limit to 5000 an hour.",
     "rateHintToken": "The token's hourly request limit is used up; the list is shown from cache and refreshes once the limit resets.",
     "addToken": "Add token",
-    "cacheHint": "Showing the list last fetched from GitHub; press Refresh for new data."
+    "cacheHint": "Showing the list last fetched from GitHub; press Refresh for new data.",
+    "versionsHint": "Latest published versions of Teknesyum Core and Teknesyum UI"
   },
   "update": {
     "versionLabel": "New version",
@@ -365,5 +376,11 @@
       "unknown": "unknown"
     },
     "stat": "{version} · {state}"
+  },
+  "fork": {
+    "short": "{by} develops this project; {by}'s version is the newest.",
+    "long": "{name} is an exception: {by} develops it in a separate repository. The version here is the Teknesyum copy; new features and fixes reach {by}'s version first. Open {by}'s version to play the newest.",
+    "play": "Open {by}'s version",
+    "repo": "{by}'s repository"
   }
 }

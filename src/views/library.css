@@ -184,6 +184,7 @@ article.row {
     'desc shot'
     'tags shot'
     'meta shot'
+    'fork shot'
     '. shot';
   align-items: start;
   gap: var(--tk-sp-1) var(--tk-sp-4);
@@ -381,6 +382,19 @@ article.row > .card__foot {
   max-width: var(--tk-measure);
 }
 
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-sp-1);
+  padding-inline-start: var(--tk-sp-4);
+  list-style: disc;
+  overflow: visible;
+}
+
+.points li::marker {
+  color: var(--tk-renk-1);
+}
+
 .card__meta {
   display: flex;
   flex-wrap: wrap;
@@ -444,7 +458,8 @@ article.row > .card__foot {
     'desc desc'
     'shot shot'
     'tags tags'
-    'meta meta';
+    'meta meta'
+    'fork fork';
 }
 
 .library[data-dar] article.row > .card__shot {
@@ -455,4 +470,39 @@ article.row > .card__foot {
   width: var(--tk-icon-3);
   height: var(--tk-icon-3);
   font-size: var(--tk-fs-1);
+}
+
+article.row > .fork-note {
+  grid-area: fork;
+}
+
+.card__buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-sp-1);
+}
+
+.fork-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tk-sp-2) var(--tk-sp-3);
+  padding: var(--tk-sp-2) var(--tk-sp-3);
+  border-inline-start: var(--tk-focus-w) solid var(--tk-renk-2);
+  background: color-mix(in srgb, var(--tk-renk-2) 8%, transparent);
+  border-radius: var(--tk-r-box);
+}
+
+.fork-note__text {
+  flex: 1 1 calc(var(--tk-sidebar-w) / 2);
+  margin: 0;
+  color: var(--tk-text);
+  font-size: var(--tk-fs-1);
+  line-height: var(--tk-lh-body);
+}
+
+.fork-note__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tk-sp-2);
 }

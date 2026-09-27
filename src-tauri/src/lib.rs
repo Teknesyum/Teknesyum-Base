@@ -29,7 +29,7 @@ fn show_main(app: &AppHandle) {
 }
 
 fn state_flags() -> StateFlags {
-    StateFlags::all() & !StateFlags::VISIBLE
+    StateFlags::all() & !StateFlags::VISIBLE & !StateFlags::MAXIMIZED
 }
 
 fn keep_on_screen(window: &WebviewWindow) {
@@ -188,6 +188,7 @@ pub fn run() {
                 let _ = window.restore_state(state_flags());
                 keep_on_screen(&window);
                 fit_to_monitor(&window);
+                let _ = window.maximize();
                 if let Some(z) = std::env::var("TEKNESYUM_BASE_UI_SCALE").ok().and_then(|v| v.parse::<f64>().ok()) {
                     let _ = window.set_zoom(z);
                 }
@@ -214,6 +215,8 @@ pub fn run() {
             commands::list_repos,
             commands::repo_readme,
             commands::repo_releases,
+            commands::repo_media,
+            commands::desktop_shortcut,
             commands::get_settings,
             commands::save_settings,
             commands::set_token,

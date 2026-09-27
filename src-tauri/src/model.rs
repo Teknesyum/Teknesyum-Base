@@ -42,6 +42,10 @@ pub struct Manifest {
     pub run: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub silent_args: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub icon: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub screenshot: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -109,6 +113,8 @@ pub struct RepoList {
     pub budget_skipped: bool,
     #[serde(default)]
     pub ui_latest: Option<String>,
+    #[serde(default)]
+    pub core_latest: Option<String>,
     pub repos: Vec<Repo>,
 }
 
@@ -121,6 +127,8 @@ pub struct Installed {
     pub path: String,
     pub exe: Option<String>,
     pub installed_at: String,
+    #[serde(default)]
+    pub desktop_shortcut: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -39,6 +39,9 @@ GitHub shows the repositories and lets you download a release by hand. That part
 - **Detail sheet** — README, release history with notes, assets with size and download count.
 - **Install dialog** — watch resolve, download, verify, install and shortcut steps; cancel at any time.
 - **Installed** — launch, open the folder, update or remove.
+- **Live icons and screenshots** — pulled from each repository and cached; a click opens the full-resolution image.
+- **Desktop shortcut and GitHub page** — one click each, from the card, the detail sheet or the Installed tab.
+- **Plugin versions** — the latest Teknesyum Core and Teknesyum UI versions sit in the status bar.
 - **Your own account** — point Base at any GitHub user or organisation, plus extra accounts.
 - **Offline cache** — the last list is kept and shown when the network is down, with its age.
 

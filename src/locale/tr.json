@@ -7,6 +7,7 @@
     "namePro": "Teknesyum Base Pro"
   },
   "titlebar": {
+    "syncTitle": "{state} · {action}",
     "minimize": "Simge durumuna küçült",
     "maximize": "Büyüt",
     "close": "Kapat",
@@ -59,7 +60,12 @@
     "uninstall": "Kaldır",
     "github": "GitHub'da aç",
     "aria": "{name}: {action}",
-    "source": "Kaynağı gör"
+    "source": "Kaynağı gör",
+    "githubOf": "{name} GitHub sayfasını aç",
+    "desktop": "Masaüstüne kısayol oluştur",
+    "desktopExists": "Masaüstü kısayolu var",
+    "desktopOf": "{name} için masaüstüne kısayol oluştur",
+    "desktopDone": "{name} masaüstü kısayolu oluşturuldu"
   },
   "task": {
     "busy": "Bu repo için bir işlem sürüyor",
@@ -297,7 +303,11 @@
     },
     "git": "Git",
     "gitFound": "Bulundu",
-    "gitMissing": "Bulunamadı"
+    "gitMissing": "Bulunamadı",
+    "desktopShortcut": "Kurulumda masaüstü kısayolu oluştur",
+    "desktopShortcutHelp": "Kurulan her programın masaüstüne bir kısayolu da yazılır; programı kaldırınca silinir.",
+    "coreLatest": "Güncel Teknesyum Core",
+    "uiLatest": "Güncel Teknesyum UI"
   },
   "status": {
     "idle": "Bekliyor",
@@ -319,7 +329,8 @@
     "rateHint": "GitHub token'sız saatte 60 istek verir; sınır dolunca liste önbellekten gösterilir. Ayarlar'a okuma token'ı eklerseniz sınır saatte 5000'e çıkar.",
     "rateHintToken": "Token'ın saatlik istek sınırı doldu; liste önbellekten gösteriliyor ve sınır yenilenince kendiliğinden tazelenir.",
     "addToken": "Token ekle",
-    "cacheHint": "GitHub'dan son alınan liste gösteriliyor; yeni bilgi için Tazele'ye basın."
+    "cacheHint": "GitHub'dan son alınan liste gösteriliyor; yeni bilgi için Tazele'ye basın.",
+    "versionsHint": "Teknesyum Core ve Teknesyum UI'ın yayımlanmış en güncel sürümleri"
   },
   "update": {
     "versionLabel": "Yeni sürüm",
@@ -365,5 +376,11 @@
       "unknown": "bilinmiyor"
     },
     "stat": "{version} · {state}"
+  },
+  "fork": {
+    "short": "Bu projeyi kardeşimiz {by} ilerletiyor; en güncel sürümü onda.",
+    "long": "{name} istisnai bir proje: kardeşimiz {by} kendi deposunda ilerletiyor. Buradaki sürüm Teknesyum kopyası; yeni özellikler ve düzeltmeler önce {by}'ın sürümüne gelir. En günceli oynamak için {by}'ın sürümünü açın.",
+    "play": "{by}'ın sürümünü aç",
+    "repo": "{by}'ın deposu"
   }
 }

@@ -88,6 +88,12 @@
   }
 }
 
+.statusbar__item--versions {
+  margin-inline-start: auto;
+  color: var(--tk-text-label);
+}
+
+.statusbar[data-sikis] .statusbar__item--versions,
 .statusbar[data-sikis] .statusbar__item--fetched {
   display: none;
 }

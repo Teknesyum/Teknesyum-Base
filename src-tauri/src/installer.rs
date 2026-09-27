@@ -27,6 +27,7 @@ pub struct Env {
     pub http: reqwest::Client,
     pub install_dir: PathBuf,
     pub clone_dir: PathBuf,
+    pub desktop_shortcut: bool,
 }
 
 #[derive(Clone)]
@@ -467,6 +468,26 @@ fn write_shortcut(env: &Env, name: &str, exe: &Path) -> AppResult<PathBuf> {
     Ok(lnk)
 }
 
+pub fn desktop_lnk(full_name: &str) -> Option<PathBuf> {
+    let name = full_name.rsplit('/').next().filter(|n| !n.is_empty())?;
+    Some(dirs::desktop_dir()?.join(format!("{}.lnk", logic::safe_dir_name(name))))
+}
+
+pub fn write_desktop_shortcut(full_name: &str, exe: &Path) -> AppResult<PathBuf> {
+    let lnk = desktop_lnk(full_name).ok_or_else(|| AppError::io("Masaüstü klasörü bulunamadı."))?;
+    if !exe.is_file() {
+        return Err(AppError::io("Programın exe dosyası bulunamadı."));
+    }
+    let mut link = mslnk::ShellLink::new(exe)
+        .map_err(|e| AppError::io(format!("Kısayol hazırlanamadı: {e}")))?;
+    if let Some(dir) = exe.parent() {
+        link.set_working_dir(Some(dir.to_string_lossy().into_owned()));
+    }
+    link.create_lnk(&lnk)
+        .map_err(|e| AppError::io(format!("Kısayol yazılamadı: {e}")))?;
+    Ok(lnk)
+}
+
 pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_setup: bool) -> AppResult<String> {
     let dry = env.paths.dry_run;
     task.log(TaskStep::Resolve, 1, &format!("{owner}/{name} için son sürüm aranıyor"));
@@ -684,16 +705,29 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
         }
     }
 
+    let full = format!("{owner}/{name}");
+    let mut desktop = false;
+    if let (Some(exe), true, false) = (&exe, env.desktop_shortcut, dry) {
+        match write_desktop_shortcut(&full, exe) {
+            Ok(lnk) => {
+                task.log(TaskStep::Shortcut, 98, &format!("Masaüstü kısayolu: {}", lnk.display()));
+                desktop = true;
+            }
+            Err(e) => task.log(TaskStep::Shortcut, 98, &e.message),
+        }
+    }
+
     store::upsert_installed(
         &env.paths,
         InstalledRecord {
             info: Installed {
-                full_name: format!("{owner}/{name}"),
+                full_name: full,
                 tag: release.tag_name.clone(),
                 method,
                 path: installed_dir.to_string_lossy().into_owned(),
                 exe: exe.map(|e| e.to_string_lossy().into_owned()),
                 installed_at: now_iso(),
+                desktop_shortcut: desktop,
             },
             shortcut,
             package,
@@ -826,6 +860,11 @@ pub async fn uninstall(env: Env, task: Task, rec: InstalledRecord) -> AppResult<
         if lnk.exists() {
             fs::remove_file(&lnk)?;
             task.log(TaskStep::Shortcut, 95, "Başlat menüsü kısayolu silindi");
+        }
+    }
+    if let Some(lnk) = desktop_lnk(&full_name).filter(|l| l.exists()) {
+        if fs::remove_file(&lnk).is_ok() {
+            task.log(TaskStep::Shortcut, 96, "Masaüstü kısayolu silindi");
         }
     }
     store::remove_installed(&env.paths, &full_name)?;
@@ -994,6 +1033,7 @@ pub async fn clone(env: Env, task: Task, owner: String, name: String) -> AppResu
                 path: dest.to_string_lossy().into_owned(),
                 exe: None,
                 installed_at: now_iso(),
+                desktop_shortcut: false,
             },
             shortcut: None,
             package: None,
@@ -1036,6 +1076,7 @@ mod tests {
             gh: GitHub::new(crate::github::build_http(), paths.cache.clone(), std::env::var("GITHUB_TOKEN").ok()),
             http: crate::github::build_http(),
             install_dir: paths.default_install.clone(),
+            desktop_shortcut: false,
             clone_dir: paths.default_clone.clone(),
             paths,
         };
@@ -1073,6 +1114,7 @@ mod tests {
             gh: GitHub::new(crate::github::build_http(), paths.cache.clone(), None),
             http: crate::github::build_http(),
             install_dir: paths.default_install.clone(),
+            desktop_shortcut: false,
             clone_dir: paths.default_clone.clone(),
             paths,
         };

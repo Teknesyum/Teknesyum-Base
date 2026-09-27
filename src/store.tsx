@@ -32,6 +32,7 @@ type Store = {
   setTags: (fullName: string, tags: string[]) => Promise<void>;
   launch: (fullName: string) => void;
   openFolder: (fullName: string) => void;
+  desktopShortcut: (fullName: string, name: string) => Promise<void>;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -202,6 +203,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (task) void api.cancelTask(task.taskId).catch(fail);
       },
       saveSettings: async (s) => {
+        if (settings && s.language !== settings.language) setSettings({ ...settings, language: s.language });
         try {
           const saved = await api.saveSettings(s);
           const accountChanged = saved.account !== settings?.account;
@@ -213,6 +215,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }
           return true;
         } catch (e) {
+          if (settings) setSettings(settings);
           fail(e);
           return false;
         }
@@ -249,8 +252,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const item = installed.find((i) => i.fullName === fullName);
         if (item) void api.openPath(item.path).catch(fail);
       },
+      desktopShortcut: async (fullName, name) => {
+        try {
+          await api.desktopShortcut(fullName);
+          toast({ kind: 'success', title: makeT(langRef.current)('actions.desktopDone', { name }) });
+          await refreshInstalled();
+        } catch (e) {
+          fail(e);
+        }
+      },
     }),
-    [info, settings, shownList, account, loadError, syncing, syncError, installed, tasks, logs, dialogFor, fetchList, boot, start, fail],
+    [info, settings, shownList, account, loadError, syncing, syncError, installed, tasks, logs, dialogFor, fetchList, boot, start, fail, toast, refreshInstalled],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -95,6 +95,7 @@ fn external_record(owner: &str, name: &str, found: Found) -> InstalledRecord {
             method: InstallMethod::External,
             path: found.dir.to_string_lossy().into_owned(),
             installed_at: modified_iso(&found.exe),
+            desktop_shortcut: false,
             exe: Some(found.exe.to_string_lossy().into_owned()),
         },
         shortcut: None,

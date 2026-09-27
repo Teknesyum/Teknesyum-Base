@@ -9,14 +9,10 @@
       <stop offset="0.5" stop-color="#c3a3ff"/>
       <stop offset="1" stop-color="#cba7d2"/>
     </linearGradient>
-    <filter id="isilti" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="14" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
   </defs>
   <rect x="48" y="48" width="928" height="928" rx="208" fill="url(#zemin)"/>
   <rect x="64" y="64" width="896" height="896" rx="192" fill="none" stroke="url(#kenar)" stroke-width="16" opacity="0.55"/>
-  <g filter="url(#isilti)" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="60">
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="60">
     <polyline points="232,622 512,768 792,622" stroke="#cba7d2"/>
     <polyline points="232,504 512,650 792,504" stroke="#c3a3ff"/>
     <polygon points="512,240 792,386 512,532 232,386" fill="#6fb7ff" stroke="#6fb7ff"/>

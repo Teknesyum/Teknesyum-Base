@@ -86,6 +86,7 @@ impl AppState {
             http: self.http.clone(),
             install_dir: PathBuf::from(s.install_dir),
             clone_dir: PathBuf::from(s.clone_dir),
+            desktop_shortcut: s.desktop_shortcut,
         }
     }
 
@@ -347,6 +348,7 @@ pub async fn load_list(
     let repos = details.iter().map(github::to_repo).collect();
     let mut list = github::new_list(account, repos, rate);
     list.ui_latest = gh.ui_latest().await.or_else(|| cached.as_ref().and_then(|c| c.ui_latest.clone()));
+    list.core_latest = gh.core_latest().await.or_else(|| cached.as_ref().and_then(|c| c.core_latest.clone()));
     let _ = write_json(cache_file, &list);
     Ok(list)
 }
@@ -356,6 +358,37 @@ pub async fn repo_readme(state: State<'_, AppState>, owner: String, name: String
     check_part(&owner, "hesap adı")?;
     check_part(&name, "depo adı")?;
     state.gh().readme(&owner, &name).await
+}
+
+#[tauri::command]
+pub async fn repo_media(
+    state: State<'_, AppState>,
+    owner: String,
+    name: String,
+    private: bool,
+    path: String,
+) -> AppResult<tauri::ipc::Response> {
+    check_part(&owner, "hesap adı")?;
+    check_part(&name, "depo adı")?;
+    let bytes = state
+        .gh()
+        .media(&owner, &name, private, &path)
+        .await?
+        .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Görsel bulunamadı."))?;
+    Ok(tauri::ipc::Response::new(bytes))
+}
+
+#[tauri::command]
+pub async fn desktop_shortcut(state: State<'_, AppState>, full_name: String) -> AppResult<()> {
+    split_full(&full_name)?;
+    let rec = state
+        .find_installed(&full_name)
+        .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."))?;
+    let exe = rec
+        .info
+        .exe
+        .ok_or_else(|| AppError::io("Programın exe dosyası bilinmiyor; kısayol yazılamadı."))?;
+    installer::write_desktop_shortcut(&full_name, Path::new(&exe)).map(|_| ())
 }
 
 #[tauri::command]
@@ -403,7 +436,15 @@ pub async fn clear_token(state: State<'_, AppState>) -> AppResult<Settings> {
 
 #[tauri::command]
 pub async fn list_installed(state: State<'_, AppState>) -> AppResult<Vec<Installed>> {
-    Ok(state.installed().into_iter().map(|r| r.info).collect())
+    Ok(state
+        .installed()
+        .into_iter()
+        .map(|r| {
+            let mut info = r.info;
+            info.desktop_shortcut = installer::desktop_lnk(&info.full_name).is_some_and(|l| l.exists());
+            info
+        })
+        .collect())
 }
 
 #[tauri::command]

@@ -11,6 +11,8 @@ export type Manifest = {
   method?: InstallMethod;
   run?: string;
   silentArgs?: string[];
+  icon?: string;
+  screenshot?: string;
 };
 
 export type ReleaseAsset = {
@@ -57,6 +59,7 @@ export type Repo = {
   installedTag: string | null;
   localTags: string[];
   summary?: string;
+  points?: string[];
   tags?: string[];
   uiVersion?: string | null;
 };
@@ -69,6 +72,7 @@ export type RepoList = {
   rateResetAt: string | null;
   budgetSkipped: boolean;
   uiLatest?: string | null;
+  coreLatest?: string | null;
   repos: Repo[];
 };
 
@@ -79,6 +83,7 @@ export type Installed = {
   path: string;
   exe: string | null;
   installedAt: string;
+  desktopShortcut?: boolean;
 };
 
 export type Settings = {
@@ -90,6 +95,7 @@ export type Settings = {
   showArchived: boolean;
   showForks: boolean;
   closeToTray: boolean;
+  desktopShortcut: boolean;
   hasToken: boolean;
 };
 
@@ -135,6 +141,8 @@ export const commands = {
   launch: 'launch_installed',
   setLocalTags: 'set_local_tags',
   openPath: 'open_path',
+  repoMedia: 'repo_media',
+  desktopShortcut: 'desktop_shortcut',
   updateState: 'update_state',
   updateCheck: 'update_check',
   updateDownload: 'update_download',

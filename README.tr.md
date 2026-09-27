@@ -39,6 +39,9 @@ GitHub depoları gösterir ve bir sürümü elle indirmenize izin verir. O kıs�
 - **Detay paneli** — README, notlarıyla sürüm geçmişi, boyut ve indirme sayısıyla dosyalar.
 - **Kur diyaloğu** — çözümleme, indirme, denetim, kurulum ve kısayol adımlarını izle; istediğin an iptal et.
 - **Kurulu** — başlat, klasörü aç, güncelle ya da kaldır.
+- **Canlı simge ve ekran görüntüleri** — her depodan çekilir ve önbelleğe alınır; tıklayınca tam çözünürlüklü görsel açılır.
+- **Masaüstü kısayolu ve GitHub sayfası** — karttan, ayrıntı panelinden ya da Kurulu sekmesinden tek tıkla.
+- **Eklenti sürümleri** — Teknesyum Core ve Teknesyum UI'ın son sürümleri durum çubuğunda.
 - **Kendi hesabın** — Base'i herhangi bir GitHub kullanıcısına ya da kuruluşuna, ek hesaplarla birlikte yönelt.
 - **Çevrimdışı önbellek** — son liste saklanır; ağ yokken yaşıyla birlikte gösterilir.
 

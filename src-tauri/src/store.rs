@@ -333,6 +333,7 @@ mod tests {
             rate_reset_at: Some("2026-09-27T01:00:00Z".into()),
             budget_skipped: false,
             ui_latest: None,
+            core_latest: None,
             repos: Vec::new(),
         }
     }
@@ -346,6 +347,7 @@ mod tests {
                 path: String::new(),
                 exe: None,
                 installed_at: at.into(),
+                desktop_shortcut: false,
             },
             shortcut: None,
             package: None,

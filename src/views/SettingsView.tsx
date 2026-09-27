@@ -243,6 +243,7 @@ export function SettingsView({ onClearToken }: Props) {
         <Toggle label={t('settings.showArchived')} help={t('settings.showArchivedHelp')} checked={draft.showArchived} onChange={(v) => set({ showArchived: v })} />
         <Toggle label={t('settings.showForks')} help={t('settings.showForksHelp')} checked={draft.showForks} onChange={(v) => set({ showForks: v })} />
         <Toggle label={t('settings.closeToTray')} help={t('settings.closeToTrayHelp')} checked={draft.closeToTray} onChange={(v) => set({ closeToTray: v })} />
+        <Toggle label={t('settings.desktopShortcut')} help={t('settings.desktopShortcutHelp')} checked={draft.desktopShortcut} onChange={(v) => set({ desktopShortcut: v })} />
       </section>
 
       <div className="page__actions">
@@ -270,6 +271,14 @@ export function SettingsView({ onClearToken }: Props) {
           <div className="stat">
             <dt className="tk-label">{t('settings.git')}</dt>
             <dd className="stat__value">{t(store.info?.gitAvailable ? 'settings.gitFound' : 'settings.gitMissing')}</dd>
+          </div>
+          <div className="stat">
+            <dt className="tk-label">{t('settings.coreLatest')}</dt>
+            <dd className="stat__value">{store.list?.coreLatest ?? t('stats.none')}</dd>
+          </div>
+          <div className="stat">
+            <dt className="tk-label">{t('settings.uiLatest')}</dt>
+            <dd className="stat__value">{store.list?.uiLatest ?? t('stats.none')}</dd>
           </div>
         </dl>
       </section>

@@ -1,20 +1,38 @@
 import type { Repo, TaskEvent } from '../api/types';
 import { useI18n } from '../i18n';
 import { ProgressBar } from '../ui/Progress';
-import { IconStar } from '../ui/icons';
+import { IconExternal, IconStar } from '../ui/icons';
 import { useState } from 'react';
-import { appIcon, appShot, appShotFull } from '../data/visuals';
+import { appIcon, appShot, appShotFull, useRepoMedia } from '../data/visuals';
+import { forkOf } from '../data/catalog';
+import { openExternal } from '../api/client';
 import { ImageDialog } from '../ui/Dialog';
 import { useStore } from '../store';
 import { isRunning, primaryOf, uiState, type Opener } from './actions';
 
-export function AppIcon({ name }: { name: string }) {
-  const src = appIcon(name);
-  if (src) return <img className="app-icon" src={src} alt="" aria-hidden="true" loading="lazy" />;
+export function AppIcon({ repo }: { repo: Repo }) {
+  const name = repo.name;
+  const remote = useRepoMedia(repo, 'icon');
+  const [broken, setBroken] = useState<string>();
+  const src = remote && remote !== broken ? remote : appIcon(name);
+  if (src) return <img className="app-icon" src={src} alt="" aria-hidden="true" loading="lazy" onError={() => remote && setBroken(remote)} />;
   return (
     <span className="app-icon app-icon--letter" aria-hidden="true">
       {name.charAt(0).toLocaleUpperCase('tr')}
     </span>
+  );
+}
+
+export function Points({ repo, className, max }: { repo: Repo; className: string; max?: number }) {
+  const { t } = useI18n();
+  const points = repo.points?.slice(0, max);
+  if (!points?.length) return <p className={className}>{repo.summary || repo.description || t('library.noDescription')}</p>;
+  return (
+    <ul className={className + ' points'}>
+      {points.map((p) => (
+        <li key={p}>{p}</li>
+      ))}
+    </ul>
   );
 }
 
@@ -27,6 +45,39 @@ export function UiChip({ repo }: { repo: Repo }) {
     <span className={state === 'old' ? 'chip chip--warn' : 'chip'} title={t('ui.' + state, { latest: latest ?? '' })}>
       {t('ui.chip', { version: repo.uiVersion })}
     </span>
+  );
+}
+
+export function GithubButton({ repo, tabIndex }: { repo: Repo; tabIndex?: number }) {
+  const { t } = useI18n();
+  const label = t('actions.githubOf', { name: repo.name });
+  return (
+    <button type="button" className="btn btn--icon btn--quiet" tabIndex={tabIndex} aria-label={label} title={label} onClick={() => void openExternal(repo.htmlUrl)}>
+      <IconExternal />
+    </button>
+  );
+}
+
+export function ForkNote({ repo, full }: { repo: Repo; full?: boolean }) {
+  const { t } = useI18n();
+  const fork = forkOf(repo.name);
+  if (!fork) return null;
+  return (
+    <div className="fork-note">
+      <p className="fork-note__text">{t(full ? 'fork.long' : 'fork.short', { by: fork.by, name: repo.name })}</p>
+      <div className="fork-note__actions">
+        <button type="button" className="btn btn--ghost" onClick={() => void openExternal(fork.play ?? fork.repo)}>
+          <IconExternal />
+          {t('fork.play', { by: fork.by })}
+        </button>
+        {full && fork.play ? (
+          <button type="button" className="btn btn--quiet" onClick={() => void openExternal(fork.repo)}>
+            <IconExternal />
+            {t('fork.repo', { by: fork.by })}
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -92,7 +143,10 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
     </div>
   );
   const tags = repo.tags ?? [];
-  const shot = appShot(repo.name);
+  const remoteShot = useRepoMedia(repo, 'shot');
+  const [brokenShot, setBrokenShot] = useState<string>();
+  const liveShot = remoteShot && remoteShot !== brokenShot ? remoteShot : undefined;
+  const shot = liveShot ?? appShot(repo.name);
   const [viewer, setViewer] = useState<HTMLElement | null>(null);
   const shotAlt = t('library.shot', { name: repo.name });
   return (
@@ -105,7 +159,7 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
       }}
       style={{ animationDelay: `calc(var(--tk-stagger) * min(${index}, var(--tk-stagger-max)))` }}>
       <div className="card__head">
-        <AppIcon name={repo.name} />
+        <AppIcon repo={repo} />
         <div className="card__heading">
           <h3 className="card__title">
             <button type="button" className="card__open" data-name={repo.name} {...item} onClick={(e) => onOpen(e.currentTarget)}>
@@ -117,17 +171,18 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
       </div>
       {shot ? (
         <button type="button" className="card__shot" aria-label={t('library.shotOpen', { name: repo.name })} title={t('library.shotOpen', { name: repo.name })} onClick={(e) => setViewer(e.currentTarget)}>
-          <img className="card__shot-img" src={shot} alt="" loading="lazy" />
+          <img className="card__shot-img" src={shot} alt="" loading="lazy" onError={() => liveShot && setBrokenShot(liveShot)} />
         </button>
       ) : null}
-      {shot ? <ImageDialog open={!!viewer} src={appShotFull(repo.name) ?? shot} alt={shotAlt} returnTo={viewer} onClose={() => setViewer(null)} /> : null}
-      <p className="card__desc">{repo.summary || repo.description || t('library.noDescription')}</p>
+      {shot ? <ImageDialog open={!!viewer} src={liveShot ?? appShotFull(repo.name) ?? shot} alt={shotAlt} returnTo={viewer} onClose={() => setViewer(null)} /> : null}
+      <Points repo={repo} className="card__desc" max={3} />
       {tags.length ? (
         <p className="card__tags" aria-label={t('library.tags')}>
           {'#' + tags.join('   #')}
         </p>
       ) : null}
       {meta}
+      <ForkNote repo={repo} />
       <div className="card__foot">
         <StateBadge repo={repo} />
         {running && task ? (
@@ -135,7 +190,10 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
             <TaskProgress task={task} />
           </div>
         ) : (
-          <PrimaryButton repo={repo} task={task} onPrimary={onPrimary} tabIndex={item.tabIndex} />
+          <div className="card__buttons">
+            <GithubButton repo={repo} tabIndex={item.tabIndex} />
+            <PrimaryButton repo={repo} task={task} onPrimary={onPrimary} tabIndex={item.tabIndex} />
+          </div>
         )}
       </div>
     </article>

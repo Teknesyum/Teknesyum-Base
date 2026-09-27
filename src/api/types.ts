@@ -60,6 +60,7 @@ export type Repo = {
   localTags: string[];
   summary?: string;
   points?: string[];
+  uses?: string[];
   tags?: string[];
   uiVersion?: string | null;
 };

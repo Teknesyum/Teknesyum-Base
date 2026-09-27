@@ -36,6 +36,22 @@ export function Points({ repo, className, max }: { repo: Repo; className: string
   );
 }
 
+export function Uses({ repo, className }: { repo: Repo; className: string }) {
+  const { t } = useI18n();
+  const uses = repo.uses ?? repo.points?.slice(0, 5);
+  if (!uses?.length) return <p className={className}>{repo.summary || repo.description || t('library.noDescription')}</p>;
+  return (
+    <section className={className + ' uses'} aria-label={t('library.uses')}>
+      <h4 className="uses__title">{t('library.uses')}</h4>
+      <ul className="points">
+        {uses.map((p) => (
+          <li key={p}>{p}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function UiChip({ repo }: { repo: Repo }) {
   const { t } = useI18n();
   const latest = useStore().list?.uiLatest ?? null;
@@ -175,7 +191,7 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
         </button>
       ) : null}
       {shot ? <ImageDialog open={!!viewer} src={liveShot ?? appShotFull(repo.name) ?? shot} alt={shotAlt} returnTo={viewer} onClose={() => setViewer(null)} /> : null}
-      <Points repo={repo} className="card__desc" max={view === 'grid' ? 6 : undefined} />
+      <Uses repo={repo} className="card__desc" />
       {tags.length ? (
         <p className="card__tags" aria-label={t('library.tags')}>
           {'#' + tags.join('   #')}

@@ -401,6 +401,32 @@ article.row > .card__foot {
   margin-block-end: var(--tk-sp-1);
 }
 
+.uses {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: none;
+}
+
+.row .uses {
+  max-width: none;
+}
+
+.uses .points {
+  margin: 0;
+}
+
+.uses__title {
+  margin: 0 0 var(--tk-sp-1);
+  color: var(--tk-renk-1);
+  font-size: var(--tk-fs-1);
+  font-weight: var(--tk-fw-semi);
+  line-height: var(--tk-lh-heading);
+}
+
+.sheet__points {
+  margin: 0;
+}
+
 .points li::marker {
   color: var(--tk-renk-1);
 }

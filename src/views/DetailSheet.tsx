@@ -10,7 +10,7 @@ import { IconClose, IconDesktop, IconExternal, IconFolder } from '../ui/icons';
 import { ErrorState, SkeletonLines } from '../ui/States';
 import { useToast } from '../ui/Toasts';
 import { isRunning, uiState, type Opener } from './actions';
-import { AppIcon, ForkNote, Points, PrimaryButton, StateBadge, TaskProgress } from './RepoCard';
+import { AppIcon, ForkNote, Points, PrimaryButton, Uses, StateBadge, TaskProgress } from './RepoCard';
 import './sheet.css';
 
 function clean(html: string): string {
@@ -91,7 +91,8 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
   const { t, num, rel, size, date, bytes } = useI18n();
   const store = useStore();
   const toast = useToast();
-  const [tab, setTab] = useState<'readme' | 'releases'>('readme');
+  const tabIds = repo.points?.length ? (['features', 'readme', 'releases'] as const) : (['readme', 'releases'] as const);
+  const [tab, setTab] = useState<'features' | 'readme' | 'releases'>(tabIds[0]);
   const [nonce, setNonce] = useState(0);
   const readme = useLoad(() => api.readme(repo.owner, repo.name), 'r:' + repo.fullName, nonce);
   const releases = useLoad<Release[]>(() => api.releases(repo.owner, repo.name), 'l:' + repo.fullName, nonce);
@@ -99,7 +100,7 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
   const running = isRunning(task);
   const installed = repo.installState !== 'not-installed';
   const item = store.installed.find((x) => x.fullName.toLocaleLowerCase('tr') === repo.fullName.toLocaleLowerCase('tr'));
-  const tabs = useRoving<HTMLButtonElement>(2, { orientation: 'horizontal' });
+  const tabs = useRoving<HTMLButtonElement>(tabIds.length, { orientation: 'horizontal' });
   const tagId = useId();
   const [draft, setDraft] = useState('');
   const chipsRef = useRef<HTMLUListElement>(null);
@@ -141,7 +142,7 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
             {repo.name}
             {repo.latestTag ? <span className="sheet__tag">{repo.latestTag}</span> : null}
           </h2>
-          <Points repo={repo} className="sheet__desc" />
+          <Uses repo={repo} className="sheet__desc" />
           <ul className="chips sheet__class" aria-label={t('library.tags')}>
             <li className="chip chip--category">{t('category.' + repo.category)}</li>
             {(repo.tags ?? []).map((x) => (
@@ -250,7 +251,7 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
         </section>
 
         <div className="tabs divider-bottom" role="tablist" aria-label={t('detail.sections')} onKeyDown={tabs.onKeyDown}>
-          {(['readme', 'releases'] as const).map((id, i) => (
+          {tabIds.map((id, i) => (
             <button
               key={id}
               type="button"
@@ -270,7 +271,9 @@ function SheetBody({ repo, closeRef, onClose, onPrimary, onUninstall }: BodyProp
         </div>
 
         <div className="tab-panel" role="tabpanel" id={'panel-' + tab} aria-labelledby={'tab-' + tab} key={tab}>
-          {tab === 'readme' ? (
+          {tab === 'features' ? (
+            <Points repo={repo} className="sheet__points" />
+          ) : tab === 'readme' ? (
             !readme ? (
               <SkeletonLines lines={9} />
             ) : readme.error ? (

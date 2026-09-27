@@ -17,6 +17,18 @@
       "tr": "Teknesyum hesabındaki bütün depolar için varsayılan topluluk dosyalarını tutan özel adlı GitHub deposu. Bağış düğmesini açan FUNDING.yml, güvenlik açığı bildirme yolunu anlatan SECURITY.md, katkı rehberi CONTRIBUTING.md, katkı onay belgesi DCO ve profil klasörü buradadır. Kendi kopyasını taşımayan her depo bu dosyaları buradan devralır; kendi kopyası olan depo bunları geçersiz kılar. İçinde çalıştırılacak bir program yoktur, yalnız hesabın ortak kurallarını taşır.",
       "en": "The specially named GitHub repository that holds default community health files for every Teknesyum repository. It contains FUNDING.yml for the sponsor button, SECURITY.md with the way to report a vulnerability, a CONTRIBUTING.md guide, the DCO sign-off text and the profile folder. Any repository without its own copy inherits these files from here; a repository with its own copy overrides them. There is no program to run; it only carries the account's shared rules."
     },
+    "uses": {
+      "tr": [
+        "Tüm depolara ortak kuralları ver",
+        "Bağış ve güvenlik bildirimini tanımla",
+        "Depoya özel kopyayla geçersiz kıl"
+      ],
+      "en": [
+        "Give all repos shared rules",
+        "Set up sponsor and security reporting",
+        "Override with a repo copy"
+      ]
+    },
     "points": {
       "tr": [
         "Tüm Teknesyum depoları için ortak sağlık dosyaları",
@@ -51,6 +63,20 @@
     "summary": {
       "tr": "Klinisyenin bir sendrom için güncel kılavuzun ampirik antibiyotik önerisini hızla bulmasına yardım eden bir kılavuz gezgini. Sendromu seçip birkaç soruyu yanıtlayınca ilk seçenek, alternatifler, doz, yol ve süre kaynak bölümüyle birlikte gösterilir. Alerji, gebelik ve böbrek işlevi gibi kısıtlar uygun olmayan rejimleri gerekçesiyle eler. Tıbbi cihaz değildir, reçete yazmaz ve yapay zekâ kullanmaz. Şu an erken aşamada: kabuk çalışıyor, bilgi tabanı henüz boş. Avalonia ile Windows, macOS ve Linux için.",
       "en": "A guideline navigator that helps a clinician find what the current guideline recommends for empiric antibiotic therapy in a given syndrome. Pick the syndrome, answer a few questions, and it shows the first choice, alternatives, dose, route and duration along with the source section. Allergy, pregnancy and renal function remove unsuitable regimens and say why. It is not a medical device, writes no prescriptions and uses no AI. Early stage: the shell runs but the knowledge base is still empty. Built with Avalonia for Windows, macOS and Linux."
+    },
+    "uses": {
+      "tr": [
+        "Sendroma uygun antibiyotiği hızla bul",
+        "Doz, yol ve süreyi gör",
+        "Alerji, gebelik, böbreğe göre daralt",
+        "Her önerinin kılavuz kaynağını gör"
+      ],
+      "en": [
+        "Find the right antibiotic fast",
+        "See dose, route and duration",
+        "Filter by allergy, pregnancy, kidneys",
+        "Check each suggestion's guideline source"
+      ]
     },
     "icon": "src/AbxPilot.UI/Assets/abxpilot.ico",
     "shot": "docs/ui-denetim/2026-09-27/b3-tkp-varsayilan.png",
@@ -101,6 +127,20 @@
       "tr": "Hastane bilgi yönetim sisteminden alınan ham ameliyat dökümünü (.xls) günlük A Blok ve B Blok ameliyathane listesine çeviren masaüstü uygulaması. Eskiden kullanılan makrolu Excel dosyasının yerini alır; planlama, analiz ve listeyi PNG olarak dışa aktarma sunar. Hasta verisi hiçbir yere gönderilmez, dosyalar yerel kalır. Kurulan makineler yeni sürümü kendiliğinden çekip güncellenir. Türkçe arayüzlü, özel ve yalnız adı geçen kişilerle paylaşılan bir ameliyathane ekibi aracı.",
       "en": "A desktop app that turns the raw surgery export (.xls) from the hospital information system into the daily A Block and B Block operating room list. It replaces the old macro workbook and adds planning, analytics and PNG export of the list. Patient data never leaves the machine; the source files stay local. Installed copies pull and apply new releases on their own. A private, Turkish-language tool for one operating room team, shared only with named people."
     },
+    "uses": {
+      "tr": [
+        "Ham dökümü günlük listeye çevir",
+        "Ameliyatları planla ve analiz et",
+        "Listeyi PNG olarak dışa aktar",
+        "Hasta verisini bilgisayarında tut"
+      ],
+      "en": [
+        "Turn raw exports into daily lists",
+        "Plan and analyse surgeries",
+        "Export the list as PNG",
+        "Keep patient data on your PC"
+      ]
+    },
     "icon": "app/src-tauri/icons/icon.png",
     "shot": "docs/ui-denetim/2026-09-27-tur2/liste-a-150-sonra.png",
     "points": {
@@ -143,6 +183,22 @@
     "summary": {
       "tr": "Anesteziyoloji asistanları için iki masaüstü aracından oluşan özel bir depo. Nöbet aracı aylık nöbet listesini kota, nöbet ertesi izin, istekler ve hafta günü dengesi gözeterek sıfırdan üretir. Görevlendirme aracı nöbet ve izin listesinden sonra boş kalan zorunlu yerleri kıdem ve dengeli dağılıma göre havuzdaki asistanlara atar. Veriler depoda tutulur ve makineler arasında git ile kendiliğinden eşitlenir. Sonuç Excel'e kopyalanabilir ya da QR ile paylaşılabilir. Türkçe, Electron tabanlı.",
       "en": "A private repository with two desktop tools for anaesthesiology residents. The on-call tool builds the monthly duty roster from scratch, respecting quotas, post-call leave, requests and weekday balance. The assignment tool fills the mandatory posts left empty after duty and leave, assigning residents from the pool by seniority and fair distribution. Data lives in the repository and syncs between machines through git on its own. Results can be copied to Excel or shared as a QR link. Turkish, built on Electron."
+    },
+    "uses": {
+      "tr": [
+        "Aylık nöbet listesini sıfırdan üret",
+        "Boş görev yerlerine dengeli ata",
+        "Sürükle-bırakla kişilerin yerini değiştir",
+        "Listeyi görsel ya da QR'la paylaş",
+        "İnternet olmadan çalıştır"
+      ],
+      "en": [
+        "Build the monthly duty roster",
+        "Fill open posts fairly",
+        "Swap people with drag and drop",
+        "Share as image or QR",
+        "Work fully offline"
+      ]
     },
     "icon": "Görevlendirme/simge.ico",
     "shot": "docs/ui-denetim/2026-09-27-2/gorevlendirme/asistanlar-100-sonra.png",
@@ -196,6 +252,22 @@
     "summary": {
       "tr": "Algoritmaların her durum değişikliğini adım adım izlemenizi sağlayan Türkçe ve İngilizce bir algoritma görselleştirici. Grafik gezintisi, en kısa yol, sıralama, dinamik programlama, dizgi arama ve ağaçlar gibi alanlarda 60 belirlenimci simülatör içerir; değişkenler ve iz eksiksiz gösterilir. Ağaç ve grafik girdileri sürükle bırak bir düzenleyiciyle kurulur. İsteğe bağlı yerel bir yapay zekâ yardımcısı zaman çizelgesini yönetip önemli adımlarda rehberli tur yapar. Tarayıcıda ve Windows masaüstünde çalışır; algoritma öğrenen ve öğretenler için.",
       "en": "A bilingual English and Turkish algorithm visualizer that lets you watch every state change of an algorithm step by step. It has 60 deterministic simulators across graph traversal, shortest paths, sorting, dynamic programming, string search, trees and more, with complete variable and trace data. Tree and graph inputs are built in a drag-and-drop editor. An optional local AI assistant can drive the timeline and give a guided tour of key steps. Runs in the browser and as a Windows desktop app, for people learning or teaching algorithms."
+    },
+    "uses": {
+      "tr": [
+        "Algoritmaları adım adım izle",
+        "Değişkenleri ve izi eksiksiz gör",
+        "Kendi ağacını ve grafını çiz",
+        "Yerel yapay zekâ asistanına sor",
+        "Zaman çizelgesiyle ileri geri oynat"
+      ],
+      "en": [
+        "Watch algorithms step by step",
+        "See every variable and trace",
+        "Draw your own trees and graphs",
+        "Ask a local AI assistant",
+        "Scrub through a timeline"
+      ]
     },
     "icon": "src-tauri/icons/icon.ico",
     "shot": "docs/ui-denetim/2026-09-24/katalog-100-sonra.png",
@@ -258,6 +330,22 @@
       "tr": "Windows diskinde yer kaplayan ve uzun süredir kullanılmayan şeyleri amacına göre listeleyen bir disk temizleyici. Dosyaları klasör ağacı yerine oyun, film, program, önbellek, derleme klasörü gibi gruplar halinde gösterir; her grubun boyutu, son kullanım tarihi ve gerekçesi yazılıdır. Silinen her şey önce karantinaya gider ve geri alınabilir. Programları kaldırdıktan sonra kalan kayıt defteri anahtarlarını, klasörleri ve kısayolları da bulur. Telemetri yok. Diski dolan ve neyin gidebileceğini bilmek isteyen Windows kullanıcıları için.",
       "en": "A Windows disk cleaner that lists what takes space and has not been used for a long time, grouped by purpose. Instead of a raw file tree it shows games, films, programs, caches and build folders, each with a size, a last-used date and a reason. Everything removed goes to a quarantine first and can be restored. After a vendor uninstaller runs, it also finds leftover registry keys, folders, services and shortcuts. No telemetry. For Windows users with a full drive who want to know what can safely go."
     },
+    "uses": {
+      "tr": [
+        "Kullanılmayan büyük dosyaları bul",
+        "Diski amacına göre gruplanmış gör",
+        "Sileceğini karantinadan geri al",
+        "Programları artıklarıyla birlikte kaldır",
+        "Sistem çöpünü tek tıkla temizle"
+      ],
+      "en": [
+        "Find large files you never use",
+        "See disk use grouped by purpose",
+        "Restore deletions from quarantine",
+        "Uninstall programs with their leftovers",
+        "Clean system junk in one click"
+      ]
+    },
     "icon": "src/DustyBytes.App/Assets/DustyBytes.ico",
     "shot": "docs/ui-denetim/2026-09-27/genel-100-sonra.png",
     "points": {
@@ -319,6 +407,20 @@
       "tr": "Windows'ta bir program kaldırıldıktan sonra geride kalanları bulan, gerçekten ölü olduklarını kanıtlayan ve geri alınabilir bir yedekle silen araç. Kaldırıcısı olmayan program kayıtlarını, hedefi silinmiş kısayolları, olmayan dosyayı çalıştıran başlangıç girdilerini, boşa tetiklenen zamanlanmış görevleri ve sahipsiz klasörleri tarar. Her bulgu kanıtlarıyla ve bir güven puanıyla gösterilir; toplu düzeltme yalnız yüksek güvenli bulgulara uygulanır. Komut satırı sürümü de vardır. Arayüz Türkçe ve İngilizce.",
       "en": "A tool that finds what Windows leaves behind after an uninstall, proves it is dead and removes it with a backup you can undo. It scans uninstall entries whose uninstaller is gone, shortcuts pointing at deleted files, startup entries launching missing binaries, scheduled tasks firing at nothing and folders no program claims. Each finding comes with its evidence and a confidence score, and bulk fixing only takes high-confidence findings. A command-line version is included. The interface is in Turkish and English."
     },
+    "uses": {
+      "tr": [
+        "Kaldırılan programların artıklarını bul",
+        "Her bulgunun kanıtını ve güvenini gör",
+        "Yedekleyip güvenle sil",
+        "İstediğinde tek adımda geri yükle"
+      ],
+      "en": [
+        "Find leftovers of removed programs",
+        "See proof and confidence per finding",
+        "Back up, then delete safely",
+        "Undo it all in one step"
+      ]
+    },
     "icon": "Ghostlist.App/Assets/ghostlist.ico",
     "shot": "assets/ghostlist-english-ui.png",
     "points": {
@@ -372,6 +474,20 @@
       "tr": "Gothic 1 Remake'teki plaka ve kadran kilit açma bulmacasını çözen, oyun penceresinin üstünde duran şeffaf bir Electron katmanı. Her plakanın mevcut konumunu ve hamlelerin diğer plakaları nasıl etkilediğini girdiğinizde en kısa hamle dizisini bulur; isterseniz çözümü oyuna kendisi uygular. Paneli oyun içinde F9 ile açıp kapatabilir, çalışan makroyu acil durdurma tuşuyla kesebilirsiniz. Kilit ekranını tanıyan otomatik ve gizli çalışan pasif kipleri vardır. Gothic 1 Remake oyuncuları için.",
       "en": "A transparent Electron overlay that sits on top of the game window and solves the plate and dial lock-picking mini-game in Gothic 1 Remake. Enter each plate's current position and how each move affects the other plates, and it finds the shortest move sequence; if you want, it applies the solution to the game itself. The panel opens and closes in game with F9, and a hotkey stops a running macro at once. An auto mode recognises the lock screen and a passive mode keeps it out of sight. For Gothic 1 Remake players."
     },
+    "uses": {
+      "tr": [
+        "Kilit bulmacasını en kısa yoldan çöz",
+        "Çözümü oyuna kendiliğinden uygulat",
+        "Paneli oyunun üstünde saydam gör",
+        "Kısayolla aç ve acil durdur"
+      ],
+      "en": [
+        "Solve lock puzzles in fewest moves",
+        "Let it apply the solution",
+        "Use a transparent in-game overlay",
+        "Toggle and stop with hotkeys"
+      ]
+    },
     "points": {
       "tr": [
         "Gothic 1 Remake kilit açma mini oyununu çözer",
@@ -416,6 +532,20 @@
     "summary": {
       "tr": "Kablolu, kablosuz ve Bluetooth kulaklıkların pil düzeyini Windows sistem tepsisinde renkli bir sayı olarak gösteren hafif bir program. Pili doğrudan HID, beraberinde gelen HeadsetControl ya da Windows Bluetooth üzerinden okur ve kırk kadar kulaklık modelini tanır. SteelSeries Arctis Nova Pro Wireless için ses düzeyi, gürültü engelleme, şeffaflık ve mikrofon ayarlarını tek pencerede toplar; kulaklık ile Windows arasında ses aktarımı ve yüzde birlik pil tahmini yapar. Kurulum gerektirmeyen tek bir exe.",
       "en": "A lightweight program that shows the battery level of wired, wireless and Bluetooth headsets as a coloured number in the Windows tray. It reads the battery through direct HID, the bundled HeadsetControl or Windows Bluetooth, covering about forty headset models. For the SteelSeries Arctis Nova Pro Wireless it adds a panel for volume, noise cancelling, transparency and microphone level, moves volume between the headset and Windows, and estimates battery to the percent. A single exe with no install."
+    },
+    "uses": {
+      "tr": [
+        "Kulaklık pilini tepside rakamla gör",
+        "Düşük pilde renkli uyarı al",
+        "Nova Pro'yu tek panelden yönet",
+        "Windows'la birlikte başlat"
+      ],
+      "en": [
+        "See headset battery in the tray",
+        "Get colour alerts on low battery",
+        "Control Nova Pro from one panel",
+        "Start it with Windows"
+      ]
     },
     "points": {
       "tr": [
@@ -466,6 +596,22 @@
       "tr": "Hakları işletende olan eserleri, özgün sayfa düzenini piksel piksel koruyarak başka bir dile çeviren bir çeviri hattı. Kaynak metin karartılır ve çeviri aynı kutuya yazılır; görseller, çizimler ve tablolar olduğu gibi kalır, sayfa numaraları değişmez, böylece özgün ile çeviri yan yana karşılaştırılabilir. Taranmış PDF'ler ve görseller OCR'dan geçer. Her eserin kendi kuralları, terim sözlüğü ve belleği vardır. Depoda yalnız araçlar, yöntem ve şablonlar bulunur; eserler yerel kalır.",
       "en": "A translation pipeline for works whose rights the operator holds, which rewrites a document in another language while keeping the original layout pixel for pixel. Source text is redacted and the translation is written into the same box; images, line art and tables stay untouched and page numbers do not change, so original and translation can be compared side by side. Scanned PDFs and images go through OCR. Each work carries its own rules, glossary and memory. The repository holds only tools, method and templates; the works stay local."
     },
+    "uses": {
+      "tr": [
+        "Sayfa düzenini bozmadan çevir",
+        "Çeviriyi özgün kutusuna sığdır",
+        "Taranmış PDF'leri de çevir",
+        "Esere özel terim sözlüğü tut",
+        "Özgünle çeviriyi yan yana karşılaştır"
+      ],
+      "en": [
+        "Translate without breaking the layout",
+        "Fit text into the original boxes",
+        "Translate scanned PDFs too",
+        "Keep a glossary per work",
+        "Compare original and translation side-by-side"
+      ]
+    },
     "points": {
       "tr": [
         "Kaynak sayfa düzenini piksel piksel koruyarak çeviri",
@@ -508,6 +654,22 @@
     "summary": {
       "tr": "Windows, Linux ve macOS'ta süreçlerin davranışını sessizce kaydeden ve bunu yapay zekâya verilebilecek bir kanıt dosyasına dönüştüren süreç izleyici. Seçilen süre boyunca dinler, ağır ilişkilendirmeyi cihazın üzerinde yapar, değersiz gürültüyü ayıklar ve kanıtı diske yazar. Böylece şüpheli bir süreci bir modele sorarken tahmin yerine gerçek kayıt sunulur. Tek satırlık komutla kurulur, .NET gerektirmez; yönetici olarak açıldığında Windows'ta ağ trafiği ölçümü de ekler. Sistemini merak eden kullanıcılar ve güvenlikçiler için.",
       "en": "A process monitor for Windows, Linux and macOS that quietly records process behaviour and turns it into an evidence file you can hand to an AI. It listens for a chosen period, does the heavy correlation on the device, removes low-value noise and writes the evidence to disk, so a question about a suspicious process gets a real record instead of guesses. It installs with one command and needs no .NET; run as administrator on Windows it also adds network byte counts. For curious users and security people."
+    },
+    "uses": {
+      "tr": [
+        "Şüpheli süreçleri sessizce kaydet",
+        "Yapay zekâya hazır kanıt dosyası al",
+        "Riskli süreçleri anında tara",
+        "Başlangıçta çalışanları listele",
+        "Değişiklikleri önceki taramayla karşılaştır"
+      ],
+      "en": [
+        "Quietly record suspicious processes",
+        "Get an AI-ready evidence file",
+        "Scan for risky processes instantly",
+        "List everything that runs at startup",
+        "Compare changes against a baseline"
+      ]
     },
     "icon": "src/ProcWitness.App/Assets/ProcWitness.ico",
     "shot": "docs/screenshots/procwitness-main-v090.jpg",
@@ -564,6 +726,22 @@
       "tr": "Bir kitabı ya da PDF'i soru modülüne çevirip konu oturana kadar çalıştıran uyarlanabilir aralıklı tekrar motoru. Soru önce seçeneksiz gelir, önce düşünürsünüz; yanlış seçenek düşer ve o yanlışa özel açıklama gösterilir. Soru kapanınca çözüm kaynağıyla, yani dosya, sayfa ve alıntılanan pasajla birlikte oynatılır. Zamanlama FSRS-6 ile yapılır, anlaşılan sorular emekliye ayrılır. Windows, macOS ve Linux için masaüstü uygulaması; soru bankaları depoya dahil değil, yalnız örnek bir modül gelir.",
       "en": "An adaptive spaced-repetition engine that turns a book or PDF into a question module and drills it until it sticks. Each question first appears without options so you think before choosing; a wrong pick drops that option and shows an explanation written for that specific mistake. When a question closes, the solution plays back with its source file, pages and quoted passage. Scheduling runs on FSRS-6 and understood questions retire. A desktop app for Windows, macOS and Linux; question banks are separate, only a small sample ships."
     },
+    "uses": {
+      "tr": [
+        "Kitabını soru modülüne çevir",
+        "Konu oturana kadar aralıklı tekrarla",
+        "Yanlışına özel açıklamayı oku",
+        "Çözümü kitaptaki sayfasında gör",
+        "İlerlemeni başka bilgisayara taşı"
+      ],
+      "en": [
+        "Turn your book into quizzes",
+        "Repeat until the topic sticks",
+        "Read why each wrong answer fails",
+        "See the answer on its page",
+        "Move your progress to another PC"
+      ]
+    },
     "icon": "build/icon.ico",
     "shot": "docs/ui-denetim/2026-09-27/kutuphane-100-sonra.png",
     "points": {
@@ -614,6 +792,20 @@
     "summary": {
       "tr": "Windows için hafif bir ekran kaydedici projesi. Sahne düzeni, yayın altyapısı, filigran ya da hesap yok; yalnız ekranı kaydedip dosyayı size verir. İlk sürüm için tam ekran, tek pencere ve seçili bölge kaydı, sistem sesi ile mikrofonun ayrı izlere yazılması, NVENC, QuickSync ve AMF donanım kodlaması, genel kısayol tuşları ve çökmeye dayanıklı kayıt planlanıyor. Şu an planlama aşamasında; kurulacak bir sürüm henüz yok. OBS'i fazla bulan ve yalnız kayıt almak isteyenler için.",
       "en": "A lightweight screen recorder project for Windows. No scene graph, no streaming stack, no watermark and no account: it records the screen and hands you the file. The first version plans full-screen, single-window and region capture, system audio and microphone on separate tracks, NVENC, QuickSync and AMF hardware encoding, global hotkeys and recordings that survive a crash. Currently in planning; there is nothing to install yet. For people who find OBS too much and only want a recording."
+    },
+    "uses": {
+      "tr": [
+        "Ekranı, pencereyi ya da bölgeyi kaydet",
+        "Sistem sesini ve mikrofonu ayrı al",
+        "Kısayollarla başlat, duraklat, durdur",
+        "Çökmede bile oynatılabilir dosya al"
+      ],
+      "en": [
+        "Record screen, window or region",
+        "Capture system audio and mic separately",
+        "Start, pause, stop with hotkeys",
+        "Keep a playable file after crashes"
+      ]
     },
     "points": {
       "tr": [
@@ -678,6 +870,22 @@
       "tr": "Bir GitHub hesabındaki bütün depoları gh api ile okuyup yayın katmanındaki bozuklukları bulan bir denetim aracı. Kodu değil çevresini inceler: sürümler, README, lisans, konular, dal adları ve GitHub'ın beklediği dosyalar. Farklı yerlerdeki sürüm numaralarını karşılaştırır, çalışmayan kurulum bağlantılarını ve kırık göreli linkleri yakalar. Bulguları önem sırasına göre raporlar, her birine düzelten komutu ekler, istenirse depo başına bir issue açar. Yıkıcı hiçbir işlemi kendisi yapmaz. Node.js ile çalışan bir komut satırı aracı.",
       "en": "An audit tool that reads every repository in a GitHub account through gh api and finds what is broken in the publishing layer. It looks at releases, README, licence, topics, branch names and the files GitHub expects, not at the code. It cross-checks version numbers kept in different places and catches dead install links and broken relative links. Findings are grouped by severity, each with the command that fixes it, and it can open one issue per repository. It never runs a destructive command. A Node.js command-line tool."
     },
+    "uses": {
+      "tr": [
+        "Tüm depolarını tek geçişte denetle",
+        "Tutarsız sürümleri ve kırık bağlantıları bul",
+        "Bulguları önem sırasıyla gör",
+        "Hazır düzeltme istemini kopyala",
+        "Depo başına issue aç"
+      ],
+      "en": [
+        "Audit all your repos at once",
+        "Catch version mismatches and broken links",
+        "See findings ranked by severity",
+        "Copy a ready-made fix prompt",
+        "Open an issue per repo"
+      ]
+    },
     "points": {
       "tr": [
         "Hesaptaki tüm depoları tek geçişte tarar",
@@ -732,6 +940,22 @@
     "summary": {
       "tr": "JavaScript, PowerShell, Python ve kabuk betiklerini çift tıklamayla sıradan bir Windows programı gibi çalıştıran dosya ilişkilendirme merkezi. Betik düzenleyicide açılmak yerine doğru yorumlayıcı bulunur, güvenlik denetiminden geçer ve çalıştırılır; internetten inen dosyalara daha sıkı davranır. Sağ tık menüsüne \"Runly ile çalıştır\" ekler, istenirse argüman sorar. Dosya ilişkilendirmelerini değiştirirken geri alınabilir kayıt defteri yedeği tutar ve bunu grafik ayar ekranından yapar. Windows 10 ve 11 için.",
       "en": "A file-association hub that lets you double-click JavaScript, PowerShell, Python and shell scripts and run them like regular Windows programs. Instead of opening in an editor, a script gets the right interpreter, passes safety checks and runs; files downloaded from the internet are treated more strictly. It adds a \"Run with Runly\" context-menu entry with optional arguments. Association changes are made from a settings window and keep reversible registry backups. For Windows 10 and 11."
+    },
+    "uses": {
+      "tr": [
+        "Betikleri çift tıklayıp çalıştır",
+        "Doğru yorumlayıcıyı kendiliğinden bul",
+        "İnternetten ineni önce denetle",
+        "Sağ tık menüsünü sadeleştir",
+        "Kaldırınca eski ayarlara dön"
+      ],
+      "en": [
+        "Run scripts with a double-click",
+        "Find the right interpreter automatically",
+        "Check downloaded files first",
+        "Clean up the right-click menu",
+        "Restore old settings on uninstall"
+      ]
     },
     "icon": "assets/runly.ico",
     "shot": "docs/screenshots/runly-settings-v0.1.3.png",
@@ -790,6 +1014,16 @@
       "tr": "Teknesyum GitHub hesabının profil sayfasında görünen README deposu. Geliştiricinin kısa tanıtımını ve açık projelerin kategorilere ayrılmış bir listesini içerir: masaüstü araçlar, öğrenme ve oyun projeleri, geliştirici araçları. Her projenin yanında ne işe yaradığını anlatan tek satırlık bir açıklama bulunur. Bütün projelerin AGPL-3.0 lisanslı ve ücretsiz olduğunu belirtir. İçinde çalıştırılacak ya da kurulacak bir program yoktur; yalnız hesabın vitrin metnidir.",
       "en": "The README repository shown on the Teknesyum GitHub profile page. It holds a short introduction of the developer and a categorised list of the public projects: desktop tools, learning and games, and developer tools. Each project has a one-line description of what it does. It states that every project is AGPL-3.0 licensed and free. There is no program to run or install here; it is only the account's front page text."
     },
+    "uses": {
+      "tr": [
+        "Açık projeleri tek sayfada tanı",
+        "Projeleri kategoriye göre gez"
+      ],
+      "en": [
+        "Discover open projects on one page",
+        "Browse projects by category"
+      ]
+    },
     "points": {
       "tr": [
         "14 açık kaynak depoyu tanıtan profil README'si",
@@ -826,6 +1060,22 @@
     "summary": {
       "tr": "Bir GitHub hesabında yayımlanan programları tek listede gösteren, kuran, güncelleyen ve kaldıran Windows uygulaması. Her deponun yıldızını, son sürümünü, lisansını ve README'sini gösterir; sürümde Windows derlemesi varsa indirir, doğrular ve yönetici izni istemeden kullanıcı klasörüne kurar. Kurulu sürümü ve yeni sürüm olup olmadığını listede işaretler, depoları kategori, dil ya da kendi etiketlerinize göre gruplar. Ağ yokken son listeyi önbellekten gösterir. GitHub'a hiçbir şey yazmaz.",
       "en": "A Windows app that lists the programs published in a GitHub account and installs, updates and removes them. It shows each repository's stars, latest release, licence and README; when a release carries a Windows build, it downloads it, verifies it and installs it for the current user without asking for admin rights. The list marks what is installed, which version and whether a newer release exists, and groups repositories by category, language or your own tags. The last list is kept for offline use. It never writes to GitHub."
+    },
+    "uses": {
+      "tr": [
+        "Hesabın programlarını tek listede gör",
+        "Tek tıkla kur, güncelle, kaldır",
+        "Hepsini tek düğmeyle güncelle",
+        "Arayıp süzerek istediğini bul",
+        "Yönetici izni olmadan kur"
+      ],
+      "en": [
+        "See all programs in one list",
+        "Install, update, remove in one click",
+        "Update everything with one button",
+        "Search and filter to find apps",
+        "Install without admin rights"
+      ]
     },
     "icon": "src-tauri/icons/icon.ico",
     "shot": "assets/screens/library.png",
@@ -890,6 +1140,18 @@
       "tr": "Teknesyum Base'in eski, arşivlenmiş sürümü: Claude Code için çok ajanlı bir iş dağıtım sistemi, bağımsız bir denetçi ve isteğe bağlı neon arayüz standardından oluşan bir temel katman. İşin büyüklüğüne, kaç parçaya bölüneceğine, hangi ajanın hangi modelle çalışacağına ve sonucun nasıl doğrulanacağına sistem karar veriyordu. Ağustos 2026'da ikiye ayrıldı: iş dağıtımı Teknesyum Core'a, arayüz standardı Teknesyum UI'a geçti. Yalnız geçmiş için saklanıyor ve güncelleme almıyor.",
       "en": "The old, archived edition of Teknesyum Base: a base layer for Claude Code made of a multi-agent work relay, an independent auditor and an optional neon interface standard. The system decided how big a job was, how many pieces it split into, which agent ran on which model and how the result was verified. In August 2026 it was split in two: the work relay became Teknesyum Core and the interface standard became Teknesyum UI. It is kept for history only and receives no updates."
     },
+    "uses": {
+      "tr": [
+        "Büyük işi paralel ajanlara böl",
+        "Her parçayı bağımsız denetçiyle doğrula",
+        "Oturumu telefondan uzaktan yönet"
+      ],
+      "en": [
+        "Split big jobs across parallel agents",
+        "Verify each part independently",
+        "Manage sessions from your phone"
+      ]
+    },
     "points": {
       "tr": [
         "Arşivlendi: Teknesyum-Core ve Teknesyum-UI olarak bölündü",
@@ -934,6 +1196,22 @@
     "summary": {
       "tr": "Claude Code için token sayan, çok ajanlı çalışmayı düzenleyen bir eklenti. Oturumdaki harcamayı sayar, durum çubuğunda gösterir ve bir eşiğe gelindiğinde yalnız bir kez uyarır. Tehlikeli komutları durduran yasak listesi, bir istemdeki bütün işlerin aynı turda bitmesini takip eden iş kapısı ve oturum devri gibi kancalar içerir. Aynı kancalar Cursor ve Gemini CLI içinde de çalışır. Claude Code'u uzun ve çok parçalı işlerde kullanan geliştiriciler için.",
       "en": "A Claude Code plugin that counts tokens and organises multi-agent work. It tracks what a session spends, shows it in the status line and speaks once when a threshold is reached. Hooks add a denylist that stops dangerous commands, a job gate that keeps every task in a prompt within the same turn, and a handoff routine for long sessions. The same hooks also run inside Cursor and Gemini CLI. For developers who use Claude Code on long, many-part jobs."
+    },
+    "uses": {
+      "tr": [
+        "Harcamayı say, eşikte uyarı al",
+        "Tehlikeli komutları kendiliğinden durdur",
+        "İstemdeki tüm işlerin bitmesini izle",
+        "Oturum sonunda devir dosyası al",
+        "Yerel kütüphanede kitap ara"
+      ],
+      "en": [
+        "Track spending, get threshold alerts",
+        "Block dangerous commands automatically",
+        "Make sure every job gets done",
+        "Get an end-of-session handoff file",
+        "Search a local book library"
+      ]
     },
     "points": {
       "tr": [
@@ -996,6 +1274,16 @@
       "tr": "Teknesyum projelerinin kişisel ve gizli dosyalarının tutulduğu özel depo: API anahtarları, erişim belirteçleri, sertifikalar ve özel notlar. Her proje kökte kendi adını taşıyan küçük harfli bir klasöre sahiptir ve parça parça seyrek çekimle alınır. Buradaki hiçbir şey açık bir depoya geçmez. Son sürümünde, gizli depoları da gösterebilen Teknesyum Base Pro derlemesi yayımlanır. Son kullanıcıya yönelik bir program değil, geliştiricinin kendi çalışma altyapısının bir parçası.",
       "en": "The private repository that holds personal and secret files for Teknesyum projects: API keys, access tokens, certificates and private notes. Each project has its own lower-case folder at the root and is pulled piece by piece with sparse checkout. Nothing here ever reaches a public repository. Its latest release carries the Teknesyum Base Pro build, which can also list private repositories. Not a program for end users but part of the developer's own working infrastructure."
     },
+    "uses": {
+      "tr": [
+        "Projelerin özel dosyalarını tek yerde tut",
+        "Yalnız gereken klasörü çek"
+      ],
+      "en": [
+        "Keep private project files together",
+        "Pull only the folder you need"
+      ]
+    },
     "points": {
       "tr": [
         "Her proje için özel dosyaları tek depoda tutar",
@@ -1030,6 +1318,22 @@
     "summary": {
       "tr": "Claude Code için bir arayüz standardı eklentisi. Renk, yazı, köşe yarıçapı, hareket ve başlık çubuğu gibi bütün görsel kararları tek bir token dosyasında tutar ve her projenin arayüzünü bu dosyadan üretir. Yüzü aşkın kuraldan oluşan tarayıcı kodu token dışı renklere, kontrast ve odak halkası sorunlarına karşı denetler, çoğunu kendisi düzeltir. Düzen Electron tabanlı bir önizleme uygulamasında canlı olarak ayarlanır. Birden fazla projeyi aylarca aynı görünümde tutmak isteyen geliştiriciler için.",
       "en": "A Claude Code plugin that keeps one interface standard across projects. Colours, type, radius, motion and the title bar live in a single token file, and every project builds its UI from it. A scanner with more than a hundred checks flags hard-coded colours, contrast and focus-ring problems and can fix many of them automatically. The layout itself is edited live in an Electron preview app. Aimed at developers who want several projects to look the same for months without repeating a style guide."
+    },
+    "uses": {
+      "tr": [
+        "Tüm arayüzleri tek dosyadan üret",
+        "Tarayıcıyla sorunları bulup düzelt",
+        "Okunurluk puanını gör",
+        "Farklı çatılar için kod üret",
+        "Hazır temalardan birini seç"
+      ],
+      "en": [
+        "Build every UI from one file",
+        "Find and fix issues automatically",
+        "See a readability score",
+        "Generate code for several frameworks",
+        "Pick one of the ready themes"
+      ]
     },
     "icon": "ui/onizleme/masaustu/ikon/ikon.png",
     "shot": "docs/onizleme/05-bilesenler-izgara.png",
@@ -1075,6 +1379,22 @@
     "summary": {
       "tr": "USB belleklerdeki kısayol ve autorun solucanlarını temizleyip belleği bunlara karşı bağışıklayan, kurulum gerektirmeyen tek bir .bat dosyası. Gizlenen dosyaları geri çıkarır, zararlı kısayolları ve yükleri kaldırır, belleğe tuzak kilitler koyar. Menüden bilgisayarın kendisinin bulaşmış olup olmadığını da denetler; başlangıç noktalarına ve betik motoru ayarlarına bakar. İlk açılışta Türkçe ya da İngilizce seçilir, her menü maddesinin yardım sayfası vardır. Belleği dosyaları kaybolmuş gibi görünen herkes için.",
       "en": "A single self-elevating .bat file, no install, that cleans shortcut and autorun worms off USB drives and immunises the drive against them. It brings hidden files back, removes malicious shortcuts and payloads, and places decoy locks on the drive. From the menu it also checks whether the computer itself is infected, looking at startup points and script engine settings. Turkish or English is chosen on first run, and every menu item has its own help page. For anyone whose files seem to have vanished from a flash drive."
+    },
+    "uses": {
+      "tr": [
+        "USB'deki kısayol virüslerini temizle",
+        "Gizlenen dosyalarını geri getir",
+        "Belleği yeniden bulaşmaya karşı aşıla",
+        "Bilgisayarının bulaşıp bulaşmadığını tara",
+        "Kurulumsuz tek dosyayla çalıştır"
+      ],
+      "en": [
+        "Clean shortcut viruses from USB drives",
+        "Bring back your hidden files",
+        "Vaccinate drives against reinfection",
+        "Check whether your PC is infected",
+        "Run from one file, no install"
+      ]
     },
     "shot": "docs/ui-denetim/2026-09-27/02-ana-menu-100-sonra.png",
     "points": {
@@ -1144,6 +1464,22 @@
       "tr": "Bir dil modelinin yönettiği video kurgu hattı. Videoyu indirir, yazıya döker, ses ve sahne ölçümlerini yapar, sizinle bir kurgu özeti üzerinde anlaşır, ardından keser, birleştirir ve işler. Kararı model verir, ölçümü ffmpeg ve görüntü işleme yapar, onayı siz verirsiniz; analiz raporunu onaylamadan hiçbir şey işlenmez. Her aşama sonucunu diske yazar, yarım kalan oturum kaldığı yerden sürer. Şu an planlama aşamasında: mimari yazılı, henüz çalışan kod yayımlanmadı.",
       "en": "A video editing pipeline driven by a language model. It downloads a video, transcribes it, measures audio and scenes, agrees on an editing brief with you, then cuts, composes and renders. The model decides, ffmpeg and computer vision measure, and you approve; nothing is rendered before you sign off on the analysis report. Each stage writes its result to disk, so an interrupted session resumes where it stopped. Currently in planning: the architecture is written, no working code has been published yet."
     },
+    "uses": {
+      "tr": [
+        "Videonu yapay zekâyla kurgulat",
+        "Konuşmayı yazıya dök",
+        "Kesmeden önce kurgu planını onayla",
+        "Geçiş, altyazı ve müzik ekle",
+        "Yarım kalan işi sürdür"
+      ],
+      "en": [
+        "Edit your videos with AI",
+        "Transcribe speech to text",
+        "Approve the plan before cutting",
+        "Add transitions, subtitles and music",
+        "Resume unfinished jobs"
+      ]
+    },
     "points": {
       "tr": [
         "Kaynak videoyu yt-dlp ile en yüksek kalitede indirir",
@@ -1202,6 +1538,22 @@
     "summary": {
       "tr": "Bir videoyu istediğiniz dosya boyutunun hemen altına küçülten, ücretsiz ve tamamen çevrimdışı çalışan bir video aracı. Hedef boyutu seçtiğinizde kodek, kalite, çözünürlük ve kare hızını dosyanıza göre kendisi belirler ve sonuç boyutunu önceden söyler. Aynı pencerede ekran kaydı, oynatma ve paylaşım da var. Donanım kodlayıcılarını makinede sınayarak kullanır. Arayüz 42 dil ve 26 renk temasıyla gelir. Windows, macOS ve Linux'ta çalışır; e-posta ya da WhatsApp sınırına video sığdırmak isteyen herkes için.",
       "en": "A free, fully offline video tool that shrinks a video to land just under the file size you ask for. Pick a target and it chooses the codec, quality, resolution and frame rate for your file, and tells you the expected size before it starts. The same window also records the screen, plays video back and shares it. Hardware encoders are probed on your own machine before use. The interface ships in 42 languages with 26 colour themes, on Windows, macOS and Linux. For anyone who needs a video to fit an e-mail or messaging limit."
+    },
+    "uses": {
+      "tr": [
+        "Videoyu istediğin boyuta küçült",
+        "Ekranı sesiyle kaydet",
+        "Dahili oynatıcıyla izle",
+        "Tek tıkla bağlantıyla paylaş",
+        "MP4, MKV, GIF'e dönüştür"
+      ],
+      "en": [
+        "Shrink videos to any size",
+        "Record your screen with audio",
+        "Watch in the built-in player",
+        "Share instantly with a link",
+        "Convert to MP4, MKV, GIF"
+      ]
     },
     "icon": "src/VidShrink.App/Assets/VidShrink.ico",
     "shot": "docs/gorseller/T191-kucult-tr.png",
@@ -1282,6 +1634,22 @@
       "tr": "Tamamen tarayıcıda çalışan, Mount & Blade: Warband tarzında tek sayfalık bir rol yapma ve strateji oyunu. Beş krallık, lordlar ve leydilerle yordamsal olarak üretilen bir Calradia haritası, savaşlar ve ordu yönetimi içerir. Derleme adımı, bağımlılık ya da sunucu gerektirmez; index.html'i açmak yeterli. Telefonda ana ekrana eklenerek çevrimdışı oynanabilir, dokunmatik ekranda iki çubukla savaşılır. Türkçe, İngilizce ve Endonezce arayüzü vardır. Güncel sürümünü kardeşimiz Serkan geliştiriyor.",
       "en": "A single-page, Mount & Blade: Warband style role-playing and strategy game that runs entirely in the browser. It has a procedurally generated map of Calradia with five kingdoms, lords and ladies, battles and army management. No build step, no dependencies and no server: opening index.html is enough. On a phone it can be added to the home screen and played offline, with twin-stick touch controls in battle. The interface comes in Turkish, English and Indonesian. Serkan develops the current version."
     },
+    "uses": {
+      "tr": [
+        "Tarayıcıda Warband tarzı oyna",
+        "Ordunu kur, savaşlara katıl",
+        "Ticaret yap, turnuvalara gir",
+        "Evlen, tımar al, krallığa hizmet et",
+        "Telefonda çevrimdışı oyna"
+      ],
+      "en": [
+        "Play Warband-style in your browser",
+        "Build an army and fight battles",
+        "Trade and join tournaments",
+        "Marry, earn fiefs, serve a kingdom",
+        "Play offline on your phone"
+      ]
+    },
     "icon": "icon-512.png",
     "shot": "docs/screenshots/town.png",
     "fork": {
@@ -1343,6 +1711,22 @@
     "summary": {
       "tr": "Claude ile çalışan bir WhatsApp otomatik yanıt botu. Herhangi bir sohbete kendi hesabınızdan kısa bir komut yazdığınızda iki tarafın son mesajlarını okur ve başında robot simgesi olan bir yanıt gönderir. Her komut, araçları kapalı tek bir Claude Code çağrısıyla ve belirlenmiş bir yazım üslubuyla karşılanır. Windows yüklü küçük bir bilgisayarda arka planda çalışır, depo değiştiğinde kendini günceller ve WhatsApp oturumunu korur. Kişisel kullanım için özel bir proje.",
       "en": "A WhatsApp auto-reply bot powered by Claude. Type a short command from your own account in any chat and it reads the latest messages from both sides and sends a reply marked with a robot emoji. Each command is answered by a single Claude Code call with all tools disabled and a fixed writing style. It runs headless on a small Windows machine, updates itself whenever the repository changes and keeps the WhatsApp session between restarts. A private project for personal use."
+    },
+    "uses": {
+      "tr": [
+        "WhatsApp'ta Claude'a yanıt yazdır",
+        "Sohbeti okuyup bağlama uygun cevapla",
+        "Web'de arayıp soruları yanıtla",
+        "Görsel bulup sohbete gönder",
+        "Botu kendiliğinden güncel tut"
+      ],
+      "en": [
+        "Let Claude reply on WhatsApp",
+        "Reply in context of the chat",
+        "Answer questions with web search",
+        "Find and send images",
+        "Keep the bot updated automatically"
+      ]
     },
     "points": {
       "tr": [

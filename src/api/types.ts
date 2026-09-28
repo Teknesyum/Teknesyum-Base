@@ -99,6 +99,7 @@ export type Settings = {
   showArchived: boolean;
   showForks: boolean;
   closeToTray: boolean;
+  silentUpdate: boolean;
   desktopShortcut: boolean;
   hasToken: boolean;
 };

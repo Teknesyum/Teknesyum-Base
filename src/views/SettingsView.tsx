@@ -243,6 +243,7 @@ export function SettingsView({ onClearToken }: Props) {
         <Toggle label={t('settings.showArchived')} help={t('settings.showArchivedHelp')} checked={draft.showArchived} onChange={(v) => set({ showArchived: v })} />
         <Toggle label={t('settings.showForks')} help={t('settings.showForksHelp')} checked={draft.showForks} onChange={(v) => set({ showForks: v })} />
         <Toggle label={t('settings.closeToTray')} help={t('settings.closeToTrayHelp')} checked={draft.closeToTray} onChange={(v) => set({ closeToTray: v })} />
+        <Toggle label={t('settings.silentUpdate')} help={t('settings.silentUpdateHelp')} checked={draft.silentUpdate} onChange={(v) => set({ silentUpdate: v })} />
         <Toggle label={t('settings.desktopShortcut')} help={t('settings.desktopShortcutHelp')} checked={draft.desktopShortcut} onChange={(v) => set({ desktopShortcut: v })} />
       </section>
 

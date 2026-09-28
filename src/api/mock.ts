@@ -84,6 +84,7 @@ let settings: Settings = {
   showArchived: false,
   showForks: false,
   closeToTray: true,
+  silentUpdate: true,
   desktopShortcut: false,
   hasToken: false,
 };

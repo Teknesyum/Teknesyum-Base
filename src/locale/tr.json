@@ -298,6 +298,8 @@
     "showForksHelp": "Başka repolardan çatallananlar da listelenir.",
     "closeToTray": "Kapatınca tepsiye gizle",
     "closeToTrayHelp": "Pencere kapanır, uygulama bildirim alanında çalışmayı sürdürür.",
+    "silentUpdate": "Sessiz güncelle",
+    "silentUpdateHelp": "Yeni sürüm arka planda indirilir, doğrulanır ve bir sonraki açılışta çalışır.",
     "saved": "Ayarlar kaydedildi",
     "noChanges": "Değişiklik yok",
     "about": "Hakkında",

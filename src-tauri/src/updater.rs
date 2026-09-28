@@ -200,6 +200,7 @@ pub struct Updater {
     state: Mutex<UpdateState>,
     pick: Mutex<Option<Pick>>,
     cancel: Mutex<Arc<AtomicBool>>,
+    staged: Mutex<Option<String>>,
 }
 
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
@@ -237,6 +238,7 @@ impl Updater {
             }),
             pick: Mutex::new(None),
             cancel: Mutex::new(Arc::new(AtomicBool::new(false))),
+            staged: Mutex::new(None),
         }
     }
 
@@ -486,7 +488,10 @@ async fn check(app: &AppHandle, background: bool) -> AppResult<UpdateState> {
         }
         Ok(found) => {
             let current = env!("CARGO_PKG_VERSION");
-            let newer = found.filter(|(_, v)| is_newer(v, current));
+            let staged = lock(&up.staged).clone();
+            let newer = found
+                .filter(|(_, v)| is_newer(v, current))
+                .filter(|(_, v)| staged.as_deref().is_none_or(|s| is_newer(v, s)));
             let Some((rel, version)) = newer else {
                 *lock(&up.pick) = None;
                 return Ok(up.set(app, |s| {
@@ -619,6 +624,7 @@ pub fn start(app: &AppHandle) {
         loop {
             tick.tick().await;
             let _ = check(&app, true).await;
+            silent_step(&app).await;
         }
     });
 }
@@ -651,33 +657,85 @@ pub fn update_download(app: AppHandle, up: State<'_, Updater>) -> AppResult<Upda
     });
     let handle = app.clone();
     tauri::async_runtime::spawn(async move {
-        let result = download(&handle, pick, cancel).await;
-        let up = handle.state::<Updater>();
-        match result {
-            Ok(()) => {
-                up.set(&handle, |s| {
-                    s.phase = UpdatePhase::Ready;
-                    s.percent = 100;
-                    s.message = None;
-                });
-            }
-            Err(e) if e.code == ErrorCode::Cancelled => {
-                up.set(&handle, |s| {
-                    s.phase = UpdatePhase::Available;
-                    s.percent = 0;
-                    s.message = Some(e.message);
-                });
-            }
-            Err(e) => {
-                up.set(&handle, |s| {
-                    s.phase = UpdatePhase::Error;
-                    s.percent = 0;
-                    s.message = Some(e.message);
-                });
-            }
-        }
+        run_download(&handle, pick, cancel).await;
     });
     Ok(st)
+}
+
+async fn run_download(handle: &AppHandle, pick: Pick, cancel: Arc<AtomicBool>) -> bool {
+    let result = download(handle, pick, cancel).await;
+    let up = handle.state::<Updater>();
+    match result {
+        Ok(()) => {
+            up.set(handle, |s| {
+                s.phase = UpdatePhase::Ready;
+                s.percent = 100;
+                s.message = None;
+            });
+            true
+        }
+        Err(e) if e.code == ErrorCode::Cancelled => {
+            up.set(handle, |s| {
+                s.phase = UpdatePhase::Available;
+                s.percent = 0;
+                s.message = Some(e.message);
+            });
+            false
+        }
+        Err(e) => {
+            up.set(handle, |s| {
+                s.phase = UpdatePhase::Error;
+                s.percent = 0;
+                s.message = Some(e.message);
+            });
+            false
+        }
+    }
+}
+
+async fn silent_step(app: &AppHandle) {
+    if !app.state::<AppState>().settings().silent_update {
+        return;
+    }
+    let up = app.state::<Updater>();
+    if up.snapshot().dry_run || up.snapshot().phase != UpdatePhase::Available {
+        return;
+    }
+    let Some(pick) = lock(&up.pick).clone() else {
+        return;
+    };
+    let version = pick.version.clone();
+    let cancel = Arc::new(AtomicBool::new(false));
+    *lock(&up.cancel) = cancel.clone();
+    up.set(app, |s| {
+        s.phase = UpdatePhase::Downloading;
+        s.percent = 0;
+        s.message = None;
+    });
+    if !run_download(app, pick, cancel).await {
+        return;
+    }
+    let Ok(exe) = std::env::current_exe() else {
+        return;
+    };
+    match swap_in(&exe) {
+        Ok(()) => {
+            *lock(&up.staged) = Some(version.clone());
+            *lock(&up.pick) = None;
+            up.set(app, |s| {
+                s.phase = UpdatePhase::Idle;
+                s.latest = None;
+                s.percent = 0;
+                s.message = Some(format!("{version} kuruldu; bir sonraki açılışta çalışır."));
+            });
+        }
+        Err(e) => {
+            up.set(app, |s| {
+                s.phase = UpdatePhase::Ready;
+                s.message = Some(format!("Sessiz güncelleme yerine konamadı: {e}"));
+            });
+        }
+    }
 }
 
 #[tauri::command]

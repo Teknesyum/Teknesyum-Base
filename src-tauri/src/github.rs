@@ -657,7 +657,8 @@ impl GitHub {
                 let owner = gh.owner.login.clone();
                 let memo_file = store::memo_file(&this.cache_dir, &gh.full_name, this.token.is_some());
                 let now = chrono::Utc::now().timestamp();
-                if let Some(m) = store::load_memo::<MemoData>(&memo_file) {
+                let upstream = logic::upstream_of(&owner, &gh.name).is_some();
+                if let Some(m) = store::load_memo::<MemoData>(&memo_file).filter(|_| !upstream) {
                     if m.data.ui_checked && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
                         return Ok(RepoDetails {
                             gh,
@@ -670,7 +671,7 @@ impl GitHub {
                 let release = this.latest_release(&owner, &gh.name).await?;
                 let manifest = this.manifest(&owner, &gh.name, gh.private).await?;
                 let ui = this.ui_version(&owner, &gh.name, gh.private).await?;
-                if let Some(pushed_at) = gh.pushed_at.clone().filter(|p| !p.is_empty()) {
+                if let Some(pushed_at) = gh.pushed_at.clone().filter(|p| !p.is_empty() && !upstream) {
                     let _ = store::save_memo(
                         &memo_file,
                         &RepoMemo {
@@ -873,9 +874,9 @@ pub fn new_list(account: &str, repos: Vec<Repo>, rate: RateInfo) -> RepoList {
         rate_reset_at: rate.reset_at,
         budget_skipped: false,
         ui_latest: None,
-
         core_latest: None,
         claude_code: false,
+        app_version: env!("CARGO_PKG_VERSION").to_string(),
         repos,
     }
 }

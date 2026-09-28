@@ -352,6 +352,7 @@ mod tests {
             ui_latest: None,
             core_latest: None,
             claude_code: false,
+            app_version: String::new(),
             repos: Vec::new(),
         }
     }

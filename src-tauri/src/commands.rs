@@ -304,7 +304,9 @@ pub async fn load_list(
     let authed = gh.has_token();
     let rate_file = store::rate_file(cache_dir, authed);
     let now = chrono::Utc::now().timestamp();
+    let current = cached.as_ref().is_some_and(|l| l.app_version == env!("CARGO_PKG_VERSION"));
     let stay_offline = match &cached {
+        Some(_) if !current => false,
         Some(_) if !force => true,
         Some(list) => store::list_is_fresh(&list.fetched_at, now, store::list_window(authed, auto)),
         None => false,

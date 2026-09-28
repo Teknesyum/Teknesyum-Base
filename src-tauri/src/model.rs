@@ -119,6 +119,8 @@ pub struct RepoList {
     pub core_latest: Option<String>,
     #[serde(default)]
     pub claude_code: bool,
+    #[serde(default)]
+    pub app_version: String,
     pub repos: Vec<Repo>,
 }
 

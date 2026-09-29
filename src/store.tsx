@@ -101,11 +101,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const boot = useCallback(async () => {
     setLoadError(null);
     try {
-      const [i, s] = await Promise.all([api.appInfo(), api.getSettings()]);
+      const [i, s] = await Promise.all([api.appInfo(), api.getSettings(), fetchList(undefined, false)]);
       setInfo(i);
       setSettings(s);
       setAccount(s.account);
-      await fetchList(s.account, false);
       void refreshInstalled();
       void fetchList(s.account, true, true);
     } catch (e) {

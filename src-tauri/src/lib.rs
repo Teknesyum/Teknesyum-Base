@@ -182,6 +182,7 @@ pub fn run() {
         .setup(|app| {
             #[cfg(feature = "pro")]
             settings::seed_embedded_token();
+            commands::warm_git();
             app.manage(AppState::new());
             app.manage(updater::Updater::new());
             updater::start(app.handle());

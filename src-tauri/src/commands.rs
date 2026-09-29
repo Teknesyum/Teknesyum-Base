@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -31,6 +32,16 @@ pub struct AppState {
     settings: Mutex<Settings>,
     tasks: Mutex<HashMap<String, TaskEntry>>,
     counter: AtomicU64,
+    scans: Mutex<Option<(Instant, String, Vec<InstalledRecord>)>>,
+}
+
+static GIT: OnceLock<bool> = OnceLock::new();
+const SCAN_TTL: Duration = Duration::from_secs(30);
+
+pub fn warm_git() {
+    std::thread::spawn(|| {
+        GIT.get_or_init(installer::git_available);
+    });
 }
 
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
@@ -49,6 +60,7 @@ impl AppState {
             settings: Mutex::new(s),
             tasks: Mutex::new(HashMap::new()),
             counter: AtomicU64::new(1),
+            scans: Mutex::new(None),
             paths,
         }
     }
@@ -115,15 +127,47 @@ fn targets_of(repos: &[Repo]) -> Vec<detect::Target> {
         .collect()
 }
 
-pub fn installed_view(paths: &Paths, install_dir: &Path, targets: &[detect::Target]) -> Vec<InstalledRecord> {
+fn scan_disk(paths: &Paths, install_dir: &Path, targets: &[detect::Target]) -> Vec<InstalledRecord> {
     let skip = vec![paths.shared.clone(), install_dir.to_path_buf()];
-    let mut extra: Vec<InstalledRecord> = detect::own_record().into_iter().collect();
-    extra.extend(detect::detect_external(&paths.scan_roots, &skip, targets));
-    extra.extend(detect::detect_checkouts(&detect::shortcut_dirs(), targets));
-    store::merge_installed(store::load_installed(paths), extra)
+    let mut found = detect::detect_external(&paths.scan_roots, &skip, targets);
+    found.extend(detect::detect_checkouts(&detect::shortcut_dirs(), targets));
+    found
+}
+
+fn scan_key(install_dir: &Path, targets: &[detect::Target]) -> String {
+    let mut names: Vec<String> = targets
+        .iter()
+        .map(|t| format!("{}/{}/{}", t.owner, t.name, t.manifest_name.as_deref().unwrap_or("")).to_lowercase())
+        .collect();
+    names.sort();
+    format!("{}|{}", install_dir.display(), names.join(","))
 }
 
 impl AppState {
+    fn installed_for(&self, targets: &[detect::Target]) -> Vec<InstalledRecord> {
+        let install_dir = PathBuf::from(self.settings().install_dir);
+        let key = scan_key(&install_dir, targets);
+        let cached = lock(&self.scans)
+            .as_ref()
+            .filter(|(at, k, _)| *k == key && at.elapsed() < SCAN_TTL)
+            .map(|(_, _, v)| v.clone());
+        let found = match cached {
+            Some(v) => v,
+            None => {
+                let v = scan_disk(&self.paths, &install_dir, targets);
+                *lock(&self.scans) = Some((Instant::now(), key, v.clone()));
+                v
+            }
+        };
+        let mut extra: Vec<InstalledRecord> = detect::own_record().into_iter().collect();
+        extra.extend(found);
+        store::merge_installed(store::load_installed(&self.paths), extra)
+    }
+
+    pub fn forget_scans(&self) {
+        *lock(&self.scans) = None;
+    }
+
     fn known_targets(&self) -> Vec<detect::Target> {
         let s = self.settings();
         let mut accounts = vec![s.account.clone()];
@@ -138,8 +182,7 @@ impl AppState {
     }
 
     fn installed(&self) -> Vec<InstalledRecord> {
-        let install_dir = PathBuf::from(self.settings().install_dir);
-        installed_view(&self.paths, &install_dir, &self.known_targets())
+        self.installed_for(&self.known_targets())
     }
 
     fn find_installed(&self, full_name: &str) -> Option<InstalledRecord> {
@@ -151,8 +194,7 @@ impl AppState {
 
 fn decorate(state: &AppState, list: &mut RepoList) {
     let paths = &state.paths;
-    let install_dir = PathBuf::from(state.settings().install_dir);
-    let installed = installed_view(paths, &install_dir, &targets_of(&list.repos));
+    let installed = state.installed_for(&targets_of(&list.repos));
     let tags = store::load_tags(paths);
     for repo in &mut list.repos {
         let rec = installed
@@ -244,7 +286,9 @@ where
     let task_id = id.clone();
     tauri::async_runtime::spawn(async move {
         let result = work(env, task.clone()).await;
-        lock(&app.state::<AppState>().tasks).remove(&task_id);
+        let st = app.state::<AppState>();
+        st.forget_scans();
+        lock(&st.tasks).remove(&task_id);
         task.finish(result);
     });
     Ok(id)
@@ -252,7 +296,7 @@ where
 
 #[tauri::command]
 pub async fn app_info() -> AppResult<AppInfo> {
-    let git = tauri::async_runtime::spawn_blocking(installer::git_available)
+    let git = tauri::async_runtime::spawn_blocking(|| *GIT.get_or_init(installer::git_available))
         .await
         .unwrap_or(false);
     Ok(AppInfo {
@@ -268,6 +312,7 @@ pub async fn app_info() -> AppResult<AppInfo> {
 
 #[tauri::command]
 pub async fn list_repos(
+    app: AppHandle,
     state: State<'_, AppState>,
     account: Option<String>,
     force: bool,
@@ -288,7 +333,12 @@ pub async fn list_repos(
         auto.unwrap_or(false),
     )
     .await?;
-    decorate(&state, &mut list);
+    let list = tauri::async_runtime::spawn_blocking(move || {
+        decorate(&app.state::<AppState>(), &mut list);
+        list
+    })
+    .await
+    .map_err(|e| AppError::unknown(e.to_string()))?;
     Ok(list)
 }
 
@@ -306,8 +356,8 @@ pub async fn load_list(
     let now = chrono::Utc::now().timestamp();
     let current = cached.as_ref().is_some_and(|l| l.app_version == env!("CARGO_PKG_VERSION"));
     let stay_offline = match &cached {
-        Some(_) if !current => false,
         Some(_) if !force => true,
+        Some(_) if !current => false,
         Some(list) => store::list_is_fresh(&list.fetched_at, now, store::list_window(authed, auto)),
         None => false,
     };

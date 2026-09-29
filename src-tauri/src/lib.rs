@@ -167,6 +167,28 @@ fn build_tray(app: &tauri::App) -> tauri::Result<()> {
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn katalog_main() {
+    let mut args = std::env::args().skip(1);
+    let account = args.next().unwrap_or_else(|| "Teknesyum".to_string());
+    let out = std::path::PathBuf::from(args.next().unwrap_or_else(|| "index.json".to_string()));
+    let token = std::env::var("GITHUB_TOKEN").ok().filter(|t| !t.is_empty());
+    let cache = std::env::temp_dir().join("teknesyum-katalog");
+    let gh = github::GitHub::new(github::build_http(), cache, token).without_index();
+    let index = match tauri::async_runtime::block_on(gh.build_index(&account)) {
+        Ok(i) => i,
+        Err(e) => {
+            eprintln!("katalog: {}", e.message);
+            std::process::exit(1);
+        }
+    };
+    let body = serde_json::to_string_pretty(&index).expect("katalog json");
+    if let Err(e) = std::fs::write(&out, body) {
+        eprintln!("katalog: {e}");
+        std::process::exit(1);
+    }
+    println!("katalog: {} depo -> {}", index.repos.len(), out.display());
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {

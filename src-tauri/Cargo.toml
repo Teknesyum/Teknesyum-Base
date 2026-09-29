@@ -5,6 +5,7 @@ description = "Browse and install the programs of a GitHub account"
 authors = ["Teknesyum"]
 license = "AGPL-3.0-or-later"
 edition = "2021"
+default-run = "teknesyum-base"
 
 [lib]
 name = "teknesyum_base_lib"

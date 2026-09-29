@@ -24,6 +24,47 @@ const UI_OWNER: &str = "Teknesyum";
 const UI_REPO: &str = "Teknesyum-UI";
 const CORE_REPO: &str = "Teknesyum-Core";
 const MEDIA_MAX: usize = 20 * 1024 * 1024;
+pub const INDEX_URL: &str = "https://raw.githubusercontent.com/Teknesyum/Teknesyum-Base/katalog/index.json";
+const INDEX_MAX_AGE: i64 = 6 * 3600;
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CatalogIndex {
+    pub generated_at: String,
+    #[serde(default)]
+    pub ui_latest: Option<String>,
+    #[serde(default)]
+    pub core_latest: Option<String>,
+    #[serde(default)]
+    pub repos: Vec<IndexEntry>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IndexEntry {
+    pub full_name: String,
+    pub pushed_at: String,
+    #[serde(default)]
+    release: Option<GhRelease>,
+    #[serde(default)]
+    manifest: Option<Manifest>,
+    #[serde(default)]
+    ui: Option<String>,
+}
+
+impl CatalogIndex {
+    pub fn is_fresh(&self, now: i64) -> bool {
+        chrono::DateTime::parse_from_rfc3339(&self.generated_at)
+            .is_ok_and(|t| (0..INDEX_MAX_AGE).contains(&(now - t.timestamp())))
+    }
+
+    fn entry_for(&self, gh: &GhRepo) -> Option<&IndexEntry> {
+        let pushed = gh.pushed_at.as_deref().filter(|p| !p.is_empty())?;
+        self.repos
+            .iter()
+            .find(|e| e.full_name.eq_ignore_ascii_case(&gh.full_name) && e.pushed_at == pushed)
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct RateInfo {
@@ -50,6 +91,7 @@ pub struct GitHub {
     token: Option<String>,
     rate: Arc<Mutex<RateInfo>>,
     counters: Arc<Counters>,
+    use_index: bool,
     #[cfg(test)]
     trace: Arc<Mutex<Vec<String>>>,
 }
@@ -241,6 +283,7 @@ impl GitHub {
             token,
             rate: Arc::new(Mutex::new(RateInfo::default())),
             counters: Arc::new(Counters::default()),
+            use_index: true,
             #[cfg(test)]
             trace: Arc::new(Mutex::new(Vec::new())),
         }
@@ -252,6 +295,45 @@ impl GitHub {
             fresh: self.counters.fresh.load(Ordering::Relaxed),
             not_modified: self.counters.not_modified.load(Ordering::Relaxed),
         }
+    }
+
+    pub fn without_index(mut self) -> Self {
+        self.use_index = false;
+        self
+    }
+
+    pub async fn catalog_index(&self) -> Option<CatalogIndex> {
+        if !self.use_index {
+            return None;
+        }
+        let r = self.get(INDEX_URL, "application/json").await.ok()?;
+        if r.status != 200 {
+            return None;
+        }
+        serde_json::from_str(&r.body).ok()
+    }
+
+    pub async fn build_index(&self, account: &str) -> AppResult<CatalogIndex> {
+        let details = self.repo_details(account).await?;
+        let repos = details
+            .into_iter()
+            .filter(|d| !d.gh.private)
+            .filter_map(|d| {
+                Some(IndexEntry {
+                    full_name: d.gh.full_name.clone(),
+                    pushed_at: d.gh.pushed_at.clone().filter(|p| !p.is_empty())?,
+                    release: d.release,
+                    manifest: d.manifest,
+                    ui: d.ui,
+                })
+            })
+            .collect();
+        Ok(CatalogIndex {
+            generated_at: now_iso(),
+            ui_latest: self.ui_latest().await,
+            core_latest: self.core_latest().await,
+            repos,
+        })
     }
 
     pub fn has_token(&self) -> bool {
@@ -651,9 +733,20 @@ impl GitHub {
 
     pub async fn repo_details(&self, account: &str) -> AppResult<Vec<RepoDetails>> {
         let repos = self.list_account_repos(account).await?;
+        let now = chrono::Utc::now().timestamp();
+        let index = Arc::new(self.catalog_index().await.filter(|i| i.is_fresh(now)));
         let results: Vec<AppResult<RepoDetails>> = stream::iter(repos.into_iter().map(|gh| {
             let this = self.clone();
+            let index = index.clone();
             async move {
+                if let Some(e) = index.as_ref().as_ref().and_then(|i| i.entry_for(&gh)) {
+                    return Ok(RepoDetails {
+                        release: e.release.clone(),
+                        manifest: e.manifest.clone(),
+                        ui: e.ui.clone(),
+                        gh,
+                    });
+                }
                 let owner = gh.owner.login.clone();
                 let memo_file = store::memo_file(&this.cache_dir, &gh.full_name, this.token.is_some());
                 let now = chrono::Utc::now().timestamp();

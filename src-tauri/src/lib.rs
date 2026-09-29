@@ -7,6 +7,7 @@ mod installer;
 mod logic;
 mod model;
 mod paths;
+mod prereq;
 mod settings;
 mod store;
 mod updater;
@@ -249,6 +250,7 @@ pub fn run() {
             commands::install_repo,
             commands::uninstall_repo,
             commands::clone_repo,
+            commands::missing_prereqs,
             commands::cancel_task,
             commands::launch_installed,
             commands::set_local_tags,

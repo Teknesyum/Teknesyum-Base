@@ -121,6 +121,8 @@ export type AppInfo = {
   gitAvailable: boolean;
 };
 
+export type PrereqInfo = { id: string; label: string };
+
 export type TaskStep = 'resolve' | 'download' | 'verify' | 'install' | 'shortcut' | 'done';
 
 export type TaskEvent = {
@@ -153,6 +155,7 @@ export const commands = {
   install: 'install_repo',
   uninstall: 'uninstall_repo',
   clone: 'clone_repo',
+  missingPrereqs: 'missing_prereqs',
   cancelTask: 'cancel_task',
   launch: 'launch_installed',
   setLocalTags: 'set_local_tags',

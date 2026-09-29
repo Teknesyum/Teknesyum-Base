@@ -391,6 +391,12 @@
     "play": "{by}'ın sürümünü aç",
     "repo": "{by}'ın deposu"
   },
+  "prereq": {
+    "title": "{name} için önce şunlar kurulsun mu?",
+    "body": "Bu program çalışmak için aşağıdakilere ihtiyaç duyuyor ve bu bilgisayarda bulunamadı:",
+    "note": "Base her birini winget ile, winget yoksa üreticinin imzası doğrulanmış resmî kurucusuyla sırayla kurar. Onaylarsan üreticilerin lisans koşullarını da kabul etmiş olursun; Windows yönetici onayı isteyebilir.",
+    "confirm": "Hepsini kur ve devam et"
+  },
   "claude": {
     "title": "Önce Claude Code kurulsun mu?",
     "body": "{name} bir Claude Code eklentisi ve bu bilgisayarda Claude Code bulunamadı. Base önce Claude Code'u winget ile kurar, ardından eklentiyi ekler.",

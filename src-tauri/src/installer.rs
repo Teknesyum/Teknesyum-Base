@@ -151,7 +151,7 @@ pub fn path_allowed(path: &Path, roots: &[&Path]) -> bool {
         .any(|r| target.starts_with(&r))
 }
 
-async fn download(
+pub(crate) async fn download(
     env: &Env,
     task: &Task,
     asset: &GhAsset,
@@ -307,13 +307,13 @@ fn swap_into(stage: &Path, target: &Path, scratch: &Path) -> AppResult<()> {
 }
 
 #[cfg(windows)]
-fn no_window(cmd: &mut Command) {
+pub(crate) fn no_window(cmd: &mut Command) {
     use std::os::windows::process::CommandExt;
     cmd.creation_flags(0x0800_0000);
 }
 
 #[cfg(not(windows))]
-fn no_window(_cmd: &mut Command) {}
+pub(crate) fn no_window(_cmd: &mut Command) {}
 
 pub fn git_available() -> bool {
     let mut cmd = Command::new("git");

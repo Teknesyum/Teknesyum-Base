@@ -391,6 +391,12 @@
     "play": "Open {by}'s version",
     "repo": "{by}'s repository"
   },
+  "prereq": {
+    "title": "Install these first for {name}?",
+    "body": "This program needs the following and they were not found on this computer:",
+    "note": "Base installs each one in turn with winget, or with the vendor's official installer after checking its signature when winget is missing. Confirming also accepts the vendors' license terms; Windows may ask for administrator approval.",
+    "confirm": "Install all and continue"
+  },
   "claude": {
     "title": "Install Claude Code first?",
     "body": "{name} is a Claude Code plugin and Claude Code was not found on this computer. Base installs Claude Code with winget first, then adds the plugin.",

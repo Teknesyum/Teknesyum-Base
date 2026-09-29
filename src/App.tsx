@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TitleBar } from '../teknesyum-ui/ustcubuk/TitleBar';
-import { openExternal, windowControls } from './api/client';
-import type { Repo } from './api/types';
+import { api, openExternal, windowControls } from './api/client';
+import type { PrereqInfo, Repo } from './api/types';
 import { I18nProvider, useI18n } from './i18n';
 import { StoreProvider, useStore } from './store';
 import { ConfirmDialog } from './ui/Dialog';
@@ -32,6 +32,7 @@ function Frame() {
   const [detail, setDetail] = useState<Target | null>(null);
   const [removal, setRemoval] = useState<Target | null>(null);
   const [claudeAsk, setClaudeAsk] = useState<Target | null>(null);
+  const [prereqAsk, setPrereqAsk] = useState<(Target & { items: PrereqInfo[] }) | null>(null);
   const [clearing, setClearing] = useState<Opener | undefined>(undefined);
   const [updateFrom, setUpdateFrom] = useState<HTMLElement | null | undefined>(undefined);
   const [maximized, setMaximized] = useState(false);
@@ -92,7 +93,15 @@ function Frame() {
     if (p === 'launch') store.launch(repo.fullName);
     else if (p === 'folder') store.openFolder(repo.fullName);
     else if (p === 'source') void openExternal(repo.htmlUrl);
-    else void store.start(repo, 'install');
+    else if (repo.installState === 'not-installed' && !repo.plugin) {
+      void api
+        .missingPrereqs(repo.owner, repo.name, false)
+        .catch(() => [] as PrereqInfo[])
+        .then((items) => {
+          if (items.length) setPrereqAsk({ fullName: repo.fullName, opener: opener ?? null, items });
+          else void store.start(repo, 'install');
+        });
+    } else void store.start(repo, 'install');
   };
   const setLang = (next: 'tr' | 'en') => {
     if (store.settings && store.settings.language !== next) void store.saveSettings({ ...store.settings, language: next });
@@ -105,6 +114,7 @@ function Frame() {
 
   const removeRepo = find(removal);
   const askRepo = find(claudeAsk);
+  const prereqRepo = find(prereqAsk);
 
   return (
     <div ref={appRef} className="app">
@@ -207,6 +217,24 @@ function Frame() {
           setClaudeAsk(null);
         }}
         onClose={() => setClaudeAsk(null)}
+      />
+      <ConfirmDialog
+        open={!!prereqAsk && !!prereqRepo}
+        title={t('prereq.title', { name: prereqRepo?.name ?? '' })}
+        body={
+          <>
+            <p>{t('prereq.body')}</p>
+            <p><strong>{prereqAsk?.items.map((p) => p.label).join(', ')}</strong></p>
+            <p>{t('prereq.note')}</p>
+          </>
+        }
+        confirmLabel={t('prereq.confirm')}
+        returnTo={prereqAsk?.opener ?? null}
+        onConfirm={() => {
+          if (prereqRepo) void store.start(prereqRepo, 'install', undefined, true);
+          setPrereqAsk(null);
+        }}
+        onClose={() => setPrereqAsk(null)}
       />
       <ConfirmDialog
         open={clearing !== undefined}

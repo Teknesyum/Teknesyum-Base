@@ -528,6 +528,7 @@ pub async fn install_repo(
     owner: String,
     name: String,
     with_claude: Option<bool>,
+    prereqs: Option<bool>,
 ) -> AppResult<String> {
     check_part(&owner, "hesap adı")?;
     check_part(&name, "depo adı")?;
@@ -547,9 +548,53 @@ pub async fn install_repo(
         Some(r) if r.info.method != InstallMethod::Clone => TaskKind::Update,
         _ => TaskKind::Install,
     };
-    start_task(&app, &state, full, kind, move |env, task| {
-        installer::install(env, task, owner, name, prefer_setup)
+    let prereqs = prereqs.unwrap_or(false);
+    start_task(&app, &state, full, kind, move |env, task| async move {
+        if prereqs {
+            with_prereqs(&env, &task, &owner, &name, false).await?;
+        }
+        installer::install(env, task, owner, name, prefer_setup).await
     })
+}
+
+async fn prereq_ids(gh: &crate::github::GitHub, owner: &str, name: &str, clone: bool) -> Vec<String> {
+    let mut ids = gh
+        .manifest(owner, name, false)
+        .await
+        .ok()
+        .flatten()
+        .and_then(|m| m.requires)
+        .unwrap_or_default();
+    if clone {
+        ids.insert(0, "git".to_string());
+    }
+    ids
+}
+
+async fn with_prereqs(env: &Env, task: &installer::Task, owner: &str, name: &str, clone: bool) -> AppResult<()> {
+    let ids = prereq_ids(&env.gh, owner, name, clone).await;
+    let scratch = env.install_dir.join(".teknesyum-tmp").join(format!("{}-onkosul", task.id));
+    let r = crate::prereq::install_missing(env, task, &ids, &scratch).await;
+    let _ = std::fs::remove_dir_all(&scratch);
+    r
+}
+
+#[tauri::command]
+pub async fn missing_prereqs(
+    state: State<'_, AppState>,
+    owner: String,
+    name: String,
+    clone: bool,
+) -> AppResult<Vec<crate::prereq::PrereqInfo>> {
+    check_part(&owner, "hesap adı")?;
+    check_part(&name, "depo adı")?;
+    if claude::plugin_of(&name).is_some() {
+        return Ok(Vec::new());
+    }
+    let ids = prereq_ids(&state.gh(), &owner, &name, clone).await;
+    Ok(tauri::async_runtime::spawn_blocking(move || crate::prereq::missing(&ids))
+        .await
+        .unwrap_or_default())
 }
 
 #[tauri::command]
@@ -582,12 +627,20 @@ pub async fn uninstall_repo(app: AppHandle, state: State<'_, AppState>, full_nam
 }
 
 #[tauri::command]
-pub async fn clone_repo(app: AppHandle, state: State<'_, AppState>, owner: String, name: String) -> AppResult<String> {
+pub async fn clone_repo(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    owner: String,
+    name: String,
+    prereqs: Option<bool>,
+) -> AppResult<String> {
     check_part(&owner, "hesap adı")?;
     check_part(&name, "depo adı")?;
-    let git = tauri::async_runtime::spawn_blocking(installer::git_available)
-        .await
-        .unwrap_or(false);
+    let prereqs = prereqs.unwrap_or(false);
+    let git = prereqs
+        || tauri::async_runtime::spawn_blocking(installer::git_available)
+            .await
+            .unwrap_or(false);
     if !git {
         return Err(AppError::new(
             ErrorCode::GitMissing,
@@ -595,8 +648,11 @@ pub async fn clone_repo(app: AppHandle, state: State<'_, AppState>, owner: Strin
         ));
     }
     let full = format!("{owner}/{name}");
-    start_task(&app, &state, full, TaskKind::Clone, move |env, task| {
-        installer::clone(env, task, owner, name)
+    start_task(&app, &state, full, TaskKind::Clone, move |env, task| async move {
+        if prereqs {
+            with_prereqs(&env, &task, &owner, &name, true).await?;
+        }
+        installer::clone(env, task, owner, name).await
     })
 }
 

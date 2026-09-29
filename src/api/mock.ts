@@ -331,6 +331,8 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
     }
     case 'uninstall_repo':
       return out(startTask(find(args.fullName as string), 'uninstall'));
+    case 'missing_prereqs':
+      return out([]);
     case 'clone_repo':
       return out(startTask(find(args.owner + '/' + args.name), 'clone'));
     case 'cancel_task':

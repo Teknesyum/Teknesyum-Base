@@ -46,6 +46,12 @@ pub struct Manifest {
     pub icon: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub screenshot: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub full: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub requires: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

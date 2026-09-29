@@ -13,6 +13,17 @@ export type Manifest = {
   silentArgs?: string[];
   icon?: string;
   screenshot?: string;
+  full?: string;
+  requires?: string[];
+  catalog?: {
+    category?: string;
+    tags?: { tr: string[]; en: string[] };
+    summary?: { tr: string; en: string };
+    points?: { tr: string[]; en: string[] };
+    uses?: { tr: string[]; en: string[] };
+    lead?: { tr: string; en: string };
+    fork?: { by: string; repo: string; play?: string };
+  };
 };
 
 export type ReleaseAsset = {

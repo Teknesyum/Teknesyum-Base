@@ -91,7 +91,7 @@ export function GithubButton({ repo, tabIndex }: { repo: Repo; tabIndex?: number
 
 export function ForkNote({ repo, full }: { repo: Repo; full?: boolean }) {
   const { t } = useI18n();
-  const fork = forkOf(repo.name);
+  const fork = forkOf(repo);
   if (!fork) return null;
   return (
     <div className="fork-note">
@@ -179,6 +179,7 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
   const liveShot = remoteShot && remoteShot !== brokenShot ? remoteShot : undefined;
   const shot = liveShot ?? appShot(repo.name);
   const [viewer, setViewer] = useState<HTMLElement | null>(null);
+  const remoteFull = useRepoMedia(repo, 'full', !!viewer);
   const shotAlt = t('library.shot', { name: repo.name });
   return (
     <article
@@ -208,7 +209,7 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
           <img className="card__shot-img" src={shot} alt="" loading="lazy" onError={() => liveShot && setBrokenShot(liveShot)} />
         </button>
       ) : null}
-      {shot ? <ImageDialog open={!!viewer} src={liveShot ?? appShotFull(repo.name) ?? shot} alt={shotAlt} returnTo={viewer} onClose={() => setViewer(null)} /> : null}
+      {shot ? <ImageDialog open={!!viewer} src={remoteFull ?? liveShot ?? appShotFull(repo.name) ?? shot} alt={shotAlt} returnTo={viewer} onClose={() => setViewer(null)} /> : null}
       <Uses repo={repo} className="card__desc" />
       {tags.length ? (
         <p className="card__tags" aria-label={t('library.tags')}>

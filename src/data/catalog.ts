@@ -29,17 +29,26 @@ function hidden(repo: Repo): boolean {
   return name === '.github' || name === repo.owner.toLocaleLowerCase('tr');
 }
 
+function entryOf(repo: Repo): Entry | undefined {
+  const base = entries[repo.name];
+  const own = repo.manifest?.catalog;
+  if (!own) return base;
+  const merged = { ...base, ...own } as Entry;
+  return merged.summary && merged.category ? merged : base;
+}
+
 function enrichRepo(repo: Repo, lang: 'tr' | 'en'): Repo {
-  const e = entries[repo.name];
+  const e = entryOf(repo);
   if (!e) return { ...repo, category: CATEGORIES.includes(repo.category) ? repo.category : 'other', summary: repo.description, tags: repo.topics.slice(0, 5) };
-  return { ...repo, category: e.category, summary: e.summary[lang] || repo.description, points: e.points?.[lang], uses: e.uses?.[lang], lead: e.lead?.[lang], tags: e.tags[lang] ?? [] };
+  return { ...repo, category: e.category, summary: e.summary[lang] || repo.description, points: e.points?.[lang], uses: e.uses?.[lang], lead: e.lead?.[lang], tags: e.tags?.[lang] ?? [] };
 }
 
-export function mediaPath(repo: Repo, kind: 'icon' | 'shot'): string | undefined {
-  const own = kind === 'icon' ? repo.manifest?.icon : repo.manifest?.screenshot;
-  return own?.trim() || entries[repo.name]?.[kind];
+export function mediaPath(repo: Repo, kind: 'icon' | 'shot' | 'full'): string | undefined {
+  const m = repo.manifest;
+  const own = kind === 'icon' ? m?.icon : kind === 'shot' ? m?.screenshot : m?.full;
+  return own?.trim() || (kind === 'full' ? undefined : entries[repo.name]?.[kind]);
 }
 
-export function forkOf(name: string): Fork | undefined {
-  return entries[name]?.fork;
+export function forkOf(repo: Repo): Fork | undefined {
+  return repo.manifest?.catalog?.fork ?? entries[repo.name]?.fork;
 }

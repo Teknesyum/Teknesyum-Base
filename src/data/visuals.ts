@@ -35,8 +35,8 @@ export function appShotFull(name: string): string | undefined {
 
 const live = new Map<string, Promise<string | null>>();
 
-export function useRepoMedia(repo: Repo, kind: 'icon' | 'shot'): string | undefined {
-  const path = mediaPath(repo, kind);
+export function useRepoMedia(repo: Repo, kind: 'icon' | 'shot' | 'full', enabled = true): string | undefined {
+  const path = enabled ? mediaPath(repo, kind) : undefined;
   const key = path ? repo.fullName + '|' + path + '|' + repo.pushedAt : '';
   const [url, setUrl] = useState<{ key: string; url: string | null }>();
   useEffect(() => {

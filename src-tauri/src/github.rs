@@ -24,6 +24,7 @@ const UI_OWNER: &str = "Teknesyum";
 const UI_REPO: &str = "Teknesyum-UI";
 const CORE_REPO: &str = "Teknesyum-Core";
 const MEDIA_MAX: usize = 20 * 1024 * 1024;
+pub const MANIFEST_DIR_PATH: &str = ".teknesyum/teknesyum.json";
 pub const INDEX_URL: &str = "https://raw.githubusercontent.com/Teknesyum/Teknesyum-Base/katalog/index.json";
 const INDEX_MAX_AGE: i64 = 6 * 3600;
 
@@ -611,23 +612,12 @@ impl GitHub {
     }
 
     pub async fn manifest(&self, owner: &str, name: &str, private: bool) -> AppResult<Option<Manifest>> {
-        let r = if self.token.is_some() || private {
-            self.get(
-                &format!("{API}/repos/{owner}/{name}/contents/teknesyum.json"),
-                ACCEPT_RAW,
-            )
-            .await?
-        } else {
-            self.get(
-                &format!("https://raw.githubusercontent.com/{owner}/{name}/HEAD/teknesyum.json"),
-                "text/plain",
-            )
-            .await?
-        };
-        if r.status == 404 {
-            return Ok(None);
+        for path in [MANIFEST_DIR_PATH, "teknesyum.json"] {
+            if let Some(body) = self.repo_file(owner, name, private, path).await? {
+                return Ok(parse_manifest(&body));
+            }
         }
-        Ok(parse_manifest(&r.body))
+        Ok(None)
     }
 
     async fn repo_file(&self, owner: &str, name: &str, private: bool, path: &str) -> AppResult<Option<String>> {

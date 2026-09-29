@@ -921,7 +921,8 @@ pub fn spawn_clone_process(env: &Env, owner: &str, name: &str, dest: &Path) -> A
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::piped());
-    if let Some(token) = env.gh.token() {
+    let repo_key = crate::repokey::get(&format!("{owner}/{name}"));
+    if let Some(token) = repo_key.as_deref().or(env.gh.token()) {
         use base64::Engine;
         let basic = base64::engine::general_purpose::STANDARD.encode(format!("x-access-token:{token}"));
         cmd.env("GIT_CONFIG_COUNT", "1")
@@ -1035,6 +1036,13 @@ pub async fn clone(env: Env, task: Task, owner: String, name: String) -> AppResu
     tauri::async_runtime::spawn_blocking(move || run_clone_blocking(e2, t2, o2, n2, d2))
         .await
         .map_err(|e| AppError::unknown(e.to_string()))??;
+    let full = format!("{owner}/{name}");
+    if let Some(key) = crate::repokey::get(&full) {
+        match crate::repokey::grant_git(&full, &key, &dest) {
+            Ok(()) => task.log(TaskStep::Install, 95, "Depo anahtarı bu klona verildi; git pull yalnız bu anahtarla çalışır"),
+            Err(e) => task.log(TaskStep::Install, 95, &format!("Depo anahtarı klona verilemedi: {}", e.message)),
+        }
+    }
     let tag = env
         .gh
         .latest_release(&owner, &name)

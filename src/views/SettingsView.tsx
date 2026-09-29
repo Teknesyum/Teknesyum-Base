@@ -9,6 +9,7 @@ import { useToast } from '../ui/Toasts';
 import type { Opener } from './actions';
 import './page.css';
 import './settings.css';
+import { RepoKeys } from './RepoKeys';
 
 type Props = { onClearToken: (o: Opener) => void };
 
@@ -195,6 +196,8 @@ export function SettingsView({ onClearToken }: Props) {
           </div>
         </form>
       </section>
+
+      {store.info?.edition === 'pro' ? <RepoKeys /> : null}
 
       <section className="group divider-top" aria-labelledby={id + '-dir'}>
         <h2 id={id + '-dir'} className="group__title">

@@ -580,6 +580,44 @@ async fn with_prereqs(env: &Env, task: &installer::Task, owner: &str, name: &str
 }
 
 #[tauri::command]
+pub async fn repo_keys(state: State<'_, AppState>, full_names: Vec<String>) -> AppResult<Vec<crate::repokey::KeyStatus>> {
+    let http = state.http.clone();
+    let checks = full_names.into_iter().map(|full_name| {
+        let http = http.clone();
+        async move {
+            let state = crate::repokey::check(&http, &full_name).await;
+            crate::repokey::KeyStatus { full_name, state }
+        }
+    });
+    Ok(futures_util::future::join_all(checks).await)
+}
+
+#[tauri::command]
+pub async fn set_repo_key(state: State<'_, AppState>, full_name: String, token: String) -> AppResult<crate::repokey::KeyStatus> {
+    let (owner, name) = split_full(&full_name)?;
+    let full_name = format!("{owner}/{name}");
+    let token = token.trim().to_string();
+    if token.is_empty() || token.chars().any(char::is_whitespace) {
+        return Err(AppError::new(ErrorCode::Auth, "Anahtar boş ya da geçersiz."));
+    }
+    crate::repokey::set(&full_name, &token)?;
+    let key_state = crate::repokey::check(&state.http, &full_name).await;
+    if matches!(key_state, crate::repokey::KeyState::Invalid | crate::repokey::KeyState::NoAccess) {
+        crate::repokey::clear(&full_name)?;
+    }
+    Ok(crate::repokey::KeyStatus { full_name, state: key_state })
+}
+
+#[tauri::command]
+pub async fn clear_repo_key(full_name: String) -> AppResult<()> {
+    let (owner, name) = split_full(&full_name)?;
+    let full_name = format!("{owner}/{name}");
+    crate::repokey::clear(&full_name)?;
+    crate::repokey::revoke_git(&full_name);
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn missing_prereqs(
     state: State<'_, AppState>,
     owner: String,

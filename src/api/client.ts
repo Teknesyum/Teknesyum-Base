@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { commands, taskEvent, updateEvent } from './types';
-import type { AppError, AppInfo, Installed, PrereqInfo, Release, RepoList, Settings, TaskEvent, UpdateState } from './types';
+import type { AppError, AppInfo, Installed, KeyStatus, PrereqInfo, Release, RepoList, Settings, TaskEvent, UpdateState } from './types';
 
 export const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -37,6 +37,9 @@ export const api = {
   install: (owner: string, name: string, withClaude?: boolean, prereqs?: boolean) => call<string>(commands.install, { owner, name, withClaude: withClaude ?? null, prereqs: prereqs ?? null }),
   uninstall: (fullName: string) => call<string>(commands.uninstall, { fullName }),
   clone: (owner: string, name: string, prereqs?: boolean) => call<string>(commands.clone, { owner, name, prereqs: prereqs ?? null }),
+  repoKeys: (fullNames: string[]) => call<KeyStatus[]>(commands.repoKeys, { fullNames }),
+  setRepoKey: (fullName: string, token: string) => call<KeyStatus>(commands.setRepoKey, { fullName, token }),
+  clearRepoKey: (fullName: string) => call<void>(commands.clearRepoKey, { fullName }),
   missingPrereqs: (owner: string, name: string, clone: boolean) => call<PrereqInfo[]>(commands.missingPrereqs, { owner, name, clone }),
   cancelTask: (taskId: string) => call<void>(commands.cancelTask, { taskId }),
   launch: (fullName: string) => call<void>(commands.launch, { fullName }),

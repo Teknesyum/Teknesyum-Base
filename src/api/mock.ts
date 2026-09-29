@@ -50,7 +50,7 @@ const repos: Repo[] = seeds.map((s) => ({
   name: s.name,
   fullName: 'Teknesyum/' + s.name,
   description: s.description,
-  private: false,
+  private: location.search.includes('pro') && s.stars % 3 === 0,
   archived: !!s.archived,
   fork: !!s.fork,
   stars: s.stars,
@@ -275,7 +275,7 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
   const out = (v: unknown) => v as T;
   switch (cmd) {
     case 'app_info':
-      return out({ edition: 'normal', version: '0.1.0', gitAvailable: true } satisfies AppInfo);
+      return out({ edition: location.search.includes('pro') ? 'pro' : 'normal', version: '0.1.0', gitAvailable: true } satisfies AppInfo);
     case 'list_repos': {
       if (durum === 'yukleniyor') await new Promise(() => {});
       if (durum === 'hata') {
@@ -331,6 +331,12 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
     }
     case 'uninstall_repo':
       return out(startTask(find(args.fullName as string), 'uninstall'));
+    case 'repo_keys':
+      return out((args.fullNames as string[]).map((fullName) => ({ fullName, state: 'missing' })));
+    case 'set_repo_key':
+      return out({ fullName: args.fullName, state: 'ok' });
+    case 'clear_repo_key':
+      return out(undefined);
     case 'missing_prereqs':
       return out([]);
     case 'clone_repo':

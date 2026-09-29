@@ -391,6 +391,22 @@
     "play": "Open {by}'s version",
     "repo": "{by}'s repository"
   },
+  "repoKeys": {
+    "title": "Repository Keys",
+    "intro": "Each private repository installs with its own non-expiring key that sees only that repository. Pro's main key is never handed to an install.",
+    "repo": "Repository",
+    "token": "Key for this repository",
+    "create": "Create on GitHub",
+    "help": "“Create on GitHub” opens the page with name, no expiration and read-only access filled in. Under Repository access pick only this repository, press Generate token and paste the key here. The key is written only to Windows Credential Manager.",
+    "saveFailed": "Key could not be saved",
+    "states": {
+      "missing": "No key",
+      "ok": "Key valid",
+      "invalid": "Key must be renewed",
+      "no-access": "Key cannot see this repository",
+      "unknown": "Could not check"
+    }
+  },
   "prereq": {
     "title": "Install these first for {name}?",
     "body": "This program needs the following and they were not found on this computer:",

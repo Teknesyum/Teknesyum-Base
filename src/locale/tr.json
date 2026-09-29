@@ -391,6 +391,22 @@
     "play": "{by}'ın sürümünü aç",
     "repo": "{by}'ın deposu"
   },
+  "repoKeys": {
+    "title": "Depo Anahtarları",
+    "intro": "Her private depo kendi süresiz, yalnız o depoya bakan anahtarıyla kurulur. Pro'nun ana anahtarı hiçbir kuruluma verilmez.",
+    "repo": "Depo",
+    "token": "Bu depoya özel anahtar",
+    "create": "GitHub'da oluştur",
+    "help": "“GitHub'da oluştur” sayfası adı, süresizliği ve salt-okur izni doldurulmuş açılır. Repository access bölümünde yalnız bu depoyu seç, Generate token'a bas ve anahtarı buraya yapıştır. Anahtar yalnız Windows Kimlik Bilgisi Yöneticisi'ne yazılır.",
+    "saveFailed": "Anahtar kaydedilemedi",
+    "states": {
+      "missing": "Anahtar yok",
+      "ok": "Anahtar geçerli",
+      "invalid": "Anahtar yenilenmeli",
+      "no-access": "Anahtar bu depoyu görmüyor",
+      "unknown": "Denetlenemedi"
+    }
+  },
   "prereq": {
     "title": "{name} için önce şunlar kurulsun mu?",
     "body": "Bu program çalışmak için aşağıdakilere ihtiyaç duyuyor ve bu bilgisayarda bulunamadı:",

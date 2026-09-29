@@ -121,6 +121,9 @@ export type AppInfo = {
   gitAvailable: boolean;
 };
 
+export type KeyState = 'missing' | 'ok' | 'invalid' | 'no-access' | 'unknown';
+export type KeyStatus = { fullName: string; state: KeyState };
+
 export type PrereqInfo = { id: string; label: string };
 
 export type TaskStep = 'resolve' | 'download' | 'verify' | 'install' | 'shortcut' | 'done';
@@ -156,6 +159,9 @@ export const commands = {
   uninstall: 'uninstall_repo',
   clone: 'clone_repo',
   missingPrereqs: 'missing_prereqs',
+  repoKeys: 'repo_keys',
+  setRepoKey: 'set_repo_key',
+  clearRepoKey: 'clear_repo_key',
   cancelTask: 'cancel_task',
   launch: 'launch_installed',
   setLocalTags: 'set_local_tags',

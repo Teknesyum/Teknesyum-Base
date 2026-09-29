@@ -1,0 +1,88 @@
+{
+  "icon": ".teknesyum/icon.png",
+  "screenshot": ".teknesyum/shot.jpg",
+  "full": ".teknesyum/full.jpg",
+  "catalog": {
+    "category": "system",
+    "tags": {
+      "tr": [
+        "uygulama-mağazası",
+        "github",
+        "kurulum",
+        "güncelleme"
+      ],
+      "en": [
+        "app-store",
+        "github",
+        "installer",
+        "updates"
+      ]
+    },
+    "summary": {
+      "tr": "Bir GitHub hesabında yayımlanan programları tek listede gösteren, kuran, güncelleyen ve kaldıran Windows uygulaması. Her deponun yıldızını, son sürümünü, lisansını ve README'sini gösterir; sürümde Windows derlemesi varsa indirir, doğrular ve yönetici izni istemeden kullanıcı klasörüne kurar. Kurulu sürümü ve yeni sürüm olup olmadığını listede işaretler, depoları kategori, dil ya da kendi etiketlerinize göre gruplar. Ağ yokken son listeyi önbellekten gösterir. GitHub'a hiçbir şey yazmaz.",
+      "en": "A Windows app that lists the programs published in a GitHub account and installs, updates and removes them. It shows each repository's stars, latest release, licence and README; when a release carries a Windows build, it downloads it, verifies it and installs it for the current user without asking for admin rights. The list marks what is installed, which version and whether a newer release exists, and groups repositories by category, language or your own tags. The last list is kept for offline use. It never writes to GitHub."
+    },
+    "points": {
+      "tr": [
+        "Bir GitHub hesabının programlarını tek kütüphanede toplar",
+        "Kart ve liste görünümü",
+        "Ad, açıklama ve etikette arama",
+        "Kategori, dil, etiket ve duruma göre süzme",
+        "Yıldız, tarih ya da ada göre sıralama",
+        "Canlı simge ve tam boy ekran görüntüleri",
+        "README ve sürüm geçmişi detay panelinde",
+        "Tek tıkla kurma, güncelleme ve kaldırma",
+        "SHA-256 doğrulamalı indirme",
+        "Kurulu programları tek tıkla açma",
+        "Hepsini güncelle düğmesi",
+        "Masaüstü kısayolu ve GitHub sayfası düğmesi",
+        "Depoyu git ile istediğin klasöre klonlama",
+        "Kendini güncelleyen uygulama",
+        "Çevrimdışıyken son listeyi gösterir",
+        "Birden çok hesap, sistem tepsisine küçülme",
+        "Yönetici izni istemeden kullanıcı kurulumu",
+        "Türkçe ve İngilizce, Windows"
+      ],
+      "en": [
+        "Gathers a GitHub account's programs in one library",
+        "Card and list views",
+        "Search by name, description and tags",
+        "Filter by category, language, tag and state",
+        "Sort by stars, date or name",
+        "Live icons and full-size screenshots",
+        "README and release history in the detail sheet",
+        "One-click install, update and uninstall",
+        "SHA-256 verified downloads",
+        "Open installed programs in one click",
+        "Update-all button",
+        "Desktop shortcut and GitHub page buttons",
+        "Clone a repository with git to any folder",
+        "Updates itself",
+        "Shows the last list while offline",
+        "Several accounts, minimise to tray",
+        "Per-user install without admin rights",
+        "Turkish and English, Windows"
+      ]
+    },
+    "uses": {
+      "tr": [
+        "Hesabın programlarını tek listede gör",
+        "Tek tıkla kur, güncelle, kaldır",
+        "Hepsini tek düğmeyle güncelle",
+        "Arayıp süzerek istediğini bul",
+        "Yönetici izni olmadan kur"
+      ],
+      "en": [
+        "See all programs in one list",
+        "Install, update, remove in one click",
+        "Update everything with one button",
+        "Search and filter to find apps",
+        "Install without admin rights"
+      ]
+    },
+    "lead": {
+      "tr": "GitHub Program Kütüphanesi, Yükleyici, Güncelleyici ve Kaldırıcı",
+      "en": "GitHub Program Library, Installer, Updater and Uninstaller"
+    }
+  }
+}

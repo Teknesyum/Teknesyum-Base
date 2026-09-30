@@ -587,7 +587,9 @@ impl GitHub {
             format!("{API}/users/{account}/repos?per_page=100&type=owner")
         };
         let mut repos: Vec<GhRepo> = self.get_paged(first).await?;
-        if !cfg!(feature = "pro") {
+        if cfg!(feature = "pro") {
+            repos.retain(|r| !r.name.eq_ignore_ascii_case(crate::detect::OWN_REPO));
+        } else {
             repos.retain(|r| !r.private);
         }
         Ok(repos)

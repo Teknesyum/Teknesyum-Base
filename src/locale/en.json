@@ -429,7 +429,8 @@
       "readme-missing": "no README",
       "shot-old": "screenshot older than the latest release",
       "readme-old": "README older than the latest release",
-      "icon-old": "icon is old"
+      "icon-old": "icon is old",
+      "icon-differs": "icon does not match the app's icon"
     }
   }
 }

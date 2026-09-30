@@ -38,7 +38,7 @@ GitHub depoları gösterir ve bir sürümü elle indirmenize izin verir. O kıs�
 - **Kütüphane** — kartlar ya da sık liste; arama, kategori, dil, etiket ve duruma göre süzülür.
 - **Detay paneli** — README, notlarıyla sürüm geçmişi, boyut ve indirme sayısıyla dosyalar.
 - **Kur diyaloğu** — çözümleme, indirme, denetim, kurulum ve kısayol adımlarını izle; istediğin an iptal et.
-- **Tazelik noktası** — her kartta. Simge, ekran görüntüsü ve README önceki sürümden beri değiştiyse yeşil; değilse uyarı halkası, eskiyenler ipucunda yazar.
+- **Tazelik noktası** — her kartta. Simge uygulamanın kendi .ico'suyla aynıysa, ekran görüntüsü ve README önceki sürümden beri değiştiyse yeşil (depoda .ico yoksa simge de tarih kuralına bakar); değilse uyarı halkası, eskiyenler ipucunda yazar.
 - **Kurulu** — başlat, klasörü aç, güncelle ya da kaldır.
 - **Klon kurulumu** — sürümü olmayan depo klonlanır.
 - **Canlı simge ve ekran görüntüleri** — her deponun `.teknesyum/` klasöründen okunur ve önbelleğe alınır; tıklayınca tam çözünürlüklü görsel açılır.

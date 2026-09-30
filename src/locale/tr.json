@@ -429,7 +429,8 @@
       "readme-missing": "README yok",
       "shot-old": "ekran görüntüsü son sürümden eski",
       "readme-old": "README son sürümden eski",
-      "icon-old": "simge eski"
+      "icon-old": "simge eski",
+      "icon-differs": "simge uygulamanın simgesiyle aynı değil"
     }
   }
 }

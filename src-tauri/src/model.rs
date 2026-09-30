@@ -208,6 +208,8 @@ pub struct MediaDates {
     pub readme_at: Option<String>,
     #[serde(default)]
     pub prev_release_at: Option<String>,
+    #[serde(default)]
+    pub icon_differs: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

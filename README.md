@@ -38,7 +38,7 @@ GitHub shows the repositories and lets you download a release by hand. That part
 - **Library** — cards or a dense list, filtered by search, category, language, tag and state.
 - **Detail sheet** — README, release history with notes, assets with size and download count.
 - **Install dialog** — watch resolve, download, verify, install and shortcut steps; cancel at any time.
-- **Freshness dot** — on each card. Green when the icon, screenshot and README have all changed since the previous release; a warning ring otherwise, with the stale items in its tooltip.
+- **Freshness dot** — on each card. Green when the icon matches the app's own .ico and the screenshot and README have changed since the previous release (the icon falls back to that date rule when the repo has no .ico); a warning ring otherwise, with the stale items in its tooltip.
 - **Installed** — launch, open the folder, update or remove.
 - **Clone install** — a repository without a release is cloned instead.
 - **Live icons and screenshots** — read from each repository's `.teknesyum/` folder and cached; a click opens the full-resolution image.

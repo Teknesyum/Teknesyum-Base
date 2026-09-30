@@ -356,6 +356,16 @@ pub fn media_state(dates: &MediaDates) -> MediaState {
     let floor = ts(&dates.prev_release_at);
     let mut stale = Vec::new();
     for (key, at) in [("icon", &dates.icon_at), ("shot", &dates.shot_at), ("readme", &dates.readme_at)] {
+        if key == "icon" && at.is_some() {
+            match dates.icon_differs {
+                Some(true) => {
+                    stale.push("icon-differs".into());
+                    continue;
+                }
+                Some(false) => continue,
+                None => {}
+            }
+        }
         match ts(at) {
             None => stale.push(format!("{key}-missing")),
             Some(t) if floor.is_some_and(|f| t <= f) => stale.push(format!("{key}-old")),
@@ -363,6 +373,47 @@ pub fn media_state(dates: &MediaDates) -> MediaState {
         }
     }
     MediaState { fresh: stale.is_empty(), stale }
+}
+
+pub const ICON_DIFF_LIMIT: f64 = 0.06;
+
+pub fn icon_distance(catalog: &[u8], app_ico: &[u8]) -> Option<f64> {
+    let a = luma32(&ico::IconImage::read_png(catalog).ok()?)?;
+    let dir = ico::IconDir::read(std::io::Cursor::new(app_ico)).ok()?;
+    let entry = dir.entries().iter().max_by_key(|e| e.width())?;
+    let b = luma32(&entry.decode().ok()?)?;
+    Some(a.iter().zip(&b).map(|(x, y)| (x - y).abs()).sum::<f64>() / 1024.0)
+}
+
+fn luma32(img: &ico::IconImage) -> Option<Vec<f64>> {
+    let (w, h) = (img.width() as usize, img.height() as usize);
+    if w < 32 || h < 32 {
+        return None;
+    }
+    let px = img.rgba_data();
+    let mut sum = vec![0.0; 1024];
+    let mut count = vec![0u32; 1024];
+    for y in 0..h {
+        for x in 0..w {
+            let i = (y * w + x) * 4;
+            let alpha = px[i + 3] as f64 / 255.0;
+            let l = (0.299 * px[i] as f64 + 0.587 * px[i + 1] as f64 + 0.114 * px[i + 2] as f64) * alpha / 255.0;
+            let k = (y * 32 / h) * 32 + x * 32 / w;
+            sum[k] += l;
+            count[k] += 1;
+        }
+    }
+    Some(sum.iter().zip(&count).map(|(s, &c)| s / c as f64).collect())
+}
+
+pub fn app_icon_path<'a>(paths: impl IntoIterator<Item = (&'a str, u64)>) -> Option<&'a str> {
+    let skip = ["trash/", "node_modules/", ".teknesyum/", "target/", "bin/", "obj/", "dist/", "tmp/"];
+    paths
+        .into_iter()
+        .filter(|(p, _)| p.to_ascii_lowercase().ends_with(".ico"))
+        .filter(|(p, _)| !skip.iter().any(|s| p.starts_with(s) || p.contains(&format!("/{s}"))))
+        .max_by_key(|(_, size)| *size)
+        .map(|(p, _)| p)
 }
 
 pub fn category(manifest: Option<&Manifest>, topics: &[String], language: Option<&str>) -> String {
@@ -824,11 +875,20 @@ mod tests {
     #[test]
     fn media_state_flags_missing_and_pre_release_files() {
         let at = |s: &str| Some(s.to_string());
-        let all = MediaDates { icon_at: at("2026-09-29T20:00:00Z"), shot_at: at("2026-09-29T20:00:00Z"), readme_at: at("2026-09-30T08:00:00Z"), prev_release_at: at("2026-09-29T15:59:44Z") };
+        let all = MediaDates { icon_at: at("2026-09-29T20:00:00Z"), shot_at: at("2026-09-29T20:00:00Z"), readme_at: at("2026-09-30T08:00:00Z"), prev_release_at: at("2026-09-29T15:59:44Z"), icon_differs: None };
         assert_eq!(media_state(&all), MediaState { fresh: true, stale: vec![] });
         let vidshrink = MediaDates { icon_at: at("2026-09-29T09:57:15Z"), shot_at: at("2026-09-29T09:57:15Z"), ..all.clone() };
         assert_eq!(media_state(&vidshrink).stale, vec!["icon-old", "shot-old"]);
-        assert!(media_state(&MediaDates { prev_release_at: None, ..vidshrink }).fresh);
+        assert!(media_state(&MediaDates { prev_release_at: None, ..vidshrink.clone() }).fresh);
         assert_eq!(media_state(&MediaDates::default()).stale, vec!["icon-missing", "shot-missing", "readme-missing"]);
+        assert_eq!(media_state(&MediaDates { icon_differs: Some(true), ..all.clone() }).stale, vec!["icon-differs"]);
+        assert_eq!(media_state(&MediaDates { icon_differs: Some(false), ..vidshrink.clone() }).stale, vec!["shot-old"]);
+    }
+
+    #[test]
+    fn app_icon_path_skips_catalog_and_trash() {
+        let tree = [(".teknesyum/icon.ico", 900), ("trash/old.ico", 800), ("src/App/Assets/App.ico", 500), ("src/small.ico", 10), ("README.md", 5000)];
+        assert_eq!(app_icon_path(tree), Some("src/App/Assets/App.ico"));
+        assert_eq!(app_icon_path([("a/node_modules/x.ico", 1)]), None);
     }
 }

@@ -218,7 +218,7 @@ struct MemoData {
     #[serde(default)]
     ui: Option<String>,
     #[serde(default)]
-    media_v2: bool,
+    media_v3: bool,
     #[serde(default)]
     media: Option<MediaDates>,
 }
@@ -655,13 +655,53 @@ impl GitHub {
         }
         let icon = manifest.and_then(|m| m.icon.clone()).unwrap_or_else(|| ".teknesyum/icon.png".into());
         let shot = manifest.and_then(|m| m.screenshot.clone()).unwrap_or_else(|| ".teknesyum/shot.jpg".into());
-        let (icon_at, shot_at, readme_at, prev_release_at) = futures_util::join!(
+        let (icon_at, shot_at, readme_at, prev_release_at, icon_differs) = futures_util::join!(
             self.last_commit_at(owner, name, &icon),
             self.last_commit_at(owner, name, &shot),
             self.last_commit_at(owner, name, "README.md"),
             self.prev_release_at(owner, name),
+            self.icon_differs(owner, name, &icon),
         );
-        Some(MediaDates { icon_at, shot_at, readme_at, prev_release_at })
+        Some(MediaDates { icon_at, shot_at, readme_at, prev_release_at, icon_differs })
+    }
+
+    async fn icon_differs(&self, owner: &str, name: &str, icon: &str) -> Option<bool> {
+        let r = self
+            .get(&format!("{API}/repos/{owner}/{name}/git/trees/HEAD?recursive=1"), ACCEPT_JSON)
+            .await
+            .ok()
+            .filter(|r| r.status == 200)?;
+        let v: serde_json::Value = serde_json::from_str(&r.body).ok()?;
+        let items = v.get("tree")?.as_array()?;
+        let app = logic::app_icon_path(items.iter().filter_map(|t| {
+            Some((t.get("path")?.as_str()?, t.get("size").and_then(|s| s.as_u64()).unwrap_or(0)))
+        }))?
+        .to_string();
+        let (catalog, app) = futures_util::join!(self.repo_bytes(owner, name, icon), self.repo_bytes(owner, name, &app));
+        Some(logic::icon_distance(&catalog?, &app?)? > logic::ICON_DIFF_LIMIT)
+    }
+
+    async fn repo_bytes(&self, owner: &str, name: &str, path: &str) -> Option<Vec<u8>> {
+        let path = path.replace(' ', "%20");
+        let url = match &self.token {
+            Some(_) => format!("{API}/repos/{owner}/{name}/contents/{path}"),
+            None => format!("https://raw.githubusercontent.com/{owner}/{name}/HEAD/{path}"),
+        };
+        let mut req = self.http.get(&url).header(USER_AGENT, UA).header(ACCEPT, ACCEPT_RAW).timeout(Duration::from_secs(30));
+        if url.starts_with(API) {
+            req = req.header("X-GitHub-Api-Version", "2022-11-28");
+        }
+        if let Some(token) = &self.token {
+            req = req.header(AUTHORIZATION, format!("Bearer {token}"));
+        }
+        let resp = req.send().await.ok()?;
+        if url.starts_with(API) {
+            self.record_rate(resp.headers());
+        }
+        if !resp.status().is_success() {
+            return None;
+        }
+        resp.bytes().await.ok().map(|b| b.to_vec())
     }
 
     async fn prev_release_at(&self, owner: &str, name: &str) -> Option<String> {
@@ -788,7 +828,7 @@ impl GitHub {
                 let now = chrono::Utc::now().timestamp();
                 let upstream = logic::upstream_of(&owner, &gh.name).is_some();
                 if let Some(m) = store::load_memo::<MemoData>(&memo_file).filter(|_| !upstream) {
-                    if m.data.ui_checked && m.data.media_v2 && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
+                    if m.data.ui_checked && m.data.media_v3 && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
                         return Ok(RepoDetails {
                             gh,
                             release: m.data.release,
@@ -813,7 +853,7 @@ impl GitHub {
                                 manifest: manifest.clone(),
                                 ui_checked: true,
                                 ui: ui.clone(),
-                                media_v2: true,
+                                media_v3: true,
                                 media: media.clone(),
                             },
                         },

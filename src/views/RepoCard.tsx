@@ -10,6 +10,14 @@ import { ImageDialog } from '../ui/Dialog';
 import { useStore } from '../store';
 import { isRunning, primaryOf, uiState, type Opener } from './actions';
 
+function MediaDot({ repo }: { repo: Repo }) {
+  const { t } = useI18n();
+  const media = repo.media;
+  if (!media) return null;
+  const label = media.fresh ? t('media.fresh') : t('media.stale', { list: media.stale.map((k) => t('media.items.' + k)).join(', ') });
+  return <span className="card__media" role="img" data-state={media.fresh ? 'fresh' : 'stale'} aria-label={label} title={label} />;
+}
+
 export function AppIcon({ repo }: { repo: Repo }) {
   const { t } = useI18n();
   const name = repo.name;
@@ -199,7 +207,16 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
                 {repo.name}
               </button>
             </h3>
-            {repo.lead ? <p className="card__lead">{repo.lead}</p> : null}
+            {repo.lead ? (
+              <p className="card__lead">
+                <MediaDot repo={repo} />
+                {repo.lead}
+              </p>
+            ) : repo.media ? (
+              <span className="card__lead card__lead--rule">
+                <MediaDot repo={repo} />
+              </span>
+            ) : null}
           </div>
           <span className="card__category">{t('category.' + repo.category)}</span>
         </div>

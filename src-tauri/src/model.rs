@@ -107,6 +107,8 @@ pub struct Repo {
     pub ui_version: Option<String>,
     #[serde(default)]
     pub plugin: Option<String>,
+    #[serde(default)]
+    pub media: Option<MediaState>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -149,6 +151,7 @@ pub struct AppInfo {
     pub edition: Edition,
     pub version: String,
     pub git_available: bool,
+    pub kare: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -192,4 +195,22 @@ pub struct TaskEvent {
     pub status: TaskStatus,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub log_line: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaDates {
+    #[serde(default)]
+    pub icon_at: Option<String>,
+    #[serde(default)]
+    pub shot_at: Option<String>,
+    #[serde(default)]
+    pub readme_at: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaState {
+    pub fresh: bool,
+    pub stale: Vec<String>,
 }

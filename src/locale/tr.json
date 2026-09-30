@@ -416,5 +416,17 @@
     "title": "Önce Claude Code kurulsun mu?",
     "body": "{name} bir Claude Code eklentisi ve bu bilgisayarda Claude Code bulunamadı. Base önce Claude Code'u winget ile kurar, ardından eklentiyi ekler.",
     "confirm": "Claude Code ile kur"
+  },
+  "media": {
+    "fresh": "Simge, ekran görüntüsü ve README güncel",
+    "stale": "Güncellenmeli: {list}",
+    "items": {
+      "icon-missing": "simge yok",
+      "shot-missing": "ekran görüntüsü yok",
+      "readme-missing": "README yok",
+      "shot-old": "ekran görüntüsü son sürümden eski",
+      "readme-old": "README son sürümden eski",
+      "icon-old": "simge eski"
+    }
   }
 }

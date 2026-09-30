@@ -75,6 +75,7 @@ export type Repo = {
   lead?: string;
   tags?: string[];
   uiVersion?: string | null;
+  media?: { fresh: boolean; stale: string[] } | null;
   plugin?: string | null;
 };
 
@@ -119,6 +120,7 @@ export type AppInfo = {
   edition: Edition;
   version: string;
   gitAvailable: boolean;
+  kare?: string | null;
 };
 
 export type KeyState = 'missing' | 'ok' | 'invalid' | 'no-access' | 'unknown';

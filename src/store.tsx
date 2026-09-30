@@ -66,7 +66,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const dialogRef = useRef<string | null>(null);
   const langRef = useRef<'tr' | 'en'>('tr');
   dialogRef.current = dialogFor;
-  langRef.current = settings?.language ?? 'tr';
+  const kareLang = info?.kare?.split('@')[1];
+  const shownLang = kareLang === 'en' || kareLang === 'tr' ? kareLang : (settings?.language ?? 'tr');
+  langRef.current = shownLang;
 
   const refreshInstalled = useCallback(async () => {
     try {
@@ -172,7 +174,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [fail],
   );
 
-  const shownList = useMemo(() => enrich(list, settings?.language ?? 'tr'), [list, settings?.language]);
+  const shownList = useMemo(() => enrich(list, shownLang), [list, shownLang]);
 
   const value = useMemo<Store>(
     () => ({

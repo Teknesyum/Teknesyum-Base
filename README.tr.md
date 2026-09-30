@@ -38,12 +38,16 @@ GitHub depoları gösterir ve bir sürümü elle indirmenize izin verir. O kıs�
 - **Kütüphane** — kartlar ya da sık liste; arama, kategori, dil, etiket ve duruma göre süzülür.
 - **Detay paneli** — README, notlarıyla sürüm geçmişi, boyut ve indirme sayısıyla dosyalar.
 - **Kur diyaloğu** — çözümleme, indirme, denetim, kurulum ve kısayol adımlarını izle; istediğin an iptal et.
+- **Tazelik noktası** — her kartta. Simge, ekran görüntüsü ve README son sürüme göre güncelse yeşil; değilse uyarı halkası.
 - **Kurulu** — başlat, klasörü aç, güncelle ya da kaldır.
-- **Canlı simge ve ekran görüntüleri** — her depodan çekilir ve önbelleğe alınır; tıklayınca tam çözünürlüklü görsel açılır.
+- **Klon kurulumu** — sürümü olmayan depo klonlanır.
+- **Canlı simge ve ekran görüntüleri** — her deponun `.teknesyum/` klasöründen okunur ve önbelleğe alınır; tıklayınca tam çözünürlüklü görsel açılır.
 - **Masaüstü kısayolu ve GitHub sayfası** — karttan, ayrıntı panelinden ya da Kurulu sekmesinden tek tıkla.
 - **Eklenti sürümleri** — Teknesyum Core ve Teknesyum UI'ın son sürümleri durum çubuğunda.
 - **Kendi hesabın** — Base'i herhangi bir GitHub kullanıcısına ya da kuruluşuna, ek hesaplarla birlikte yönelt.
 - **Çevrimdışı önbellek** — son liste saklanır; ağ yokken yaşıyla birlikte gösterilir.
+- **Kendini güncelleme** — Base her açılıştan 10 saniye sonra, sonra saatte bir denetler. Güncelleme sessizce indirilir ve sonraki açılışta uygulanır. Sürüm başlık çubuğunda soluk görünür.
+- **İki derleme** — normal derleme açık depoları listeler. Pro derleme özel depoları da listeler.
 
 ## Yapmadıkları
 
@@ -61,11 +65,11 @@ WebView2 gerekir; Windows 10 ve 11'de genelde vardır, yoksa kurulum dosyası in
 
 ## Nasıl çalışır
 
-Base, GitHub REST API'den hesabın depolarını, sonra her biri için son on sürümünü ve varsa `teknesyum.json` dosyasını ister. Token olmadan GitHub saatte 60 isteğe izin verir; 16 depoluk ilk yenileme yaklaşık 17 istek harcar. Sonrasında Base saklanan ETag değerini gönderir, son gönderimi değişmeyen bir deponun sürüm ve manifest bilgisini altı saate kadar yeniden kullanır; ikinci yenileme 1 istek tutar. Sınır dolduğunda önbellekteki listeyi, sınırın sıfırlanacağı saatle birlikte göstermeye devam eder. Kişisel bir token sınırı 5.000'e çıkarır ve dosyada değil Windows Kimlik Bilgileri Yöneticisi'nde saklanır.
+Base, GitHub REST API'den hesabın depolarını, sonra her biri için son on sürümünü ve varsa `teknesyum.json` dosyasını ister. Token olmadan GitHub saatte 60 isteğe izin verir; 16 depoluk ilk yenileme yaklaşık 17 istek harcar. Sonrasında Base saklanan ETag değerini gönderir, son gönderimi değişmeyen bir deponun sürüm ve manifest bilgisini altı saate kadar yeniden kullanır; ikinci yenileme 1 istek tutar. Sınır dolduğunda önbellekteki listeyi, sınırın sıfırlanacağı saatle birlikte göstermeye devam eder. Normal derlemede kişisel bir token sınırı 5.000'e çıkarır ve dosyada değil Windows Kimlik Bilgileri Yöneticisi'nde saklanır.
 
 Kurmak için Base manifestte adı geçen dosyayı, yoksa uzantısına göre ilk Windows dosyasını seçer. Geçici bir dosyaya indirir, sürüm bir sağlama dosyası yayımlıyorsa SHA-256'yı denetler, açar ya da çalıştırır ve yerleştirdiğini kaydeder. Güncelleme bu kaydı değiştirir; kaldırma yalnız kaydedileni siler.
 
-Bir depo kökündeki `teknesyum.json` ile kendini tanıtabilir:
+Bir depo `.teknesyum/` klasörüyle kendini tanıtabilir: `teknesyum.json` (manifest), `icon.png`, `shot.jpg` (ekran görüntüsü) ve `full.jpg` (tam çözünürlüklü görsel). Base bunu her depodan canlı okur. GitHub Actions'ın saatte bir oluşturduğu katalog dizini yedek olarak kullanılır. Örnek `teknesyum.json`:
 
 ```json
 {
@@ -81,9 +85,9 @@ Bir depo kökündeki `teknesyum.json` ile kendini tanıtabilir:
 
 | Ekran | Ne gösterir |
 |---|---|
-| ![Kart görünümünde kütüphane](assets/screens/library.tr.png) | Kütüphane: yıldızı, son sürümü ve kurulum durumuyla her depo. |
+| ![Kart görünümünde kütüphane](assets/screens/library.tr.png) | Kütüphane: yıldızı, son sürümü, kurulum durumu ve tazelik noktasıyla her depo. |
 | ![Detay paneli](assets/screens/detail.tr.png) | Tek depo: README, sürümler, dosyalar. |
-| ![Kur diyaloğu](assets/screens/install.tr.png) | Kur diyaloğu: beş adım, hedef klasör ve istek sınırı doluyken çıkan not. |
+| ![Kurulu](assets/screens/installed.tr.png) | Kurulu: başlat, klasörü aç, güncelle, kaldır. |
 | ![Ayarlar](assets/screens/settings.tr.png) | Hesap, klasörler, token ve dil. |
 
 ## Geliştirme
@@ -104,7 +108,9 @@ npm run tauri build
 
 Arka uç testleri `src-tauri/` içinde `cargo test` ile koşar. Testleri gerçek kurulum klasörlerinden uzak tutmak için `TEKNESYUM_BASE_ROOT`'u geçici bir klasöre ayarlayın.
 
-Pro derleme (`--features pro --config src-tauri/tauri.pro.conf.json`) özel depoları da listeler; yazarın kendi makineleri içindir ve burada yayımlanmaz.
+`scripts/kare.ps1` ekran görüntülerini derlenmiş exe'den alır (`--kare=<görünüm>@<dil>`). `scripts/release.ps1`, `.teknesyum/shot.jpg`, `.teknesyum/full.jpg` ya da README.md son sürüm etiketinden beri güncellenmediyse yayımlamayı reddeder.
+
+Pro derleme (`--features pro --config src-tauri/tauri.pro.conf.json`) özel depoları salt okunur bir token'la listeler. Anahtarlar exe'nin içine gömülüdür; Kimlik Bilgileri Yöneticisi'ne hiçbir şey yazılmaz. Depoya özel anahtar, başlatılan programa yalnız o oturum için ödünç verilir. Yazarın kendi makineleri içindir ve burada yayımlanmaz.
 
 Tasarım token'ları ve pencere kabuğu Teknesyum UI'dan gelir; değerler `teknesyum-ui/theme.tokens.json` içindedir.
 

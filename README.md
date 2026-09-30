@@ -38,12 +38,16 @@ GitHub shows the repositories and lets you download a release by hand. That part
 - **Library** — cards or a dense list, filtered by search, category, language, tag and state.
 - **Detail sheet** — README, release history with notes, assets with size and download count.
 - **Install dialog** — watch resolve, download, verify, install and shortcut steps; cancel at any time.
+- **Freshness dot** — on each card. Green when the icon, screenshot and README are up to date against the latest release; a warning ring otherwise.
 - **Installed** — launch, open the folder, update or remove.
-- **Live icons and screenshots** — pulled from each repository and cached; a click opens the full-resolution image.
+- **Clone install** — a repository without a release is cloned instead.
+- **Live icons and screenshots** — read from each repository's `.teknesyum/` folder and cached; a click opens the full-resolution image.
 - **Desktop shortcut and GitHub page** — one click each, from the card, the detail sheet or the Installed tab.
 - **Plugin versions** — the latest Teknesyum Core and Teknesyum UI versions sit in the status bar.
 - **Your own account** — point Base at any GitHub user or organisation, plus extra accounts.
 - **Offline cache** — the last list is kept and shown when the network is down, with its age.
+- **Self-update** — Base checks 10 seconds after every start, then hourly. An update is downloaded silently and applied on the next launch. The version sits muted in the title bar.
+- **Two builds** — the normal build lists public repositories. The Pro build also lists private ones.
 
 ## What it doesn't do
 
@@ -61,11 +65,11 @@ WebView2 is required; Windows 10 and 11 normally have it, and the installer fetc
 
 ## How it works
 
-Base calls the GitHub REST API for the account's repositories, then for each one its latest ten releases and its `teknesyum.json`, if any. Without a token GitHub allows 60 requests an hour; the first refresh of 16 repositories costs about 17. After that Base sends the stored ETag, reuses the releases and manifest of a repository whose last push has not changed, for up to six hours, and a second refresh costs 1. When the limit is reached it keeps showing the cached list with the time the limit resets. A personal token raises the limit to 5,000 and is kept in Windows Credential Manager, never in a file.
+Base calls the GitHub REST API for the account's repositories, then for each one its latest ten releases and its `teknesyum.json`, if any. Without a token GitHub allows 60 requests an hour; the first refresh of 16 repositories costs about 17. After that Base sends the stored ETag, reuses the releases and manifest of a repository whose last push has not changed, for up to six hours, and a second refresh costs 1. When the limit is reached it keeps showing the cached list with the time the limit resets. In the normal build a personal token raises the limit to 5,000 and is kept in Windows Credential Manager, never in a file.
 
 To install, Base picks the asset named in the manifest, or the first Windows asset by extension. It downloads to a temporary file, checks the SHA-256 when the release publishes one, extracts or runs it, and records what it placed. Updating replaces that record; removing deletes only what was recorded.
 
-A repository can describe itself with a `teknesyum.json` at its root:
+A repository can describe itself with a `.teknesyum/` folder: `teknesyum.json` (the manifest), `icon.png`, `shot.jpg` (screenshot) and `full.jpg` (full-resolution image). Base reads it live from each repository. A catalog index, built hourly by GitHub Actions, is used as a fallback. Example `teknesyum.json`:
 
 ```json
 {
@@ -81,9 +85,9 @@ A repository can describe itself with a `teknesyum.json` at its root:
 
 | Screen | What it shows |
 |---|---|
-| ![Library in card view](assets/screens/library.png) | The library: every repository with stars, latest release and install state. |
+| ![Library in card view](assets/screens/library.png) | The library: every repository with stars, latest release, install state and freshness dot. |
 | ![Detail sheet](assets/screens/detail.png) | One repository: README, releases, assets. |
-| ![Install dialog](assets/screens/install.png) | The install dialog: five steps, the target folder, and a note while the request limit is reached. |
+| ![Installed](assets/screens/installed.png) | Installed: launch, open the folder, update, remove. |
 | ![Settings](assets/screens/settings.png) | Account, folders, token and language. |
 
 ## Development
@@ -104,7 +108,9 @@ Frontend: React 19, TypeScript and Vite in `src/`. Backend: Rust and Tauri 2 in 
 
 Backend tests run with `cargo test` in `src-tauri/`. Set `TEKNESYUM_BASE_ROOT` to a temporary folder to keep tests out of your real install folders.
 
-The Pro build (`--features pro --config src-tauri/tauri.pro.conf.json`) also lists private repositories; it is for the author's own machines and is not published here.
+`scripts/kare.ps1` captures the screenshots from the built exe (`--kare=<view>@<lang>`). `scripts/release.ps1` refuses to publish when `.teknesyum/shot.jpg`, `.teknesyum/full.jpg` or README.md were not updated since the last release tag.
+
+The Pro build (`--features pro --config src-tauri/tauri.pro.conf.json`) also lists private repositories with a read-only token. The keys are embedded in the exe; nothing is written to Credential Manager. A per-repository key is lent to a launched program for that session only. It is for the author's own machines and is not published here.
 
 Design tokens and the window shell come from Teknesyum UI; values live in `teknesyum-ui/theme.tokens.json`.
 

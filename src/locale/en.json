@@ -416,5 +416,17 @@
     "title": "Install Claude Code first?",
     "body": "{name} is a Claude Code plugin and Claude Code was not found on this computer. Base installs Claude Code with winget first, then adds the plugin.",
     "confirm": "Install with Claude Code"
+  },
+  "media": {
+    "fresh": "Icon, screenshot and README are up to date",
+    "stale": "Needs updating: {list}",
+    "items": {
+      "icon-missing": "no icon",
+      "shot-missing": "no screenshot",
+      "readme-missing": "no README",
+      "shot-old": "screenshot older than the latest release",
+      "readme-old": "README older than the latest release",
+      "icon-old": "icon is old"
+    }
   }
 }

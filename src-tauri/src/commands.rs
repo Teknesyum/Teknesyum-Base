@@ -312,6 +312,7 @@ pub async fn app_info() -> AppResult<AppInfo> {
         },
         version: env!("CARGO_PKG_VERSION").to_string(),
         git_available: git,
+        kare: std::env::args().find_map(|a| a.strip_prefix("--kare=").map(str::to_string)),
     })
 }
 

@@ -436,6 +436,30 @@ article.row > .card__foot {
   margin-block-end: var(--tk-sp-1);
 }
 
+.card__lead.card__lead--rule {
+  flex: none;
+  align-self: stretch;
+  min-block-size: var(--tk-icon-2);
+  padding-inline-start: 0;
+}
+
+.card__media {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc(var(--tk-focus-w) / -2);
+  inline-size: var(--tk-sp-2);
+  block-size: var(--tk-sp-2);
+  border-radius: 50%;
+  background: var(--tk-success);
+  translate: -50% -50%;
+  cursor: help;
+}
+
+.card__media[data-state='stale'] {
+  background: var(--tk-surface);
+  box-shadow: inset 0 0 0 var(--tk-focus-w) var(--tk-warning);
+}
+
 .uses {
   display: block;
   overflow: visible;
@@ -475,6 +499,7 @@ article.row > .card__foot {
   margin: 0;
   min-width: 0;
   padding-inline-start: var(--tk-sp-3);
+  position: relative;
   border-inline-start: var(--tk-focus-w) solid var(--tk-renk-2);
   color: color-mix(in srgb, var(--tk-text) 80%, transparent);
   font-size: var(--tk-fs-1);

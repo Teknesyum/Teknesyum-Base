@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::logic::{self, AssetRef};
-use crate::model::{Manifest, Release, ReleaseAsset, Repo, RepoList};
+use crate::model::{Manifest, MediaDates, Release, ReleaseAsset, Repo, RepoList};
 use crate::paths::now_iso;
 use crate::store::{self, HttpCacheEntry, RateSnapshot, RepoMemo};
 
@@ -51,6 +51,8 @@ pub struct IndexEntry {
     manifest: Option<Manifest>,
     #[serde(default)]
     ui: Option<String>,
+    #[serde(default)]
+    media: Option<MediaDates>,
 }
 
 impl CatalogIndex {
@@ -215,6 +217,10 @@ struct MemoData {
     ui_checked: bool,
     #[serde(default)]
     ui: Option<String>,
+    #[serde(default)]
+    media_checked: bool,
+    #[serde(default)]
+    media: Option<MediaDates>,
 }
 
 #[derive(Debug, Clone)]
@@ -223,6 +229,7 @@ pub struct RepoDetails {
     pub release: Option<GhRelease>,
     pub manifest: Option<Manifest>,
     pub ui: Option<String>,
+    pub media: Option<MediaDates>,
 }
 
 pub fn build_http() -> reqwest::Client {
@@ -326,6 +333,7 @@ impl GitHub {
                     release: d.release,
                     manifest: d.manifest,
                     ui: d.ui,
+                    media: d.media,
                 })
             })
             .collect();
@@ -631,6 +639,30 @@ impl GitHub {
         Ok((r.status == 200).then_some(r.body))
     }
 
+    async fn last_commit_at(&self, owner: &str, name: &str, path: &str) -> Option<String> {
+        let r = self
+            .get(&format!("{API}/repos/{owner}/{name}/commits?path={path}&per_page=1"), ACCEPT_JSON)
+            .await
+            .ok()
+            .filter(|r| r.status == 200)?;
+        let list: Vec<serde_json::Value> = serde_json::from_str(&r.body).ok()?;
+        list.first()?.pointer("/commit/committer/date")?.as_str().map(str::to_string)
+    }
+
+    pub async fn media_dates(&self, owner: &str, name: &str, manifest: Option<&Manifest>) -> Option<MediaDates> {
+        if logic::upstream_of(owner, name).is_some() {
+            return None;
+        }
+        let icon = manifest.and_then(|m| m.icon.clone()).unwrap_or_else(|| ".teknesyum/icon.png".into());
+        let shot = manifest.and_then(|m| m.screenshot.clone()).unwrap_or_else(|| ".teknesyum/shot.jpg".into());
+        let (icon_at, shot_at, readme_at) = futures_util::join!(
+            self.last_commit_at(owner, name, &icon),
+            self.last_commit_at(owner, name, &shot),
+            self.last_commit_at(owner, name, "README.md"),
+        );
+        Some(MediaDates { icon_at, shot_at, readme_at })
+    }
+
     pub async fn ui_version(&self, owner: &str, name: &str, private: bool) -> AppResult<Option<String>> {
         Ok(self
             .repo_file(owner, name, private, ".claude/teknesyum-ui.json")
@@ -736,6 +768,7 @@ impl GitHub {
                         release: e.release.clone(),
                         manifest: e.manifest.clone(),
                         ui: e.ui.clone(),
+                        media: e.media.clone(),
                         gh,
                     });
                 }
@@ -744,18 +777,20 @@ impl GitHub {
                 let now = chrono::Utc::now().timestamp();
                 let upstream = logic::upstream_of(&owner, &gh.name).is_some();
                 if let Some(m) = store::load_memo::<MemoData>(&memo_file).filter(|_| !upstream) {
-                    if m.data.ui_checked && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
+                    if m.data.ui_checked && m.data.media_checked && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
                         return Ok(RepoDetails {
                             gh,
                             release: m.data.release,
                             manifest: m.data.manifest,
                             ui: m.data.ui,
+                            media: m.data.media,
                         });
                     }
                 }
                 let release = this.latest_release(&owner, &gh.name).await?;
                 let manifest = this.manifest(&owner, &gh.name, gh.private).await?;
                 let ui = this.ui_version(&owner, &gh.name, gh.private).await?;
+                let media = this.media_dates(&owner, &gh.name, manifest.as_ref()).await;
                 if let Some(pushed_at) = gh.pushed_at.clone().filter(|p| !p.is_empty() && !upstream) {
                     let _ = store::save_memo(
                         &memo_file,
@@ -767,6 +802,8 @@ impl GitHub {
                                 manifest: manifest.clone(),
                                 ui_checked: true,
                                 ui: ui.clone(),
+                                media_checked: true,
+                                media: media.clone(),
                             },
                         },
                     );
@@ -776,6 +813,7 @@ impl GitHub {
                     release,
                     manifest,
                     ui,
+                    media,
                 })
             }
         }))
@@ -947,6 +985,7 @@ pub fn to_repo(d: &RepoDetails) -> Repo {
         local_tags: Vec::new(),
         ui_version: d.ui.clone(),
         plugin: None,
+        media: d.media.as_ref().map(|m| logic::media_state(m, d.release.as_ref().and_then(|r| r.published_at.as_deref()))),
     }
 }
 

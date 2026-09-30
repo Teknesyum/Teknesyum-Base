@@ -112,6 +112,16 @@ function Frame() {
   const onUninstall = (repo: Repo, opener: Opener) => setRemoval({ fullName: repo.fullName, opener });
   const onOpen = (repo: Repo, opener: Opener) => setDetail({ fullName: repo.fullName, opener });
 
+  const kare = store.info?.kare;
+  const kareRepos = store.list?.repos;
+  useEffect(() => {
+    if (!kare) return;
+    const [view, name] = kare.split('@')[0].split(':');
+    if (view === 'installed' || view === 'settings' || view === 'library') setTab(view);
+    const hit = view === 'detail' ? kareRepos?.find((r) => r.name.toLowerCase() === (name ?? '').toLowerCase()) : undefined;
+    if (hit) setDetail({ fullName: hit.fullName, opener: null });
+  }, [kare, kareRepos]);
+
   const removeRepo = find(removal);
   const askRepo = find(claudeAsk);
   const prereqRepo = find(prereqAsk);
@@ -255,7 +265,8 @@ function Frame() {
 
 function Shell() {
   const store = useStore();
-  const lang = store.settings?.language ?? 'tr';
+  const kareLang = store.info?.kare?.split('@')[1];
+  const lang = kareLang === 'en' || kareLang === 'tr' ? kareLang : (store.settings?.language ?? 'tr');
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);

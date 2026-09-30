@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::model::{InstallMethod, InstallState, Manifest};
+use crate::model::{InstallMethod, InstallState, Manifest, MediaDates, MediaState};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AssetRef {
@@ -349,6 +349,22 @@ pub fn install_state(
             _ => InstallState::Installed,
         },
     }
+}
+
+pub fn media_state(dates: &MediaDates, release_at: Option<&str>) -> MediaState {
+    let ts = |s: &Option<String>| s.as_deref().and_then(|d| chrono::DateTime::parse_from_rfc3339(d).ok()).map(|t| t.timestamp());
+    let floor = release_at
+        .and_then(|d| chrono::DateTime::parse_from_rfc3339(d).ok())
+        .map(|t| t.timestamp() - 24 * 60 * 60);
+    let mut stale = Vec::new();
+    for (key, at, versioned) in [("icon", &dates.icon_at, false), ("shot", &dates.shot_at, true), ("readme", &dates.readme_at, true)] {
+        match ts(at) {
+            None => stale.push(format!("{key}-missing")),
+            Some(t) if versioned && floor.is_some_and(|f| t < f) => stale.push(format!("{key}-old")),
+            _ => {}
+        }
+    }
+    MediaState { fresh: stale.is_empty(), stale }
 }
 
 pub fn category(manifest: Option<&Manifest>, topics: &[String], language: Option<&str>) -> String {
@@ -805,5 +821,17 @@ mod tests {
         assert_eq!(uninstaller_kind("unins000.exe", InstallerKind::Nsis), InstallerKind::Nsis);
         assert_eq!(silent_uninstall_args(InstallerKind::Nsis), vec!["/S"]);
         assert_eq!(silent_uninstall_args(InstallerKind::Inno)[0], "/VERYSILENT");
+    }
+
+    #[test]
+    fn media_state_flags_missing_and_pre_release_files() {
+        let at = |s: &str| Some(s.to_string());
+        let all = MediaDates { icon_at: at("2026-01-01T00:00:00Z"), shot_at: at("2026-09-29T12:00:00Z"), readme_at: at("2026-09-30T08:00:00Z") };
+        assert_eq!(media_state(&all, Some("2026-09-30T09:00:00Z")), MediaState { fresh: true, stale: vec![] });
+        let old = MediaDates { shot_at: at("2026-09-01T00:00:00Z"), ..all.clone() };
+        assert_eq!(media_state(&old, Some("2026-09-30T09:00:00Z")).stale, vec!["shot-old"]);
+        assert!(media_state(&old, None).fresh);
+        let none = MediaDates::default();
+        assert_eq!(media_state(&none, None).stale, vec!["icon-missing", "shot-missing", "readme-missing"]);
     }
 }

@@ -85,6 +85,14 @@ Write-Sha $pro
 
 if ($BuildOnly) { "Built into $out"; exit 0 }
 
+git fetch -q --tags 2>$null
+$lastTag = git describe --tags --abbrev=0 --match "v*" 2>$null
+if ($lastTag) {
+  $tagAt = [long](git log -1 --format=%ct $lastTag)
+  $stale = @(".teknesyum/shot.jpg", ".teknesyum/full.jpg", "README.md") | Where-Object { [long](git log -1 --format=%ct -- $_) -le $tagAt }
+  if ($stale) { throw "Not updated since ${lastTag}: $($stale -join ', '). Run scripts/kare.ps1 and refresh README.md." }
+}
+
 if (-not $Notes) { $Notes = "Teknesyum Base $version" }
 gh release create "v$version" $normal "$normal.sha256" --repo Teknesyum/Teknesyum-Base --title "Teknesyum Base $version" --notes $Notes
 if ($LASTEXITCODE -ne 0) { throw "normal release failed" }

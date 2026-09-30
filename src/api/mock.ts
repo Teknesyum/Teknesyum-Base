@@ -73,6 +73,7 @@ const repos: Repo[] = seeds.map((s) => ({
   installedTag: s.installedTag ?? null,
   localTags: s.tags ?? [],
   uiVersion: s.tag ? (s.stars % 2 ? '0.23.0' : '0.20.0') : null,
+  media: s.tag ? (s.stars % 3 ? { fresh: true, stale: [] } : { fresh: false, stale: ['shot-old', 'readme-old'] }) : null,
 }));
 
 let settings: Settings = {
@@ -275,7 +276,7 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
   const out = (v: unknown) => v as T;
   switch (cmd) {
     case 'app_info':
-      return out({ edition: location.search.includes('pro') ? 'pro' : 'normal', version: '0.1.0', gitAvailable: true } satisfies AppInfo);
+      return out({ edition: location.search.includes('pro') ? 'pro' : 'normal', version: '0.1.0', gitAvailable: true, kare: new URLSearchParams(location.search).get('kare') } satisfies AppInfo);
     case 'list_repos': {
       if (durum === 'yukleniyor') await new Promise(() => {});
       if (durum === 'hata') {

@@ -26,7 +26,7 @@ function Frame() {
   const { t, lang, clock } = useI18n();
   const store = useStore();
   const appRef = useRef<HTMLDivElement>(null);
-  useTitlebarFit(appRef, lang + (store.info?.edition ?? ''));
+  useTitlebarFit(appRef, lang + (store.info?.edition ?? '') + (store.info?.version ?? ''));
   const [tab, setTab] = useState<Tab>('library');
   const [filter, setFilter] = useState<LibFilter>(defaultFilter);
   const [detail, setDetail] = useState<Target | null>(null);
@@ -120,7 +120,7 @@ function Frame() {
     <div ref={appRef} className="app">
       <TitleBar
         first={t('app.first')}
-        second={t(pro ? 'app.secondPro' : 'app.second')}
+        second={[t(pro ? 'app.secondPro' : 'app.second'), store.info?.version].filter(Boolean).join(' ')}
         logo="/logo-32.png"
         links={LINKS}
         badge={<UpdateBadge onOpen={(el) => setUpdateFrom(el)} />}

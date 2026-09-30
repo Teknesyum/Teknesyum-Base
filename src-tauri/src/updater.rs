@@ -35,7 +35,7 @@ const FEED_ENV: &str = "TEKNESYUM_BASE_UPDATE_FEED";
 const DRY_ENV: &str = "TEKNESYUM_BASE_UPDATE_DRY";
 const DRY_DIR: &str = "teknesyum-base-update-dry";
 const FIRST_CHECK: Duration = Duration::from_secs(10);
-const CHECK_EVERY: Duration = Duration::from_secs(6 * 60 * 60);
+const CHECK_EVERY: Duration = Duration::from_secs(60 * 60);
 const INSTALL_PAUSE: Duration = Duration::from_millis(1500);
 const CHECK_FILE: &str = "guncelleme-denetim.json";
 const FEED_ACCEPT: &str = "application/vnd.github+json";
@@ -58,13 +58,8 @@ fn mark_checked(cache: &Path, now: i64) {
     let _ = write_json(&check_file(cache), &CheckMark { checked_at: now });
 }
 
-pub fn first_wait(last: Option<i64>, now: i64, feed: bool) -> Duration {
-    if feed {
-        return FIRST_CHECK;
-    }
-    let every = CHECK_EVERY.as_secs() as i64;
-    let left = last.map(|t| every - (now - t)).filter(|l| (0..=every).contains(l)).unwrap_or(0);
-    FIRST_CHECK.max(Duration::from_secs(left as u64))
+pub fn first_wait(_last: Option<i64>, _now: i64, _feed: bool) -> Duration {
+    FIRST_CHECK
 }
 
 fn header_u64(h: &reqwest::header::HeaderMap, name: &str) -> Option<u64> {
@@ -833,11 +828,11 @@ mod tests {
     }
 
     #[test]
-    fn first_wait_respects_last_check() {
+    fn first_check_runs_at_every_startup() {
         let every = CHECK_EVERY.as_secs() as i64;
         assert_eq!(first_wait(None, 1_000_000, false), FIRST_CHECK);
         assert_eq!(first_wait(Some(1_000_000 - every), 1_000_000, false), FIRST_CHECK);
-        assert_eq!(first_wait(Some(1_000_000 - 3600), 1_000_000, false), Duration::from_secs((every - 3600) as u64));
+        assert_eq!(first_wait(Some(1_000_000 - 3600), 1_000_000, false), FIRST_CHECK);
         assert_eq!(first_wait(Some(1_000_000 - 3600), 1_000_000, true), FIRST_CHECK);
         assert_eq!(first_wait(Some(1_000_000 + 50), 1_000_000, false), FIRST_CHECK);
         let dir = scratch("mark");

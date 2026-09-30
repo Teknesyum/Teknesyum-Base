@@ -29,7 +29,7 @@ export function RepoKeys() {
   const store = useStore();
   const toast = useToast();
   const id = useId();
-  const repos = useMemo(() => (store.list?.repos ?? []).filter((r) => r.private).map((r) => r.fullName).sort(), [store.list]);
+  const repos = useMemo(() => (store.list?.repos ?? []).filter((r) => r.private && r.name !== 'Teknesyum-Private').map((r) => r.fullName).sort(), [store.list]);
   const [states, setStates] = useState<Record<string, KeyState>>({});
   const [picked, setPicked] = useState('');
   const [token, setToken] = useState('');

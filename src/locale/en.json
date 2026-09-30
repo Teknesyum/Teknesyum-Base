@@ -362,7 +362,10 @@
       "availableAria": "Update available, version {version}. Open the panel",
       "downloadingAria": "New version downloading, {n}%. Open the panel",
       "readyAria": "New version ready to install. Open the panel"
-    }
+    },
+    "upToDate": "You are up to date: {version}",
+    "checkNow": "Check for updates",
+    "checkVersion": "Version {version}. Check for updates"
   },
   "category": {
     "video": "Video & Media",

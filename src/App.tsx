@@ -6,7 +6,7 @@ import { I18nProvider, useI18n } from './i18n';
 import { StoreProvider, useStore } from './store';
 import { ConfirmDialog } from './ui/Dialog';
 import { useTitlebarFit } from './ui/hooks';
-import { ToastProvider } from './ui/Toasts';
+import { ToastProvider, useToast } from './ui/Toasts';
 import { UpdateBadge } from './ui/UpdateBadge';
 import { UpdateProvider, useUpdate } from './ui/useUpdate';
 import { defaultFilter, primaryOf, type LibFilter, type Opener } from './views/actions';
@@ -38,6 +38,24 @@ function Frame() {
   const [maximized, setMaximized] = useState(false);
   const pro = store.info?.edition === 'pro';
   const updatePhase = useUpdate().state?.phase;
+  const toast = useToast();
+  const [versionBusy, setVersionBusy] = useState(false);
+  const checkVersion = (el: HTMLElement) => {
+    if (updatePhase === 'available' || updatePhase === 'downloading' || updatePhase === 'ready') {
+      setUpdateFrom(el);
+      return;
+    }
+    setVersionBusy(true);
+    void api
+      .checkUpdate()
+      .then((s) => {
+        if (s.phase === 'available') setUpdateFrom(el);
+        else if (s.phase === 'error') toast({ kind: 'danger', title: t('update.failedTitle'), body: s.message ?? undefined });
+        else toast({ kind: 'success', title: t('update.upToDate', { version: s.current }) });
+      })
+      .catch((e: { message?: string }) => toast({ kind: 'danger', title: t('update.failedTitle'), body: e.message }))
+      .finally(() => setVersionBusy(false));
+  };
   useEffect(() => {
     if (updatePhase === 'idle' || updatePhase === 'checking') setUpdateFrom(undefined);
   }, [updatePhase]);
@@ -118,7 +136,7 @@ function Frame() {
     if (!kare) return;
     const [view, name] = kare.split('@')[0].split(':');
     if (view === 'installed' || view === 'settings' || view === 'library') setTab(view);
-    const hit = view === 'detail' ? kareRepos?.find((r) => r.name.toLowerCase() === (name ?? '').toLowerCase()) : undefined;
+    const hit = view === 'detail' ? kareRepos?.find((r) => r.name.toLocaleLowerCase('tr') === (name ?? '').toLocaleLowerCase('tr')) : undefined;
     if (hit) setDetail({ fullName: hit.fullName, opener: null });
   }, [kare, kareRepos]);
 
@@ -127,11 +145,18 @@ function Frame() {
   const prereqRepo = find(prereqAsk);
 
   return (
-    <div ref={appRef} className="app" style={{ ['--app-version' as string]: store.info?.version ? `"${store.info.version}"` : 'none' }}>
+    <div ref={appRef} className="app">
       <TitleBar
         first={t('app.first')}
         second={t(pro ? 'app.secondPro' : 'app.second')}
         logo="/logo-32.png"
+        version={
+          store.info?.version ? (
+            <button type="button" className="app-version" disabled={versionBusy} aria-busy={versionBusy || undefined} title={t('update.checkNow')} aria-label={t('update.checkVersion', { version: store.info.version })} onClick={(e) => checkVersion(e.currentTarget)}>
+              {store.info.version}
+            </button>
+          ) : null
+        }
         links={LINKS}
         badge={<UpdateBadge onOpen={(el) => setUpdateFrom(el)} />}
         sync={{ state: syncState, text: syncText, title: store.syncError ? t('status.syncError', { reason: t('errors.' + store.syncError.code + '.title') }) : syncText ? t('titlebar.syncTitle', { state: syncText, action: t('sync.now') }) : t('sync.now'), onClick: () => void store.refresh() }}

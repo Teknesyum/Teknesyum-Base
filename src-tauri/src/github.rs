@@ -218,7 +218,7 @@ struct MemoData {
     #[serde(default)]
     ui: Option<String>,
     #[serde(default)]
-    media_checked: bool,
+    media_v2: bool,
     #[serde(default)]
     media: Option<MediaDates>,
 }
@@ -655,12 +655,23 @@ impl GitHub {
         }
         let icon = manifest.and_then(|m| m.icon.clone()).unwrap_or_else(|| ".teknesyum/icon.png".into());
         let shot = manifest.and_then(|m| m.screenshot.clone()).unwrap_or_else(|| ".teknesyum/shot.jpg".into());
-        let (icon_at, shot_at, readme_at) = futures_util::join!(
+        let (icon_at, shot_at, readme_at, prev_release_at) = futures_util::join!(
             self.last_commit_at(owner, name, &icon),
             self.last_commit_at(owner, name, &shot),
             self.last_commit_at(owner, name, "README.md"),
+            self.prev_release_at(owner, name),
         );
-        Some(MediaDates { icon_at, shot_at, readme_at })
+        Some(MediaDates { icon_at, shot_at, readme_at, prev_release_at })
+    }
+
+    async fn prev_release_at(&self, owner: &str, name: &str) -> Option<String> {
+        let r = self
+            .get(&format!("{API}/repos/{owner}/{name}/releases?per_page=10"), ACCEPT_JSON)
+            .await
+            .ok()
+            .filter(|r| r.status == 200)?;
+        let list: Vec<GhRelease> = serde_json::from_str(&r.body).ok()?;
+        list.into_iter().filter(|x| !x.draft && !x.prerelease).nth(1)?.published_at
     }
 
     pub async fn ui_version(&self, owner: &str, name: &str, private: bool) -> AppResult<Option<String>> {
@@ -777,7 +788,7 @@ impl GitHub {
                 let now = chrono::Utc::now().timestamp();
                 let upstream = logic::upstream_of(&owner, &gh.name).is_some();
                 if let Some(m) = store::load_memo::<MemoData>(&memo_file).filter(|_| !upstream) {
-                    if m.data.ui_checked && m.data.media_checked && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
+                    if m.data.ui_checked && m.data.media_v2 && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
                         return Ok(RepoDetails {
                             gh,
                             release: m.data.release,
@@ -802,7 +813,7 @@ impl GitHub {
                                 manifest: manifest.clone(),
                                 ui_checked: true,
                                 ui: ui.clone(),
-                                media_checked: true,
+                                media_v2: true,
                                 media: media.clone(),
                             },
                         },
@@ -985,7 +996,7 @@ pub fn to_repo(d: &RepoDetails) -> Repo {
         local_tags: Vec::new(),
         ui_version: d.ui.clone(),
         plugin: None,
-        media: d.media.as_ref().map(|m| logic::media_state(m, d.release.as_ref().and_then(|r| r.published_at.as_deref()))),
+        media: d.media.as_ref().map(logic::media_state),
     }
 }
 

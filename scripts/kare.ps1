@@ -43,7 +43,7 @@ function Save-Jpg($bmp, $path, $w, $h) {
   $out.Dispose()
 }
 
-function Get-Frame($view) {
+function Get-Shot($view) {
   $p = Start-Process -FilePath $Exe -ArgumentList "--kare=$view" -PassThru
   $h = [IntPtr]::Zero
   for ($i = 0; $i -lt 60 -and $h -eq [IntPtr]::Zero; $i++) {
@@ -51,21 +51,48 @@ function Get-Frame($view) {
     $p.Refresh()
     $h = $p.MainWindowHandle
   }
-  if ($h -eq [IntPtr]::Zero) { $p | Stop-Process -Force; throw "No window for $view" }
+  if ($h -eq [IntPtr]::Zero) { $p | Stop-Process -Force -ErrorAction SilentlyContinue; $script:blank = $true; return $null }
   [TkWin]::ShowWindow($h, 9) | Out-Null
   [TkWin]::SetWindowPos($h, [IntPtr]::Zero, 40, 40, $Width, $Height, 0x0040) | Out-Null
   Start-Sleep -Seconds 8
-  $r = New-Object TkWin+RECT
-  [TkWin]::GetWindowRect($h, [ref]$r) | Out-Null
-  $bmp = New-Object System.Drawing.Bitmap ($r.R - $r.L), ($r.B - $r.T)
-  $g = [System.Drawing.Graphics]::FromImage($bmp)
-  $dc = $g.GetHdc()
-  [TkWin]::PrintWindow($h, $dc, 2) | Out-Null
-  $g.ReleaseHdc($dc)
-  $g.Dispose()
+  $bmp = $null
+  for ($try = 0; $try -lt 15; $try++) {
+    if ($bmp) { $bmp.Dispose(); $bmp = $null; Start-Sleep -Seconds 2 }
+    $p.Refresh()
+    if ($p.HasExited) { break }
+    if ($p.MainWindowHandle -ne [IntPtr]::Zero -and $p.MainWindowHandle -ne $h) {
+      $h = $p.MainWindowHandle
+      [TkWin]::ShowWindow($h, 9) | Out-Null
+      [TkWin]::SetWindowPos($h, [IntPtr]::Zero, 40, 40, $Width, $Height, 0x0040) | Out-Null
+      Start-Sleep -Seconds 2
+    }
+    $r = New-Object TkWin+RECT
+    [TkWin]::GetWindowRect($h, [ref]$r) | Out-Null
+    if (($r.R - $r.L) -le 0 -or ($r.B - $r.T) -le 0) { $colors = @{}; Start-Sleep -Seconds 2; continue }
+    $bmp = New-Object System.Drawing.Bitmap ($r.R - $r.L), ($r.B - $r.T)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $dc = $g.GetHdc()
+    [TkWin]::PrintWindow($h, $dc, 2) | Out-Null
+    $g.ReleaseHdc($dc)
+    $g.Dispose()
+    $colors = @{}
+    for ($x = 20; $x -lt $bmp.Width; $x += 37) { for ($y = 10; $y -lt $bmp.Height; $y += 29) { $colors[$bmp.GetPixel($x, $y).ToArgb()] = 1 } }
+    if ($colors.Count -gt 12) { break }
+  }
+  $script:blank = -not $bmp -or $colors.Count -le 12
+  if ($script:blank) { $p | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 3; return $bmp }
   $p | Stop-Process -Force
-  Start-Sleep -Seconds 1
+  Start-Sleep -Seconds 3
   $bmp
+}
+
+function Get-Frame($view) {
+  for ($run = 0; $run -lt 4; $run++) {
+    $bmp = Get-Shot $view
+    if (-not $script:blank) { return $bmp }
+    if ($bmp) { $bmp.Dispose() }
+  }
+  throw "Blank window for $view"
 }
 
 $views = [ordered]@{ "library" = "library"; "detail:Teknesyum-Base" = "detail"; "installed" = "installed"; "settings" = "settings" }

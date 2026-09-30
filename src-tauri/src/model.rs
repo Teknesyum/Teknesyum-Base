@@ -206,6 +206,8 @@ pub struct MediaDates {
     pub shot_at: Option<String>,
     #[serde(default)]
     pub readme_at: Option<String>,
+    #[serde(default)]
+    pub prev_release_at: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -362,7 +362,10 @@
       "availableAria": "Güncelleme var, sürüm {version}. Paneli aç",
       "downloadingAria": "Yeni sürüm iniyor, %{n}. Paneli aç",
       "readyAria": "Yeni sürüm yüklemeye hazır. Paneli aç"
-    }
+    },
+    "upToDate": "Güncel sürümdesin: {version}",
+    "checkNow": "Güncellemeyi denetle",
+    "checkVersion": "Sürüm {version}. Güncellemeyi denetle"
   },
   "category": {
     "video": "Video Ve Medya",

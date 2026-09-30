@@ -33,6 +33,7 @@ type Props = {
   links: TitleBarLinks;
   labels: TitleBarLabels;
   logo?: string;
+  version?: ReactNode;
   language?: ReactNode;
   badge?: ReactNode;
   sync?: TitleBarSync;
@@ -64,7 +65,7 @@ function CoffeeIcon() {
   );
 }
 
-export function TitleBar({ first, second, logo, links, labels, language, badge, sync, tabs, current, maximized, onTab, onMinimize, onMaximize, onClose }: Props) {
+export function TitleBar({ first, second, logo, version, links, labels, language, badge, sync, tabs, current, maximized, onTab, onMinimize, onMaximize, onClose }: Props) {
   const toggle = maximized ? labels.restore ?? labels.maximize : labels.maximize;
   const open = (tabs ?? []).filter((t) => !t.disabled);
   const onKey = (e: KeyboardEvent<HTMLElement>) => {
@@ -85,6 +86,7 @@ export function TitleBar({ first, second, logo, links, labels, language, badge, 
           {first}
           <span className="tk-titlebar__accent">{second}</span>
         </span>
+        {version}
       </div>
       {tabs?.length ? (
         <nav className="tk-titlebar__tabs" aria-label={labels.tabs} onKeyDown={onKey}>

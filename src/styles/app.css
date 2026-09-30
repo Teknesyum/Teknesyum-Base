@@ -668,10 +668,36 @@ body {
   background: var(--tk-glass);
 }
 
-.tk-titlebar__accent::after {
-  content: var(--app-version, none);
+.app-version {
   margin-inline-start: var(--tk-sp-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
   color: var(--tk-disabled);
+  transition: color var(--tk-t-base) var(--tk-ease);
+}
+
+.app-version:hover,
+.app-version:focus-visible {
+  color: var(--tk-text);
+}
+
+.app-version:focus-visible {
+  outline: var(--tk-focus-w) solid var(--tk-renk-1);
+  outline-offset: var(--tk-focus-offset);
+  box-shadow: 0 0 0 var(--tk-focus-w) var(--tk-bg);
+}
+
+.app-version:active:not(:disabled) {
+  color: var(--tk-text-label);
+}
+
+.app-version:disabled {
+  cursor: not-allowed;
+}
+
+.app-version {
   font-size: var(--tk-fs-1);
   font-weight: var(--tk-fw-body);
   letter-spacing: normal;

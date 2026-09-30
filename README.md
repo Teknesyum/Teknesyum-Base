@@ -38,7 +38,7 @@ GitHub shows the repositories and lets you download a release by hand. That part
 - **Library** — cards or a dense list, filtered by search, category, language, tag and state.
 - **Detail sheet** — README, release history with notes, assets with size and download count.
 - **Install dialog** — watch resolve, download, verify, install and shortcut steps; cancel at any time.
-- **Freshness dot** — on each card. Green when the icon, screenshot and README are up to date against the latest release; a warning ring otherwise.
+- **Freshness dot** — on each card. Green when the icon, screenshot and README have all changed since the previous release; a warning ring otherwise, with the stale items in its tooltip.
 - **Installed** — launch, open the folder, update or remove.
 - **Clone install** — a repository without a release is cloned instead.
 - **Live icons and screenshots** — read from each repository's `.teknesyum/` folder and cached; a click opens the full-resolution image.
@@ -46,7 +46,7 @@ GitHub shows the repositories and lets you download a release by hand. That part
 - **Plugin versions** — the latest Teknesyum Core and Teknesyum UI versions sit in the status bar.
 - **Your own account** — point Base at any GitHub user or organisation, plus extra accounts.
 - **Offline cache** — the last list is kept and shown when the network is down, with its age.
-- **Self-update** — Base checks 10 seconds after every start, then hourly. An update is downloaded silently and applied on the next launch. The version sits muted in the title bar.
+- **Self-update** — Base checks 10 seconds after every start, then hourly. An update is downloaded silently and applied on the next launch. The version sits muted in the title bar; click it to check now — it opens the update panel, or says you are up to date.
 - **Two builds** — the normal build lists public repositories. The Pro build also lists private ones.
 
 ## What it doesn't do

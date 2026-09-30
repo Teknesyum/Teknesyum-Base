@@ -32,6 +32,7 @@ Copy-Item $built $normal -Force
 Write-Sha $normal
 
 $keysFile = Join-Path $root "secrets/pro-anahtarlar.json"
+if (-not (Test-Path $keysFile)) { powershell -NoProfile -File (Join-Path $PSScriptRoot "anahtar-yedek.ps1") -Restore }
 if (-not (Test-Path $keysFile)) { throw "secrets/pro-anahtarlar.json not found" }
 $keys = Get-Content -Raw -Encoding UTF8 $keysFile | ConvertFrom-Json
 Add-Type @"
@@ -60,6 +61,8 @@ if ($moved.Count) {
   [IO.File]::WriteAllText($keysFile, ($keys | ConvertTo-Json -Depth 3), (New-Object Text.UTF8Encoding $false))
   "Moved from Credential Manager into secrets/pro-anahtarlar.json: $($moved -join ', ')"
 }
+powershell -NoProfile -File (Join-Path $PSScriptRoot "anahtar-yedek.ps1")
+if ($LASTEXITCODE -ne 0) { throw "key backup failed" }
 $env:TEKNESYUM_PRO_TOKEN = "$($keys.master)".Trim()
 $repoKeys = @{}
 $empty = @()

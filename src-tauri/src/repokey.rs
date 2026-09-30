@@ -32,9 +32,16 @@ fn entry(full_name: &str) -> AppResult<keyring::Entry> {
 
 pub fn get(full_name: &str) -> Option<String> {
     entry(full_name)
-        .ok()?
-        .get_password()
         .ok()
+        .and_then(|e| e.get_password().ok())
+        .map(|t| t.trim().to_string())
+        .filter(|t| !t.is_empty())
+        .or_else(|| embedded(option_env!("TEKNESYUM_REPO_KEYS"), full_name))
+}
+
+fn embedded(json: Option<&str>, full_name: &str) -> Option<String> {
+    let map: std::collections::HashMap<String, String> = serde_json::from_str(json?).ok()?;
+    map.get(&full_name.to_ascii_lowercase())
         .map(|t| t.trim().to_string())
         .filter(|t| !t.is_empty())
 }
@@ -101,5 +108,14 @@ mod tests {
     #[test]
     fn git_target_matches_credential_manager_http_path_form() {
         assert_eq!(git_target("Teknesyum/Asistan"), "git:https://github.com/Teknesyum/Asistan.git");
+    }
+
+    #[test]
+    fn embedded_keys_match_case_insensitively() {
+        let json = Some(r#"{"teknesyum/asistan":"k1"}"#);
+        assert_eq!(embedded(json, "Teknesyum/Asistan").as_deref(), Some("k1"));
+        assert_eq!(embedded(json, "Teknesyum/VideoEdit"), None);
+        assert_eq!(embedded(None, "Teknesyum/Asistan"), None);
+        assert_eq!(embedded(Some("{}"), "Teknesyum/Asistan"), None);
     }
 }

@@ -31,37 +31,47 @@ $normal = Join-Path $out "Teknesyum-Base.exe"
 Copy-Item $built $normal -Force
 Write-Sha $normal
 
+$keysFile = Join-Path $root "secrets/pro-anahtarlar.json"
+if (-not (Test-Path $keysFile)) { throw "secrets/pro-anahtarlar.json not found" }
+$keys = Get-Content -Raw -Encoding UTF8 $keysFile | ConvertFrom-Json
 Add-Type @"
 using System; using System.Runtime.InteropServices;
 public static class TkCred {
-  [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)] public struct CRED { public int Flags; public int Type; public string TargetName; public string Comment; public long LastWritten; public int BlobSize; public IntPtr Blob; public int Persist; public int AttrCount; public IntPtr Attrs; public string Alias; public string User; }
-  [DllImport("advapi32.dll", CharSet=CharSet.Unicode, SetLastError=true)] public static extern bool CredRead(string t, int type, int f, out IntPtr c);
-  [DllImport("advapi32.dll")] public static extern void CredFree(IntPtr c);
-  [DllImport("advapi32.dll", CharSet=CharSet.Unicode, SetLastError=true)] public static extern bool CredEnumerate(string filter, int f, out int n, out IntPtr c);
-  public static string Get(string t) { IntPtr p; if (!CredRead(t, 1, 0, out p)) return null; var c = (CRED)Marshal.PtrToStructure(p, typeof(CRED)); var s = Marshal.PtrToStringUni(c.Blob, c.BlobSize / 2); CredFree(p); return s; }
-  public static System.Collections.Generic.Dictionary<string, string> RepoKeys() {
-    var d = new System.Collections.Generic.Dictionary<string, string>();
-    int n; IntPtr arr; const string sfx = ".teknesyum-base-pro";
-    if (!CredEnumerate("repo/*", 0, out n, out arr)) return d;
-    for (int i = 0; i < n; i++) {
-      var c = (CRED)Marshal.PtrToStructure(Marshal.ReadIntPtr(arr, i * IntPtr.Size), typeof(CRED));
-      if (c.Type != 1 || !c.TargetName.EndsWith(sfx)) continue;
-      var s = Marshal.PtrToStringUni(c.Blob, c.BlobSize / 2).Trim();
-      if (s.Length > 0) d[c.TargetName.Substring(5, c.TargetName.Length - 5 - sfx.Length)] = s;
-    }
-    CredFree(arr);
-    return d;
-  }
+[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)] public struct CRED { public int Flags; public int Type; public string TargetName; public string Comment; public long LastWritten; public int BlobSize; public IntPtr Blob; public int Persist; public int AttrCount; public IntPtr Attrs; public string Alias; public string User; }
+[DllImport("advapi32.dll", CharSet=CharSet.Unicode, SetLastError=true)] public static extern bool CredRead(string t, int type, int f, out IntPtr c);
+[DllImport("advapi32.dll")] public static extern void CredFree(IntPtr c);
+public static string Get(string t) { IntPtr p; if (!CredRead(t, 1, 0, out p)) return null; var c = (CRED)Marshal.PtrToStructure(p, typeof(CRED)); var s = Marshal.PtrToStringUni(c.Blob, c.BlobSize / 2); CredFree(p); return s; }
 }
 "@
-$token = [TkCred]::Get("github-token.Teknesyum Base Pro")
-if (-not $token) { throw "Pro token not found in Credential Manager" }
-$env:TEKNESYUM_PRO_TOKEN = $token.Trim()
-$token = $null
-$repoKeys = [TkCred]::RepoKeys()
+$moved = @()
+if (-not $keys.master) {
+  $old = [TkCred]::Get("github-token.Teknesyum Base Pro")
+  if (-not $old) { throw "Pro master key missing in secrets/pro-anahtarlar.json" }
+  $keys.master = $old.Trim()
+  $moved += "master"
+}
+foreach ($p in $keys.repos.PSObject.Properties) {
+  if ("$($p.Value)".Trim()) { continue }
+  $old = [TkCred]::Get("repo/$($p.Name.ToLower()).teknesyum-base-pro")
+  if ($old -and $old.Trim()) { $p.Value = $old.Trim(); $moved += $p.Name }
+}
+$old = $null
+if ($moved.Count) {
+  [IO.File]::WriteAllText($keysFile, ($keys | ConvertTo-Json -Depth 3), (New-Object Text.UTF8Encoding $false))
+  "Moved from Credential Manager into secrets/pro-anahtarlar.json: $($moved -join ', ')"
+}
+$env:TEKNESYUM_PRO_TOKEN = "$($keys.master)".Trim()
+$repoKeys = @{}
+$empty = @()
+foreach ($p in $keys.repos.PSObject.Properties) {
+  $v = "$($p.Value)".Trim()
+  if ($v) { $repoKeys[$p.Name.ToLower()] = $v } else { $empty += $p.Name }
+}
 "Embedding $($repoKeys.Count) repository key(s): $(($repoKeys.Keys | Sort-Object) -join ', ')"
+if ($empty.Count) { "No key yet: $($empty -join ', ')" }
 $env:TEKNESYUM_REPO_KEYS = ($repoKeys | ConvertTo-Json -Compress)
 $repoKeys = $null
+$keys = $null
 try {
   npx tauri build --no-bundle --features pro --config src-tauri/tauri.pro.conf.json
   if ($LASTEXITCODE -ne 0) { throw "pro build failed" }

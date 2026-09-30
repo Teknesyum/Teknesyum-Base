@@ -667,3 +667,12 @@ body {
   right: var(--tk-sp-2);
   background: var(--tk-glass);
 }
+
+.tk-titlebar__accent::after {
+  content: var(--app-version, none);
+  margin-inline-start: var(--tk-sp-2);
+  color: var(--tk-disabled);
+  font-size: var(--tk-fs-1);
+  font-weight: var(--tk-fw-body);
+  letter-spacing: normal;
+}

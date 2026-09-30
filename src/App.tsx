@@ -117,10 +117,10 @@ function Frame() {
   const prereqRepo = find(prereqAsk);
 
   return (
-    <div ref={appRef} className="app">
+    <div ref={appRef} className="app" style={{ ['--app-version' as string]: store.info?.version ? `"${store.info.version}"` : 'none' }}>
       <TitleBar
         first={t('app.first')}
-        second={[t(pro ? 'app.secondPro' : 'app.second'), store.info?.version].filter(Boolean).join(' ')}
+        second={t(pro ? 'app.secondPro' : 'app.second')}
         logo="/logo-32.png"
         links={LINKS}
         badge={<UpdateBadge onOpen={(el) => setUpdateFrom(el)} />}

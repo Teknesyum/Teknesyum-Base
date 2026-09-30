@@ -52,7 +52,7 @@ impl AppState {
     pub fn new() -> Self {
         let paths = Paths::detect();
         let _ = store::migrate_installed(&paths);
-        let token = settings::read_token();
+        let token = settings::token();
         let s = settings::load(&paths, token.is_some());
         Self {
             http: github::build_http(),
@@ -161,7 +161,12 @@ impl AppState {
         };
         let mut extra: Vec<InstalledRecord> = detect::own_record().into_iter().collect();
         extra.extend(found);
-        store::merge_installed(store::load_installed(&self.paths), extra)
+        let mut all = store::merge_installed(store::load_installed(&self.paths), extra);
+        if cfg!(feature = "pro") {
+            let own = format!("/{}", detect::OWN_REPO.to_ascii_lowercase());
+            all.retain(|r| !r.info.full_name.to_ascii_lowercase().ends_with(&own));
+        }
+        all
     }
 
     pub fn forget_scans(&self) {
@@ -496,6 +501,9 @@ pub async fn set_token(state: State<'_, AppState>, token: String) -> AppResult<S
     if token.is_empty() || token.chars().any(char::is_whitespace) {
         return Err(AppError::new(ErrorCode::Auth, "Token boş ya da geçersiz."));
     }
+    if cfg!(feature = "pro") {
+        return Err(AppError::new(ErrorCode::Auth, "Pro'nun anahtarı exe içinde; buradan değiştirilmez."));
+    }
     settings::write_token(&token)?;
     *lock(&state.token) = Some(token);
     Ok(state.settings())
@@ -503,6 +511,9 @@ pub async fn set_token(state: State<'_, AppState>, token: String) -> AppResult<S
 
 #[tauri::command]
 pub async fn clear_token(state: State<'_, AppState>) -> AppResult<Settings> {
+    if cfg!(feature = "pro") {
+        return Err(AppError::new(ErrorCode::Auth, "Pro'nun anahtarı exe içinde; buradan silinmez."));
+    }
     settings::delete_token()?;
     *lock(&state.token) = None;
     Ok(state.settings())
@@ -590,31 +601,6 @@ pub async fn repo_keys(state: State<'_, AppState>, full_names: Vec<String>) -> A
         }
     });
     Ok(futures_util::future::join_all(checks).await)
-}
-
-#[tauri::command]
-pub async fn set_repo_key(state: State<'_, AppState>, full_name: String, token: String) -> AppResult<crate::repokey::KeyStatus> {
-    let (owner, name) = split_full(&full_name)?;
-    let full_name = format!("{owner}/{name}");
-    let token = token.trim().to_string();
-    if token.is_empty() || token.chars().any(char::is_whitespace) {
-        return Err(AppError::new(ErrorCode::Auth, "Anahtar boş ya da geçersiz."));
-    }
-    crate::repokey::set(&full_name, &token)?;
-    let key_state = crate::repokey::check(&state.http, &full_name).await;
-    if matches!(key_state, crate::repokey::KeyState::Invalid | crate::repokey::KeyState::NoAccess) {
-        crate::repokey::clear(&full_name)?;
-    }
-    Ok(crate::repokey::KeyStatus { full_name, state: key_state })
-}
-
-#[tauri::command]
-pub async fn clear_repo_key(full_name: String) -> AppResult<()> {
-    let (owner, name) = split_full(&full_name)?;
-    let full_name = format!("{owner}/{name}");
-    crate::repokey::clear(&full_name)?;
-    crate::repokey::revoke_git(&full_name);
-    Ok(())
 }
 
 #[tauri::command]
@@ -723,9 +709,10 @@ pub async fn launch_installed(state: State<'_, AppState>, full_name: String) -> 
             .map_err(|e| AppError::io(format!("Program açılamadı: {e}")));
     }
     let dir = exe.parent().map(Path::to_path_buf).unwrap_or_default();
-    std::process::Command::new(&exe)
-        .current_dir(dir)
-        .spawn()
+    let mut cmd = std::process::Command::new(&exe);
+    cmd.current_dir(dir);
+    crate::repokey::lend(&mut cmd, &rec.info.full_name);
+    cmd.spawn()
         .map_err(|e| AppError::io(format!("Program başlatılamadı: {e}")))?;
     Ok(())
 }

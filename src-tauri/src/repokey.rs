@@ -1,11 +1,11 @@
-use std::path::Path;
-use std::process::{Command, Stdio};
+use std::collections::HashMap;
+use std::process::Command;
 
 use serde::Serialize;
 
-use crate::error::AppResult;
 use crate::github::UA;
 
+#[cfg(feature = "pro")]
 const SERVICE: &str = "teknesyum-base-pro";
 const GIT_USER: &str = "x-access-token";
 
@@ -26,35 +26,53 @@ pub struct KeyStatus {
     pub state: KeyState,
 }
 
-fn entry(full_name: &str) -> AppResult<keyring::Entry> {
-    Ok(keyring::Entry::new(SERVICE, &format!("repo/{}", full_name.to_ascii_lowercase()))?)
+fn embedded_map() -> HashMap<String, String> {
+    parse(option_env!("TEKNESYUM_REPO_KEYS"))
+}
+
+fn parse(json: Option<&str>) -> HashMap<String, String> {
+    json.and_then(|j| serde_json::from_str::<HashMap<String, String>>(j).ok())
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(k, v)| (k.trim().to_ascii_lowercase(), v.trim().to_string()))
+        .filter(|(_, v)| !v.is_empty())
+        .collect()
+}
+
+fn lookup(map: &HashMap<String, String>, full_name: &str) -> Option<String> {
+    map.get(&full_name.to_ascii_lowercase()).cloned()
 }
 
 pub fn get(full_name: &str) -> Option<String> {
-    entry(full_name)
-        .ok()
-        .and_then(|e| e.get_password().ok())
-        .map(|t| t.trim().to_string())
-        .filter(|t| !t.is_empty())
-        .or_else(|| embedded(option_env!("TEKNESYUM_REPO_KEYS"), full_name))
+    lookup(&embedded_map(), full_name)
 }
 
-fn embedded(json: Option<&str>, full_name: &str) -> Option<String> {
-    let map: std::collections::HashMap<String, String> = serde_json::from_str(json?).ok()?;
-    map.get(&full_name.to_ascii_lowercase())
-        .map(|t| t.trim().to_string())
-        .filter(|t| !t.is_empty())
+pub fn header_env(cmd: &mut Command, url_prefix: &str, token: &str) {
+    use base64::Engine;
+    let basic = base64::engine::general_purpose::STANDARD.encode(format!("{GIT_USER}:{token}"));
+    cmd.env("GIT_CONFIG_COUNT", "1")
+        .env("GIT_CONFIG_KEY_0", format!("http.{url_prefix}.extraheader"))
+        .env("GIT_CONFIG_VALUE_0", format!("Authorization: Basic {basic}"));
 }
 
-pub fn set(full_name: &str, token: &str) -> AppResult<()> {
-    entry(full_name)?.set_password(token.trim())?;
-    Ok(())
+pub fn lend(cmd: &mut Command, full_name: &str) {
+    let Some(owner) = full_name.split('/').next().filter(|o| !o.is_empty()) else {
+        return;
+    };
+    if let Some(token) = get(full_name) {
+        header_env(cmd, &format!("https://github.com/{owner}/"), &token);
+    }
 }
 
-pub fn clear(full_name: &str) -> AppResult<()> {
-    match entry(full_name)?.delete_credential() {
-        Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
-        Err(e) => Err(e.into()),
+#[cfg(feature = "pro")]
+pub fn purge_stored() {
+    for full_name in embedded_map().keys() {
+        if let Ok(e) = keyring::Entry::new(SERVICE, &format!("repo/{full_name}")) {
+            let _ = e.delete_credential();
+        }
+        if let Ok(e) = keyring::Entry::new_with_target(&format!("git:https://github.com/{full_name}.git"), "", GIT_USER) {
+            let _ = e.delete_credential();
+        }
     }
 }
 
@@ -77,45 +95,17 @@ pub async fn check(http: &reqwest::Client, full_name: &str) -> KeyState {
     }
 }
 
-fn git_target(full_name: &str) -> String {
-    format!("git:https://github.com/{full_name}.git")
-}
-
-pub fn grant_git(full_name: &str, token: &str, dest: &Path) -> AppResult<()> {
-    keyring::Entry::new_with_target(&git_target(full_name), "", GIT_USER)?.set_password(token)?;
-    let mut cmd = Command::new("git");
-    cmd.arg("-C")
-        .arg(dest)
-        .args(["config", "credential.useHttpPath", "true"])
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null());
-    crate::installer::no_window(&mut cmd);
-    cmd.status()?;
-    Ok(())
-}
-
-pub fn revoke_git(full_name: &str) {
-    if let Ok(e) = keyring::Entry::new_with_target(&git_target(full_name), "", GIT_USER) {
-        let _ = e.delete_credential();
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn git_target_matches_credential_manager_http_path_form() {
-        assert_eq!(git_target("Teknesyum/Asistan"), "git:https://github.com/Teknesyum/Asistan.git");
-    }
-
-    #[test]
     fn embedded_keys_match_case_insensitively() {
-        let json = Some(r#"{"teknesyum/asistan":"k1"}"#);
-        assert_eq!(embedded(json, "Teknesyum/Asistan").as_deref(), Some("k1"));
-        assert_eq!(embedded(json, "Teknesyum/VideoEdit"), None);
-        assert_eq!(embedded(None, "Teknesyum/Asistan"), None);
-        assert_eq!(embedded(Some("{}"), "Teknesyum/Asistan"), None);
+        let map = parse(Some(r#"{"Teknesyum/Asistan":" k1 ","teknesyum/bos":""}"#));
+        assert_eq!(lookup(&map, "Teknesyum/Asistan").as_deref(), Some("k1"));
+        assert_eq!(lookup(&map, "Teknesyum/VideoEdit"), None);
+        assert_eq!(lookup(&map, "Teknesyum/Bos"), None);
+        assert!(parse(None).is_empty());
+        assert!(parse(Some("bozuk")).is_empty());
     }
 }

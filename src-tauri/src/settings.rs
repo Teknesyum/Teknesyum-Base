@@ -111,11 +111,25 @@ pub fn delete_token() -> AppResult<()> {
     }
 }
 
-#[cfg(feature = "pro")]
-pub fn seed_embedded_token() {
-    if let Some(embedded) = option_env!("TEKNESYUM_PRO_TOKEN").filter(|t| !t.trim().is_empty()) {
-        if read_token().is_none() {
-            let _ = write_token(embedded);
-        }
+pub fn embedded_token() -> Option<String> {
+    if !cfg!(feature = "pro") {
+        return None;
     }
+    option_env!("TEKNESYUM_PRO_TOKEN").map(|t| t.trim().to_string()).filter(|t| !t.is_empty())
+}
+
+pub fn token() -> Option<String> {
+    if cfg!(feature = "pro") {
+        embedded_token()
+    } else {
+        read_token()
+    }
+}
+
+#[cfg(feature = "pro")]
+pub fn purge_stored_keys() {
+    if embedded_token().is_some() {
+        let _ = delete_token();
+    }
+    crate::repokey::purge_stored();
 }

@@ -164,6 +164,7 @@ export function SettingsView({ onClearToken }: Props) {
             {t(store.settings.hasToken ? 'settings.tokenStored' : 'settings.tokenMissing')}
           </span>
         </p>
+        {store.info?.edition === 'pro' ? <p className="help">{t('settings.tokenEmbedded')}</p> : (
         <form
           className="tag-editor__form"
           onSubmit={(e) => {
@@ -195,6 +196,7 @@ export function SettingsView({ onClearToken }: Props) {
             </span>
           </div>
         </form>
+        )}
       </section>
 
       {store.info?.edition === 'pro' ? <RepoKeys /> : null}

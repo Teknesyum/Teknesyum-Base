@@ -333,10 +333,6 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
       return out(startTask(find(args.fullName as string), 'uninstall'));
     case 'repo_keys':
       return out((args.fullNames as string[]).map((fullName) => ({ fullName, state: 'missing' })));
-    case 'set_repo_key':
-      return out({ fullName: args.fullName, state: 'ok' });
-    case 'clear_repo_key':
-      return out(undefined);
     case 'missing_prereqs':
       return out([]);
     case 'clone_repo':

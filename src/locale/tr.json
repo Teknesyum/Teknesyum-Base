@@ -315,7 +315,8 @@
     "desktopShortcut": "Kurulumda masaüstü kısayolu oluştur",
     "desktopShortcutHelp": "Kurulan her programın masaüstüne bir kısayolu da yazılır; programı kaldırınca silinir.",
     "coreLatest": "Güncel Teknesyum Core",
-    "uiLatest": "Güncel Teknesyum UI"
+    "uiLatest": "Güncel Teknesyum UI",
+    "tokenEmbedded": "Pro'nun ana anahtarı exe'nin içinde taşınır; bu bilgisayara hiçbir yere yazılmaz. USB'den çalışınca da aynı anahtarla açılır."
   },
   "status": {
     "idle": "Bekliyor",
@@ -393,12 +394,10 @@
   },
   "repoKeys": {
     "title": "Depo Anahtarları",
-    "intro": "Her private depo kendi süresiz, yalnız o depoya bakan anahtarıyla kurulur. Pro'nun ana anahtarı hiçbir kuruluma verilmez.",
+    "intro": "Her private depo kendi süresiz, yalnız o depoya bakan anahtarıyla kurulur. Anahtarlar Pro exe'sinin içine gömülüdür; bu bilgisayara yazılmaz. Pro'nun ana anahtarı hiçbir kuruluma verilmez.",
     "repo": "Depo",
-    "token": "Bu depoya özel anahtar",
     "create": "GitHub'da oluştur",
-    "help": "“GitHub'da oluştur” sayfası adı, süresizliği ve salt-okur izni doldurulmuş açılır. Repository access bölümünde yalnız bu depoyu seç, Generate token'a bas ve anahtarı buraya yapıştır. Anahtar yalnız Windows Kimlik Bilgisi Yöneticisi'ne yazılır.",
-    "saveFailed": "Anahtar kaydedilemedi",
+    "help": "Anahtar yalnız Pro derlenirken exe'ye girer. Program Pro'dan açıldığında anahtar ona yalnız o oturum için ödünç verilir; diske, Kimlik Bilgisi Yöneticisi'ne ya da git ayarına yazılmaz.",
     "states": {
       "missing": "Anahtar yok",
       "ok": "Anahtar geçerli",

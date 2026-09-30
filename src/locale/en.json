@@ -315,7 +315,8 @@
     "desktopShortcut": "Create a desktop shortcut on install",
     "desktopShortcutHelp": "Every installed program also gets a desktop shortcut; it is removed on uninstall.",
     "coreLatest": "Latest Teknesyum Core",
-    "uiLatest": "Latest Teknesyum UI"
+    "uiLatest": "Latest Teknesyum UI",
+    "tokenEmbedded": "Pro's main key travels inside the exe; nothing is written to this computer. Run from a USB stick, it opens with the same key."
   },
   "status": {
     "idle": "Waiting",
@@ -393,12 +394,10 @@
   },
   "repoKeys": {
     "title": "Repository Keys",
-    "intro": "Each private repository installs with its own non-expiring key that sees only that repository. Pro's main key is never handed to an install.",
+    "intro": "Each private repository installs with its own non-expiring key that sees only that repository. The keys are embedded in the Pro exe and never written to this computer. Pro's main key is never handed to an install.",
     "repo": "Repository",
-    "token": "Key for this repository",
     "create": "Create on GitHub",
-    "help": "“Create on GitHub” opens the page with name, no expiration and read-only access filled in. Under Repository access pick only this repository, press Generate token and paste the key here. The key is written only to Windows Credential Manager.",
-    "saveFailed": "Key could not be saved",
+    "help": "A key enters the exe only when Pro is built. When a program is opened from Pro, its key is lent to it for that session only; nothing is written to disk, Credential Manager or git settings.",
     "states": {
       "missing": "No key",
       "ok": "Key valid",

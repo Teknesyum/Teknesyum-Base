@@ -205,7 +205,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             #[cfg(feature = "pro")]
-            settings::seed_embedded_token();
+            settings::purge_stored_keys();
             commands::warm_git();
             app.manage(AppState::new());
             app.manage(updater::Updater::new());
@@ -253,8 +253,6 @@ pub fn run() {
             commands::clone_repo,
             commands::missing_prereqs,
             commands::repo_keys,
-            commands::set_repo_key,
-            commands::clear_repo_key,
             commands::cancel_task,
             commands::launch_installed,
             commands::set_local_tags,

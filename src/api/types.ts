@@ -160,8 +160,6 @@ export const commands = {
   clone: 'clone_repo',
   missingPrereqs: 'missing_prereqs',
   repoKeys: 'repo_keys',
-  setRepoKey: 'set_repo_key',
-  clearRepoKey: 'clear_repo_key',
   cancelTask: 'cancel_task',
   launch: 'launch_installed',
   setLocalTags: 'set_local_tags',

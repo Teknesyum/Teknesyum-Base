@@ -34,3 +34,6 @@ src-tauri/target
 src-tauri/gen/schemas
 docs/tasarim/
 docs/olcum/
+
+# Keys embedded into the Pro build; never committed
+secrets/

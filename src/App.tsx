@@ -3,6 +3,7 @@ import { TitleBar } from '../teknesyum-ui/ustcubuk/TitleBar';
 import { api, openExternal, windowControls } from './api/client';
 import type { PrereqInfo, Repo } from './api/types';
 import { I18nProvider, useI18n } from './i18n';
+import { DriveProvider, useDrive } from './drive';
 import { StoreProvider, useStore } from './store';
 import { ConfirmDialog } from './ui/Dialog';
 import { ProgressBar } from './ui/Progress';
@@ -12,13 +13,14 @@ import { UpdateBadge } from './ui/UpdateBadge';
 import { UpdateProvider, useUpdate } from './ui/useUpdate';
 import { defaultFilter, primaryOf, type LibFilter, type Opener } from './views/actions';
 import { DetailSheet } from './views/DetailSheet';
+import { DriveView } from './views/DriveView';
 import { InstalledView } from './views/InstalledView';
 import { Library } from './views/Library';
 import { SettingsView } from './views/SettingsView';
 import { StatusBar } from './views/StatusBar';
 import { UpdatePanel } from './views/UpdatePanel';
 
-type Tab = 'library' | 'installed' | 'settings';
+type Tab = 'library' | 'installed' | 'drive' | 'settings';
 type Target = { fullName: string; opener: Opener };
 
 const LINKS = { sponsor: 'https://github.com/sponsors/Teknesyum', brand: 'https://github.com/Teknesyum' };
@@ -38,6 +40,11 @@ function Frame() {
   const [updateFrom, setUpdateFrom] = useState<HTMLElement | null | undefined>(undefined);
   const [maximized, setMaximized] = useState(false);
   const pro = store.info?.edition === 'pro';
+  const drive = useDrive();
+  const hasDrive = drive.items.length > 0;
+  useEffect(() => {
+    if (!hasDrive) setTab((x) => (x === 'drive' ? 'library' : x));
+  }, [hasDrive]);
   const updatePhase = useUpdate().state?.phase;
   const toast = useToast();
   const [versionBusy, setVersionBusy] = useState(false);
@@ -136,7 +143,7 @@ function Frame() {
   useEffect(() => {
     if (!kare) return;
     const [view, name] = kare.split('@')[0].split(':');
-    if (view === 'installed' || view === 'settings' || view === 'library') setTab(view);
+    if (view === 'installed' || view === 'settings' || view === 'library' || view === 'drive') setTab(view);
     const hit = view === 'detail' ? kareRepos?.find((r) => r.name.toLocaleLowerCase('tr') === (name ?? '').toLocaleLowerCase('tr')) : undefined;
     if (hit) setDetail({ fullName: hit.fullName, opener: null });
   }, [kare, kareRepos]);
@@ -196,6 +203,7 @@ function Frame() {
         tabs={[
           { id: 'library', label: t('tabs.library') },
           { id: 'installed', label: t('tabs.installed') },
+          ...(hasDrive ? [{ id: 'drive', label: t('tabs.drive') }] : []),
           { id: 'settings', label: t('tabs.settings') },
         ]}
         current={tab}
@@ -218,6 +226,8 @@ function Frame() {
           <Library filter={filter} setFilter={setFilter} onOpen={onOpen} onPrimary={onPrimary} onSettings={() => setTab('settings')} onUninstall={onUninstall} />
         ) : tab === 'installed' ? (
           <InstalledView onOpen={onOpen} onUninstall={onUninstall} onLibrary={() => setTab('library')} />
+        ) : tab === 'drive' ? (
+          <DriveView />
         ) : (
           <SettingsView onClearToken={(o) => setClearing(o)} />
         )}
@@ -314,7 +324,9 @@ export default function App() {
   return (
     <ToastProvider>
       <StoreProvider>
-        <Shell />
+        <DriveProvider>
+          <Shell />
+        </DriveProvider>
       </StoreProvider>
     </ToastProvider>
   );

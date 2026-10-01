@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { commands, listProgressEvent, taskEvent, updateEvent } from './types';
-import type { AppError, AppInfo, Installed, KeyStatus, ListProgress, PrereqInfo, Release, RepoList, Settings, TaskEvent, UpdateState } from './types';
+import { commands, driveEvent, listProgressEvent, taskEvent, updateEvent } from './types';
+import type { AppError, AppInfo, DriveItem, DriveProgress, Installed, KeyStatus, ListProgress, PrereqInfo, Release, RepoList, Settings, TaskEvent, UpdateState } from './types';
 
 export const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -41,6 +41,11 @@ export const api = {
   userRepoKeys: () => call<KeyStatus[]>(commands.userRepoKeys),
   addRepoKey: (key: string) => call<string[]>(commands.addRepoKey, { key }),
   removeRepoKey: (fullName: string) => call<void>(commands.removeRepoKey, { fullName }),
+  driveList: () => call<DriveItem[]>(commands.driveList),
+  driveAdd: (link: string) => call<DriveItem>(commands.driveAdd, { link }),
+  driveRemove: (id: string) => call<void>(commands.driveRemove, { id }),
+  driveDownload: (id: string) => call<string>(commands.driveDownload, { id }),
+  driveReveal: (path: string) => call<void>(commands.driveReveal, { path }),
   missingPrereqs: (owner: string, name: string, clone: boolean) => call<PrereqInfo[]>(commands.missingPrereqs, { owner, name, clone }),
   cancelTask: (taskId: string) => call<void>(commands.cancelTask, { taskId }),
   launch: (fullName: string) => call<void>(commands.launch, { fullName }),
@@ -63,6 +68,12 @@ export async function onTaskProgress(handler: (e: TaskEvent) => void): Promise<(
 export async function onListProgress(handler: (p: ListProgress) => void): Promise<() => void> {
   if (isTauri) return listen<ListProgress>(listProgressEvent, (ev) => handler(ev.payload));
   return () => undefined;
+}
+
+export async function onDriveProgress(handler: (p: DriveProgress) => void): Promise<() => void> {
+  if (isTauri) return listen<DriveProgress>(driveEvent, (ev) => handler(ev.payload));
+  const mock = await import('./mock');
+  return mock.subscribeDrive(handler);
 }
 
 export async function onUpdateState(handler: (s: UpdateState) => void): Promise<() => void> {

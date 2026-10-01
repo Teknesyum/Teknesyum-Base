@@ -51,6 +51,7 @@ GitHub depoları gösterir ve bir sürümü elle indirmenize izin verir. O kıs�
 - **Depo anahtarı** — tek bir özel depo için verilen salt okunur anahtar Ayarlar'a yapıştırılınca normal derleme o depoyu da listeler ve kurar. Anahtar GitHub'da denetlenir, Windows Kimlik Bilgisi Yöneticisi'ne yazılır.
 - **Karttan kaldırma** — kurulu program kartında Kaldır sunar; kaldırma aynı çubuğu dosya dosya doldurur ve yalnız programın klasörünü gösteren masaüstü kısayolunu siler.
 - **Önizleme sürümleri** — depoda yalnız ön sürüm varsa Base en yenisinden kurar ve günceller.
+- **Drive indirmeleri** — anahtar alanına herkese açık bir Google Drive dosya linki yapıştırınca Drive sekmesi açılır; tek tıkla dosya İndirilenler klasörüne iner, ilerleme çubuğu ve "Klasörü göster" düğmesi vardır.
 - **Açılış çubuğu** — liste yenilenirken başlık çubuğunun altındaki çubuk depo depo dolar.
 
 ## Yapmadıkları

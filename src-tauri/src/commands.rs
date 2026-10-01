@@ -626,6 +626,41 @@ pub async fn remove_repo_key(full_name: String) -> AppResult<()> {
 }
 
 #[tauri::command]
+pub async fn drive_list(state: State<'_, AppState>) -> AppResult<Vec<crate::drive::DriveItem>> {
+    Ok(crate::drive::list(&state.paths))
+}
+
+#[tauri::command]
+pub async fn drive_add(state: State<'_, AppState>, link: String) -> AppResult<crate::drive::DriveItem> {
+    crate::drive::add(&state.http, &state.paths, &link).await
+}
+
+#[tauri::command]
+pub async fn drive_remove(state: State<'_, AppState>, id: String) -> AppResult<()> {
+    crate::drive::remove(&state.paths, &id)
+}
+
+#[tauri::command]
+pub async fn drive_download(app: AppHandle, state: State<'_, AppState>, id: String) -> AppResult<String> {
+    crate::drive::start(app, state.http.clone(), &state.paths, id)
+}
+
+#[tauri::command]
+pub async fn drive_reveal(app: AppHandle, path: String) -> AppResult<()> {
+    use tauri_plugin_opener::OpenerExt;
+    let target = PathBuf::from(&path);
+    if !crate::drive::revealable(&target) {
+        return Err(AppError::io("Yalnız İndirilenler klasöründeki dosyalar gösterilebilir."));
+    }
+    let r = if target.is_file() {
+        app.opener().reveal_item_in_dir(&target)
+    } else {
+        app.opener().open_path(crate::drive::downloads_dir().to_string_lossy(), None::<&str>)
+    };
+    r.map_err(|e| AppError::io(format!("Klasör açılamadı: {e}")))
+}
+
+#[tauri::command]
 pub async fn missing_prereqs(
     state: State<'_, AppState>,
     owner: String,

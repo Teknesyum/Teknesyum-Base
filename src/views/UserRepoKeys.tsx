@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { api } from '../api/client';
 import type { KeyState, KeyStatus } from '../api/types';
+import { isDriveLink, useDrive } from '../drive';
 import { useI18n } from '../i18n';
 import { useStore } from '../store';
 import { useFlip } from '../ui/hooks';
@@ -23,6 +24,7 @@ export function UserRepoKeys() {
   const { t } = useI18n();
   const store = useStore();
   const toast = useToast();
+  const drive = useDrive();
   const id = useId();
   const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
@@ -44,6 +46,12 @@ export function UserRepoKeys() {
     setBusy(true);
     setError('');
     try {
+      if (isDriveLink(key)) {
+        const item = await drive.add(key.trim());
+        setKey('');
+        toast({ kind: 'success', title: t('userKeys.driveAdded'), body: item.name });
+        return;
+      }
       const found = await api.addRepoKey(key.trim());
       setKey('');
       toast({ kind: 'success', title: t('userKeys.added'), body: found.join(', ') });

@@ -1,0 +1,50 @@
+.drive-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'name size actions'
+    'bar bar bar';
+  align-items: center;
+  column-gap: var(--tk-sp-3);
+  padding: var(--tk-sp-2) var(--tk-sp-3);
+}
+
+.drive-row__name {
+  grid-area: name;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--tk-text);
+  font-weight: var(--tk-fw-semi);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drive-row__size {
+  grid-area: size;
+}
+
+.drive-row__actions {
+  display: flex;
+  grid-area: actions;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--tk-sp-2);
+}
+
+.drive-row__bar {
+  grid-area: bar;
+  padding-top: var(--tk-sp-2);
+}
+
+.rows[data-dar] .drive-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name size'
+    'actions actions'
+    'bar bar';
+  row-gap: var(--tk-sp-2);
+}
+
+.rows[data-dar] .drive-row__actions {
+  justify-content: flex-start;
+}

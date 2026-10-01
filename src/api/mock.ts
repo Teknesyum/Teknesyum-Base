@@ -1,4 +1,4 @@
-import type { AppError, AppInfo, Installed, Release, Repo, RepoList, Settings, TaskEvent, TaskStep, UpdateState } from './types';
+import type { AppError, AppInfo, DriveItem, DriveProgress, Installed, Release, Repo, RepoList, Settings, TaskEvent, TaskStep, UpdateState } from './types';
 
 const durum = new URLSearchParams(window.location.search).get('durum');
 
@@ -234,6 +234,24 @@ function setUpdate(next: Partial<UpdateState>) {
   updateListeners.forEach((l) => l(snap));
 }
 
+const driveListeners = new Set<(p: DriveProgress) => void>();
+let driveItems: DriveItem[] = [{ id: 'mock1AbCdEfGhIjK', name: 'Tanıtım videosu.mp4', size: 48_000_000, addedAt: '2026-10-01T10:00:00Z' }];
+
+export function subscribeDrive(handler: (p: DriveProgress) => void): () => void {
+  driveListeners.add(handler);
+  return () => driveListeners.delete(handler);
+}
+
+async function mockDriveDownload(item: DriveItem) {
+  const total = item.size ?? 10_000_000;
+  const path = 'C:\\Users\\Ornek\\Downloads\\' + item.name;
+  for (let i = 0; i <= 30; i += 1) {
+    const p: DriveProgress = { id: item.id, received: Math.round((total * i) / 30), total, status: i === 30 ? 'done' : 'running', path, message: null };
+    driveListeners.forEach((l) => l(p));
+    await wait(120);
+  }
+}
+
 export function subscribeUpdate(handler: (s: UpdateState) => void): () => void {
   updateListeners.add(handler);
   return () => updateListeners.delete(handler);
@@ -339,6 +357,25 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
     case 'add_repo_key':
       return out([]);
     case 'remove_repo_key':
+      return out(undefined);
+    case 'drive_list':
+      return out(driveItems);
+    case 'drive_add': {
+      const link = String(args.link ?? '');
+      if (!/drive\.google\.com\/file\/d\//.test(link)) throw { code: 'not-found', message: 'Bu bir Drive dosya linki değil.' } satisfies AppError;
+      const item: DriveItem = { id: 'mock' + Date.now(), name: 'Yeni dosya.zip', size: 12_500_000, addedAt: new Date().toISOString() };
+      driveItems = [item, ...driveItems];
+      return out(item);
+    }
+    case 'drive_remove':
+      driveItems = driveItems.filter((x) => x.id !== args.id);
+      return out(undefined);
+    case 'drive_download': {
+      const item = driveItems.find((x) => x.id === args.id);
+      if (item) void mockDriveDownload(item);
+      return out('C:\\Users\\Ornek\\Downloads\\' + (item?.name ?? ''));
+    }
+    case 'drive_reveal':
       return out(undefined);
     case 'missing_prereqs':
       return out([]);

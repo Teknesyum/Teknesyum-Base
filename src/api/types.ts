@@ -165,6 +165,11 @@ export const commands = {
   userRepoKeys: 'user_repo_keys',
   addRepoKey: 'add_repo_key',
   removeRepoKey: 'remove_repo_key',
+  driveList: 'drive_list',
+  driveAdd: 'drive_add',
+  driveRemove: 'drive_remove',
+  driveDownload: 'drive_download',
+  driveReveal: 'drive_reveal',
   cancelTask: 'cancel_task',
   launch: 'launch_installed',
   setLocalTags: 'set_local_tags',
@@ -180,6 +185,20 @@ export const commands = {
 
 export const taskEvent = 'task://progress';
 export const listProgressEvent = 'list://progress';
+export const driveEvent = 'drive://progress';
+
+export type DriveItem = { id: string; name: string; size: number | null; addedAt: string };
+
+export type DriveStatus = 'running' | 'done' | 'error';
+
+export interface DriveProgress {
+  id: string;
+  received: number;
+  total: number | null;
+  status: DriveStatus;
+  path: string;
+  message: string | null;
+}
 
 export interface ListProgress {
   done: number;

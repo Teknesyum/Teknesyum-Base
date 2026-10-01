@@ -1,6 +1,7 @@
 mod claude;
 mod commands;
 mod detect;
+mod drive;
 mod error;
 mod github;
 mod installer;
@@ -256,6 +257,11 @@ pub fn run() {
             commands::user_repo_keys,
             commands::add_repo_key,
             commands::remove_repo_key,
+            commands::drive_list,
+            commands::drive_add,
+            commands::drive_remove,
+            commands::drive_download,
+            commands::drive_reveal,
             commands::cancel_task,
             commands::launch_installed,
             commands::set_local_tags,

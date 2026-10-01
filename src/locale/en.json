@@ -19,7 +19,8 @@
   "tabs": {
     "library": "Library",
     "installed": "Installed",
-    "settings": "Settings"
+    "settings": "Settings",
+    "drive": "Drive"
   },
   "time": {
     "justNow": "Just now"
@@ -448,13 +449,33 @@
   "userKeys": {
     "title": "Repository Key",
     "intro": "If you were given a key for a private repository, paste it here. Base sees and installs only that repository; the key opens nothing else.",
-    "key": "Key",
+    "key": "Key or Drive link",
     "add": "Add",
     "checking": "Checking",
-    "empty": "Paste the key first",
-    "help": "The key is checked on GitHub, then stored on this computer in Windows Credential Manager.",
+    "empty": "Paste the key or link first",
+    "help": "The key is checked on GitHub, then stored in Windows Credential Manager on this computer. Paste a Drive file link and it is added to the Drive tab.",
     "added": "Key added",
     "removed": "{name} key removed",
-    "remove": "Remove"
+    "remove": "Remove",
+    "driveAdded": "Added to the Drive tab"
+  },
+  "drive": {
+    "summary": "Files: {n}. Downloads go to your Downloads folder.",
+    "download": "Download",
+    "downloadOf": "Download {name}",
+    "downloading": "Downloading",
+    "again": "Download again",
+    "busy": "Downloading, wait for it to finish",
+    "reveal": "Show in folder",
+    "revealFailed": "Could not open the folder",
+    "remove": "Remove from list",
+    "removeOf": "Remove {name} from the list",
+    "removed": "{name} removed from the list",
+    "progress": "{done} / {total}",
+    "progressUnknown": "{done} downloaded",
+    "progressLabel": "Download of {name}",
+    "done": "Downloaded",
+    "failed": "Download failed",
+    "sizeUnknown": "Size unknown"
   }
 }

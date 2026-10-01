@@ -63,7 +63,7 @@
   },
   "actions": {
     "install": "Install",
-    "clone": "Install",
+    "clone": "Clone repository",
     "update": "Update",
     "launch": "Open",
     "folder": "Open folder",

@@ -169,7 +169,7 @@ type Props = {
 export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary, onUninstall }: Props) {
   const { t, num, rel } = useI18n();
   const shown = useStore().shown[repo.fullName];
-  const removable = (repo.installState === 'installed' || repo.installState === 'update-available') && !repo.plugin && repo.name !== 'Teknesyum-Base';
+  const removable = (repo.installState === 'installed' || repo.installState === 'update-available' || repo.installState === 'cloned') && !repo.plugin && repo.name !== 'Teknesyum-Base';
   const meta = (
     <div className="card__meta">
       <span className="meta" title={t('stats.stars')}>

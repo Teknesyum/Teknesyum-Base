@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { commands, taskEvent, updateEvent } from './types';
-import type { AppError, AppInfo, Installed, KeyStatus, PrereqInfo, Release, RepoList, Settings, TaskEvent, UpdateState } from './types';
+import { commands, listProgressEvent, taskEvent, updateEvent } from './types';
+import type { AppError, AppInfo, Installed, KeyStatus, ListProgress, PrereqInfo, Release, RepoList, Settings, TaskEvent, UpdateState } from './types';
 
 export const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -38,6 +38,9 @@ export const api = {
   uninstall: (fullName: string) => call<string>(commands.uninstall, { fullName }),
   clone: (owner: string, name: string, prereqs?: boolean) => call<string>(commands.clone, { owner, name, prereqs: prereqs ?? null }),
   repoKeys: (fullNames: string[]) => call<KeyStatus[]>(commands.repoKeys, { fullNames }),
+  userRepoKeys: () => call<KeyStatus[]>(commands.userRepoKeys),
+  addRepoKey: (key: string) => call<string[]>(commands.addRepoKey, { key }),
+  removeRepoKey: (fullName: string) => call<void>(commands.removeRepoKey, { fullName }),
   missingPrereqs: (owner: string, name: string, clone: boolean) => call<PrereqInfo[]>(commands.missingPrereqs, { owner, name, clone }),
   cancelTask: (taskId: string) => call<void>(commands.cancelTask, { taskId }),
   launch: (fullName: string) => call<void>(commands.launch, { fullName }),
@@ -55,6 +58,11 @@ export async function onTaskProgress(handler: (e: TaskEvent) => void): Promise<(
   if (isTauri) return listen<TaskEvent>(taskEvent, (ev) => handler(ev.payload));
   const mock = await import('./mock');
   return mock.subscribe(handler);
+}
+
+export async function onListProgress(handler: (p: ListProgress) => void): Promise<() => void> {
+  if (isTauri) return listen<ListProgress>(listProgressEvent, (ev) => handler(ev.payload));
+  return () => undefined;
 }
 
 export async function onUpdateState(handler: (s: UpdateState) => void): Promise<() => void> {

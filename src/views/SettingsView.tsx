@@ -10,6 +10,7 @@ import type { Opener } from './actions';
 import './page.css';
 import './settings.css';
 import { RepoKeys } from './RepoKeys';
+import { UserRepoKeys } from './UserRepoKeys';
 
 type Props = { onClearToken: (o: Opener) => void };
 
@@ -199,7 +200,7 @@ export function SettingsView({ onClearToken }: Props) {
         )}
       </section>
 
-      {store.info?.edition === 'pro' ? <RepoKeys /> : null}
+      {store.info?.edition === 'pro' ? <RepoKeys /> : <UserRepoKeys />}
 
       <section className="group divider-top" aria-labelledby={id + '-dir'}>
         <h2 id={id + '-dir'} className="group__title">

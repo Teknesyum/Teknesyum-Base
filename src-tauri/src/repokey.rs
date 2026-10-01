@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::process::Command;
+use std::sync::{Mutex, OnceLock};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
+use crate::error::{AppError, AppResult, ErrorCode};
 use crate::github::UA;
 
 #[cfg(feature = "pro")]
@@ -44,7 +46,78 @@ fn lookup(map: &HashMap<String, String>, full_name: &str) -> Option<String> {
 }
 
 pub fn get(full_name: &str) -> Option<String> {
-    lookup(&embedded_map(), full_name)
+    lookup(&embedded_map(), full_name).or_else(|| user_map().lock().ok().and_then(|m| lookup(&m, full_name)))
+}
+
+const USER_SERVICE: &str = if cfg!(feature = "pro") { "Teknesyum Base Pro" } else { "Teknesyum Base" };
+const USER_ENTRY: &str = "repo-keys";
+
+fn user_map() -> &'static Mutex<HashMap<String, String>> {
+    static MAP: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
+    MAP.get_or_init(|| {
+        let stored = keyring::Entry::new(USER_SERVICE, USER_ENTRY).ok().and_then(|e| e.get_password().ok());
+        Mutex::new(parse(stored.as_deref()))
+    })
+}
+
+fn save_user(map: &HashMap<String, String>) -> AppResult<()> {
+    let entry = keyring::Entry::new(USER_SERVICE, USER_ENTRY)?;
+    if map.is_empty() {
+        return match entry.delete_credential() {
+            Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+            Err(e) => Err(e.into()),
+        };
+    }
+    entry.set_password(&serde_json::to_string(map)?)?;
+    Ok(())
+}
+
+pub fn user_repos() -> Vec<String> {
+    let mut v: Vec<String> = user_map().lock().map(|m| m.keys().cloned().collect()).unwrap_or_default();
+    v.sort();
+    v
+}
+
+#[derive(Deserialize)]
+struct KeyRepo {
+    full_name: String,
+    private: bool,
+}
+
+pub async fn add(http: &reqwest::Client, key: &str) -> AppResult<Vec<String>> {
+    let key = key.trim();
+    if key.is_empty() || key.chars().any(char::is_whitespace) {
+        return Err(AppError::new(ErrorCode::Auth, "Anahtar geçersiz görünüyor."));
+    }
+    let resp = http
+        .get("https://api.github.com/user/repos?per_page=100")
+        .header(reqwest::header::USER_AGENT, UA)
+        .header(reqwest::header::ACCEPT, "application/vnd.github+json")
+        .bearer_auth(key)
+        .send()
+        .await?;
+    match resp.status().as_u16() {
+        200 => {}
+        401 => return Err(AppError::new(ErrorCode::Auth, "GitHub bu anahtarı tanımadı.")),
+        s => return Err(AppError::new(ErrorCode::Network, format!("Anahtar denetlenemedi: HTTP {s}"))),
+    }
+    let repos: Vec<KeyRepo> = serde_json::from_str(&resp.text().await?)?;
+    let found: Vec<String> = repos.into_iter().filter(|r| r.private).map(|r| r.full_name).collect();
+    if found.is_empty() {
+        return Err(AppError::new(ErrorCode::Auth, "Bu anahtar hiçbir private depoyu açmıyor."));
+    }
+    let mut map = user_map().lock().map_err(|_| AppError::unknown("anahtar kilidi"))?;
+    for f in &found {
+        map.insert(f.to_ascii_lowercase(), key.to_string());
+    }
+    save_user(&map)?;
+    Ok(found)
+}
+
+pub fn remove(full_name: &str) -> AppResult<()> {
+    let mut map = user_map().lock().map_err(|_| AppError::unknown("anahtar kilidi"))?;
+    map.remove(&full_name.to_ascii_lowercase());
+    save_user(&map)
 }
 
 pub fn header_env(cmd: &mut Command, url_prefix: &str, token: &str) {

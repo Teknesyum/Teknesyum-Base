@@ -95,9 +95,12 @@ pub struct GitHub {
     rate: Arc<Mutex<RateInfo>>,
     counters: Arc<Counters>,
     use_index: bool,
+    progress: Option<ProgressFn>,
     #[cfg(test)]
     trace: Arc<Mutex<Vec<String>>>,
 }
+
+pub type ProgressFn = Arc<dyn Fn(usize, usize) + Send + Sync>;
 
 struct Resp {
     status: u16,
@@ -292,9 +295,33 @@ impl GitHub {
             rate: Arc::new(Mutex::new(RateInfo::default())),
             counters: Arc::new(Counters::default()),
             use_index: true,
+            progress: None,
             #[cfg(test)]
             trace: Arc::new(Mutex::new(Vec::new())),
         }
+    }
+
+    pub fn with_progress(mut self, f: ProgressFn) -> Self {
+        self.progress = Some(f);
+        self
+    }
+
+    fn repo_key(&self, url: &str) -> Option<String> {
+        if cfg!(feature = "pro") && self.token.is_some() {
+            return None;
+        }
+        Self::repo_key_for(url)
+    }
+
+    fn repo_key_for(url: &str) -> Option<String> {
+        let rest = url.strip_prefix(&format!("{API}/repos/"))?;
+        let mut parts = rest.split(['/', '?']);
+        let full = format!("{}/{}", parts.next()?, parts.next()?);
+        crate::repokey::get(&full)
+    }
+
+    pub fn token_for(&self, full_name: &str) -> Option<String> {
+        self.repo_key(&format!("{API}/repos/{full_name}")).or_else(|| self.token.clone())
     }
 
     #[cfg_attr(not(test), allow(dead_code))]
@@ -452,7 +479,8 @@ impl GitHub {
         if url.starts_with(API) {
             req = req.header("X-GitHub-Api-Version", "2022-11-28");
         }
-        if let (Some(token), true) = (&self.token, is_github) {
+        let repo_key = self.repo_key(url);
+        if let (Some(token), true) = (repo_key.as_ref().or(self.token.as_ref()), is_github) {
             req = req.header(AUTHORIZATION, format!("Bearer {token}"));
         }
         if let Some(c) = &cached {
@@ -463,7 +491,7 @@ impl GitHub {
         let resp = req.send().await?;
         let status = resp.status();
         let headers = resp.headers().clone();
-        if url.starts_with(API) {
+        if url.starts_with(API) && repo_key.is_none() {
             self.record_rate(&headers);
         }
         #[cfg(test)]
@@ -600,6 +628,17 @@ impl GitHub {
         } else {
             repos.retain(|r| !r.private);
         }
+        for full in crate::repokey::user_repos() {
+            let owner_ok = full.split('/').next().is_some_and(|o| o.eq_ignore_ascii_case(account));
+            if !owner_ok || repos.iter().any(|r| r.full_name.eq_ignore_ascii_case(&full)) {
+                continue;
+            }
+            if let Ok(r) = self.get(&format!("{API}/repos/{full}"), ACCEPT_JSON).await {
+                if let Some(gh) = (r.status == 200).then(|| serde_json::from_str::<GhRepo>(&r.body).ok()).flatten() {
+                    repos.push(gh);
+                }
+            }
+        }
         Ok(repos)
     }
 
@@ -683,7 +722,9 @@ impl GitHub {
 
     async fn repo_bytes(&self, owner: &str, name: &str, path: &str) -> Option<Vec<u8>> {
         let path = path.replace(' ', "%20");
-        let url = match &self.token {
+        let repo_key = self.repo_key(&format!("{API}/repos/{owner}/{name}"));
+        let token = repo_key.as_ref().or(self.token.as_ref());
+        let url = match token {
             Some(_) => format!("{API}/repos/{owner}/{name}/contents/{path}"),
             None => format!("https://raw.githubusercontent.com/{owner}/{name}/HEAD/{path}"),
         };
@@ -691,11 +732,11 @@ impl GitHub {
         if url.starts_with(API) {
             req = req.header("X-GitHub-Api-Version", "2022-11-28");
         }
-        if let Some(token) = &self.token {
+        if let Some(token) = token {
             req = req.header(AUTHORIZATION, format!("Bearer {token}"));
         }
         let resp = req.send().await.ok()?;
-        if url.starts_with(API) {
+        if url.starts_with(API) && repo_key.is_none() {
             self.record_rate(resp.headers());
         }
         if !resp.status().is_success() {
@@ -757,9 +798,10 @@ impl GitHub {
             .header(USER_AGENT, UA)
             .header(ACCEPT, if api { ACCEPT_RAW } else { "*/*" })
             .timeout(Duration::from_secs(60));
+        let repo_key = self.repo_key(&url);
         if api {
             req = req.header("X-GitHub-Api-Version", "2022-11-28");
-            if let Some(token) = &self.token {
+            if let Some(token) = repo_key.as_ref().or(self.token.as_ref()) {
                 req = req.header(AUTHORIZATION, format!("Bearer {token}"));
             }
         }
@@ -775,7 +817,7 @@ impl GitHub {
                 }
             }
         };
-        if api {
+        if api && repo_key.is_none() {
             self.record_rate(resp.headers());
         }
         let status = resp.status();
@@ -810,68 +852,82 @@ impl GitHub {
         let repos = self.list_account_repos(account).await?;
         let now = chrono::Utc::now().timestamp();
         let index = Arc::new(self.catalog_index().await.filter(|i| i.is_fresh(now)));
+        let total = repos.len();
+        let done = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        if let Some(p) = &self.progress {
+            p(0, total);
+        }
         let results: Vec<AppResult<RepoDetails>> = stream::iter(repos.into_iter().map(|gh| {
             let this = self.clone();
             let index = index.clone();
+            let done = done.clone();
             async move {
-                if let Some(e) = index.as_ref().as_ref().and_then(|i| i.entry_for(&gh)) {
-                    return Ok(RepoDetails {
-                        release: e.release.clone(),
-                        manifest: e.manifest.clone(),
-                        ui: e.ui.clone(),
-                        media: e.media.clone(),
-                        gh,
-                    });
+                let r = this.one_detail(gh, &index).await;
+                if let Some(p) = &this.progress {
+                    p(done.fetch_add(1, Ordering::Relaxed) + 1, total);
                 }
-                let owner = gh.owner.login.clone();
-                let memo_file = store::memo_file(&this.cache_dir, &gh.full_name, this.token.is_some());
-                let now = chrono::Utc::now().timestamp();
-                let upstream = logic::upstream_of(&owner, &gh.name).is_some();
-                if let Some(m) = store::load_memo::<MemoData>(&memo_file).filter(|_| !upstream) {
-                    if m.data.ui_checked && m.data.media_v3 && m.usable(gh.pushed_at.as_deref(), now, this.token.is_some()) {
-                        return Ok(RepoDetails {
-                            gh,
-                            release: m.data.release,
-                            manifest: m.data.manifest,
-                            ui: m.data.ui,
-                            media: m.data.media,
-                        });
-                    }
-                }
-                let release = this.latest_release(&owner, &gh.name).await?;
-                let manifest = this.manifest(&owner, &gh.name, gh.private).await?;
-                let ui = this.ui_version(&owner, &gh.name, gh.private).await?;
-                let media = this.media_dates(&owner, &gh.name, manifest.as_ref()).await;
-                if let Some(pushed_at) = gh.pushed_at.clone().filter(|p| !p.is_empty() && !upstream) {
-                    let _ = store::save_memo(
-                        &memo_file,
-                        &RepoMemo {
-                            pushed_at,
-                            saved_at: now,
-                            data: MemoData {
-                                release: release.clone(),
-                                manifest: manifest.clone(),
-                                ui_checked: true,
-                                ui: ui.clone(),
-                                media_v3: true,
-                                media: media.clone(),
-                            },
-                        },
-                    );
-                }
-                Ok(RepoDetails {
-                    gh,
-                    release,
-                    manifest,
-                    ui,
-                    media,
-                })
+                r
             }
         }))
         .buffered(CONCURRENCY)
         .collect()
         .await;
         results.into_iter().collect()
+    }
+
+    async fn one_detail(&self, gh: GhRepo, index: &Option<CatalogIndex>) -> AppResult<RepoDetails> {
+        if let Some(e) = index.as_ref().as_ref().and_then(|i| i.entry_for(&gh)) {
+            return Ok(RepoDetails {
+                release: e.release.clone(),
+                manifest: e.manifest.clone(),
+                ui: e.ui.clone(),
+                media: e.media.clone(),
+                gh,
+            });
+        }
+        let owner = gh.owner.login.clone();
+        let memo_file = store::memo_file(&self.cache_dir, &gh.full_name, self.token.is_some());
+        let now = chrono::Utc::now().timestamp();
+        let upstream = logic::upstream_of(&owner, &gh.name).is_some();
+        if let Some(m) = store::load_memo::<MemoData>(&memo_file).filter(|_| !upstream) {
+            if m.data.ui_checked && m.data.media_v3 && m.usable(gh.pushed_at.as_deref(), now, self.token.is_some()) {
+                return Ok(RepoDetails {
+                    gh,
+                    release: m.data.release,
+                    manifest: m.data.manifest,
+                    ui: m.data.ui,
+                    media: m.data.media,
+                });
+            }
+        }
+        let release = self.latest_release(&owner, &gh.name).await?;
+        let manifest = self.manifest(&owner, &gh.name, gh.private).await?;
+        let ui = self.ui_version(&owner, &gh.name, gh.private).await?;
+        let media = self.media_dates(&owner, &gh.name, manifest.as_ref()).await;
+        if let Some(pushed_at) = gh.pushed_at.clone().filter(|p| !p.is_empty() && !upstream) {
+            let _ = store::save_memo(
+                &memo_file,
+                &RepoMemo {
+                    pushed_at,
+                    saved_at: now,
+                    data: MemoData {
+                        release: release.clone(),
+                        manifest: manifest.clone(),
+                        ui_checked: true,
+                        ui: ui.clone(),
+                        media_v3: true,
+                        media: media.clone(),
+                    },
+                },
+            );
+        }
+        Ok(RepoDetails {
+            gh,
+            release,
+            manifest,
+            ui,
+            media,
+        })
     }
 
     pub async fn releases(&self, owner: &str, name: &str) -> AppResult<Vec<Release>> {

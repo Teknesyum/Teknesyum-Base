@@ -162,6 +162,9 @@ export const commands = {
   clone: 'clone_repo',
   missingPrereqs: 'missing_prereqs',
   repoKeys: 'repo_keys',
+  userRepoKeys: 'user_repo_keys',
+  addRepoKey: 'add_repo_key',
+  removeRepoKey: 'remove_repo_key',
   cancelTask: 'cancel_task',
   launch: 'launch_installed',
   setLocalTags: 'set_local_tags',
@@ -176,6 +179,12 @@ export const commands = {
 } as const;
 
 export const taskEvent = 'task://progress';
+export const listProgressEvent = 'list://progress';
+
+export interface ListProgress {
+  done: number;
+  total: number;
+}
 
 export type UpdatePhase = 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'installing' | 'error';
 

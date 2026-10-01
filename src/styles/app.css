@@ -702,3 +702,9 @@ body {
   font-weight: var(--tk-fw-body);
   letter-spacing: normal;
 }
+
+.sync-bar {
+  flex: none;
+  padding: var(--tk-sp-2) var(--tk-sp-4);
+  border-bottom: var(--tk-border-w) solid var(--tk-border);
+}

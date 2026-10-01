@@ -5,6 +5,7 @@ import type { PrereqInfo, Repo } from './api/types';
 import { I18nProvider, useI18n } from './i18n';
 import { StoreProvider, useStore } from './store';
 import { ConfirmDialog } from './ui/Dialog';
+import { ProgressBar } from './ui/Progress';
 import { useTitlebarFit } from './ui/hooks';
 import { ToastProvider, useToast } from './ui/Toasts';
 import { UpdateBadge } from './ui/UpdateBadge';
@@ -208,6 +209,11 @@ function Frame() {
         onClose={() => void windowControls.close()}
       />
       <main className="app__main" key={tab}>
+        {store.syncing && store.listProgress && store.listProgress.total > 0 ? (
+          <div className="sync-bar">
+            <ProgressBar percent={(store.listProgress.done / store.listProgress.total) * 100} step={t('sync.progress', { done: store.listProgress.done, total: store.listProgress.total })} label={t('sync.progressLabel')} />
+          </div>
+        ) : null}
         {tab === 'library' ? (
           <Library filter={filter} setFilter={setFilter} onOpen={onOpen} onPrimary={onPrimary} onSettings={() => setTab('settings')} />
         ) : tab === 'installed' ? (

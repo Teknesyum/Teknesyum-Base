@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { api, onTaskProgress } from './api/client';
-import type { AppError, AppInfo, Installed, Repo, RepoList, Settings, TaskEvent } from './api/types';
+import { api, onListProgress, onTaskProgress } from './api/client';
+import type { AppError, AppInfo, Installed, ListProgress, Repo, RepoList, Settings, TaskEvent } from './api/types';
 import { enrich } from './data/catalog';
 import { makeT } from './i18n';
 import { useToast } from './ui/Toasts';
@@ -14,6 +14,7 @@ type Store = {
   account: string;
   loadError: AppError | null;
   syncing: boolean;
+  listProgress: ListProgress | null;
   syncError: AppError | null;
   installed: Installed[];
   tasks: Record<string, TaskEvent>;
@@ -57,6 +58,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState('');
   const [loadError, setLoadError] = useState<AppError | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [listProgress, setListProgress] = useState<ListProgress | null>(null);
   const [syncError, setSyncError] = useState<AppError | null>(null);
   const [installed, setInstalled] = useState<Installed[]>([]);
   const [tasks, setTasks] = useState<Record<string, TaskEvent>>({});
@@ -81,7 +83,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [toast]);
 
   const fetchList = useCallback(async (acc: string | undefined, force: boolean, auto = false) => {
-    if (force) setSyncing(true);
+    if (force) {
+      setListProgress(null);
+      setSyncing(true);
+    }
     try {
       const next = await api.listRepos(force, acc, auto);
       setList(next);
@@ -96,7 +101,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       if (force) setSyncError(err);
     } finally {
-      if (force) setSyncing(false);
+      if (force) {
+        setSyncing(false);
+        setListProgress(null);
+      }
     }
   }, []);
 
@@ -117,6 +125,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void boot();
   }, [boot]);
+
+  useEffect(() => {
+    let off: (() => void) | undefined;
+    let dead = false;
+    void onListProgress((p) => setListProgress(p)).then((fn) => {
+      if (dead) fn();
+      else off = fn;
+    });
+    return () => {
+      dead = true;
+      off?.();
+    };
+  }, []);
 
   useEffect(() => {
     let off: (() => void) | undefined;
@@ -184,6 +205,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       account,
       loadError,
       syncing,
+      listProgress,
       syncError,
       installed,
       tasks,
@@ -263,7 +285,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       },
     }),
-    [info, settings, shownList, account, loadError, syncing, syncError, installed, tasks, logs, dialogFor, fetchList, boot, start, fail, toast, refreshInstalled],
+    [info, settings, shownList, account, loadError, syncing, listProgress, syncError, installed, tasks, logs, dialogFor, fetchList, boot, start, fail, toast, refreshInstalled],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

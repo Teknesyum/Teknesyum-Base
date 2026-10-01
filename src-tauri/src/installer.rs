@@ -159,14 +159,14 @@ pub(crate) async fn download(
     from: u8,
     to: u8,
 ) -> AppResult<String> {
-    let authed = env.gh.has_token() && asset.id != 0;
-    let mut req = env.http.get(if authed {
+    let token = env.gh.token_for(&task.full_name).filter(|_| asset.id != 0);
+    let mut req = env.http.get(if token.is_some() {
         asset.url.as_str()
     } else {
         asset.browser_download_url.as_str()
     });
     req = req.header(USER_AGENT, UA);
-    if let Some(token) = env.gh.token().filter(|_| authed) {
+    if let Some(token) = token {
         req = req
             .header(AUTHORIZATION, format!("Bearer {token}"))
             .header(ACCEPT, "application/octet-stream");
@@ -209,14 +209,15 @@ pub(crate) async fn download(
         .collect())
 }
 
-async fn fetch_text(env: &Env, asset: &GhAsset) -> AppResult<String> {
-    let mut req = env.http.get(if env.gh.has_token() {
+async fn fetch_text(env: &Env, full_name: &str, asset: &GhAsset) -> AppResult<String> {
+    let token = env.gh.token_for(full_name).filter(|_| asset.id != 0);
+    let mut req = env.http.get(if token.is_some() {
         asset.url.as_str()
     } else {
         asset.browser_download_url.as_str()
     });
     req = req.header(USER_AGENT, UA);
-    if let Some(token) = env.gh.token() {
+    if let Some(token) = token {
         req = req
             .header(AUTHORIZATION, format!("Bearer {token}"))
             .header(ACCEPT, "application/octet-stream");
@@ -564,7 +565,7 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
             continue;
         };
         let single = !logic::is_multi_checksum(&cand.name);
-        let text = fetch_text(&env, gh_asset).await?;
+        let text = fetch_text(&env, &task.full_name, gh_asset).await?;
         if let Some(expected) = logic::parse_checksum(&text, &asset.name, single) {
             if expected != hash {
                 let _ = fs::remove_file(&file);

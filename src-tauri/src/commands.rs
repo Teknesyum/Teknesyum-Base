@@ -19,6 +19,7 @@ use crate::settings::{self, Settings};
 use crate::store::{self, InstalledRecord};
 
 pub const TASK_EVENT: &str = "task://progress";
+pub const LIST_PROGRESS_EVENT: &str = "list://progress";
 
 struct TaskEntry {
     full_name: String,
@@ -329,7 +330,10 @@ pub async fn list_repos(
         .filter(|a| !a.is_empty())
         .unwrap_or_else(|| state.settings().account);
     check_part(&account, "hesap adı")?;
-    let gh = state.gh();
+    let emit_app = app.clone();
+    let gh = state.gh().with_progress(Arc::new(move |done, total| {
+        let _ = emit_app.emit(LIST_PROGRESS_EVENT, serde_json::json!({ "done": done, "total": total }));
+    }));
     let mut list = load_list(
         &gh,
         &state.paths.cache,
@@ -602,6 +606,23 @@ pub async fn repo_keys(state: State<'_, AppState>, full_names: Vec<String>) -> A
         }
     });
     Ok(futures_util::future::join_all(checks).await)
+}
+
+#[tauri::command]
+pub async fn user_repo_keys(state: State<'_, AppState>) -> AppResult<Vec<crate::repokey::KeyStatus>> {
+    let names = crate::repokey::user_repos();
+    repo_keys(state, names).await
+}
+
+#[tauri::command]
+pub async fn add_repo_key(state: State<'_, AppState>, key: String) -> AppResult<Vec<String>> {
+    let found = crate::repokey::add(&state.http, &key).await?;
+    Ok(found)
+}
+
+#[tauri::command]
+pub async fn remove_repo_key(full_name: String) -> AppResult<()> {
+    crate::repokey::remove(&full_name)
 }
 
 #[tauri::command]

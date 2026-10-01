@@ -432,5 +432,21 @@
       "icon-old": "icon is old",
       "icon-differs": "icon does not match the app's icon"
     }
+  },
+  "sync": {
+    "progress": "{done} / {total} repos",
+    "progressLabel": "Updating the list"
+  },
+  "userKeys": {
+    "title": "Repository Key",
+    "intro": "If you were given a key for a private repository, paste it here. Base sees and installs only that repository; the key opens nothing else.",
+    "key": "Key",
+    "add": "Add",
+    "checking": "Checking",
+    "empty": "Paste the key first",
+    "help": "The key is checked on GitHub, then stored on this computer in Windows Credential Manager.",
+    "added": "Key added",
+    "removed": "{name} key removed",
+    "remove": "Remove"
   }
 }

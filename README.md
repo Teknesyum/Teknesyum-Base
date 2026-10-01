@@ -48,6 +48,8 @@ GitHub shows the repositories and lets you download a release by hand. That part
 - **Offline cache** — the last list is kept and shown when the network is down, with its age.
 - **Self-update** — Base checks 10 seconds after every start, then hourly. An update is downloaded silently and applied on the next launch. The version sits muted in the title bar; click it to check now — it opens the update panel, or says you are up to date.
 - **Two builds** — the normal build lists public repositories. The Pro build also lists private ones.
+- **Repository key** — paste a read-only key for one private repository into Settings, and the normal build lists and installs that repository too. The key is checked on GitHub and stored in Windows Credential Manager.
+- **Startup refresh bar** — while the list refreshes, a bar under the title bar fills repository by repository.
 
 ## What it doesn't do
 

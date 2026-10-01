@@ -101,9 +101,9 @@ pub struct GitHub {
 }
 
 pub(crate) fn pick_release(list: Vec<GhRelease>) -> Option<GhRelease> {
-    let mut live = list.into_iter().filter(|x| !x.draft).peekable();
-    let first = live.peek().cloned();
-    live.find(|x| !x.prerelease).or(first)
+    let live: Vec<GhRelease> = list.into_iter().filter(|x| !x.draft).collect();
+    let stable = || live.iter().filter(|x| !x.prerelease);
+    stable().find(|x| !x.assets.is_empty()).or_else(|| stable().next()).or(live.first()).cloned()
 }
 
 pub type ProgressFn = Arc<dyn Fn(usize, usize) + Send + Sync>;
@@ -1124,6 +1124,9 @@ mod tests {
         assert_eq!(tag(vec![rel("v2-pre", true, false), rel("v1", false, false)]).as_deref(), Some("v1"));
         assert_eq!(tag(vec![rel("v3", false, true), rel("v2-pre", true, false), rel("v1-pre", true, false)]).as_deref(), Some("v2-pre"));
         assert_eq!(tag(vec![rel("v1", false, true)]), None);
+        let with = |tag: &str| serde_json::from_str::<GhRelease>(&format!(r#"{{"tag_name":"{tag}","draft":false,"prerelease":false,"assets":[{{"id":1,"name":"a.exe","browser_download_url":"u","url":"u","size":1}}]}}"#)).unwrap();
+        assert_eq!(tag(vec![rel("tool-v2", false, false), with("v1"), rel("tool-v1", false, false)]).as_deref(), Some("v1"));
+        assert_eq!(tag(vec![rel("tool-v2", false, false), rel("tool-v1", false, false)]).as_deref(), Some("tool-v2"));
     }
 
     use super::*;

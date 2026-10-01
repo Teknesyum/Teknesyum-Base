@@ -151,7 +151,8 @@ export function PrimaryButton({ repo, task, onPrimary, tabIndex }: { repo: Repo;
 
 export function TaskProgress({ task }: { task: TaskEvent }) {
   const { t } = useI18n();
-  return <ProgressBar percent={task.percent} step={t('steps.' + task.step)} status="running" label={t('task.running.' + task.kind)} />;
+  const steps = task.kind === 'uninstall' ? 'stepsUninstall.' : 'steps.';
+  return <ProgressBar percent={task.percent} step={t(steps + task.step)} status={task.status === 'done' ? 'done' : 'running'} label={t('task.running.' + task.kind)} />;
 }
 
 type Props = {
@@ -162,11 +163,13 @@ type Props = {
   item: { ref: (el: HTMLButtonElement | null) => void; tabIndex: number; onFocus: () => void };
   onOpen: (o: Opener) => void;
   onPrimary: (o: Opener) => void;
+  onUninstall: (o: Opener) => void;
 };
 
-export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: Props) {
+export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary, onUninstall }: Props) {
   const { t, num, rel } = useI18n();
-  const running = isRunning(task);
+  const shown = useStore().shown[repo.fullName];
+  const removable = (repo.installState === 'installed' || repo.installState === 'update-available') && !repo.plugin && repo.name !== 'Teknesyum-Base';
   const meta = (
     <div className="card__meta">
       <span className="meta" title={t('stats.stars')}>
@@ -237,13 +240,18 @@ export function RepoCard({ repo, task, view, index, item, onOpen, onPrimary }: P
       <ForkNote repo={repo} />
       <div className="card__foot">
         <StateBadge repo={repo} />
-        {running && task ? (
+        {shown ? (
           <div className="card__progress">
-            <TaskProgress task={task} />
+            <TaskProgress task={shown} />
           </div>
         ) : (
           <div className="card__buttons">
             <GithubButton repo={repo} tabIndex={item.tabIndex} />
+            {removable ? (
+              <button type="button" className="btn btn--ghost btn--danger-outline" tabIndex={item.tabIndex} aria-label={t('actions.aria', { action: t('actions.uninstall'), name: repo.name })} onClick={(e) => onUninstall(e.currentTarget)}>
+                {t('actions.uninstall')}
+              </button>
+            ) : null}
             <PrimaryButton repo={repo} task={task} onPrimary={onPrimary} tabIndex={item.tabIndex} />
           </div>
         )}

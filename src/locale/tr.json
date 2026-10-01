@@ -52,6 +52,14 @@
     "shortcut": "Kısayol oluşturuluyor",
     "done": "Tamamlandı"
   },
+  "stepsUninstall": {
+    "resolve": "Kayıt okunuyor",
+    "download": "Hazırlanıyor",
+    "verify": "Denetleniyor",
+    "install": "Dosyalar siliniyor",
+    "shortcut": "Kısayollar siliniyor",
+    "done": "Kaldırıldı"
+  },
   "actions": {
     "install": "Kur",
     "update": "Güncelle",

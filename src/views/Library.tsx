@@ -16,11 +16,12 @@ type Props = {
   onOpen: (repo: Repo, o: Opener) => void;
   onPrimary: (repo: Repo, o: Opener) => void;
   onSettings: () => void;
+  onUninstall: (repo: Repo, o: Opener) => void;
 };
 
 const STATES = ['not-installed', 'installed', 'update-available', 'cloned'];
 
-export function Library({ filter, setFilter, onOpen, onPrimary, onSettings }: Props) {
+export function Library({ filter, setFilter, onOpen, onPrimary, onSettings, onUninstall }: Props) {
   const { t, lang } = useI18n();
   const store = useStore();
   const ids = { q: useId(), lang: useId(), status: useId(), archive: useId(), sort: useId(), side: useId() };
@@ -109,6 +110,7 @@ export function Library({ filter, setFilter, onOpen, onPrimary, onSettings }: Pr
               item={roving.itemProps(i)}
               onOpen={(o) => onOpen(r, o)}
               onPrimary={(o) => onPrimary(r, o)}
+                onUninstall={(o) => onUninstall(r, o)}
             />
           </div>
         ))}

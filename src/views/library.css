@@ -671,3 +671,57 @@ article.row > .fork-note {
   flex-wrap: wrap;
   gap: var(--tk-sp-2);
 }
+
+.rows--installed[data-dar] {
+  display: flex;
+}
+
+.rows--installed[data-dar] .row--installed {
+  grid-template-columns: repeat(3, auto) minmax(0, 1fr) auto;
+  grid-template-areas:
+    'head head head head badge'
+    'm1 m2 m3 . .'
+    'act act act act act';
+  row-gap: var(--tk-sp-2);
+}
+
+.rows--installed[data-dar] .row--installed > .card__head {
+  grid-area: head;
+  min-width: 0;
+}
+
+.rows--installed[data-dar] .row--installed > .badge {
+  grid-area: badge;
+}
+
+.rows--installed[data-dar] .row--installed > .meta:nth-of-type(2) {
+  grid-area: m1;
+}
+
+.rows--installed[data-dar] .row--installed > .meta:nth-of-type(3) {
+  grid-area: m2;
+}
+
+.rows--installed[data-dar] .row--installed > .meta:nth-of-type(4) {
+  grid-area: m3;
+}
+
+.rows--installed[data-dar] .row__actions {
+  grid-area: act;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tk-sp-2);
+}
+
+.rows--installed[data-dar] .row__actions > * {
+  grid-column: auto;
+}
+
+.rows--installed[data-dar] .row__slot--uninstall {
+  margin-left: auto;
+}
+
+.rows--installed[data-dar] .row__slot--progress {
+  flex: 1;
+}

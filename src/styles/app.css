@@ -288,6 +288,10 @@ body {
   width: var(--app-dar-w);
 }
 
+.width-probe--kurulu {
+  width: calc(var(--app-card-min) * 3 + var(--tk-sp-5) * 2);
+}
+
 .tk-input:not(textarea) {
   height: var(--tk-input-h);
   padding-block: 0;

@@ -868,12 +868,17 @@ pub async fn uninstall(env: Env, task: Task, rec: InstalledRecord) -> AppResult<
                 &format!("Klasör kurulum dizini dışında, silinmedi: {}", path.display()),
             );
         } else {
-            fs::remove_dir_all(&path).map_err(|e| {
-                AppError::io(format!(
-                    "Klasör silinemedi; program açık olabilir, kapatıp yeniden deneyin. ({e})"
-                ))
-            })?;
-            task.log(TaskStep::Install, 85, &format!("Klasör silindi: {}", path.display()));
+            let from = match rec.info.method {
+                InstallMethod::Msi | InstallMethod::Exe | InstallMethod::External => 76,
+                _ => 10,
+            };
+            remove_tree(&path, |done, total| task.progress(TaskStep::Install, lerp(from, 90, done, total), "Dosyalar siliniyor"))
+                .map_err(|e| {
+                    AppError::io(format!(
+                        "Klasör silinemedi; program açık olabilir, kapatıp yeniden deneyin. ({e})"
+                    ))
+                })?;
+            task.log(TaskStep::Install, 90, &format!("Klasör silindi: {}", path.display()));
         }
     }
 
@@ -883,13 +888,60 @@ pub async fn uninstall(env: Env, task: Task, rec: InstalledRecord) -> AppResult<
             task.log(TaskStep::Shortcut, 95, "Başlat menüsü kısayolu silindi");
         }
     }
-    if let Some(lnk) = desktop_lnk(&full_name).filter(|l| l.exists()) {
+    if let Some(lnk) = desktop_lnk(&full_name).filter(|l| !dry && lnk_points_into(l, &path)) {
         if fs::remove_file(&lnk).is_ok() {
             task.log(TaskStep::Shortcut, 96, "Masaüstü kısayolu silindi");
         }
     }
     store::remove_installed(&env.paths, &full_name)?;
     Ok(format!("{full_name} kaldırıldı"))
+}
+
+fn lnk_points_into(lnk: &Path, dir: &Path) -> bool {
+    let Some(info) = fs::read(lnk).ok().and_then(|b| detect::parse_lnk(&b)) else {
+        return false;
+    };
+    let dir = dir.to_string_lossy().to_lowercase();
+    [info.target, info.working_dir]
+        .into_iter()
+        .flatten()
+        .any(|p| p.to_lowercase().starts_with(&dir))
+}
+
+fn collect_tree(dir: &Path, files: &mut Vec<PathBuf>) -> std::io::Result<()> {
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if entry.file_type()?.is_dir() {
+            collect_tree(&path, files)?;
+        } else {
+            files.push(path);
+        }
+    }
+    Ok(())
+}
+
+fn remove_tree(root: &Path, mut tick: impl FnMut(u64, u64)) -> std::io::Result<()> {
+    let mut files = Vec::new();
+    collect_tree(root, &mut files)?;
+    let total = files.len() as u64;
+    let step = (total / 100).max(1);
+    for (i, f) in files.iter().enumerate() {
+        if fs::remove_file(f).is_err() {
+            if let Ok(meta) = fs::symlink_metadata(f) {
+                let mut perm = meta.permissions();
+                #[allow(clippy::permissions_set_readonly_false)]
+                perm.set_readonly(false);
+                let _ = fs::set_permissions(f, perm);
+            }
+            fs::remove_file(f).or_else(|_| fs::remove_dir(f))?;
+        }
+        let done = i as u64 + 1;
+        if done.is_multiple_of(step) || done == total {
+            tick(done, total);
+        }
+    }
+    fs::remove_dir_all(root)
 }
 
 fn parse_git_progress(line: &str) -> Option<(u8, u8)> {
@@ -1073,6 +1125,19 @@ mod tests {
         assert!(parse_git_progress("Cloning into 'x'...").is_none());
         let (overall, _) = parse_git_progress("Resolving deltas: 100% (3/3), done.").unwrap();
         assert_eq!(overall, 97);
+    }
+
+    #[test]
+    fn remove_tree_reports_every_file() {
+        let root = std::env::temp_dir().join(format!("tk-rt-{}", std::process::id()));
+        fs::create_dir_all(root.join("a/b")).unwrap();
+        for f in ["x.txt", "a/y.txt", "a/b/z.txt"] {
+            fs::write(root.join(f), b"1").unwrap();
+        }
+        let mut seen = Vec::new();
+        remove_tree(&root, |d, t| seen.push((d, t))).unwrap();
+        assert_eq!(seen, vec![(1, 3), (2, 3), (3, 3)]);
+        assert!(!root.exists());
     }
 
     #[test]

@@ -215,7 +215,7 @@ function Frame() {
           </div>
         ) : null}
         {tab === 'library' ? (
-          <Library filter={filter} setFilter={setFilter} onOpen={onOpen} onPrimary={onPrimary} onSettings={() => setTab('settings')} />
+          <Library filter={filter} setFilter={setFilter} onOpen={onOpen} onPrimary={onPrimary} onSettings={() => setTab('settings')} onUninstall={onUninstall} />
         ) : tab === 'installed' ? (
           <InstalledView onOpen={onOpen} onUninstall={onUninstall} onLibrary={() => setTab('library')} />
         ) : (

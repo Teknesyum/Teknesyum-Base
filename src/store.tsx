@@ -3,6 +3,7 @@ import { api, onListProgress, onTaskProgress } from './api/client';
 import type { AppError, AppInfo, Installed, ListProgress, Repo, RepoList, Settings, TaskEvent } from './api/types';
 import { enrich } from './data/catalog';
 import { makeT } from './i18n';
+import { settleMs } from './ui/hooks';
 import { useToast } from './ui/Toasts';
 
 export type TaskKind = 'install' | 'clone' | 'uninstall';
@@ -18,6 +19,7 @@ type Store = {
   syncError: AppError | null;
   installed: Installed[];
   tasks: Record<string, TaskEvent>;
+  shown: Record<string, TaskEvent>;
   logs: Record<string, string[]>;
   dialogFor: string | null;
   setDialogFor: (fullName: string | null) => void;
@@ -62,6 +64,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [syncError, setSyncError] = useState<AppError | null>(null);
   const [installed, setInstalled] = useState<Installed[]>([]);
   const [tasks, setTasks] = useState<Record<string, TaskEvent>>({});
+  const [settling, setSettling] = useState<Record<string, TaskEvent>>({});
+  const shown = useMemo(() => {
+    const out: Record<string, TaskEvent> = { ...settling };
+    for (const [k, v] of Object.entries(tasks)) if (v.status === 'running') out[k] = v;
+    return out;
+  }, [tasks, settling]);
   const [logs, setLogs] = useState<Record<string, string[]>>({});
   const [dialogFor, setDialogFor] = useState<string | null>(null);
   const waiters = useRef(new Map<string, (e: TaskEvent) => void>());
@@ -151,8 +159,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const t = makeT(langRef.current);
       const name = e.fullName.split('/')[1] ?? e.fullName;
       if (e.status === 'done') {
-        setList((cur) => (cur ? { ...cur, repos: cur.repos.map((r) => (r.fullName === e.fullName ? applyDone(r, e) : r)) } : cur));
-        void refreshInstalled();
+        setSettling((cur) => ({ ...cur, [e.fullName]: { ...e, percent: 100, step: 'done' } }));
+        window.setTimeout(() => {
+          setSettling((cur) => {
+            const next = { ...cur };
+            delete next[e.fullName];
+            return next;
+          });
+          setList((cur) => (cur ? { ...cur, repos: cur.repos.map((r) => (r.fullName === e.fullName ? applyDone(r, e) : r)) } : cur));
+          void refreshInstalled();
+        }, settleMs());
         if (dialogRef.current !== e.fullName) toast({ kind: 'success', title: t('task.done.' + e.kind, { name }) });
       } else if (e.status === 'error') {
         if (dialogRef.current !== e.fullName) toast({ kind: 'danger', title: t('task.failed.' + e.kind, { name }), body: e.message });
@@ -209,6 +225,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       syncError,
       installed,
       tasks,
+      shown,
       logs,
       dialogFor,
       setDialogFor,
@@ -285,7 +302,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       },
     }),
-    [info, settings, shownList, account, loadError, syncing, listProgress, syncError, installed, tasks, logs, dialogFor, fetchList, boot, start, fail, toast, refreshInstalled],
+    [info, settings, shownList, account, loadError, syncing, listProgress, syncError, installed, tasks, shown, logs, dialogFor, fetchList, boot, start, fail, toast, refreshInstalled],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -12,6 +12,10 @@ export function tokenInt(name: string, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+export function settleMs(): number {
+  return tokenMs('--tk-t-slow', 240) * 3;
+}
+
 export function stagger(i: number) {
   return { animationDelay: `calc(var(--tk-stagger) * min(${i}, var(--tk-stagger-max)))` };
 }

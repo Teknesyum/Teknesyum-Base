@@ -49,6 +49,8 @@ GitHub depoları gösterir ve bir sürümü elle indirmenize izin verir. O kıs�
 - **Kendini güncelleme** — Base her açılıştan 10 saniye sonra, sonra saatte bir denetler. Güncelleme sessizce indirilir ve sonraki açılışta uygulanır. Sürüm başlık çubuğunda soluk görünür; tıklayınca hemen denetler — yeni sürüm varsa güncelleme panelini açar, yoksa güncel olduğunu söyler.
 - **İki derleme** — normal derleme açık depoları listeler. Pro derleme özel depoları da listeler.
 - **Depo anahtarı** — tek bir özel depo için verilen salt okunur anahtar Ayarlar'a yapıştırılınca normal derleme o depoyu da listeler ve kurar. Anahtar GitHub'da denetlenir, Windows Kimlik Bilgisi Yöneticisi'ne yazılır.
+- **Karttan kaldırma** — kurulu program kartında Kaldır sunar; kaldırma aynı çubuğu dosya dosya doldurur ve yalnız programın klasörünü gösteren masaüstü kısayolunu siler.
+- **Önizleme sürümleri** — depoda yalnız ön sürüm varsa Base en yenisinden kurar ve günceller.
 - **Açılış çubuğu** — liste yenilenirken başlık çubuğunun altındaki çubuk depo depo dolar.
 
 ## Yapmadıkları

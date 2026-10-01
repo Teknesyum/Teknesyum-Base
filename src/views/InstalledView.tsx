@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { Installed, Repo } from '../api/types';
 import { useI18n } from '../i18n';
 import { useStore } from '../store';
-import { stagger, useFlip, useRoving } from '../ui/hooks';
+import { stagger, useBelow, useFlip, useRoving } from '../ui/hooks';
 import { EmptyState, ErrorState, SkeletonCards } from '../ui/States';
 import { useToast } from '../ui/Toasts';
 import { isRunning, type Opener } from './actions';
@@ -58,6 +58,8 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
   const rows = store.installed.map((item) => ({ item, repo: repos.find((r) => r.fullName.toLocaleLowerCase('tr') === item.fullName.toLocaleLowerCase('tr')) ?? stub(item) }));
   const updatable = rows.filter((x) => x.repo.installState === 'update-available' && !isRunning(store.tasks[x.repo.fullName]));
   const listRef = useRef<HTMLUListElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const dar = useBelow(pageRef, 'width-probe--kurulu');
   useFlip(listRef, rows.map((x) => x.item.fullName).join('|'));
   const roving = useRoving<HTMLButtonElement>(rows.length, { typeahead: (el) => el.dataset.name ?? '' });
 
@@ -84,10 +86,9 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
     body = <EmptyState title={t('installed.emptyTitle')} body={t('installed.emptyBody')} action={{ label: t('installed.goLibrary'), run: onLibrary }} />;
   else
     body = (
-      <ul ref={listRef} className="rows rows--installed" aria-label={t('tabs.installed')} onKeyDown={roving.onKeyDown}>
+      <ul ref={listRef} className="rows rows--installed" data-dar={dar || undefined} aria-label={t('tabs.installed')} onKeyDown={roving.onKeyDown}>
         {rows.map(({ item, repo }, i) => {
-          const task = store.tasks[repo.fullName];
-          const running = isRunning(task);
+          const shown = store.shown[repo.fullName];
           const rp = roving.itemProps(i);
           return (
             <li key={item.fullName} className="row row--installed" data-flip={item.fullName} style={stagger(i)}>
@@ -104,9 +105,9 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
               <span className="meta">{rel(item.installedAt)}</span>
               <StateBadge repo={repo} />
               <div className="row__actions">
-                {running && task ? (
+                {shown ? (
                   <div className="card__progress row__slot--progress">
-                    <TaskProgress task={task} />
+                    <TaskProgress task={shown} />
                   </div>
                 ) : (
                   <>
@@ -131,9 +132,11 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
                     <span className="row__slot--github">
                       <GithubButton repo={repo} tabIndex={rp.tabIndex} />
                     </span>
-                    <button type="button" className="btn btn--ghost btn--danger-outline row__slot--uninstall" tabIndex={rp.tabIndex} onClick={(e) => onUninstall(repo, e.currentTarget)}>
-                      {t('actions.uninstall')}
-                    </button>
+                    {repo.name !== 'Teknesyum-Base' ? (
+                      <button type="button" className="btn btn--ghost btn--danger-outline row__slot--uninstall" tabIndex={rp.tabIndex} onClick={(e) => onUninstall(repo, e.currentTarget)}>
+                        {t('actions.uninstall')}
+                      </button>
+                    ) : null}
                   </>
                 )}
               </div>
@@ -144,7 +147,7 @@ export function InstalledView({ onOpen, onUninstall, onLibrary }: Props) {
     );
 
   return (
-    <div className="page">
+    <div ref={pageRef} className="page">
       <div className="page__head">
         <div>
           <h1 className="page__title">{t('tabs.installed')}</h1>

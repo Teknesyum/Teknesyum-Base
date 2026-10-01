@@ -52,6 +52,14 @@
     "shortcut": "Creating shortcut",
     "done": "Done"
   },
+  "stepsUninstall": {
+    "resolve": "Reading the record",
+    "download": "Preparing",
+    "verify": "Checking",
+    "install": "Removing files",
+    "shortcut": "Removing shortcuts",
+    "done": "Removed"
+  },
   "actions": {
     "install": "Install",
     "update": "Update",

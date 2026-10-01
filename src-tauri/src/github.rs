@@ -100,6 +100,12 @@ pub struct GitHub {
     trace: Arc<Mutex<Vec<String>>>,
 }
 
+pub(crate) fn pick_release(list: Vec<GhRelease>) -> Option<GhRelease> {
+    let mut live = list.into_iter().filter(|x| !x.draft).peekable();
+    let first = live.peek().cloned();
+    live.find(|x| !x.prerelease).or(first)
+}
+
 pub type ProgressFn = Arc<dyn Fn(usize, usize) + Send + Sync>;
 
 struct Resp {
@@ -654,10 +660,7 @@ impl GitHub {
             return Ok(None);
         }
         let list: Vec<GhRelease> = serde_json::from_str(&r.body)?;
-        Ok(list
-            .into_iter()
-            .find(|x| !x.draft && !x.prerelease)
-            .map(|x| with_source_zip(owner, name, x)))
+        Ok(pick_release(list).map(|x| with_source_zip(owner, name, x)))
     }
 
     pub async fn manifest(&self, owner: &str, name: &str, private: bool) -> AppResult<Option<Manifest>> {
@@ -1114,6 +1117,15 @@ pub fn new_list(account: &str, repos: Vec<Repo>, rate: RateInfo) -> RepoList {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn prerelease_used_only_without_stable() {
+        let rel = |tag: &str, pre: bool, draft: bool| serde_json::from_str::<GhRelease>(&format!(r#"{{"tag_name":"{tag}","draft":{draft},"prerelease":{pre},"assets":[]}}"#)).unwrap();
+        let tag = |l: Vec<GhRelease>| pick_release(l).map(|r| r.tag_name);
+        assert_eq!(tag(vec![rel("v2-pre", true, false), rel("v1", false, false)]).as_deref(), Some("v1"));
+        assert_eq!(tag(vec![rel("v3", false, true), rel("v2-pre", true, false), rel("v1-pre", true, false)]).as_deref(), Some("v2-pre"));
+        assert_eq!(tag(vec![rel("v1", false, true)]), None);
+    }
+
     use super::*;
 
     #[test]

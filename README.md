@@ -49,6 +49,8 @@ GitHub shows the repositories and lets you download a release by hand. That part
 - **Self-update** — Base checks 10 seconds after every start, then hourly. An update is downloaded silently and applied on the next launch. The version sits muted in the title bar; click it to check now — it opens the update panel, or says you are up to date.
 - **Two builds** — the normal build lists public repositories. The Pro build also lists private ones.
 - **Repository key** — paste a read-only key for one private repository into Settings, and the normal build lists and installs that repository too. The key is checked on GitHub and stored in Windows Credential Manager.
+- **Remove from the card** — an installed program offers Remove on its card; removal fills the same bar file by file and only deletes the desktop shortcut that points into the program's folder.
+- **Preview releases** — when a repository has only pre-releases, Base installs and updates from the newest one.
 - **Startup refresh bar** — while the list refreshes, a bar under the title bar fills repository by repository.
 
 ## What it doesn't do

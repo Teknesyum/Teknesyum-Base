@@ -464,7 +464,7 @@ mod tests {
         fs::write(repo.join(".git").join("config"), "[core]\n\tbare = false\n[remote \"origin\"]\n\turl = https://github.com/Teknesyum/Asistan.git\n").unwrap();
         fs::write(menu.join("Asistan.lnk"), lnk_bytes(tool.to_str().unwrap(), "")).unwrap();
         let targets = vec![Target { owner: "Teknesyum".into(), name: "Asistan".into(), manifest_name: None }];
-        let found = detect_checkouts(&[menu.clone()], &targets);
+        let found = detect_checkouts(std::slice::from_ref(&menu), &targets);
         let _ = fs::remove_dir_all(&tmp);
         assert_eq!(found.len(), 1);
         assert_eq!(found[0].info.full_name, "Teknesyum/Asistan");

@@ -325,7 +325,8 @@
     "desktopShortcutHelp": "Every installed program also gets a desktop shortcut; it is removed on uninstall.",
     "coreLatest": "Latest Teknesyum Core",
     "uiLatest": "Latest Teknesyum UI",
-    "tokenEmbedded": "Pro's main key travels inside the exe; nothing is written to this computer. Run from a USB stick, it opens with the same key."
+    "tokenEmbedded": "Pro's main key travels inside the exe; nothing is written to this computer. Run from a USB stick, it opens with the same key.",
+    "selfUpdate": "Update Base to {tag}"
   },
   "status": {
     "idle": "Waiting",
@@ -447,13 +448,13 @@
     "progressLabel": "Updating the list"
   },
   "userKeys": {
-    "title": "Repository Key",
-    "intro": "If you were given a key for a private repository, paste it here. Base sees and installs only that repository; the key opens nothing else.",
+    "title": "Keys and Drive",
+    "intro": "A token, a private repository key or a Drive file link: paste any of them here. Only the private repositories the key opens appear; a key that opens no private repository is kept as the general token.",
     "key": "Key or Drive link",
     "add": "Add",
     "checking": "Checking",
     "empty": "Paste the key or link first",
-    "help": "The key is checked on GitHub, then stored in Windows Credential Manager on this computer. Paste a Drive file link and it is added to the Drive tab.",
+    "help": "The key is checked on GitHub, then stored in Windows Credential Manager on this computer and never shown again. A Drive file link is added to the Drive tab.",
     "added": "Key added",
     "removed": "{name} key removed",
     "remove": "Remove",

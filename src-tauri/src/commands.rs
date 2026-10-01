@@ -170,6 +170,17 @@ impl AppState {
         all
     }
 
+    pub fn forget_lists(&self) {
+        if let Ok(rd) = std::fs::read_dir(&self.paths.cache) {
+            for e in rd.flatten() {
+                let name = e.file_name().to_string_lossy().to_string();
+                if name.starts_with("liste-") && name.ends_with(".json") {
+                    let _ = std::fs::remove_file(e.path());
+                }
+            }
+        }
+    }
+
     pub fn forget_scans(&self) {
         *lock(&self.scans) = None;
     }
@@ -617,12 +628,17 @@ pub async fn user_repo_keys(state: State<'_, AppState>) -> AppResult<Vec<crate::
 #[tauri::command]
 pub async fn add_repo_key(state: State<'_, AppState>, key: String) -> AppResult<Vec<String>> {
     let found = crate::repokey::add(&state.http, &key).await?;
+    if !found.is_empty() {
+        state.forget_lists();
+    }
     Ok(found)
 }
 
 #[tauri::command]
-pub async fn remove_repo_key(full_name: String) -> AppResult<()> {
-    crate::repokey::remove(&full_name)
+pub async fn remove_repo_key(state: State<'_, AppState>, full_name: String) -> AppResult<()> {
+    crate::repokey::remove(&full_name)?;
+    state.forget_lists();
+    Ok(())
 }
 
 #[tauri::command]

@@ -6,7 +6,8 @@ import { useFlip, useRoving } from '../ui/hooks';
 import { IconClose } from '../ui/icons';
 import { SkeletonLines } from '../ui/States';
 import { useToast } from '../ui/Toasts';
-import type { Opener } from './actions';
+import { isRunning, type Opener } from './actions';
+import { TaskProgress } from './RepoCard';
 import './page.css';
 import './settings.css';
 import { RepoKeys } from './RepoKeys';
@@ -39,7 +40,6 @@ export function SettingsView({ onClearToken }: Props) {
   const toast = useToast();
   const [draft, setDraft] = useState<Settings | null>(store.settings);
   const [extra, setExtra] = useState('');
-  const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
   const id = useId();
   const langRoving = useRoving<HTMLButtonElement>(2, { orientation: 'horizontal' });
@@ -58,6 +58,9 @@ export function SettingsView({ onClearToken }: Props) {
     );
   }
 
+  const selfTask = store.self ? store.shown[store.self.fullName] : undefined;
+  const selfRunning = isRunning(selfTask);
+  const selfUpdate = store.info?.edition !== 'pro' && store.self && (store.self.installState === 'update-available' || selfTask) ? store.self : null;
   const set = (patch: Partial<Settings>) => setDraft({ ...draft, ...patch });
   const dirty = JSON.stringify(draft) !== JSON.stringify(store.settings);
   const accountEmpty = !draft.account.trim();
@@ -74,14 +77,6 @@ export function SettingsView({ onClearToken }: Props) {
     if (!v || v === draft.account || draft.extraAccounts.includes(v)) return;
     set({ extraAccounts: [...draft.extraAccounts, v] });
     setExtra('');
-  };
-
-  const saveToken = async () => {
-    const ok = await store.setToken(token.trim());
-    if (ok) {
-      setToken('');
-      toast({ kind: 'success', title: t('settings.tokenSaved') });
-    }
   };
 
   return (
@@ -155,52 +150,25 @@ export function SettingsView({ onClearToken }: Props) {
         </form>
       </section>
 
-      <section className="group divider-top" aria-labelledby={id + '-tok'}>
-        <h2 id={id + '-tok'} className="group__title">
-          {t('settings.tokenSection')}
-        </h2>
-        <p className="help">
-          <span className="badge" data-state={store.settings.hasToken ? 'installed' : 'not-installed'}>
-            <span className="badge__dot" aria-hidden="true" />
-            {t(store.settings.hasToken ? 'settings.tokenStored' : 'settings.tokenMissing')}
-          </span>
-        </p>
-        {store.info?.edition === 'pro' ? <p className="help">{t('settings.tokenEmbedded')}</p> : (
-        <form
-          className="tag-editor__form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (token.trim()) void saveToken();
-          }}
-        >
-          <div className="field field--grow">
-            <label className="tk-label" htmlFor={id + '-t'}>
-              {t('settings.token')}
-            </label>
-            <div className="input-row">
-              <input id={id + '-t'} className="tk-input" type="password" autoComplete="off" spellCheck={false} value={token} aria-invalid="false" aria-describedby={id + '-t-h'} onChange={(e) => setToken(e.target.value)} />
-              <button type="submit" className="btn btn--primary" disabled={!token.trim()} title={!token.trim() ? t('settings.tokenEmpty') : undefined}>
-                {t('settings.tokenSave')}
-              </button>
-              <button
-                type="button"
-                className="btn btn--ghost btn--danger-outline"
-                disabled={!store.settings.hasToken}
-                title={!store.settings.hasToken ? t('settings.tokenMissing') : undefined}
-                onClick={(e) => onClearToken(e.currentTarget)}
-              >
-                {t('settings.tokenClear')}
-              </button>
-            </div>
-            <span id={id + '-t-h'} className="help">
-              {t('settings.tokenHelp')}
-            </span>
-          </div>
-        </form>
-        )}
-      </section>
-
-      {store.info?.edition === 'pro' ? <RepoKeys /> : <UserRepoKeys />}
+      {store.info?.edition === 'pro' ? (
+        <>
+          <section className="group divider-top" aria-labelledby={id + '-tok'}>
+            <h2 id={id + '-tok'} className="group__title">
+              {t('settings.tokenSection')}
+            </h2>
+            <p className="help">
+              <span className="badge" data-state={store.settings.hasToken ? 'installed' : 'not-installed'}>
+                <span className="badge__dot" aria-hidden="true" />
+                {t(store.settings.hasToken ? 'settings.tokenStored' : 'settings.tokenMissing')}
+              </span>
+            </p>
+            <p className="help">{t('settings.tokenEmbedded')}</p>
+          </section>
+          <RepoKeys />
+        </>
+      ) : (
+        <UserRepoKeys onClearToken={onClearToken} />
+      )}
 
       <section className="group divider-top" aria-labelledby={id + '-dir'}>
         <h2 id={id + '-dir'} className="group__title">
@@ -288,6 +256,16 @@ export function SettingsView({ onClearToken }: Props) {
             <dd className="stat__value">{store.list?.uiLatest ?? t('stats.none')}</dd>
           </div>
         </dl>
+        {selfUpdate ? (
+          <div className="field">
+            <div className="input-row">
+              <button type="button" className="btn btn--primary" disabled={selfRunning} title={selfRunning ? t('task.busy') : undefined} onClick={() => void store.start(selfUpdate, 'install')}>
+                {selfRunning ? t('task.running.update') : t('settings.selfUpdate', { tag: selfUpdate.latestTag ?? '' })}
+              </button>
+            </div>
+            {selfTask ? <TaskProgress task={selfTask} /> : null}
+          </div>
+        ) : null}
       </section>
     </div>
   );

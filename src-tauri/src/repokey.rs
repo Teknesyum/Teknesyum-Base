@@ -72,8 +72,15 @@ fn save_user(map: &HashMap<String, String>) -> AppResult<()> {
     Ok(())
 }
 
+pub const HIDDEN_REPOS: [&str; 2] = ["Teknesyum-Base", "Teknesyum-Private"];
+
+pub fn hidden(full_name: &str) -> bool {
+    let name = full_name.rsplit('/').next().unwrap_or(full_name);
+    HIDDEN_REPOS.iter().any(|h| h.eq_ignore_ascii_case(name))
+}
+
 pub fn user_repos() -> Vec<String> {
-    let mut v: Vec<String> = user_map().lock().map(|m| m.keys().cloned().collect()).unwrap_or_default();
+    let mut v: Vec<String> = user_map().lock().map(|m| m.keys().filter(|k| !hidden(k)).cloned().collect()).unwrap_or_default();
     v.sort();
     v
 }
@@ -102,9 +109,9 @@ pub async fn add(http: &reqwest::Client, key: &str) -> AppResult<Vec<String>> {
         s => return Err(AppError::new(ErrorCode::Network, format!("Anahtar denetlenemedi: HTTP {s}"))),
     }
     let repos: Vec<KeyRepo> = serde_json::from_str(&resp.text().await?)?;
-    let found: Vec<String> = repos.into_iter().filter(|r| r.private).map(|r| r.full_name).collect();
+    let found: Vec<String> = repos.into_iter().filter(|r| r.private && !hidden(&r.full_name)).map(|r| r.full_name).collect();
     if found.is_empty() {
-        return Err(AppError::new(ErrorCode::Auth, "Bu anahtar hiçbir private depoyu açmıyor."));
+        return Ok(found);
     }
     let mut map = user_map().lock().map_err(|_| AppError::unknown("anahtar kilidi"))?;
     for f in &found {
@@ -180,5 +187,13 @@ mod tests {
         assert_eq!(lookup(&map, "Teknesyum/Bos"), None);
         assert!(parse(None).is_empty());
         assert!(parse(Some("bozuk")).is_empty());
+    }
+
+    #[test]
+    fn own_repos_stay_hidden() {
+        assert!(hidden("Teknesyum/Teknesyum-Private"));
+        assert!(hidden("teknesyum/teknesyum-base"));
+        assert!(!hidden("Teknesyum/Asistan"));
+        assert!(!hidden("Teknesyum/Teknesyum-Base-Legacy"));
     }
 }

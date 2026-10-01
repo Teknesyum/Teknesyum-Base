@@ -12,6 +12,7 @@ type Store = {
   info: AppInfo | null;
   settings: Settings | null;
   list: RepoList | null;
+  self: Repo | null;
   account: string;
   loadError: AppError | null;
   syncing: boolean;
@@ -37,6 +38,9 @@ type Store = {
   openFolder: (fullName: string) => void;
   desktopShortcut: (fullName: string, name: string) => Promise<void>;
 };
+
+const OWN = 'teknesyum-base';
+const HIDDEN = new Set([OWN, 'teknesyum-private']);
 
 const Ctx = createContext<Store | null>(null);
 
@@ -211,19 +215,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [fail],
   );
 
-  const shownList = useMemo(() => enrich(list, shownLang), [list, shownLang]);
+  const enriched = useMemo(() => enrich(list, shownLang), [list, shownLang]);
+  const shownList = useMemo(() => (enriched ? { ...enriched, repos: enriched.repos.filter((r) => !HIDDEN.has(r.name.toLocaleLowerCase('tr'))) } : null), [enriched]);
+  const shownInstalled = useMemo(() => installed.filter((i) => !HIDDEN.has((i.fullName.split('/')[1] ?? '').toLocaleLowerCase('tr'))), [installed]);
+  const self = useMemo(() => enriched?.repos.find((r) => r.name.toLocaleLowerCase('tr') === OWN) ?? null, [enriched]);
 
   const value = useMemo<Store>(
     () => ({
       info,
       settings,
       list: shownList,
+      self,
       account,
       loadError,
       syncing,
       listProgress,
       syncError,
-      installed,
+      installed: shownInstalled,
       tasks,
       shown,
       logs,
@@ -302,7 +310,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       },
     }),
-    [info, settings, shownList, account, loadError, syncing, listProgress, syncError, installed, tasks, shown, logs, dialogFor, fetchList, boot, start, fail, toast, refreshInstalled],
+    [info, settings, shownList, self, account, loadError, syncing, listProgress, syncError, shownInstalled, tasks, shown, logs, dialogFor, fetchList, boot, start, fail, toast, refreshInstalled],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

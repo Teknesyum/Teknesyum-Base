@@ -325,7 +325,8 @@
     "desktopShortcutHelp": "Kurulan her programın masaüstüne bir kısayolu da yazılır; programı kaldırınca silinir.",
     "coreLatest": "Güncel Teknesyum Core",
     "uiLatest": "Güncel Teknesyum UI",
-    "tokenEmbedded": "Pro'nun ana anahtarı exe'nin içinde taşınır; bu bilgisayara hiçbir yere yazılmaz. USB'den çalışınca da aynı anahtarla açılır."
+    "tokenEmbedded": "Pro'nun ana anahtarı exe'nin içinde taşınır; bu bilgisayara hiçbir yere yazılmaz. USB'den çalışınca da aynı anahtarla açılır.",
+    "selfUpdate": "Base {tag} sürümüne güncelle"
   },
   "status": {
     "idle": "Bekliyor",
@@ -447,13 +448,13 @@
     "progressLabel": "Liste güncelleniyor"
   },
   "userKeys": {
-    "title": "Depo Anahtarı",
-    "intro": "Sana bir private depo için anahtar verildiyse buraya yapıştır. Base yalnız o depoyu görür ve kurar; anahtar başka hiçbir depoyu açmaz.",
+    "title": "Anahtar ve Drive",
+    "intro": "Token, private depo anahtarı ya da Drive dosya linki: hepsi buraya yapıştırılır. Anahtar hangi private depoları açıyorsa yalnız onlar görünür; hiç private depo açmayan anahtar genel token olarak saklanır.",
     "key": "Anahtar ya da Drive linki",
     "add": "Ekle",
     "checking": "Denetleniyor",
     "empty": "Önce anahtarı ya da linki yapıştır",
-    "help": "Anahtar GitHub'da denetlenir, sonra bu bilgisayarda Windows Kimlik Bilgisi Yöneticisi'ne yazılır. Drive dosya linki yapıştırırsan Drive sekmesine eklenir.",
+    "help": "Anahtar GitHub'da denetlenir, sonra bu bilgisayarda Windows Kimlik Bilgisi Yöneticisi'ne yazılır ve bir daha gösterilmez. Drive dosya linki Drive sekmesine eklenir.",
     "added": "Anahtar eklendi",
     "removed": "{name} anahtarı kaldırıldı",
     "remove": "Kaldır",

@@ -6,6 +6,7 @@ import { useI18n } from '../i18n';
 import { useStore } from '../store';
 import { useFlip } from '../ui/hooks';
 import { useToast } from '../ui/Toasts';
+import type { Opener } from './actions';
 import './settings.css';
 
 const BADGE: Record<KeyState, string> = {
@@ -20,7 +21,7 @@ function reason(e: unknown): string {
   return typeof e === 'object' && e && 'message' in e ? String((e as { message: unknown }).message) : String(e);
 }
 
-export function UserRepoKeys() {
+export function UserRepoKeys({ onClearToken }: { onClearToken: (o: Opener) => void }) {
   const { t } = useI18n();
   const store = useStore();
   const toast = useToast();
@@ -53,6 +54,13 @@ export function UserRepoKeys() {
         return;
       }
       const found = await api.addRepoKey(key.trim());
+      if (!found.length) {
+        if (await store.setToken(key.trim())) {
+          setKey('');
+          toast({ kind: 'success', title: t('settings.tokenSaved') });
+        }
+        return;
+      }
       setKey('');
       toast({ kind: 'success', title: t('userKeys.added'), body: found.join(', ') });
       load();
@@ -81,6 +89,17 @@ export function UserRepoKeys() {
         {t('userKeys.title')}
       </h2>
       <p className="help">{t('userKeys.intro')}</p>
+      {store.settings?.hasToken ? (
+        <div className="input-row">
+          <span className="badge" data-state="installed">
+            <span className="badge__dot" aria-hidden="true" />
+            {t('settings.tokenStored')}
+          </span>
+          <button type="button" className="btn btn--ghost btn--danger-outline" onClick={(e) => onClearToken(e.currentTarget)}>
+            {t('settings.tokenClear')}
+          </button>
+        </div>
+      ) : null}
       <form
         className="tag-editor__form"
         onSubmit={(e) => {

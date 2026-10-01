@@ -14,7 +14,7 @@ export function uiState(version: string | null | undefined, latest: string | nul
   return 'current';
 }
 
-export type Primary = 'install' | 'update' | 'source' | 'launch' | 'folder';
+export type Primary = 'install' | 'clone' | 'update' | 'source' | 'launch' | 'folder';
 
 export function primaryOf(repo: Repo): Primary {
   switch (repo.installState) {
@@ -25,7 +25,7 @@ export function primaryOf(repo: Repo): Primary {
     case 'cloned':
       return 'folder';
     default:
-      return repo.hasWindowsAsset ? 'install' : 'source';
+      return repo.hasWindowsAsset ? 'install' : repo.language && !repo.plugin && !repo.archived ? 'clone' : 'source';
   }
 }
 

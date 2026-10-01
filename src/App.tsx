@@ -35,7 +35,7 @@ function Frame() {
   const [detail, setDetail] = useState<Target | null>(null);
   const [removal, setRemoval] = useState<Target | null>(null);
   const [claudeAsk, setClaudeAsk] = useState<Target | null>(null);
-  const [prereqAsk, setPrereqAsk] = useState<(Target & { items: PrereqInfo[] }) | null>(null);
+  const [prereqAsk, setPrereqAsk] = useState<(Target & { items: PrereqInfo[]; clone?: boolean }) | null>(null);
   const [clearing, setClearing] = useState<Opener | undefined>(undefined);
   const [updateFrom, setUpdateFrom] = useState<HTMLElement | null | undefined>(undefined);
   const [maximized, setMaximized] = useState(false);
@@ -119,6 +119,15 @@ function Frame() {
     if (p === 'launch') store.launch(repo.fullName);
     else if (p === 'folder') store.openFolder(repo.fullName);
     else if (p === 'source') void openExternal(repo.htmlUrl);
+    else if (p === 'clone') {
+      void api
+        .missingPrereqs(repo.owner, repo.name, true)
+        .catch(() => [] as PrereqInfo[])
+        .then((items) => {
+          if (items.length) setPrereqAsk({ fullName: repo.fullName, opener: opener ?? null, items, clone: true });
+          else void store.start(repo, 'clone');
+        });
+    }
     else if (repo.installState === 'not-installed' && !repo.plugin) {
       void api
         .missingPrereqs(repo.owner, repo.name, false)
@@ -282,7 +291,7 @@ function Frame() {
         confirmLabel={t('prereq.confirm')}
         returnTo={prereqAsk?.opener ?? null}
         onConfirm={() => {
-          if (prereqRepo) void store.start(prereqRepo, 'install', undefined, true);
+          if (prereqRepo) void store.start(prereqRepo, prereqAsk?.clone ? 'clone' : 'install', undefined, true);
           setPrereqAsk(null);
         }}
         onClose={() => setPrereqAsk(null)}

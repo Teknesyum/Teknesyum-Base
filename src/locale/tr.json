@@ -63,6 +63,7 @@
   },
   "actions": {
     "install": "Kur",
+    "clone": "Kur",
     "update": "Güncelle",
     "launch": "Aç",
     "folder": "Klasörü aç",

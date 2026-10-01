@@ -63,6 +63,7 @@
   },
   "actions": {
     "install": "Install",
+    "clone": "Install",
     "update": "Update",
     "launch": "Open",
     "folder": "Open folder",

@@ -1,0 +1,2237 @@
+{
+  "generatedAt": "2026-10-03T16:14:01Z",
+  "uiLatest": "0.34.0",
+  "coreLatest": "0.62.0",
+  "repos": [
+    {
+      "fullName": "Teknesyum/.github",
+      "pushedAt": "2026-09-08T17:10:00Z",
+      "release": null,
+      "manifest": null,
+      "ui": null,
+      "media": {
+        "iconAt": null,
+        "shotAt": null,
+        "readmeAt": "2026-09-08T17:09:54Z",
+        "prevReleaseAt": null,
+        "iconDiffers": null
+      }
+    },
+    {
+      "fullName": "Teknesyum/AbxPilot",
+      "pushedAt": "2026-10-01T11:20:20Z",
+      "release": {
+        "tag_name": "v0.8.0-onizleme",
+        "name": "AbxPilot v0.8.0-onizleme",
+        "published_at": "2026-10-01T11:22:26Z",
+        "body_html": null,
+        "prerelease": true,
+        "draft": false,
+        "assets": [
+          {
+            "id": 603101343,
+            "name": "AbxPilot-win-x64-v0.8.0-onizleme.zip",
+            "size": 75920423,
+            "browser_download_url": "https://github.com/Teknesyum/AbxPilot/releases/download/v0.8.0-onizleme/AbxPilot-win-x64-v0.8.0-onizleme.zip",
+            "url": "https://api.github.com/repos/Teknesyum/AbxPilot/releases/assets/603101343",
+            "download_count": 1
+          },
+          {
+            "id": 603101344,
+            "name": "AbxPilot-win-x64-v0.8.0-onizleme.zip.sha256",
+            "size": 103,
+            "browser_download_url": "https://github.com/Teknesyum/AbxPilot/releases/download/v0.8.0-onizleme/AbxPilot-win-x64-v0.8.0-onizleme.zip.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/AbxPilot/releases/assets/603101344",
+            "download_count": 1
+          },
+          {
+            "id": 603101345,
+            "name": "kur-abxpilot.ps1",
+            "size": 22173,
+            "browser_download_url": "https://github.com/Teknesyum/AbxPilot/releases/download/v0.8.0-onizleme/kur-abxpilot.ps1",
+            "url": "https://api.github.com/repos/Teknesyum/AbxPilot/releases/assets/603101345",
+            "download_count": 0
+          },
+          {
+            "id": 603101342,
+            "name": "Kur.bat",
+            "size": 97,
+            "browser_download_url": "https://github.com/Teknesyum/AbxPilot/releases/download/v0.8.0-onizleme/Kur.bat",
+            "url": "https://api.github.com/repos/Teknesyum/AbxPilot/releases/assets/603101342",
+            "download_count": 0
+          }
+        ]
+      },
+      "manifest": {
+        "name": "AbxPilot",
+        "asset": "AbxPilot-win-x64-*.zip",
+        "method": "zip",
+        "run": "AbxPilot.exe",
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "medical",
+          "lead": {
+            "en": "Guideline Navigator for Empiric Antibiotic Therapy",
+            "tr": "Ampirik Antibiyotik Tedavisi için Kılavuz Rehberi"
+          },
+          "points": {
+            "en": [
+              "Step-by-step syndrome decision path",
+              "First choice, alternatives, dose, route, duration",
+              "Every line cites source section and review date",
+              "Hard constraints for allergy, pregnancy, renal function",
+              "Spectrum strip showing regimen coverage",
+              "Knowledge base kept as data, not code",
+              "Mirrors the guideline only, no diagnosis or scoring",
+              "Print the summary or save it as PDF",
+              "Windows desktop; Android build on the way",
+              "Turkish and English from the same data"
+            ],
+            "tr": [
+              "Sendrom seçip adım adım soruyla daralan karar ağacı",
+              "İlk seçenek, alternatif rejimler, doz, yol, süre gösterimi",
+              "Her satırda kaynak bölüm, tarih ve inceleme tarihi",
+              "Alerji, gebelik, böbrek işlevine göre sert kısıtlar",
+              "Kapsanan spektrumu gösteren şerit",
+              "Bilgi tabanı koddan ayrı JSON kaynağında",
+              "Yalnız kılavuzu yansıtır, tanı ya da skor koymaz",
+              "Özeti yazdır ya da PDF olarak kaydet",
+              "Windows masaüstü; Android sürümü yolda",
+              "Türkçe ve İngilizce aynı veriden"
+            ]
+          },
+          "summary": {
+            "en": "A guideline navigator that helps a clinician find what the current guideline recommends for empiric antibiotic therapy in a given syndrome. Pick the syndrome, answer a few questions, and it shows the first choice, alternatives, dose, route and duration along with the source section. Allergy, pregnancy and renal function remove unsuitable regimens and say why. It is not a medical device, writes no prescriptions and uses no AI. Renal doses come from the product label; the summary prints or saves as PDF. Preview release for Windows, Android later.",
+            "tr": "Klinisyenin bir sendrom için güncel kılavuzun ampirik antibiyotik önerisini hızla bulmasına yardım eden bir kılavuz gezgini. Sendromu seçip birkaç soruyu yanıtlayınca ilk seçenek, alternatifler, doz, yol ve süre kaynak bölümüyle birlikte gösterilir. Alerji, gebelik ve böbrek işlevi gibi kısıtlar uygun olmayan rejimleri gerekçesiyle eler. Tıbbi cihaz değildir, reçete yazmaz ve yapay zekâ kullanmaz. Böbrek dozu ürün etiketinden gelir; özet yazdırılabilir ya da PDF olarak kaydedilebilir. Önizleme sürümü; Windows için, Android sonra."
+          },
+          "tags": {
+            "en": [
+              "antibiotics",
+              "guideline",
+              "clinical",
+              "education"
+            ],
+            "tr": [
+              "antibiyotik",
+              "kılavuz",
+              "klinik",
+              "eğitim"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Find the right antibiotic fast",
+              "See dose, route and duration",
+              "Filter by allergy, pregnancy, kidneys",
+              "Check each suggestion's guideline source"
+            ],
+            "tr": [
+              "Sendroma uygun antibiyotiği hızla bul",
+              "Doz, yol ve süreyi gör",
+              "Alerji, gebelik, böbreğe göre daralt",
+              "Her önerinin kılavuz kaynağını gör"
+            ]
+          }
+        }
+      },
+      "ui": "0.32.0",
+      "media": {
+        "iconAt": "2026-09-29T09:57:55Z",
+        "shotAt": "2026-09-29T09:57:55Z",
+        "readmeAt": "2026-10-01T11:19:15Z",
+        "prevReleaseAt": null,
+        "iconDiffers": true
+      }
+    },
+    {
+      "fullName": "Teknesyum/CodeXRay",
+      "pushedAt": "2026-09-30T20:11:37Z",
+      "release": {
+        "tag_name": "v2.3.4",
+        "name": "CodeXRay v2.3.4",
+        "published_at": "2026-09-08T17:26:11Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 550957338,
+            "name": "CodeXRay_2.3.4_windows_x64_portable.exe",
+            "size": 14202880,
+            "browser_download_url": "https://github.com/Teknesyum/CodeXRay/releases/download/v2.3.4/CodeXRay_2.3.4_windows_x64_portable.exe",
+            "url": "https://api.github.com/repos/Teknesyum/CodeXRay/releases/assets/550957338",
+            "download_count": 3
+          },
+          {
+            "id": 550957340,
+            "name": "CodeXRay_2.3.4_windows_x64_setup.exe",
+            "size": 5339378,
+            "browser_download_url": "https://github.com/Teknesyum/CodeXRay/releases/download/v2.3.4/CodeXRay_2.3.4_windows_x64_setup.exe",
+            "url": "https://api.github.com/repos/Teknesyum/CodeXRay/releases/assets/550957340",
+            "download_count": 1
+          },
+          {
+            "id": 550957341,
+            "name": "SHA256SUMS.txt",
+            "size": 211,
+            "browser_download_url": "https://github.com/Teknesyum/CodeXRay/releases/download/v2.3.4/SHA256SUMS.txt",
+            "url": "https://api.github.com/repos/Teknesyum/CodeXRay/releases/assets/550957341",
+            "download_count": 1
+          }
+        ]
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "developer",
+          "lead": {
+            "en": "Algorithm Visualizer, Tree and Graph Builder, AI Guide",
+            "tr": "Algoritma Görselleştirici, Ağaç ve Graf Editörü, Yapay Zekâ Rehberi"
+          },
+          "points": {
+            "en": [
+              "Visualises algorithms one step at a time",
+              "60 simulators: graphs, sorting, DP, strings, trees, numbers",
+              "Shortest paths, MST, SCC, max flow, matching",
+              "Complete variables and trace, never truncated",
+              "Visual tree and graph builder with draggable nodes",
+              "Directed and weighted edges, JSON import and export",
+              "Timeline playback and line highlighting",
+              "Optional on-device AI assistant",
+              "Connects to local servers such as Ollama and LM Studio",
+              "The assistant gives guided tours of key steps",
+              "Titan Mode: verified, undoable changes",
+              "Variable pins and a live watch strip",
+              "Resizable, collapsible panels",
+              "CodeXRay Radio",
+              "In the browser and on Windows desktop",
+              "Instant Turkish-English switching"
+            ],
+            "tr": [
+              "Algoritmaları adım adım görselleştirir",
+              "60 benzetim: graf, sıralama, DP, dizgi, ağaç, sayı",
+              "En kısa yol, MST, SCC, maksimum akış, eşleme",
+              "Değişkenler ve iz eksiksiz, kesilmeden",
+              "Sürüklenebilir düğümlü görsel ağaç ve graf kurucu",
+              "Yönlü ve ağırlıklı kenarlar, JSON içe-dışa aktarma",
+              "Zaman çizelgesiyle oynatma ve satır vurgusu",
+              "Cihaz içinde çalışan isteğe bağlı yapay zekâ asistanı",
+              "Ollama ve LM Studio gibi yerel sunuculara bağlanır",
+              "Asistan önemli adımlarda rehberli tur yapar",
+              "Titan Modu: doğrulanmış, geri alınabilir değişiklikler",
+              "Değişken sabitleme ve canlı izleme şeridi",
+              "Boyutlanıp katlanabilen paneller",
+              "CodeXRay Radyo",
+              "Tarayıcıda ve Windows masaüstünde",
+              "Anında Türkçe-İngilizce geçişi"
+            ]
+          },
+          "summary": {
+            "en": "A bilingual English and Turkish algorithm visualizer that lets you watch every state change of an algorithm step by step. It has 60 deterministic simulators across graph traversal, shortest paths, sorting, dynamic programming, string search, trees and more, with complete variable and trace data. Tree and graph inputs are built in a drag-and-drop editor. An optional local AI assistant can drive the timeline and give a guided tour of key steps. Runs in the browser and as a Windows desktop app, for people learning or teaching algorithms.",
+            "tr": "Algoritmaların her durum değişikliğini adım adım izlemenizi sağlayan Türkçe ve İngilizce bir algoritma görselleştirici. Grafik gezintisi, en kısa yol, sıralama, dinamik programlama, dizgi arama ve ağaçlar gibi alanlarda 60 belirlenimci simülatör içerir; değişkenler ve iz eksiksiz gösterilir. Ağaç ve grafik girdileri sürükle bırak bir düzenleyiciyle kurulur. İsteğe bağlı yerel bir yapay zekâ yardımcısı zaman çizelgesini yönetip önemli adımlarda rehberli tur yapar. Tarayıcıda ve Windows masaüstünde çalışır; algoritma öğrenen ve öğretenler için."
+          },
+          "tags": {
+            "en": [
+              "algorithms",
+              "visualization",
+              "education",
+              "local-ai"
+            ],
+            "tr": [
+              "algoritma",
+              "görselleştirme",
+              "eğitim",
+              "yerel-yapay-zekâ"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Watch algorithms step by step",
+              "See every variable and trace",
+              "Draw your own trees and graphs",
+              "Ask a local AI assistant",
+              "Scrub through a timeline"
+            ],
+            "tr": [
+              "Algoritmaları adım adım izle",
+              "Değişkenleri ve izi eksiksiz gör",
+              "Kendi ağacını ve grafını çiz",
+              "Yerel yapay zekâ asistanına sor",
+              "Zaman çizelgesiyle ileri geri oynat"
+            ]
+          }
+        }
+      },
+      "ui": "0.32.0",
+      "media": {
+        "iconAt": "2026-09-30T07:35:26Z",
+        "shotAt": "2026-09-29T09:58:47Z",
+        "readmeAt": "2026-09-30T02:45:42Z",
+        "prevReleaseAt": null,
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/DustyBytes",
+      "pushedAt": "2026-10-02T22:59:48Z",
+      "release": {
+        "tag_name": "v0.9.0",
+        "name": "DustyBytes 0.9.0",
+        "published_at": "2026-10-02T23:08:49Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 606682091,
+            "name": "DustyBytes-win-x64.zip",
+            "size": 57750127,
+            "browser_download_url": "https://github.com/Teknesyum/DustyBytes/releases/download/v0.9.0/DustyBytes-win-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/DustyBytes/releases/assets/606682091",
+            "download_count": 1
+          },
+          {
+            "id": 606682093,
+            "name": "DustyBytes-win-x64.zip.sha256",
+            "size": 88,
+            "browser_download_url": "https://github.com/Teknesyum/DustyBytes/releases/download/v0.9.0/DustyBytes-win-x64.zip.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/DustyBytes/releases/assets/606682093",
+            "download_count": 0
+          }
+        ]
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "system",
+          "lead": {
+            "en": "Disk Cleaner, Uninstaller and Leftover Finder",
+            "tr": "Disk Temizleyici, Program Kaldırıcı ve Artık Bulucu"
+          },
+          "points": {
+            "en": [
+              "Reads the disk with two scanners: fast and NTFS MFT",
+              "Groups files by purpose: games, programs, films, caches",
+              "Ranks removable items by size and last use",
+              "Reads usage from Steam, Epic, GOG and Windows records",
+              "Recognises AI model and developer caches",
+              "Removed items go to quarantine and can be restored",
+              "Empties quarantine on its own after 7 days",
+              "Uninstalls Win32, MSI and MSIX programs",
+              "Finds and scores leftovers after uninstall",
+              "23-rule cleaning: browser, temp and dump files",
+              "Windows Update and DISM component cleanup",
+              "Never touches protected system paths",
+              "Treemap you click to drill down",
+              "One-click removal with an undo toast",
+              "Signature-verified self-update",
+              "Turkish and English, Windows 10/11"
+            ],
+            "tr": [
+              "Diski iki tarayıcıyla okur: hızlı ve NTFS MFT",
+              "Dosyaları amaca göre gruplar: oyun, program, film, önbellek",
+              "Boyut ve son kullanıma göre silinebilecekleri sıralar",
+              "Steam, Epic, GOG ve Windows kayıtlarından kullanım okur",
+              "Yapay zekâ modeli ve geliştirici önbelleklerini tanır",
+              "Silinen öğeler karantinaya gider, geri alınabilir",
+              "7 gün sonra karantinayı kendiliğinden boşaltır",
+              "Win32, MSI ve MSIX programları kaldırır",
+              "Kaldırma sonrası artıkları bulup puanlar",
+              "23 kurallı temizlik: tarayıcı, geçici, döküm dosyaları",
+              "Windows Update ve DISM bileşen temizliği",
+              "Korumalı sistem yollarına asla dokunmaz",
+              "Tıklayıp derine inilen ağaç haritası",
+              "Tek tıkla kaldırma, geri al bildirimi",
+              "İmza doğrulamalı kendi kendini güncelleme",
+              "Türkçe ve İngilizce, Windows 10/11"
+            ]
+          },
+          "summary": {
+            "en": "A Windows disk cleaner that lists what takes space and has not been used for a long time, grouped by purpose. Instead of a raw file tree it shows games, films, programs, caches and build folders, each with a size, a last-used date and a reason. Everything removed goes to a quarantine first and can be restored. After a vendor uninstaller runs, it also finds leftover registry keys, folders, services and shortcuts. No telemetry. For Windows users with a full drive who want to know what can safely go.",
+            "tr": "Windows diskinde yer kaplayan ve uzun süredir kullanılmayan şeyleri amacına göre listeleyen bir disk temizleyici. Dosyaları klasör ağacı yerine oyun, film, program, önbellek, derleme klasörü gibi gruplar halinde gösterir; her grubun boyutu, son kullanım tarihi ve gerekçesi yazılıdır. Silinen her şey önce karantinaya gider ve geri alınabilir. Programları kaldırdıktan sonra kalan kayıt defteri anahtarlarını, klasörleri ve kısayolları da bulur. Telemetri yok. Diski dolan ve neyin gidebileceğini bilmek isteyen Windows kullanıcıları için."
+          },
+          "tags": {
+            "en": [
+              "disk-cleaner",
+              "uninstaller",
+              "quarantine",
+              "windows"
+            ],
+            "tr": [
+              "disk-temizleme",
+              "kaldırıcı",
+              "karantina",
+              "windows"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Find large files you never use",
+              "See disk use grouped by purpose",
+              "Restore deletions from quarantine",
+              "Uninstall programs with their leftovers",
+              "Clean system junk in one click"
+            ],
+            "tr": [
+              "Kullanılmayan büyük dosyaları bul",
+              "Diski amacına göre gruplanmış gör",
+              "Sileceğini karantinadan geri al",
+              "Programları artıklarıyla birlikte kaldır",
+              "Sistem çöpünü tek tıkla temizle"
+            ]
+          }
+        }
+      },
+      "ui": "0.34.0",
+      "media": {
+        "iconAt": "2026-09-29T09:58:10Z",
+        "shotAt": "2026-09-29T09:58:10Z",
+        "readmeAt": "2026-10-02T22:58:30Z",
+        "prevReleaseAt": "2026-10-02T21:47:18Z",
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/Ghostlist",
+      "pushedAt": "2026-09-30T02:46:56Z",
+      "release": {
+        "tag_name": "v2.0.2",
+        "name": "v2.0.2",
+        "published_at": "2026-09-08T17:06:04Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 517109971,
+            "name": "Ghostlist-win-x64.zip",
+            "size": 98845046,
+            "browser_download_url": "https://github.com/Teknesyum/Ghostlist/releases/download/v2.0.2/Ghostlist-win-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/Ghostlist/releases/assets/517109971",
+            "download_count": 9
+          },
+          {
+            "id": 517109973,
+            "name": "Ghostlist-win-x64.zip.sha256",
+            "size": 89,
+            "browser_download_url": "https://github.com/Teknesyum/Ghostlist/releases/download/v2.0.2/Ghostlist-win-x64.zip.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/Ghostlist/releases/assets/517109973",
+            "download_count": 4
+          }
+        ]
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "system",
+          "lead": {
+            "en": "Uninstall Leftover Finder and Reversible Cleaner",
+            "tr": "Kaldırma Artığı Bulucu ve Geri Alınabilir Temizleyici"
+          },
+          "points": {
+            "en": [
+              "Scans leftovers from uninstalled programs (registry, shortcuts, tasks)",
+              "Shows an evidence list and confidence score per finding",
+              "Treats unreadable data as inconclusive, not missing",
+              "Bulk fix only for high-confidence, dual-evidence findings",
+              "Backs up everything before deleting, fully reversible",
+              "Resolves uninstall commands but never runs them",
+              "Never removes MSIX packages itself, just shows the command",
+              "Requests a system restore point before bulk fixes",
+              "CLI: scan, fix, restore, JSON output",
+              "Never touches user data like documents or saved games",
+              "Instant Turkish/English language switch",
+              "Installs without admin rights, restarts as admin when needed"
+            ],
+            "tr": [
+              "Kaldırılmış programların artıklarını (kayıt, kısayol, görev) tarar",
+              "Her bulgu için kanıt listesi ve güven skoru gösterir",
+              "Okunamayan yerleri eksik değil belirsiz sayar",
+              "Toplu düzeltme yalnız yüksek güven ve çift kanıtlı bulgularda",
+              "Silmeden önce her şeyi yedekler, geri alınabilir",
+              "Kaldırma komutlarını yalnız çözer, çalıştırmaz",
+              "MSIX paketlerini asla kendisi kaldırmaz, komutu gösterir",
+              "Düzeltmeden önce sistem geri yükleme noktası ister",
+              "Komut satırı arayüzü: tara, düzelt, geri yükle, JSON çıktı",
+              "Kullanıcı verilerine (belgeler, kayıtlı oyun) hiç dokunmaz",
+              "Türkçe/İngilizce arasında anında dil değişimi",
+              "Yönetici olmadan kurulum, gerektiğinde yönetici yeniden başlatma"
+            ]
+          },
+          "summary": {
+            "en": "A tool that finds what Windows leaves behind after an uninstall, proves it is dead and removes it with a backup you can undo. It scans uninstall entries whose uninstaller is gone, shortcuts pointing at deleted files, startup entries launching missing binaries, scheduled tasks firing at nothing and folders no program claims. Each finding comes with its evidence and a confidence score, and bulk fixing only takes high-confidence findings. A command-line version is included. The interface is in Turkish and English.",
+            "tr": "Windows'ta bir program kaldırıldıktan sonra geride kalanları bulan, gerçekten ölü olduklarını kanıtlayan ve geri alınabilir bir yedekle silen araç. Kaldırıcısı olmayan program kayıtlarını, hedefi silinmiş kısayolları, olmayan dosyayı çalıştıran başlangıç girdilerini, boşa tetiklenen zamanlanmış görevleri ve sahipsiz klasörleri tarar. Her bulgu kanıtlarıyla ve bir güven puanıyla gösterilir; toplu düzeltme yalnız yüksek güvenli bulgulara uygulanır. Komut satırı sürümü de vardır. Arayüz Türkçe ve İngilizce."
+          },
+          "tags": {
+            "en": [
+              "windows",
+              "uninstall-leftovers",
+              "cleanup",
+              "backup"
+            ],
+            "tr": [
+              "windows",
+              "kaldırma-artığı",
+              "temizlik",
+              "yedek"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Find leftovers of removed programs",
+              "See proof and confidence per finding",
+              "Back up, then delete safely",
+              "Undo it all in one step"
+            ],
+            "tr": [
+              "Kaldırılan programların artıklarını bul",
+              "Her bulgunun kanıtını ve güvenini gör",
+              "Yedekleyip güvenle sil",
+              "İstediğinde tek adımda geri yükle"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": "2026-09-29T09:59:42Z",
+        "shotAt": "2026-09-29T09:59:42Z",
+        "readmeAt": "2026-09-30T02:45:50Z",
+        "prevReleaseAt": "2026-09-08T17:06:02Z",
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/Gothic-1-Remake-Picklocker",
+      "pushedAt": "2026-09-30T02:47:07Z",
+      "release": {
+        "tag_name": "v1.3.0",
+        "name": "v1.3.0",
+        "published_at": "2026-09-27T21:56:30Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 593855668,
+            "name": "Gothic1LockPicker-win-x64.zip",
+            "size": 140085624,
+            "browser_download_url": "https://github.com/Teknesyum/Gothic-1-Remake-Picklocker/releases/download/v1.3.0/Gothic1LockPicker-win-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/Gothic-1-Remake-Picklocker/releases/assets/593855668",
+            "download_count": 2
+          },
+          {
+            "id": 593855675,
+            "name": "Gothic1LockPicker-win-x64.zip.sha256",
+            "size": 96,
+            "browser_download_url": "https://github.com/Teknesyum/Gothic-1-Remake-Picklocker/releases/download/v1.3.0/Gothic1LockPicker-win-x64.zip.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/Gothic-1-Remake-Picklocker/releases/assets/593855675",
+            "download_count": 2
+          },
+          {
+            "id": 593855673,
+            "name": "Kur.zip",
+            "size": 99525,
+            "browser_download_url": "https://github.com/Teknesyum/Gothic-1-Remake-Picklocker/releases/download/v1.3.0/Kur.zip",
+            "url": "https://api.github.com/repos/Teknesyum/Gothic-1-Remake-Picklocker/releases/assets/593855673",
+            "download_count": 1
+          }
+        ]
+      },
+      "manifest": {
+        "name": "Gothic 1 LockPicker",
+        "category": "games",
+        "asset": "Gothic1LockPicker-win-x64.zip",
+        "method": "zip",
+        "run": "Gothic1LockPicker.exe",
+        "icon": "assets/icon-256.png",
+        "catalog": {
+          "category": "games",
+          "lead": {
+            "en": "Lock-Picking Solver and Overlay for Gothic 1 Remake",
+            "tr": "Gothic 1 Remake için Kilit Çözücü ve Oyun Üstü Panel"
+          },
+          "points": {
+            "en": [
+              "Solves the Gothic 1 Remake lock-picking mini-game",
+              "Transparent overlay on top of the game window",
+              "Enter each plate's start position and interaction directions",
+              "Computes the shortest move sequence",
+              "Auto-applies the solution via WASD keystrokes",
+              "Auto Mode detects the lock screen and shows the panel",
+              "Passive Mode keeps the corner cue hidden until hovered",
+              "Hotkeys to toggle the panel and emergency-stop",
+              "Checks for updates on every launch"
+            ],
+            "tr": [
+              "Gothic 1 Remake kilit açma mini oyununu çözer",
+              "Oyun penceresi üstünde saydam kaplama",
+              "Levha başlangıç konumu ve etkileşim yönü girişi",
+              "En kısa hamle dizisini hesaplar",
+              "Çözümü WASD tuşlarıyla otomatik uygular",
+              "Ekran şablonunu tanıyıp paneli otomatik gösterir (Otomatik Mod)",
+              "Pasif modda köşe imleci gizli kalır, üstüne gelince açılır",
+              "Kısayol tuşlarıyla panel açma ve acil durdurma",
+              "Her açılışta güncelleme kontrolü"
+            ]
+          },
+          "summary": {
+            "en": "A transparent Electron overlay that sits on top of the game window and solves the plate and dial lock-picking mini-game in Gothic 1 Remake. Enter each plate's current position and how each move affects the other plates, and it finds the shortest move sequence; if you want, it applies the solution to the game itself. The panel opens and closes in game with F9, and a hotkey stops a running macro at once. An auto mode recognises the lock screen and a passive mode keeps it out of sight. For Gothic 1 Remake players.",
+            "tr": "Gothic 1 Remake'teki plaka ve kadran kilit açma bulmacasını çözen, oyun penceresinin üstünde duran şeffaf bir Electron katmanı. Her plakanın mevcut konumunu ve hamlelerin diğer plakaları nasıl etkilediğini girdiğinizde en kısa hamle dizisini bulur; isterseniz çözümü oyuna kendisi uygular. Paneli oyun içinde F9 ile açıp kapatabilir, çalışan makroyu acil durdurma tuşuyla kesebilirsiniz. Kilit ekranını tanıyan otomatik ve gizli çalışan pasif kipleri vardır. Gothic 1 Remake oyuncuları için."
+          },
+          "tags": {
+            "en": [
+              "game",
+              "gothic",
+              "lockpicking",
+              "overlay"
+            ],
+            "tr": [
+              "oyun",
+              "gothic",
+              "kilit-açma",
+              "overlay"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Solve lock puzzles in fewest moves",
+              "Let it apply the solution",
+              "Use a transparent in-game overlay",
+              "Toggle and stop with hotkeys"
+            ],
+            "tr": [
+              "Kilit bulmacasını en kısa yoldan çöz",
+              "Çözümü oyuna kendiliğinden uygulat",
+              "Paneli oyunun üstünde saydam gör",
+              "Kısayolla aç ve acil durdur"
+            ]
+          }
+        }
+      },
+      "ui": "0.26.0",
+      "media": {
+        "iconAt": "2026-09-27T16:12:21Z",
+        "shotAt": null,
+        "readmeAt": "2026-09-30T02:46:00Z",
+        "prevReleaseAt": "2026-09-08T17:09:50Z",
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/HeadsetBatteryTray",
+      "pushedAt": "2026-09-30T02:47:05Z",
+      "release": {
+        "tag_name": "v0.5.1",
+        "name": "v0.5.1",
+        "published_at": "2026-09-27T21:48:10Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 593842132,
+            "name": "HeadsetBatteryTray.exe",
+            "size": 1312768,
+            "browser_download_url": "https://github.com/Teknesyum/HeadsetBatteryTray/releases/download/v0.5.1/HeadsetBatteryTray.exe",
+            "url": "https://api.github.com/repos/Teknesyum/HeadsetBatteryTray/releases/assets/593842132",
+            "download_count": 1
+          },
+          {
+            "id": 593842129,
+            "name": "HeadsetBatteryTray.exe.sha256",
+            "size": 89,
+            "browser_download_url": "https://github.com/Teknesyum/HeadsetBatteryTray/releases/download/v0.5.1/HeadsetBatteryTray.exe.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/HeadsetBatteryTray/releases/assets/593842129",
+            "download_count": 1
+          },
+          {
+            "id": 593842127,
+            "name": "LICENSE",
+            "size": 35184,
+            "browser_download_url": "https://github.com/Teknesyum/HeadsetBatteryTray/releases/download/v0.5.1/LICENSE",
+            "url": "https://api.github.com/repos/Teknesyum/HeadsetBatteryTray/releases/assets/593842127",
+            "download_count": 0
+          }
+        ]
+      },
+      "manifest": {
+        "name": "HeadsetBatteryTray",
+        "category": "system",
+        "asset": "HeadsetBatteryTray.exe",
+        "method": "portable",
+        "run": "HeadsetBatteryTray.exe",
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "catalog": {
+          "category": "system",
+          "lead": {
+            "en": "Headset Battery Tray Indicator and Nova Pro Control Panel",
+            "tr": "Kulaklık Pili Tepsi Göstergesi ve Nova Pro Kontrol Paneli"
+          },
+          "points": {
+            "en": [
+              "Tray icon shows battery percentage as a digit",
+              "Color and warning coding for charge and low battery",
+              "Full panel for Nova Pro: battery, volume, ANC, transparency, mic",
+              "Volume transfer between headset and Windows (20-80%)",
+              "1% battery estimate between the device's 12.5% steps",
+              "Reads battery from three sources: direct HID, HeadsetControl, Bluetooth",
+              "Supports about 40 wired/dongle headsets via HeadsetControl",
+              "Full keyboard control and display-scale awareness",
+              "Settings saved to the device, survive power cycles",
+              "Starts automatically with Windows",
+              "Zero dependencies, runs on .NET Framework 4"
+            ],
+            "tr": [
+              "Sistem tepsisinde pil yüzdesini rakam olarak gösterir",
+              "Şarj ve düşük pil için renk ve uyarı kodlaması",
+              "Nova Pro için tam panel: pil, ses, ANC, şeffaflık, mikrofon",
+              "Kulaklık-Windows arası ses seviyesi aktarımı (%20-80)",
+              "Cihazın %12,5'lik adımları arası %1 pil tahmini",
+              "Üç kaynaktan pil okuma: doğrudan HID, HeadsetControl, Bluetooth",
+              "HeadsetControl ile ~40 kablolu/dongle kulaklık desteği",
+              "Tam klavye kontrolü ve ekran ölçeğine uyum",
+              "Ayarlar cihaza kaydedilir, güç kesintisinde kalıcı",
+              "Windows ile otomatik başlatma",
+              "Bağımlılıksız, .NET Framework 4 ile çalışır"
+            ]
+          },
+          "summary": {
+            "en": "A lightweight program that shows the battery level of wired, wireless and Bluetooth headsets as a coloured number in the Windows tray. It reads the battery through direct HID, the bundled HeadsetControl or Windows Bluetooth, covering about forty headset models. For the SteelSeries Arctis Nova Pro Wireless it adds a panel for volume, noise cancelling, transparency and microphone level, moves volume between the headset and Windows, and estimates battery to the percent. A single exe with no install.",
+            "tr": "Kablolu, kablosuz ve Bluetooth kulaklıkların pil düzeyini Windows sistem tepsisinde renkli bir sayı olarak gösteren hafif bir program. Pili doğrudan HID, beraberinde gelen HeadsetControl ya da Windows Bluetooth üzerinden okur ve kırk kadar kulaklık modelini tanır. SteelSeries Arctis Nova Pro Wireless için ses düzeyi, gürültü engelleme, şeffaflık ve mikrofon ayarlarını tek pencerede toplar; kulaklık ile Windows arasında ses aktarımı ve yüzde birlik pil tahmini yapar. Kurulum gerektirmeyen tek bir exe."
+          },
+          "tags": {
+            "en": [
+              "headset",
+              "battery",
+              "tray",
+              "steelseries"
+            ],
+            "tr": [
+              "kulaklık",
+              "pil",
+              "sistem-tepsisi",
+              "steelseries"
+            ]
+          },
+          "uses": {
+            "en": [
+              "See headset battery in the tray",
+              "Get colour alerts on low battery",
+              "Control Nova Pro from one panel",
+              "Start it with Windows"
+            ],
+            "tr": [
+              "Kulaklık pilini tepside rakamla gör",
+              "Düşük pilde renkli uyarı al",
+              "Nova Pro'yu tek panelden yönet",
+              "Windows'la birlikte başlat"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": "2026-09-29T09:58:38Z",
+        "shotAt": "2026-09-29T09:58:38Z",
+        "readmeAt": "2026-09-30T02:45:58Z",
+        "prevReleaseAt": "2026-09-27T15:44:55Z",
+        "iconDiffers": null
+      }
+    },
+    {
+      "fullName": "Teknesyum/ProcWitness",
+      "pushedAt": "2026-09-30T02:46:54Z",
+      "release": {
+        "tag_name": "v0.9.0",
+        "name": "ProcWitness v0.9.0 — Passive process forensics",
+        "published_at": "2026-09-08T17:06:10Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 514576308,
+            "name": "ProcWitness-0.9.0-linux-x64.tar.gz",
+            "size": 85659540,
+            "browser_download_url": "https://github.com/Teknesyum/ProcWitness/releases/download/v0.9.0/ProcWitness-0.9.0-linux-x64.tar.gz",
+            "url": "https://api.github.com/repos/Teknesyum/ProcWitness/releases/assets/514576308",
+            "download_count": 1
+          },
+          {
+            "id": 514576311,
+            "name": "ProcWitness-0.9.0-osx-arm64.tar.gz",
+            "size": 84732867,
+            "browser_download_url": "https://github.com/Teknesyum/ProcWitness/releases/download/v0.9.0/ProcWitness-0.9.0-osx-arm64.tar.gz",
+            "url": "https://api.github.com/repos/Teknesyum/ProcWitness/releases/assets/514576311",
+            "download_count": 0
+          },
+          {
+            "id": 514576312,
+            "name": "ProcWitness-0.9.0-osx-x64.tar.gz",
+            "size": 87990339,
+            "browser_download_url": "https://github.com/Teknesyum/ProcWitness/releases/download/v0.9.0/ProcWitness-0.9.0-osx-x64.tar.gz",
+            "url": "https://api.github.com/repos/Teknesyum/ProcWitness/releases/assets/514576312",
+            "download_count": 0
+          },
+          {
+            "id": 514576307,
+            "name": "ProcWitness-0.9.0-win-x64.zip",
+            "size": 114347941,
+            "browser_download_url": "https://github.com/Teknesyum/ProcWitness/releases/download/v0.9.0/ProcWitness-0.9.0-win-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/ProcWitness/releases/assets/514576307",
+            "download_count": 3
+          }
+        ]
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "system",
+          "lead": {
+            "en": "Process Monitor, Evidence Recorder and AI Analysis Helper",
+            "tr": "Süreç İzleyici, Kanıt Kaydedici ve Yapay Zekâ Analiz Yardımcısı"
+          },
+          "points": {
+            "en": [
+              "Records process behavior over time into a local evidence bundle",
+              "Instant scan: risk score, file path, SHA-256, signed publisher",
+              "Timed capture (1-20 min or custom) correlates behavior",
+              "Detects Task Manager evasion patterns",
+              "Persistence inventory: startup, tasks, services, cron, launchd",
+              "Baseline comparison shows added/removed/changed entries",
+              "Per-process upload/download bytes via ETW on Windows",
+              "Generates a ready-to-paste AI analysis prompt",
+              "MCP server for Codex and Claude Code",
+              "Optional direct AI report, key stored securely",
+              "Supports Windows, Linux, macOS",
+              "CLI with JSON output",
+              "Never kills processes, deletes files, or quarantines anything"
+            ],
+            "tr": [
+              "Süreçleri zaman içinde izleyip yerelde kanıt paketi oluşturur",
+              "Anlık tarama: risk skoru, dosya yolu, SHA-256, imzalı yayıncı",
+              "Zamanlı kayıtla (1-20 dk veya özel süre) davranış korelasyonu",
+              "Görev Yöneticisi kaçış desenlerini tespit eder",
+              "Kalıcılık envanteri: başlangıç, görev, servis, cron, launchd",
+              "Kaydedilen taban ile karşılaştırma: eklenen/silinen/değişen",
+              "Windows'ta ETW ile süreç başına yükleme/indirme trafiği",
+              "Yapay zekaya yapıştırılacak hazır analiz istemi üretir",
+              "Codex ve Claude Code için MCP sunucusu",
+              "Opsiyonel doğrudan AI raporu, anahtar güvenli depoda saklanır",
+              "Windows, Linux, macOS desteği",
+              "Komut satırı arayüzü, JSON çıktı",
+              "Süreç öldürmez, dosya silmez, karantinaya almaz"
+            ]
+          },
+          "summary": {
+            "en": "A process monitor for Windows, Linux and macOS that quietly records process behaviour and turns it into an evidence file you can hand to an AI. It listens for a chosen period, does the heavy correlation on the device, removes low-value noise and writes the evidence to disk, so a question about a suspicious process gets a real record instead of guesses. It installs with one command and needs no .NET; run as administrator on Windows it also adds network byte counts. For curious users and security people.",
+            "tr": "Windows, Linux ve macOS'ta süreçlerin davranışını sessizce kaydeden ve bunu yapay zekâya verilebilecek bir kanıt dosyasına dönüştüren süreç izleyici. Seçilen süre boyunca dinler, ağır ilişkilendirmeyi cihazın üzerinde yapar, değersiz gürültüyü ayıklar ve kanıtı diske yazar. Böylece şüpheli bir süreci bir modele sorarken tahmin yerine gerçek kayıt sunulur. Tek satırlık komutla kurulur, .NET gerektirmez; yönetici olarak açıldığında Windows'ta ağ trafiği ölçümü de ekler. Sistemini merak eden kullanıcılar ve güvenlikçiler için."
+          },
+          "tags": {
+            "en": [
+              "process-monitor",
+              "forensics",
+              "security",
+              "ai"
+            ],
+            "tr": [
+              "süreç-izleme",
+              "adli-analiz",
+              "güvenlik",
+              "yapay-zekâ"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Quietly record suspicious processes",
+              "Get an AI-ready evidence file",
+              "Scan for risky processes instantly",
+              "List everything that runs at startup",
+              "Compare changes against a baseline"
+            ],
+            "tr": [
+              "Şüpheli süreçleri sessizce kaydet",
+              "Yapay zekâya hazır kanıt dosyası al",
+              "Riskli süreçleri anında tara",
+              "Başlangıçta çalışanları listele",
+              "Değişiklikleri önceki taramayla karşılaştır"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": "2026-09-29T09:59:52Z",
+        "shotAt": "2026-09-29T09:59:52Z",
+        "readmeAt": "2026-09-30T02:45:47Z",
+        "prevReleaseAt": null,
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/Quizloop",
+      "pushedAt": "2026-10-02T17:32:58Z",
+      "release": {
+        "tag_name": "v0.7.1",
+        "name": "v0.7.1",
+        "published_at": "2026-10-02T15:43:37Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 605924671,
+            "name": "latest-linux.yml",
+            "size": 523,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/latest-linux.yml",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924671",
+            "download_count": 0
+          },
+          {
+            "id": 605924673,
+            "name": "latest-mac.yml",
+            "size": 509,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/latest-mac.yml",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924673",
+            "download_count": 0
+          },
+          {
+            "id": 605924668,
+            "name": "latest.yml",
+            "size": 345,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/latest.yml",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924668",
+            "download_count": 3
+          },
+          {
+            "id": 605924672,
+            "name": "QuizLoop-0.7.1-release.apk",
+            "size": 14557092,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/QuizLoop-0.7.1-release.apk",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924672",
+            "download_count": 0
+          },
+          {
+            "id": 605924681,
+            "name": "quizloop-0.7.1-setup.exe",
+            "size": 108899200,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/quizloop-0.7.1-setup.exe",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924681",
+            "download_count": 1
+          },
+          {
+            "id": 605924670,
+            "name": "quizloop-0.7.1-setup.exe.blockmap",
+            "size": 115480,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/quizloop-0.7.1-setup.exe.blockmap",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924670",
+            "download_count": 0
+          },
+          {
+            "id": 605924674,
+            "name": "quizloop-0.7.1-unsigned.dmg",
+            "size": 126770229,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/quizloop-0.7.1-unsigned.dmg",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924674",
+            "download_count": 0
+          },
+          {
+            "id": 605924680,
+            "name": "quizloop-0.7.1-unsigned.dmg.blockmap",
+            "size": 134291,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/quizloop-0.7.1-unsigned.dmg.blockmap",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924680",
+            "download_count": 0
+          },
+          {
+            "id": 605924682,
+            "name": "quizloop-0.7.1-unsigned.zip",
+            "size": 126741118,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/quizloop-0.7.1-unsigned.zip",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924682",
+            "download_count": 0
+          },
+          {
+            "id": 605924676,
+            "name": "quizloop-0.7.1-unsigned.zip.blockmap",
+            "size": 133542,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/quizloop-0.7.1-unsigned.zip.blockmap",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924676",
+            "download_count": 0
+          },
+          {
+            "id": 605924678,
+            "name": "quizloop-0.7.1.AppImage",
+            "size": 135322807,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/quizloop-0.7.1.AppImage",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924678",
+            "download_count": 0
+          },
+          {
+            "id": 605924675,
+            "name": "quizloop_0.7.1_amd64.deb",
+            "size": 105649532,
+            "browser_download_url": "https://github.com/Teknesyum/Quizloop/releases/download/v0.7.1/quizloop_0.7.1_amd64.deb",
+            "url": "https://api.github.com/repos/Teknesyum/Quizloop/releases/assets/605924675",
+            "download_count": 0
+          }
+        ]
+      },
+      "manifest": {
+        "name": "Quizloop",
+        "asset": "quizloop-*-setup.exe",
+        "method": "exe",
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "productivity",
+          "lead": {
+            "en": "Spaced-Repetition Engine and Book-to-Quiz Generator",
+            "tr": "Aralıklı Tekrar Motoru ve Kitaptan Soru Üretici"
+          },
+          "points": {
+            "en": [
+              "Spaced-repetition quizzes generated from a book",
+              "Question shown without options first, to encourage thinking",
+              "Wrong answers get an explanation for that specific mistake",
+              "Solution replays with its source: file, pages, quote",
+              "Built-in page viewer highlights the passage if the book is local",
+              "FSRS-6 scheduling with understood/not-understood tracking",
+              "Question bank lists every question's state, flags broken ones",
+              "PDF-to-module generation pipeline (quizforge)",
+              "Move-to-another-computer package for progress, modules, settings",
+              "Full keyboard control",
+              "Windows, macOS, Linux desktop builds",
+              "Automatic update checks"
+            ],
+            "tr": [
+              "Kitaptan üretilen soru modülüyle aralıklı tekrar",
+              "Soru önce seçeneksiz gösterilir, önce düşünmeye teşvik eder",
+              "Yanlış cevaba o seçeneğe özel açıklama yazılır",
+              "Çözüm kaynağıyla oynatılır: dosya, sayfa, alıntı",
+              "Kitap diskteyse pasaj vurgulu sayfa görüntüleyici açılır",
+              "FSRS-6 ile anlaşıldı/anlaşılmadı zamanlamalı tekrar",
+              "Soru bankası her sorunun durumunu listeler, bozuk soru işaretlenir",
+              "PDF'ten modül üretim hattı (quizforge)",
+              "Taşıma paketiyle ilerleme, modül ve ayarları başka bilgisayara aktarma",
+              "Klavye ile tam kontrol",
+              "Windows, macOS, Linux masaüstü sürümleri",
+              "Otomatik güncelleme kontrolü"
+            ]
+          },
+          "summary": {
+            "en": "An adaptive spaced-repetition engine that turns a book or PDF into a question module and drills it until it sticks. Each question first appears without options so you think before choosing; a wrong pick drops that option and shows an explanation written for that specific mistake. When a question closes, the solution plays back with its source file, pages and quoted passage. Scheduling runs on FSRS-6 and understood questions retire. A desktop app for Windows, macOS and Linux; question banks are separate, only a small sample ships.",
+            "tr": "Bir kitabı ya da PDF'i soru modülüne çevirip konu oturana kadar çalıştıran uyarlanabilir aralıklı tekrar motoru. Soru önce seçeneksiz gelir, önce düşünürsünüz; yanlış seçenek düşer ve o yanlışa özel açıklama gösterilir. Soru kapanınca çözüm kaynağıyla, yani dosya, sayfa ve alıntılanan pasajla birlikte oynatılır. Zamanlama FSRS-6 ile yapılır, anlaşılan sorular emekliye ayrılır. Windows, macOS ve Linux için masaüstü uygulaması; soru bankaları depoya dahil değil, yalnız örnek bir modül gelir."
+          },
+          "tags": {
+            "en": [
+              "education",
+              "spaced-repetition",
+              "quiz",
+              "pdf"
+            ],
+            "tr": [
+              "eğitim",
+              "aralıklı-tekrar",
+              "sınav",
+              "pdf"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Turn your book into quizzes",
+              "Repeat until the topic sticks",
+              "Read why each wrong answer fails",
+              "See the answer on its page",
+              "Move your progress to another PC"
+            ],
+            "tr": [
+              "Kitabını soru modülüne çevir",
+              "Konu oturana kadar aralıklı tekrarla",
+              "Yanlışına özel açıklamayı oku",
+              "Çözümü kitaptaki sayfasında gör",
+              "İlerlemeni başka bilgisayara taşı"
+            ]
+          }
+        }
+      },
+      "ui": "0.34.0",
+      "media": {
+        "iconAt": "2026-09-29T09:59:06Z",
+        "shotAt": "2026-09-29T09:59:06Z",
+        "readmeAt": "2026-10-02T10:24:12Z",
+        "prevReleaseAt": "2026-10-02T10:56:59Z",
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/RepoWarden",
+      "pushedAt": "2026-09-30T02:47:10Z",
+      "release": {
+        "tag_name": "v1.0.0",
+        "name": "RepoWarden 1.0.0",
+        "published_at": "2026-09-27T22:17:00Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 593889012,
+            "name": "RepoWarden-1.0.0-win.zip",
+            "size": 124453,
+            "browser_download_url": "https://github.com/Teknesyum/RepoWarden/releases/download/v1.0.0/RepoWarden-1.0.0-win.zip",
+            "url": "https://api.github.com/repos/Teknesyum/RepoWarden/releases/assets/593889012",
+            "download_count": 0
+          }
+        ]
+      },
+      "manifest": {
+        "name": "RepoWarden",
+        "category": "developer",
+        "asset": "RepoWarden-*-win.zip",
+        "method": "zip",
+        "run": "repowarden.cmd",
+        "icon": "assets/icon/icon-256.png",
+        "catalog": {
+          "category": "developer",
+          "lead": {
+            "en": "GitHub Account Publishing Auditor and Fix Prompt Generator",
+            "tr": "GitHub Hesabı Yayın Denetçisi ve Düzeltme İstemi Üretici"
+          },
+          "points": {
+            "en": [
+              "Scans every repository in the account in one pass",
+              "Keeps raw gh api output as evidence",
+              "Groups findings by severity",
+              "Cross-checks version numbers across sources",
+              "Reads documents as documents, finds broken links",
+              "Account-level checks like a missing .github repo",
+              "Copy-paste fix prompt per repository",
+              "Leaves an audit note in each repository",
+              "Queues destructive actions for approval, never runs them",
+              "Dry run prints and writes a report file",
+              "--issues opens and updates one issue per repository",
+              "--repo audits a single repository",
+              "Rules customizable via rules.json",
+              "English and Turkish report output"
+            ],
+            "tr": [
+              "Hesaptaki tüm depoları tek geçişte tarar",
+              "Ham gh api çıktısını kanıt olarak saklar",
+              "Bulguları önem derecesine göre sıralar",
+              "Sürüm tutarsızlıklarını çapraz kontrol eder",
+              "Belgeleri belge olarak okur, kırık bağlantı bulur",
+              ".github deposu eksikliği gibi hesap düzeyi kontrol",
+              "Depo başına kopyala-yapıştır düzeltme promptu",
+              "Her depoya denetim notu bırakır",
+              "Yıkıcı işlemleri uygulamadan onaya sunar",
+              "Kuru koşum ve rapor dosyası üretir",
+              "--issues ile depo başına issue açar ve günceller",
+              "--repo ile tek depo denetimi",
+              "Kurallar rules.json ile özelleştirilir",
+              "İngilizce ve Türkçe rapor çıktısı"
+            ]
+          },
+          "summary": {
+            "en": "An audit tool that reads every repository in a GitHub account through gh api and finds what is broken in the publishing layer. It looks at releases, README, licence, topics, branch names and the files GitHub expects, not at the code. It cross-checks version numbers kept in different places and catches dead install links and broken relative links. Findings are grouped by severity, each with the command that fixes it, and it can open one issue per repository. It never runs a destructive command. A Node.js command-line tool.",
+            "tr": "Bir GitHub hesabındaki bütün depoları gh api ile okuyup yayın katmanındaki bozuklukları bulan bir denetim aracı. Kodu değil çevresini inceler: sürümler, README, lisans, konular, dal adları ve GitHub'ın beklediği dosyalar. Farklı yerlerdeki sürüm numaralarını karşılaştırır, çalışmayan kurulum bağlantılarını ve kırık göreli linkleri yakalar. Bulguları önem sırasına göre raporlar, her birine düzelten komutu ekler, istenirse depo başına bir issue açar. Yıkıcı hiçbir işlemi kendisi yapmaz. Node.js ile çalışan bir komut satırı aracı."
+          },
+          "tags": {
+            "en": [
+              "github",
+              "audit",
+              "releases",
+              "cli"
+            ],
+            "tr": [
+              "github",
+              "denetim",
+              "sürüm",
+              "cli"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Audit all your repos at once",
+              "Catch version mismatches and broken links",
+              "See findings ranked by severity",
+              "Copy a ready-made fix prompt",
+              "Open an issue per repo"
+            ],
+            "tr": [
+              "Tüm depolarını tek geçişte denetle",
+              "Tutarsız sürümleri ve kırık bağlantıları bul",
+              "Bulguları önem sırasıyla gör",
+              "Hazır düzeltme istemini kopyala",
+              "Depo başına issue aç"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": "2026-09-27T22:15:57Z",
+        "shotAt": null,
+        "readmeAt": "2026-09-30T02:46:03Z",
+        "prevReleaseAt": null,
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/Runly",
+      "pushedAt": "2026-10-02T20:01:24Z",
+      "release": {
+        "tag_name": "v0.3.3",
+        "name": "Runly v0.3.3",
+        "published_at": "2026-10-02T20:03:55Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 606387067,
+            "name": "Runly-v0.3.3-win-x64.zip",
+            "size": 70073363,
+            "browser_download_url": "https://github.com/Teknesyum/Runly/releases/download/v0.3.3/Runly-v0.3.3-win-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/Runly/releases/assets/606387067",
+            "download_count": 2
+          },
+          {
+            "id": 606387068,
+            "name": "Runly-v0.3.3-win-x64.zip.sha256",
+            "size": 91,
+            "browser_download_url": "https://github.com/Teknesyum/Runly/releases/download/v0.3.3/Runly-v0.3.3-win-x64.zip.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/Runly/releases/assets/606387068",
+            "download_count": 2
+          }
+        ]
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "system",
+          "lead": {
+            "en": "Script Runner, File Association and Context Menu Manager",
+            "tr": "Betik Çalıştırıcı, Dosya İlişkilendirme ve Sağ Tık Menüsü Yöneticisi"
+          },
+          "points": {
+            "en": [
+              "Finds the right interpreter for a script itself",
+              "Reads the shebang first, then the extension",
+              "Reports a missing interpreter instead of guessing",
+              "Checks the downloaded-file mark before running",
+              "Trusted folder and file list",
+              "Configurable security mode",
+              "Lists every entry in the right-click menu",
+              "Hides unwanted right-click entries",
+              "Backs up registry changes",
+              "Restores the previous state on uninstall",
+              "Finds the process locking a file and offers to end it",
+              "Keeps the console open on an error exit code",
+              "Shows whether each extension is really bound",
+              "One PowerShell command, SHA-256 verified install",
+              "Update check on startup",
+              "Windows 10/11, Turkish interface"
+            ],
+            "tr": [
+              "Betiğe doğru yorumlayıcıyı kendisi bulur",
+              "Önce shebang satırını, sonra uzantıyı okur",
+              "Eksik yorumlayıcıyı tahmin etmeden bildirir",
+              "Çalıştırmadan önce internet işaretini denetler",
+              "Güvenilir klasör ve dosya listesi",
+              "Ayarlanabilir güvenlik modu",
+              "Sağ tık menüsündeki tüm girdileri listeler",
+              "İstenmeyen sağ tık girdilerini gizler",
+              "Kayıt defteri değişikliklerini yedekler",
+              "Kaldırınca eski durumu geri yükler",
+              "Dosyayı kilitleyen süreci bulup kapatmayı önerir",
+              "Hata kodunda konsol penceresini açık tutar",
+              "Her uzantının bağlı olup olmadığını gösterir",
+              "Tek PowerShell komutuyla, SHA-256 doğrulamalı kurulum",
+              "Açılışta güncelleme denetimi",
+              "Windows 10/11, Türkçe arayüz"
+            ]
+          },
+          "summary": {
+            "en": "A file-association hub that lets you double-click JavaScript, PowerShell, Python and shell scripts and run them like regular Windows programs. Instead of opening in an editor, a script gets the right interpreter, passes safety checks and runs; files downloaded from the internet are treated more strictly. It adds a \"Run with Runly\" context-menu entry with optional arguments. Association changes are made from a settings window and keep reversible registry backups. For Windows 10 and 11.",
+            "tr": "JavaScript, PowerShell, Python ve kabuk betiklerini çift tıklamayla sıradan bir Windows programı gibi çalıştıran dosya ilişkilendirme merkezi. Betik düzenleyicide açılmak yerine doğru yorumlayıcı bulunur, güvenlik denetiminden geçer ve çalıştırılır; internetten inen dosyalara daha sıkı davranır. Sağ tık menüsüne \"Runly ile çalıştır\" ekler, istenirse argüman sorar. Dosya ilişkilendirmelerini değiştirirken geri alınabilir kayıt defteri yedeği tutar ve bunu grafik ayar ekranından yapar. Windows 10 ve 11 için."
+          },
+          "tags": {
+            "en": [
+              "scripts",
+              "file-association",
+              "windows",
+              "developer"
+            ],
+            "tr": [
+              "betik",
+              "dosya-ilişkilendirme",
+              "windows",
+              "geliştirici"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Run scripts with a double-click",
+              "Find the right interpreter automatically",
+              "Check downloaded files first",
+              "Clean up the right-click menu",
+              "Restore old settings on uninstall"
+            ],
+            "tr": [
+              "Betikleri çift tıklayıp çalıştır",
+              "Doğru yorumlayıcıyı kendiliğinden bul",
+              "İnternetten ineni önce denetle",
+              "Sağ tık menüsünü sadeleştir",
+              "Kaldırınca eski ayarlara dön"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": "2026-09-29T09:56:54Z",
+        "shotAt": "2026-09-29T09:56:54Z",
+        "readmeAt": "2026-09-30T02:45:52Z",
+        "prevReleaseAt": "2026-10-02T19:48:41Z",
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/Teknesyum",
+      "pushedAt": "2026-09-27T23:47:05Z",
+      "release": null,
+      "manifest": null,
+      "ui": null,
+      "media": {
+        "iconAt": null,
+        "shotAt": null,
+        "readmeAt": "2026-09-27T23:46:04Z",
+        "prevReleaseAt": null,
+        "iconDiffers": null
+      }
+    },
+    {
+      "fullName": "Teknesyum/Teknesyum-Base",
+      "pushedAt": "2026-10-03T11:36:21Z",
+      "release": {
+        "tag_name": "v3.12.4",
+        "name": "Teknesyum Base 3.12.4",
+        "published_at": "2026-10-01T23:50:33Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 604380020,
+            "name": "Teknesyum-Base.exe",
+            "size": 10738176,
+            "browser_download_url": "https://github.com/Teknesyum/Teknesyum-Base/releases/download/v3.12.4/Teknesyum-Base.exe",
+            "url": "https://api.github.com/repos/Teknesyum/Teknesyum-Base/releases/assets/604380020",
+            "download_count": 2
+          },
+          {
+            "id": 604380022,
+            "name": "Teknesyum-Base.exe.sha256",
+            "size": 84,
+            "browser_download_url": "https://github.com/Teknesyum/Teknesyum-Base/releases/download/v3.12.4/Teknesyum-Base.exe.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/Teknesyum-Base/releases/assets/604380022",
+            "download_count": 2
+          }
+        ]
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "system",
+          "lead": {
+            "en": "GitHub Program Library, Installer, Updater and Uninstaller",
+            "tr": "GitHub Program Kütüphanesi, Yükleyici, Güncelleyici ve Kaldırıcı"
+          },
+          "points": {
+            "en": [
+              "Gathers a GitHub account's programs in one library",
+              "Card and list views",
+              "Search by name, description and tags",
+              "Filter by category, language, tag and state",
+              "Sort by stars, date or name",
+              "Live icons and full-size screenshots",
+              "README and release history in the detail sheet",
+              "One-click install, update and uninstall",
+              "SHA-256 verified downloads",
+              "Open installed programs in one click",
+              "Update-all button",
+              "Desktop shortcut and GitHub page buttons",
+              "Clone a repository with git to any folder",
+              "Updates itself",
+              "Shows the last list while offline",
+              "Several accounts, minimise to tray",
+              "Per-user install without admin rights",
+              "Turkish and English, Windows"
+            ],
+            "tr": [
+              "Bir GitHub hesabının programlarını tek kütüphanede toplar",
+              "Kart ve liste görünümü",
+              "Ad, açıklama ve etikette arama",
+              "Kategori, dil, etiket ve duruma göre süzme",
+              "Yıldız, tarih ya da ada göre sıralama",
+              "Canlı simge ve tam boy ekran görüntüleri",
+              "README ve sürüm geçmişi detay panelinde",
+              "Tek tıkla kurma, güncelleme ve kaldırma",
+              "SHA-256 doğrulamalı indirme",
+              "Kurulu programları tek tıkla açma",
+              "Hepsini güncelle düğmesi",
+              "Masaüstü kısayolu ve GitHub sayfası düğmesi",
+              "Depoyu git ile istediğin klasöre klonlama",
+              "Kendini güncelleyen uygulama",
+              "Çevrimdışıyken son listeyi gösterir",
+              "Birden çok hesap, sistem tepsisine küçülme",
+              "Yönetici izni istemeden kullanıcı kurulumu",
+              "Türkçe ve İngilizce, Windows"
+            ]
+          },
+          "summary": {
+            "en": "A Windows app that lists the programs published in a GitHub account and installs, updates and removes them. It shows each repository's stars, latest release, licence and README; when a release carries a Windows build, it downloads it, verifies it and installs it for the current user without asking for admin rights. The list marks what is installed, which version and whether a newer release exists, and groups repositories by category, language or your own tags. The last list is kept for offline use. It never writes to GitHub.",
+            "tr": "Bir GitHub hesabında yayımlanan programları tek listede gösteren, kuran, güncelleyen ve kaldıran Windows uygulaması. Her deponun yıldızını, son sürümünü, lisansını ve README'sini gösterir; sürümde Windows derlemesi varsa indirir, doğrular ve yönetici izni istemeden kullanıcı klasörüne kurar. Kurulu sürümü ve yeni sürüm olup olmadığını listede işaretler, depoları kategori, dil ya da kendi etiketlerinize göre gruplar. Ağ yokken son listeyi önbellekten gösterir. GitHub'a hiçbir şey yazmaz."
+          },
+          "tags": {
+            "en": [
+              "app-store",
+              "github",
+              "installer",
+              "updates"
+            ],
+            "tr": [
+              "uygulama-mağazası",
+              "github",
+              "kurulum",
+              "güncelleme"
+            ]
+          },
+          "uses": {
+            "en": [
+              "See all programs in one list",
+              "Install, update, remove in one click",
+              "Update everything with one button",
+              "Search and filter to find apps",
+              "Install without admin rights"
+            ],
+            "tr": [
+              "Hesabın programlarını tek listede gör",
+              "Tek tıkla kur, güncelle, kaldır",
+              "Hepsini tek düğmeyle güncelle",
+              "Arayıp süzerek istediğini bul",
+              "Yönetici izni olmadan kur"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": "2026-09-30T04:38:46Z",
+        "shotAt": "2026-09-30T05:04:03Z",
+        "readmeAt": "2026-10-01T22:36:06Z",
+        "prevReleaseAt": "2026-10-01T23:25:12Z",
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/Teknesyum-Core",
+      "pushedAt": "2026-10-01T23:42:59Z",
+      "release": {
+        "tag_name": "v0.62.0",
+        "name": "v0.62.0",
+        "published_at": "2026-10-01T23:34:26Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 604356955,
+            "name": "install.ps1",
+            "size": 1886,
+            "browser_download_url": "https://github.com/Teknesyum/Teknesyum-Core/releases/download/v0.62.0/install.ps1",
+            "url": "https://api.github.com/repos/Teknesyum/Teknesyum-Core/releases/assets/604356955",
+            "download_count": 0
+          },
+          {
+            "id": 604356957,
+            "name": "install.ps1.sha256",
+            "size": 78,
+            "browser_download_url": "https://github.com/Teknesyum/Teknesyum-Core/releases/download/v0.62.0/install.ps1.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/Teknesyum-Core/releases/assets/604356957",
+            "download_count": 0
+          },
+          {
+            "id": 604356956,
+            "name": "install.sh",
+            "size": 1356,
+            "browser_download_url": "https://github.com/Teknesyum/Teknesyum-Core/releases/download/v0.62.0/install.sh",
+            "url": "https://api.github.com/repos/Teknesyum/Teknesyum-Core/releases/assets/604356956",
+            "download_count": 0
+          },
+          {
+            "id": 604356958,
+            "name": "install.sh.sha256",
+            "size": 77,
+            "browser_download_url": "https://github.com/Teknesyum/Teknesyum-Core/releases/download/v0.62.0/install.sh.sha256",
+            "url": "https://api.github.com/repos/Teknesyum/Teknesyum-Core/releases/assets/604356958",
+            "download_count": 0
+          }
+        ]
+      },
+      "manifest": {
+        "catalog": {
+          "category": "developer",
+          "lead": {
+            "en": "Claude Code Token Counter, Job Manager and Safety Hooks",
+            "tr": "Claude Code Token Sayacı, İş Yöneticisi ve Güvenlik Kancaları"
+          },
+          "points": {
+            "en": [
+              "Silently counts changed files and lines",
+              "Speaks one line at a threshold",
+              "Files, tests and context percent in the statusline",
+              "Blocks unbounded wait loops",
+              "Denies destructive commands with a reason",
+              "Writes a handoff file at session end",
+              "Tracks the job list, carries open items to a ledger",
+              "Asks for test or build evidence after code changes",
+              "Asks for a real-window review after UI changes",
+              "Checks the reply language",
+              "Chime while waiting for approval",
+              "Search across a 1,968-book local library",
+              "Private shelf, agency roles and consult records",
+              "Import graph: hubs, cycles, orphan files",
+              "Bug, method and proposal logs",
+              "Project health scan",
+              "Bumps versions and publishes GitHub releases",
+              "Claude Code, Cursor and Gemini CLI"
+            ],
+            "tr": [
+              "Değişen dosya ve satırları sessizce sayar",
+              "Eşikte tek satırla uyarır",
+              "Durum çubuğunda dosya, test ve bağlam yüzdesi",
+              "Sonsuz bekleme döngülerini engeller",
+              "Tehlikeli komutları gerekçeyle reddeder",
+              "Oturum sonunda devir teslim dosyası yazar",
+              "İş listesini izler, açık kalanı deftere taşır",
+              "Kod değişince test ya da derleme kanıtı ister",
+              "Arayüz değişince gerçek pencere incelemesi ister",
+              "Yanıt dilini denetler",
+              "Onay beklerken sesli uyarı",
+              "1.968 kitaplık yerel kütüphanede arama",
+              "Özel raf, ajans rolleri ve danışma kayıtları",
+              "İçe aktarma grafiği: merkez, döngü, yetim dosya",
+              "Hata, yöntem ve teklif günlükleri",
+              "Proje sağlık taraması",
+              "Sürüm yükseltip GitHub yayını açar",
+              "Claude Code, Cursor ve Gemini CLI"
+            ]
+          },
+          "summary": {
+            "en": "A Claude Code plugin that counts tokens and organises multi-agent work. It tracks what a session spends, shows it in the status line and speaks once when a threshold is reached. Hooks add a denylist that stops dangerous commands, a job gate that keeps every task in a prompt within the same turn, and a handoff routine for long sessions. The same hooks also run inside Cursor and Gemini CLI. For developers who use Claude Code on long, many-part jobs.",
+            "tr": "Claude Code için token sayan, çok ajanlı çalışmayı düzenleyen bir eklenti. Oturumdaki harcamayı sayar, durum çubuğunda gösterir ve bir eşiğe gelindiğinde yalnız bir kez uyarır. Tehlikeli komutları durduran yasak listesi, bir istemdeki bütün işlerin aynı turda bitmesini takip eden iş kapısı ve oturum devri gibi kancalar içerir. Aynı kancalar Cursor ve Gemini CLI içinde de çalışır. Claude Code'u uzun ve çok parçalı işlerde kullanan geliştiriciler için."
+          },
+          "tags": {
+            "en": [
+              "claude-code",
+              "plugin",
+              "tokens",
+              "agents"
+            ],
+            "tr": [
+              "claude-code",
+              "eklenti",
+              "token",
+              "ajan"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Track spending, get threshold alerts",
+              "Block dangerous commands automatically",
+              "Make sure every job gets done",
+              "Get an end-of-session handoff file",
+              "Search a local book library"
+            ],
+            "tr": [
+              "Harcamayı say, eşikte uyarı al",
+              "Tehlikeli komutları kendiliğinden durdur",
+              "İstemdeki tüm işlerin bitmesini izle",
+              "Oturum sonunda devir dosyası al",
+              "Yerel kütüphanede kitap ara"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": null,
+        "shotAt": null,
+        "readmeAt": "2026-10-01T23:33:19Z",
+        "prevReleaseAt": "2026-09-30T05:06:19Z",
+        "iconDiffers": null
+      }
+    },
+    {
+      "fullName": "Teknesyum/Teknesyum-UI",
+      "pushedAt": "2026-10-01T23:11:32Z",
+      "release": {
+        "tag_name": "v0.34.0",
+        "name": "v0.34.0",
+        "published_at": "2026-10-01T23:11:34Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": []
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "developer",
+          "lead": {
+            "en": "Claude Code Interface Standard, Design System and Scanner",
+            "tr": "Claude Code Arayüz Standardı, Tasarım Sistemi ve Denetleyici"
+          },
+          "points": {
+            "en": [
+              "Design system generated from one token file",
+              "Preview app with 15 live panels",
+              "Personal token file that keeps your layout",
+              "102-rule scanner with auto-fix",
+              "0-100 readability score",
+              "Generates code for CSS, React, WPF, Avalonia, WinForms",
+              "Installer, title bar and update templates",
+              "9 themes, all at 7:1 contrast"
+            ],
+            "tr": [
+              "Tek token dosyasından üretilen tasarım sistemi",
+              "15 canlı panelli önizleme uygulaması",
+              "Kendi düzenini kaydeden kişisel token dosyası",
+              "Otomatik düzeltmeli 102 kurallı tarayıcı",
+              "0-100 arası okunurluk puanı",
+              "CSS, React, WPF, Avalonia, WinForms için kod üretir",
+              "Kurulum, başlık çubuğu ve güncelleme şablonları",
+              "9 tema, hepsi 7:1 kontrast"
+            ]
+          },
+          "summary": {
+            "en": "A Claude Code plugin that keeps one interface standard across projects. Colours, type, radius, motion and the title bar live in a single token file, and every project builds its UI from it. A scanner with more than a hundred checks flags hard-coded colours, contrast and focus-ring problems and can fix many of them automatically. The layout itself is edited live in an Electron preview app. Aimed at developers who want several projects to look the same for months without repeating a style guide.",
+            "tr": "Claude Code için bir arayüz standardı eklentisi. Renk, yazı, köşe yarıçapı, hareket ve başlık çubuğu gibi bütün görsel kararları tek bir token dosyasında tutar ve her projenin arayüzünü bu dosyadan üretir. Yüzü aşkın kuraldan oluşan tarayıcı kodu token dışı renklere, kontrast ve odak halkası sorunlarına karşı denetler, çoğunu kendisi düzeltir. Düzen Electron tabanlı bir önizleme uygulamasında canlı olarak ayarlanır. Birden fazla projeyi aylarca aynı görünümde tutmak isteyen geliştiriciler için."
+          },
+          "tags": {
+            "en": [
+              "claude-code",
+              "plugin",
+              "ui",
+              "design-tokens"
+            ],
+            "tr": [
+              "claude-code",
+              "eklenti",
+              "arayüz",
+              "tasarım-token"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Build every UI from one file",
+              "Find and fix issues automatically",
+              "See a readability score",
+              "Generate code for several frameworks",
+              "Pick one of the ready themes"
+            ],
+            "tr": [
+              "Tüm arayüzleri tek dosyadan üret",
+              "Tarayıcıyla sorunları bulup düzelt",
+              "Okunurluk puanını gör",
+              "Farklı çatılar için kod üret",
+              "Hazır temalardan birini seç"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": "2026-09-29T09:58:19Z",
+        "shotAt": "2026-09-29T09:58:19Z",
+        "readmeAt": "2026-09-27T02:45:49Z",
+        "prevReleaseAt": "2026-10-01T22:28:38Z",
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/Usb-Guard",
+      "pushedAt": "2026-09-29T09:57:42Z",
+      "release": {
+        "tag_name": "v1.32",
+        "name": "v1.32",
+        "published_at": "2026-09-29T09:52:42Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 597859151,
+            "name": "USB-Guard-1.32.zip",
+            "size": 37629,
+            "browser_download_url": "https://github.com/Teknesyum/Usb-Guard/releases/download/v1.32/USB-Guard-1.32.zip",
+            "url": "https://api.github.com/repos/Teknesyum/Usb-Guard/releases/assets/597859151",
+            "download_count": 0
+          },
+          {
+            "id": 597859148,
+            "name": "USB-Guard.bat",
+            "size": 128724,
+            "browser_download_url": "https://github.com/Teknesyum/Usb-Guard/releases/download/v1.32/USB-Guard.bat",
+            "url": "https://api.github.com/repos/Teknesyum/Usb-Guard/releases/assets/597859148",
+            "download_count": 2
+          }
+        ]
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "system",
+          "lead": {
+            "en": "USB Shortcut Worm Cleaner and Drive Immunizer",
+            "tr": "USB Kısayol Solucanı Temizleyici ve Bellek Aşılayıcı"
+          },
+          "points": {
+            "en": [
+              "Detects shortcut worms, deletes malicious .lnk files",
+              "Restores real files from the hidden folder",
+              "Quarantines hidden payloads (vbs/js/bat/hta/scr/url/scf)",
+              "Checks file content, not extension (magic byte check)",
+              "Follows shortcut arguments to resolve target files",
+              "Opens folders disguised as system objects (Recycle Bin, etc.)",
+              "Scans inside System Volume Information and $RECYCLE.BIN",
+              "Catches right-to-left override (RTLO) name tricks",
+              "Scans subfolders three levels deep",
+              "Restores items from past quarantine folders",
+              "Immunizes USB with locked decoy folders (FAT32/exFAT/NTFS)",
+              "Blocks write/delete via Deny ACL on NTFS",
+              "Scans PC for persistence points (Run, services, tasks, Winlogon)",
+              "Detects unsigned DLL sideloaded next to a signed program",
+              "Audits Windows Defender exclusion entries",
+              "Disables USB execute access via policy",
+              "Disables Windows Script Host via registry",
+              "Optional background watcher prompts on USB insertion",
+              "Single self-updating .bat file, no install",
+              "Version and file integrity verified via GitHub"
+            ],
+            "tr": [
+              "Kısayol solucanlarını tanır, zararlı .lnk siler",
+              "Gizli klasördeki gerçek dosyaları geri taşır",
+              "Gizli yükleri (vbs/js/bat/hta/scr/url/scf) karantinaya alır",
+              "Dosya içeriğine bakar, uzantıya değil (magic byte kontrolü)",
+              "Kısayol argümanlarını izleyip hedef dosyaları çözer",
+              "Sistem nesnesi kılığındaki (Geri Dönüşüm Kutusu vb) klasörleri açar",
+              "System Volume Information ve $RECYCLE.BIN içini tarar",
+              "Sağdan sola yazım (RTLO) hile adlarını yakalar",
+              "Alt klasörleri üç seviye derinlikte tarar",
+              "Karantina geçmişinden geri yükleme sunar",
+              "Sahte kilitli klasörlerle USB'yi aşılar (FAT32/exFAT/NTFS)",
+              "NTFS'te Deny ACL ile yazma/silmeyi engeller",
+              "Bilgisayarı kalıcılık noktaları için tarar (Run, servisler, görevler, Winlogon)",
+              "İmzalı program yanına eklenmiş imzasız DLL'i tespit eder",
+              "Windows Defender dışlama kayıtlarını denetler",
+              "USB'den çalıştırmayı ilke ile kapatır",
+              "Windows Script Host'u kayıt defterinden kapatır",
+              "İsteğe bağlı arka plan izleyici, takılan USB'yi otomatik sorar",
+              "Kendini güncelleyen tek .bat dosyası, kurulum gerektirmez",
+              "Sürüm ve dosya bütünlüğü GitHub üzerinden doğrulanır"
+            ]
+          },
+          "summary": {
+            "en": "A single self-elevating .bat file, no install, that cleans shortcut and autorun worms off USB drives and immunises the drive against them. It brings hidden files back, removes malicious shortcuts and payloads, and places decoy locks on the drive. From the menu it also checks whether the computer itself is infected, looking at startup points and script engine settings. Turkish or English is chosen on first run, and every menu item has its own help page. For anyone whose files seem to have vanished from a flash drive.",
+            "tr": "USB belleklerdeki kısayol ve autorun solucanlarını temizleyip belleği bunlara karşı bağışıklayan, kurulum gerektirmeyen tek bir .bat dosyası. Gizlenen dosyaları geri çıkarır, zararlı kısayolları ve yükleri kaldırır, belleğe tuzak kilitler koyar. Menüden bilgisayarın kendisinin bulaşmış olup olmadığını da denetler; başlangıç noktalarına ve betik motoru ayarlarına bakar. İlk açılışta Türkçe ya da İngilizce seçilir, her menü maddesinin yardım sayfası vardır. Belleği dosyaları kaybolmuş gibi görünen herkes için."
+          },
+          "tags": {
+            "en": [
+              "usb",
+              "security",
+              "shortcut-worm",
+              "portable"
+            ],
+            "tr": [
+              "usb",
+              "güvenlik",
+              "kısayol-virüsü",
+              "taşınabilir"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Clean shortcut viruses from USB drives",
+              "Bring back your hidden files",
+              "Vaccinate drives against reinfection",
+              "Check whether your PC is infected",
+              "Run from one file, no install"
+            ],
+            "tr": [
+              "USB'deki kısayol virüslerini temizle",
+              "Gizlenen dosyalarını geri getir",
+              "Belleği yeniden bulaşmaya karşı aşıla",
+              "Bilgisayarının bulaşıp bulaşmadığını tara",
+              "Kurulumsuz tek dosyayla çalıştır"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": {
+        "iconAt": "2026-09-29T09:57:42Z",
+        "shotAt": "2026-09-29T09:57:42Z",
+        "readmeAt": "2026-09-26T22:55:22Z",
+        "prevReleaseAt": "2026-09-27T22:43:01Z",
+        "iconDiffers": null
+      }
+    },
+    {
+      "fullName": "Teknesyum/VidShrink",
+      "pushedAt": "2026-10-02T21:29:54Z",
+      "release": {
+        "tag_name": "v1.2.6",
+        "name": "VidShrink 1.2.6",
+        "published_at": "2026-10-02T21:09:55Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 606495772,
+            "name": "checksums-linux-arm64.txt",
+            "size": 184,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/checksums-linux-arm64.txt",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495772",
+            "download_count": 0
+          },
+          {
+            "id": 606495770,
+            "name": "checksums-linux-x64.txt",
+            "size": 180,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/checksums-linux-x64.txt",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495770",
+            "download_count": 0
+          },
+          {
+            "id": 606495769,
+            "name": "checksums-osx-arm64.txt",
+            "size": 180,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/checksums-osx-arm64.txt",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495769",
+            "download_count": 0
+          },
+          {
+            "id": 606495773,
+            "name": "checksums-osx-x64.txt",
+            "size": 176,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/checksums-osx-x64.txt",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495773",
+            "download_count": 0
+          },
+          {
+            "id": 606495782,
+            "name": "checksums-win-arm64.txt",
+            "size": 376,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/checksums-win-arm64.txt",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495782",
+            "download_count": 1
+          },
+          {
+            "id": 606495784,
+            "name": "checksums-win-x64.txt",
+            "size": 454,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/checksums-win-x64.txt",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495784",
+            "download_count": 4
+          },
+          {
+            "id": 606495785,
+            "name": "manifest-linux-arm64.json",
+            "size": 96415,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/manifest-linux-arm64.json",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495785",
+            "download_count": 0
+          },
+          {
+            "id": 606495787,
+            "name": "manifest-linux-x64.json",
+            "size": 96409,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/manifest-linux-x64.json",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495787",
+            "download_count": 0
+          },
+          {
+            "id": 606495799,
+            "name": "manifest-osx-arm64.json",
+            "size": 96953,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/manifest-osx-arm64.json",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495799",
+            "download_count": 0
+          },
+          {
+            "id": 606495803,
+            "name": "manifest-osx-x64.json",
+            "size": 96945,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/manifest-osx-x64.json",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495803",
+            "download_count": 0
+          },
+          {
+            "id": 606495800,
+            "name": "manifest-win-arm64.json",
+            "size": 96718,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/manifest-win-arm64.json",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495800",
+            "download_count": 2
+          },
+          {
+            "id": 606495806,
+            "name": "manifest-win-x64.json",
+            "size": 97659,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/manifest-win-x64.json",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495806",
+            "download_count": 23
+          },
+          {
+            "id": 606495808,
+            "name": "vidshrink-launcher-win-arm64.zip",
+            "size": 3265046,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-launcher-win-arm64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495808",
+            "download_count": 1
+          },
+          {
+            "id": 606495820,
+            "name": "vidshrink-launcher-win-x64.zip",
+            "size": 3446183,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-launcher-win-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495820",
+            "download_count": 3
+          },
+          {
+            "id": 606495818,
+            "name": "vidshrink-linux-arm64.zip",
+            "size": 53022680,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-linux-arm64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495818",
+            "download_count": 0
+          },
+          {
+            "id": 606495822,
+            "name": "vidshrink-linux-x64.zip",
+            "size": 55434065,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-linux-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495822",
+            "download_count": 0
+          },
+          {
+            "id": 606495821,
+            "name": "vidshrink-osx-arm64.zip",
+            "size": 55563108,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-osx-arm64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495821",
+            "download_count": 0
+          },
+          {
+            "id": 606495828,
+            "name": "vidshrink-osx-x64.zip",
+            "size": 57889636,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-osx-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495828",
+            "download_count": 0
+          },
+          {
+            "id": 606495771,
+            "name": "VidShrink-Setup.exe",
+            "size": 11756467,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/VidShrink-Setup.exe",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495771",
+            "download_count": 4
+          },
+          {
+            "id": 606495836,
+            "name": "vidshrink-update-win-arm64.zip",
+            "size": 59189822,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-update-win-arm64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495836",
+            "download_count": 0
+          },
+          {
+            "id": 606495858,
+            "name": "vidshrink-update-win-x64.zip",
+            "size": 71174298,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-update-win-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495858",
+            "download_count": 1
+          },
+          {
+            "id": 606495866,
+            "name": "vidshrink-win-arm64.zip",
+            "size": 55919282,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-win-arm64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495866",
+            "download_count": 1
+          },
+          {
+            "id": 606495864,
+            "name": "vidshrink-win-x64.zip",
+            "size": 67722487,
+            "browser_download_url": "https://github.com/Teknesyum/VidShrink/releases/download/v1.2.6/vidshrink-win-x64.zip",
+            "url": "https://api.github.com/repos/Teknesyum/VidShrink/releases/assets/606495864",
+            "download_count": 3
+          }
+        ]
+      },
+      "manifest": {
+        "asset": "VidShrink-Setup.exe",
+        "method": "exe",
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "video",
+          "lead": {
+            "en": "Video Player, Recorder, Editor, Shrinker, Converter and More",
+            "tr": "Video Oynatıcı, Kaydedici, Editör, Küçültücü, Dönüştürücü ve Daha Fazlası"
+          },
+          "points": {
+            "en": [
+              "Built-in player with fast seeking",
+              "Before-and-after comparison panel",
+              "Screen recording: full screen, one window or a region",
+              "Records microphone and system sound chosen by name",
+              "Tunes the recorder automatically too",
+              "Trimming and time-range cutting",
+              "Shrinks a video just under the MB you pick",
+              "Preset sizes: e-mail 8, WhatsApp 16, Gmail 25 MB",
+              "Picks codec, quality, resolution and frame rate itself",
+              "Tells you the result size before it starts",
+              "12 encoders including NVENC, Quick Sync, AMF",
+              "Probes encoders on your own machine first",
+              "Watch folder: shrinks incoming videos on its own",
+              "Convert: MP4, MKV, WebM, MOV, AVI, GIF",
+              "Audio extraction: MP3, M4A, WAV",
+              "H.264, H.265, VP9, AV1 or stream copy",
+              "One-click share link: storage.to (25 GB), uguu.se",
+              "Shared videos play straight in the browser",
+              "Choose how long the link lives, and delete it",
+              "\"Open with VidShrink\" in the Explorer right-click menu",
+              "Exact ffmpeg command in the hidden Advanced tab",
+              "Command-line tool on the same engine",
+              "Fully offline and free",
+              "42 languages and 26 colour themes",
+              "Windows, macOS and Linux"
+            ],
+            "tr": [
+              "Hızlı ileri-geri saran dahili oynatıcı",
+              "Öncesi-sonrası karşılaştırma paneli",
+              "Ekran kaydı: tüm ekran, tek pencere ya da bölge",
+              "Mikrofon ve sistem sesini adıyla seçerek kaydeder",
+              "Kaydediciyi de otomatik ayarlar",
+              "Kırpma ve zaman aralığı kesme",
+              "Videoyu seçtiğin MB değerinin hemen altına küçültür",
+              "Hazır boyutlar: e-posta 8, WhatsApp 16, Gmail 25 MB",
+              "Kodek, kalite, çözünürlük ve kare hızını kendisi seçer",
+              "Sonuç boyutunu başlamadan önce söyler",
+              "NVENC, Quick Sync, AMF dahil 12 kodlayıcı",
+              "Kodlayıcıları önce senin makinende sınar",
+              "Klasör izleme: gelen videoları kendiliğinden küçültür",
+              "Dönüştürme: MP4, MKV, WebM, MOV, AVI, GIF",
+              "Ses çıkarma: MP3, M4A, WAV",
+              "H.264, H.265, VP9, AV1 ya da akış kopyası",
+              "Tek tıkla paylaşım bağlantısı: storage.to (25 GB), uguu.se",
+              "Paylaşılan video tarayıcıda doğrudan oynar",
+              "Bağlantının ne kadar kalacağını seçip silebilirsin",
+              "Gezgin sağ tık menüsünden \"VidShrink ile aç\"",
+              "Gizli Gelişmiş sekmede tam ffmpeg komutu",
+              "Aynı motoru kullanan komut satırı aracı",
+              "Tamamen çevrimdışı ve ücretsiz",
+              "42 dil ve 26 renk teması",
+              "Windows, macOS ve Linux"
+            ]
+          },
+          "summary": {
+            "en": "A free, fully offline media tool that puts a video player, screen recorder, editor, shrinker and converter in one window. It plays video with fast seeking, records the screen with microphone and system sound, trims and cuts, shrinks a file to land just under the size you ask for, converts to MP4, MKV, WebM, GIF or MP3, and gives you a one-click share link. Hardware encoders are probed on your own machine before use. The interface ships in 42 languages with 26 colour themes, on Windows, macOS and Linux.",
+            "tr": "Video oynatıcı, ekran kaydedici, editör, küçültücü ve dönüştürücüyü tek pencerede toplayan, ücretsiz ve tamamen çevrimdışı çalışan bir medya aracı. Videoları hızlı saran dahili oynatıcıyla izler, ekranı mikrofon ve sistem sesiyle kaydeder, kırpıp keser, istediğin dosya boyutunun hemen altına küçültür, MP4, MKV, WebM, GIF ya da MP3'e dönüştürür ve tek tıkla paylaşım bağlantısı verir. Donanım kodlayıcılarını makinede sınayarak kullanır. Arayüz 42 dil ve 26 renk temasıyla gelir; Windows, macOS ve Linux'ta çalışır."
+          },
+          "tags": {
+            "en": [
+              "video",
+              "player",
+              "screen-recording",
+              "conversion",
+              "compression"
+            ],
+            "tr": [
+              "video",
+              "oynatıcı",
+              "ekran-kaydı",
+              "dönüştürme",
+              "sıkıştırma"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Watch videos in the built-in player",
+              "Record the screen with sound",
+              "Trim and cut the part you want",
+              "Shrink a video to any size",
+              "Convert to MP4, MKV, GIF, MP3",
+              "Share with a one-click link"
+            ],
+            "tr": [
+              "Videolarını dahili oynatıcıyla izle",
+              "Ekranı sesiyle birlikte kaydet",
+              "Kırp, kes, istediğin aralığı al",
+              "Videoyu istediğin boyuta küçült",
+              "MP4, MKV, GIF, MP3'e dönüştür",
+              "Tek tıkla bağlantıyla paylaş"
+            ]
+          }
+        }
+      },
+      "ui": "0.34.0",
+      "media": {
+        "iconAt": "2026-09-30T07:35:17Z",
+        "shotAt": "2026-09-29T09:57:15Z",
+        "readmeAt": "2026-09-30T03:56:26Z",
+        "prevReleaseAt": "2026-10-02T18:33:35Z",
+        "iconDiffers": false
+      }
+    },
+    {
+      "fullName": "Teknesyum/Webband",
+      "pushedAt": "2026-09-29T09:59:27Z",
+      "release": {
+        "tag_name": "v2.11.1",
+        "name": "2.11.1 — Kantar",
+        "published_at": "2026-10-03T15:04:28Z",
+        "body_html": null,
+        "prerelease": false,
+        "draft": false,
+        "assets": [
+          {
+            "id": 0,
+            "name": "Webband-v2.11.1.zip",
+            "size": 0,
+            "browser_download_url": "https://codeload.github.com/srknzl/Webband/zip/refs/tags/v2.11.1",
+            "url": "https://codeload.github.com/srknzl/Webband/zip/refs/tags/v2.11.1",
+            "download_count": 0
+          }
+        ]
+      },
+      "manifest": {
+        "icon": ".teknesyum/icon.png",
+        "screenshot": ".teknesyum/shot.jpg",
+        "full": ".teknesyum/full.jpg",
+        "catalog": {
+          "category": "games",
+          "fork": {
+            "by": "Serkan",
+            "play": "https://serkanozel.me/webband/",
+            "repo": "https://github.com/srknzl/Webband"
+          },
+          "lead": {
+            "en": "Warband-Style Browser Role-Playing and Strategy Game",
+            "tr": "Tarayıcıda Warband Tarzı Rol Yapma ve Strateji Oyunu"
+          },
+          "points": {
+            "en": [
+              "Single-page browser Warband-style RPG-strategy",
+              "Procedural Calradia map with five kingdoms, 23 lords, 12 ladies",
+              "Real-time top-down battles with formations and morale",
+              "Sieges, damage types, shields",
+              "Supply-demand market, caravans, villager convoys bandits hunt",
+              "Quests, tournaments with betting, arenas",
+              "Courtship, marriage, village raiding, fiefs, vassals",
+              "War simulation that runs independent of the player",
+              "Dual-stick touch controls (movement and aim/strike)",
+              "Three manual saves plus autosave in localStorage, JSON export",
+              "Capacitor-based native Android/iOS package",
+              "PWA: installs to home screen, works offline",
+              "Windows launcher that self-checks for updates",
+              "Turkish, English, Indonesian interface"
+            ],
+            "tr": [
+              "Tarayıcıda tek sayfada çalışan Warband tarzı RPG-strateji",
+              "Beş krallık, 23 lord, 12 leydiyle prosedürel Calradia haritası",
+              "Formasyonlu, moralli, gerçek zamanlı üstten görünüş savaşlar",
+              "Kuşatmalar, hasar tipleri, kalkanlar",
+              "Arz-talebe dayalı pazar, kervanlar, haydut avlayan köylü kafileleri",
+              "Görevler, bahisli turnuvalar, arenalar",
+              "Kur yapma, evlilik, köy yağması, tımarlar, vasallık",
+              "Oyuncudan bağımsız süren savaş simülasyonu",
+              "Dokunmatik ekranda çift analog kontrol (yürüme ve nişan/vuruş)",
+              "localStorage'da üç manuel slot artı otomatik kayıt, JSON dışa aktarım",
+              "Android/iOS için Capacitor tabanlı native paket",
+              "PWA: ana ekrana eklenip çevrimdışı çalışır",
+              "Windows için güncellemeyi kendi kontrol eden başlatıcı script",
+              "Türkçe, İngilizce, Endonezce arayüz"
+            ]
+          },
+          "summary": {
+            "en": "A single-page, Mount & Blade: Warband style role-playing and strategy game that runs entirely in the browser. It has a procedurally generated map of Calradia with five kingdoms, lords and ladies, battles and army management. No build step, no dependencies and no server: opening index.html is enough. On a phone it can be added to the home screen and played offline, with twin-stick touch controls in battle. The interface comes in Turkish, English and Indonesian. Serkan develops the current version.",
+            "tr": "Tamamen tarayıcıda çalışan, Mount & Blade: Warband tarzında tek sayfalık bir rol yapma ve strateji oyunu. Beş krallık, lordlar ve leydilerle yordamsal olarak üretilen bir Calradia haritası, savaşlar ve ordu yönetimi içerir. Derleme adımı, bağımlılık ya da sunucu gerektirmez; index.html'i açmak yeterli. Telefonda ana ekrana eklenerek çevrimdışı oynanabilir, dokunmatik ekranda iki çubukla savaşılır. Türkçe, İngilizce ve Endonezce arayüzü vardır. Güncel sürümünü kardeşimiz Serkan geliştiriyor."
+          },
+          "tags": {
+            "en": [
+              "game",
+              "browser",
+              "strategy",
+              "rpg"
+            ],
+            "tr": [
+              "oyun",
+              "tarayıcı",
+              "strateji",
+              "rpg"
+            ]
+          },
+          "uses": {
+            "en": [
+              "Play Warband-style in your browser",
+              "Build an army and fight battles",
+              "Trade and join tournaments",
+              "Marry, earn fiefs, serve a kingdom",
+              "Play offline on your phone"
+            ],
+            "tr": [
+              "Tarayıcıda Warband tarzı oyna",
+              "Ordunu kur, savaşlara katıl",
+              "Ticaret yap, turnuvalara gir",
+              "Evlen, tımar al, krallığa hizmet et",
+              "Telefonda çevrimdışı oyna"
+            ]
+          }
+        }
+      },
+      "ui": null,
+      "media": null
+    }
+  ]
+}

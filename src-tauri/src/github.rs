@@ -673,8 +673,9 @@ impl GitHub {
     }
 
     async fn repo_file(&self, owner: &str, name: &str, private: bool, path: &str) -> AppResult<Option<String>> {
-        let r = if self.token.is_some() || private {
-            self.get(&format!("{API}/repos/{owner}/{name}/contents/{path}"), ACCEPT_RAW).await?
+        let api = format!("{API}/repos/{owner}/{name}/contents/{path}");
+        let r = if self.token.is_some() || private || Self::repo_key_for(&api).is_some() {
+            self.get(&api, ACCEPT_RAW).await?
         } else {
             self.get(&format!("https://raw.githubusercontent.com/{owner}/{name}/HEAD/{path}"), "text/plain").await?
         };
@@ -1376,6 +1377,41 @@ mod tests {
     fn live_client() -> GitHub {
         let dir = std::env::temp_dir().join("teknesyum-base-live-test");
         GitHub::new(build_http(), dir, std::env::var("GITHUB_TOKEN").ok())
+    }
+
+    #[tokio::test]
+    #[ignore]
+    async fn live_keyed_private_update() {
+        let repo = std::env::var("TEKNESYUM_TEST_REPO").unwrap_or_else(|_| "AmeliyatListesi".into());
+        let full = format!("Teknesyum/{repo}");
+        println!("keyed repos: {:?}", crate::repokey::user_repos());
+        let dir = std::env::temp_dir().join("teknesyum-base-anahtar-prova");
+        let _ = std::fs::remove_dir_all(&dir);
+        let gh = GitHub::new(build_http(), dir.clone(), None);
+        assert!(gh.token_for(&full).is_some(), "no key stored for {full}");
+        let repos = gh.list_account_repos("Teknesyum").await.unwrap();
+        assert!(repos.iter().any(|r| r.full_name.eq_ignore_ascii_case(&full)), "not listed");
+        let rel = gh.latest_release("Teknesyum", &repo).await.unwrap().expect("release");
+        let manifest = gh.manifest("Teknesyum", &repo, false).await.unwrap();
+        println!("tag={} manifest={}", rel.tag_name, manifest.is_some());
+        assert!(manifest.is_some(), "manifest unreadable with key only");
+        let refs = rel.asset_refs();
+        let (chosen, kind) = logic::select_asset(&refs, manifest.as_ref()).expect("asset");
+        println!("asset={} kind={:?}", chosen.name, kind);
+        assert_eq!(logic::install_state(Some((kind.method(), "v0.0.1")), Some(&rel.tag_name)), crate::model::InstallState::UpdateAvailable);
+        let asset = rel.assets.iter().find(|a| a.name == chosen.name).unwrap();
+        let key = gh.token_for(&full).unwrap();
+        let fetch = |url: String| { let key = key.clone(); async move { build_http().get(url).header(reqwest::header::USER_AGENT, UA).header(reqwest::header::ACCEPT, "application/octet-stream").bearer_auth(key).send().await.unwrap() } };
+        let resp = fetch(asset.url.clone()).await;
+        assert!(resp.status().is_success(), "download HTTP {}", resp.status());
+        let bytes = resp.bytes().await.unwrap();
+        use sha2::Digest;
+        let hash: String = sha2::Sha256::digest(&bytes).iter().map(|b| format!("{b:02x}")).collect();
+        let sum = rel.assets.iter().find(|a| a.name == format!("{}.sha256", chosen.name)).expect("sha256 asset");
+        let text = fetch(sum.url.clone()).await.text().await.unwrap();
+        println!("bytes={} sha_ok={}", bytes.len(), text.to_ascii_lowercase().contains(&hash));
+        assert!(text.to_ascii_lowercase().contains(&hash));
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[tokio::test]

@@ -3974,7 +3974,7 @@ dependencies = [
 
 [[package]]
 name = "teknesyum-base"
-version = "3.12.4"
+version = "3.12.5"
 dependencies = [
  "base64 0.22.1",
  "chrono",

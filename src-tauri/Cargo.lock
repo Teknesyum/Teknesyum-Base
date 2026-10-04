@@ -2274,6 +2274,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "obfstr"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cf5f1acbf6ef57cef9d127e72c4afd01d6b08692616fd09afad7f7807d6eb78"
+
+[[package]]
 name = "objc2"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3974,7 +3980,7 @@ dependencies = [
 
 [[package]]
 name = "teknesyum-base"
-version = "3.12.5"
+version = "3.12.6"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -3984,6 +3990,7 @@ dependencies = [
  "ico",
  "keyring",
  "mslnk",
+ "obfstr",
  "reqwest 0.12.28",
  "serde",
  "serde_json",

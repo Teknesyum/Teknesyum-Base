@@ -1384,6 +1384,13 @@ mod tests {
     async fn live_keyed_private_update() {
         let repo = std::env::var("TEKNESYUM_TEST_REPO").unwrap_or_else(|_| "AmeliyatListesi".into());
         let full = format!("Teknesyum/{repo}");
+        if std::env::var_os(crate::cep::PATH_ENV).is_none() {
+            if let Some(p) = dirs::data_local_dir().map(|d| d.join("Programs/Teknesyum Base/teknesyum-base.cep")) {
+                if p.is_file() {
+                    std::env::set_var(crate::cep::PATH_ENV, p);
+                }
+            }
+        }
         println!("keyed repos: {:?}", crate::repokey::user_repos());
         let dir = std::env::temp_dir().join("teknesyum-base-anahtar-prova");
         let _ = std::fs::remove_dir_all(&dir);

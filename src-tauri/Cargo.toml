@@ -1,6 +1,6 @@
 [package]
 name = "teknesyum-base"
-version = "3.12.5"
+version = "3.12.6"
 description = "Browse and install the programs of a GitHub account"
 authors = ["Teknesyum"]
 license = "AGPL-3.0-or-later"
@@ -37,6 +37,7 @@ glob = "0.3"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 base64 = "0.22"
 ico = "0.5"
+obfstr = "0.4"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Cryptography", "Win32_Security_Cryptography_Catalog", "Win32_Security_Cryptography_Sip", "Win32_Security_WinTrust", "Win32_Storage_FileSystem", "Win32_System_Registry", "Win32_System_Threading", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }

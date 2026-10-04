@@ -1,3 +1,4 @@
+mod cep;
 mod claude;
 mod commands;
 mod detect;
@@ -207,6 +208,8 @@ pub fn run() {
         .setup(|app| {
             #[cfg(feature = "pro")]
             settings::purge_stored_keys();
+            #[cfg(not(feature = "pro"))]
+            cep::migrate_from_keyring();
             commands::warm_git();
             app.manage(AppState::new());
             app.manage(updater::Updater::new());

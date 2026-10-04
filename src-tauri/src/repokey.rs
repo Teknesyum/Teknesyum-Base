@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::process::Command;
-use std::sync::{Mutex, OnceLock};
 
 use serde::{Deserialize, Serialize};
 
@@ -46,30 +45,7 @@ fn lookup(map: &HashMap<String, String>, full_name: &str) -> Option<String> {
 }
 
 pub fn get(full_name: &str) -> Option<String> {
-    lookup(&embedded_map(), full_name).or_else(|| user_map().lock().ok().and_then(|m| lookup(&m, full_name)))
-}
-
-const USER_SERVICE: &str = if cfg!(feature = "pro") { "Teknesyum Base Pro" } else { "Teknesyum Base" };
-const USER_ENTRY: &str = "repo-keys";
-
-fn user_map() -> &'static Mutex<HashMap<String, String>> {
-    static MAP: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
-    MAP.get_or_init(|| {
-        let stored = keyring::Entry::new(USER_SERVICE, USER_ENTRY).ok().and_then(|e| e.get_password().ok());
-        Mutex::new(parse(stored.as_deref()))
-    })
-}
-
-fn save_user(map: &HashMap<String, String>) -> AppResult<()> {
-    let entry = keyring::Entry::new(USER_SERVICE, USER_ENTRY)?;
-    if map.is_empty() {
-        return match entry.delete_credential() {
-            Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
-            Err(e) => Err(e.into()),
-        };
-    }
-    entry.set_password(&serde_json::to_string(map)?)?;
-    Ok(())
+    lookup(&embedded_map(), full_name).or_else(|| lookup(&crate::cep::repos(), full_name))
 }
 
 pub const HIDDEN_REPOS: [&str; 2] = ["Teknesyum-Base", "Teknesyum-Private"];
@@ -80,7 +56,7 @@ pub fn hidden(full_name: &str) -> bool {
 }
 
 pub fn user_repos() -> Vec<String> {
-    let mut v: Vec<String> = user_map().lock().map(|m| m.keys().filter(|k| !hidden(k)).cloned().collect()).unwrap_or_default();
+    let mut v: Vec<String> = crate::cep::repos().into_keys().filter(|k| !hidden(k)).collect();
     v.sort();
     v
 }
@@ -113,18 +89,18 @@ pub async fn add(http: &reqwest::Client, key: &str) -> AppResult<Vec<String>> {
     if found.is_empty() {
         return Ok(found);
     }
-    let mut map = user_map().lock().map_err(|_| AppError::unknown("anahtar kilidi"))?;
+    let mut map = crate::cep::repos();
     for f in &found {
         map.insert(f.to_ascii_lowercase(), key.to_string());
     }
-    save_user(&map)?;
+    crate::cep::set_repos(map)?;
     Ok(found)
 }
 
 pub fn remove(full_name: &str) -> AppResult<()> {
-    let mut map = user_map().lock().map_err(|_| AppError::unknown("anahtar kilidi"))?;
+    let mut map = crate::cep::repos();
     map.remove(&full_name.to_ascii_lowercase());
-    save_user(&map)
+    crate::cep::set_repos(map)
 }
 
 pub fn header_env(cmd: &mut Command, url_prefix: &str, token: &str) {

@@ -3,13 +3,6 @@ use serde::{Deserialize, Serialize};
 use crate::error::AppResult;
 use crate::paths::{read_json, write_json, Paths};
 
-const KEYRING_SERVICE: &str = if cfg!(feature = "pro") {
-    "Teknesyum Base Pro"
-} else {
-    "Teknesyum Base"
-};
-const KEYRING_USER: &str = "github-token";
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Language {
@@ -86,29 +79,16 @@ pub fn save(paths: &Paths, settings: &Settings) -> AppResult<()> {
     write_json(&paths.settings_file(), &stored)
 }
 
-fn entry() -> AppResult<keyring::Entry> {
-    Ok(keyring::Entry::new(KEYRING_SERVICE, KEYRING_USER)?)
-}
-
 pub fn read_token() -> Option<String> {
-    entry()
-        .ok()?
-        .get_password()
-        .ok()
-        .map(|t| t.trim().to_string())
-        .filter(|t| !t.is_empty())
+    crate::cep::token()
 }
 
 pub fn write_token(token: &str) -> AppResult<()> {
-    entry()?.set_password(token.trim())?;
-    Ok(())
+    crate::cep::set_token(token)
 }
 
 pub fn delete_token() -> AppResult<()> {
-    match entry()?.delete_credential() {
-        Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
-        Err(e) => Err(e.into()),
-    }
+    crate::cep::clear_token()
 }
 
 pub fn embedded_token() -> Option<String> {
@@ -128,8 +108,8 @@ pub fn token() -> Option<String> {
 
 #[cfg(feature = "pro")]
 pub fn purge_stored_keys() {
-    if embedded_token().is_some() {
-        let _ = delete_token();
+    if let Ok(e) = keyring::Entry::new("Teknesyum Base Pro", "github-token") {
+        let _ = e.delete_credential();
     }
     crate::repokey::purge_stored();
 }

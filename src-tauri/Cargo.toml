@@ -1,6 +1,6 @@
 [package]
 name = "teknesyum-base"
-version = "3.12.7"
+version = "3.12.8"
 description = "Browse and install the programs of a GitHub account"
 authors = ["Teknesyum"]
 license = "AGPL-3.0-or-later"
@@ -19,7 +19,7 @@ pro = []
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["tray-icon"] }
+tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-single-instance = "2"
 tauri-plugin-window-state = "2"

@@ -39,7 +39,7 @@
         "Depoyu git ile istediğin klasöre klonlama",
         "Kendini güncelleyen uygulama",
         "Çevrimdışıyken son listeyi gösterir",
-        "Birden çok hesap, sistem tepsisine küçülme",
+        "Birden çok hesap",
         "Yönetici izni istemeden kullanıcı kurulumu",
         "Türkçe ve İngilizce, Windows"
       ],
@@ -59,7 +59,7 @@
         "Clone a repository with git to any folder",
         "Updates itself",
         "Shows the last list while offline",
-        "Several accounts, minimise to tray",
+        "Several accounts",
         "Per-user install without admin rights",
         "Turkish and English, Windows"
       ]

@@ -84,7 +84,6 @@ let settings: Settings = {
   language: 'tr',
   showArchived: false,
   showForks: false,
-  closeToTray: true,
   silentUpdate: true,
   desktopShortcut: false,
   hasToken: false,

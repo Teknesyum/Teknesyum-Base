@@ -306,8 +306,6 @@
     "showArchivedHelp": "Archived repos are listed in the library.",
     "showForks": "Show forks",
     "showForksHelp": "Repos forked from others are listed too.",
-    "closeToTray": "Hide to tray on close",
-    "closeToTrayHelp": "The window closes and the app keeps running in the notification area.",
     "silentUpdate": "Update silently",
     "silentUpdateHelp": "New versions download in the background, are verified and run on the next launch.",
     "saved": "Settings saved",

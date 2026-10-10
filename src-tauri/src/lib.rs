@@ -15,8 +15,6 @@ mod settings;
 mod store;
 mod updater;
 
-use tauri::menu::{Menu, MenuItem};
-use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager, WebviewWindow, WindowEvent};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 
@@ -132,44 +130,6 @@ fn fit_to_monitor(window: &WebviewWindow) {
     let _ = window.set_position(tauri::LogicalPosition::new(fit.x, fit.y));
 }
 
-fn build_tray(app: &tauri::App) -> tauri::Result<()> {
-    let en = matches!(
-        app.state::<AppState>().settings().language,
-        settings::Language::En
-    );
-    let show = MenuItem::with_id(app, "show", if en { "Show" } else { "Göster" }, true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", if en { "Quit" } else { "Çıkış" }, true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show, &quit])?;
-    let mut builder = TrayIconBuilder::with_id("main")
-        .tooltip(if cfg!(feature = "pro") {
-            "Teknesyum Base Pro"
-        } else {
-            "Teknesyum Base"
-        })
-        .menu(&menu)
-        .show_menu_on_left_click(false)
-        .on_menu_event(|app, event| match event.id().as_ref() {
-            "show" => show_main(app),
-            "quit" => app.exit(0),
-            _ => {}
-        })
-        .on_tray_icon_event(|tray, event| {
-            if let TrayIconEvent::Click {
-                button: MouseButton::Left,
-                button_state: MouseButtonState::Up,
-                ..
-            } = event
-            {
-                show_main(tray.app_handle());
-            }
-        });
-    if let Some(icon) = app.default_window_icon() {
-        builder = builder.icon(icon.clone());
-    }
-    builder.build(app)?;
-    Ok(())
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn katalog_main() {
     let mut args = std::env::args().skip(1);
@@ -225,7 +185,6 @@ pub fn run() {
                 window.show()?;
                 let _ = window.set_focus();
             }
-            build_tray(app)?;
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -234,9 +193,9 @@ pub fn run() {
                     return;
                 }
                 let state = window.state::<AppState>();
-                if state.settings().close_to_tray || state.running_tasks() > 0 {
+                if state.running_tasks() > 0 {
                     api.prevent_close();
-                    let _ = window.hide();
+                    let _ = window.minimize();
                 }
             }
         })

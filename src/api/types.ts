@@ -110,7 +110,6 @@ export type Settings = {
   language: 'tr' | 'en';
   showArchived: boolean;
   showForks: boolean;
-  closeToTray: boolean;
   silentUpdate: boolean;
   desktopShortcut: boolean;
   hasToken: boolean;

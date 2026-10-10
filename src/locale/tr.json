@@ -306,8 +306,6 @@
     "showArchivedHelp": "Arşivlenmiş repolar kütüphanede listelenir.",
     "showForks": "Çatalları göster",
     "showForksHelp": "Başka repolardan çatallananlar da listelenir.",
-    "closeToTray": "Kapatınca tepsiye gizle",
-    "closeToTrayHelp": "Pencere kapanır, uygulama bildirim alanında çalışmayı sürdürür.",
     "silentUpdate": "Sessiz güncelle",
     "silentUpdateHelp": "Yeni sürüm arka planda indirilir, doğrulanır ve bir sonraki açılışta çalışır.",
     "saved": "Ayarlar kaydedildi",

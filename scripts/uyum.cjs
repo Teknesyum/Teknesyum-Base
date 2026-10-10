@@ -4,7 +4,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const OWNER = 'Teknesyum';
-const SKIP = new Set(['.github', 'Teknesyum', 'Teknesyum-Private', 'Teknesyum-Base-Legacy']);
+const SKIP = new Set(['.github', 'Teknesyum', 'Teknesyum-Private']);
 const ROOT = path.resolve(__dirname, '..');
 const ASSETS = path.join(ROOT, 'src/assets/apps');
 const push = process.argv.includes('--push');

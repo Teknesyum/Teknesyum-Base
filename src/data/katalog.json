@@ -1166,65 +1166,6 @@
       ]
     }
   },
-  "Teknesyum-Base-Legacy": {
-    "category": "developer",
-    "tags": {
-      "tr": [
-        "claude-code",
-        "arşiv",
-        "çok-ajanlı"
-      ],
-      "en": [
-        "claude-code",
-        "archived",
-        "multi-agent"
-      ]
-    },
-    "summary": {
-      "tr": "Teknesyum Base'in eski, arşivlenmiş sürümü: Claude Code için çok ajanlı bir iş dağıtım sistemi, bağımsız bir denetçi ve isteğe bağlı neon arayüz standardından oluşan bir temel katman. İşin büyüklüğüne, kaç parçaya bölüneceğine, hangi ajanın hangi modelle çalışacağına ve sonucun nasıl doğrulanacağına sistem karar veriyordu. Ağustos 2026'da ikiye ayrıldı: iş dağıtımı Teknesyum Core'a, arayüz standardı Teknesyum UI'a geçti. Yalnız geçmiş için saklanıyor ve güncelleme almıyor.",
-      "en": "The old, archived edition of Teknesyum Base: a base layer for Claude Code made of a multi-agent work relay, an independent auditor and an optional neon interface standard. The system decided how big a job was, how many pieces it split into, which agent ran on which model and how the result was verified. In August 2026 it was split in two: the work relay became Teknesyum Core and the interface standard became Teknesyum UI. It is kept for history only and receives no updates."
-    },
-    "lead": {
-      "tr": "Arşivlenmiş Çok Ajanlı İş Rölesi ve Bağımsız Denetçi",
-      "en": "Archived Multi-Agent Work Relay and Independent Auditor"
-    },
-    "uses": {
-      "tr": [
-        "Büyük işi paralel ajanlara böl",
-        "Her parçayı bağımsız denetçiyle doğrula",
-        "Oturumu telefondan uzaktan yönet"
-      ],
-      "en": [
-        "Split big jobs across parallel agents",
-        "Verify each part independently",
-        "Manage sessions from your phone"
-      ]
-    },
-    "points": {
-      "tr": [
-        "Arşivlendi: Teknesyum-Core ve Teknesyum-UI olarak bölündü",
-        "Büyük işi sözleşmelere bölüp paralel ajanlara verir",
-        "Her sözleşmeyi bağımsız denetçi doğrular",
-        "İşin boyunu kendisi sınıflandırır",
-        "Takılan ajanları kendiliğinden yeniden başlatır",
-        "Eco, normal ve premium profilleri",
-        "Oturum kaydetme ve yükleme",
-        "Telefondan uzaktan yönetim",
-        "Bağlam ve ilerlemeyi gösteren durum çubuğu"
-      ],
-      "en": [
-        "Archived: split into Teknesyum-Core and Teknesyum-UI",
-        "Splits big jobs into contracts for parallel agents",
-        "An independent auditor verifies every contract",
-        "Classifies the size of a job itself",
-        "Restarts stalled agents on its own",
-        "Eco, normal and premium profiles",
-        "Session save and load",
-        "Remote control from a phone",
-        "Statusline with context and progress"
-      ]
-    }
-  },
   "Teknesyum-Core": {
     "category": "developer",
     "tags": {

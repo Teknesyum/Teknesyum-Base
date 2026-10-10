@@ -503,6 +503,32 @@ pub fn write_desktop_shortcut(full_name: &str, exe: &Path) -> AppResult<PathBuf>
     Ok(lnk)
 }
 
+pub fn run_target(dir: &Path, current: &Path, run: Option<&str>) -> Option<PathBuf> {
+    let run = run.map(str::trim).filter(|r| !r.is_empty())?;
+    let rel = Path::new(run.trim_start_matches(['/', '\\']));
+    if rel.components().any(|c| !matches!(c, std::path::Component::Normal(_))) {
+        return None;
+    }
+    let p = dir.join(rel);
+    let same = |a: &Path, b: &Path| {
+        a.to_string_lossy().replace('/', "\\").eq_ignore_ascii_case(&b.to_string_lossy().replace('/', "\\"))
+    };
+    (p.is_file() && is_program(&p) && !same(&p, current)).then_some(p)
+}
+
+pub fn repair_exe(paths: &Paths, mut rec: InstalledRecord, exe: &Path) -> AppResult<()> {
+    rec.info.exe = Some(exe.to_string_lossy().into_owned());
+    if !paths.dry_run {
+        if let Some(lnk) = rec.shortcut.as_deref() {
+            let _ = shell_link(exe, Path::new(lnk));
+        }
+        if rec.info.desktop_shortcut {
+            let _ = write_desktop_shortcut(&rec.info.full_name, exe);
+        }
+    }
+    store::upsert_installed(paths, rec)
+}
+
 pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_setup: bool) -> AppResult<String> {
     let dry = env.paths.dry_run;
     task.log(TaskStep::Resolve, 1, &format!("{owner}/{name} için son sürüm aranıyor"));
@@ -1125,6 +1151,25 @@ mod tests {
         assert!(parse_git_progress("Cloning into 'x'...").is_none());
         let (overall, _) = parse_git_progress("Resolving deltas: 100% (3/3), done.").unwrap();
         assert_eq!(overall, 97);
+    }
+
+    #[test]
+    fn run_target_repairs_only_a_real_different_program() {
+        let root = std::env::temp_dir().join(format!("tk-run-{}", std::process::id()));
+        fs::create_dir_all(root.join("bin")).unwrap();
+        for f in ["Tool.exe", "tool.cmd", "bin/x.exe", "notes.txt"] {
+            fs::write(root.join(f), b"1").unwrap();
+        }
+        let cur = root.join("tool.cmd");
+        assert_eq!(run_target(&root, &cur, Some("Tool.exe")), Some(root.join("Tool.exe")));
+        assert_eq!(run_target(&root, &cur, Some("/bin/x.exe")), Some(root.join("bin/x.exe")));
+        assert_eq!(run_target(&root, &cur, Some("TOOL.CMD")), None);
+        assert_eq!(run_target(&root, &cur, Some("missing.exe")), None);
+        assert_eq!(run_target(&root, &cur, Some("notes.txt")), None);
+        assert_eq!(run_target(&root, &cur, Some("..\\Tool.exe")), None);
+        assert_eq!(run_target(&root, &cur, Some("  ")), None);
+        assert_eq!(run_target(&root, &cur, None), None);
+        let _ = fs::remove_dir_all(&root);
     }
 
     #[test]

@@ -71,11 +71,6 @@ fn lock() -> std::sync::MutexGuard<'static, Cep> {
     state().lock().unwrap_or_else(|e| e.into_inner())
 }
 
-#[cfg_attr(feature = "pro", allow(dead_code))]
-pub fn exists() -> bool {
-    file_path().is_file()
-}
-
 pub fn token() -> Option<String> {
     let t = lock().token.clone()?;
     let t = t.trim().to_string();
@@ -104,44 +99,42 @@ pub fn set_repos(repos: HashMap<String, String>) -> AppResult<()> {
     write_file(&cep)
 }
 
-/// Eski Windows Kimlik Bilgisi Yöneticisi girdilerini bir kez cep dosyasına taşır,
-/// sonra keyring girdilerini siler. Cep zaten varsa dokunmaz.
+/// Eski sürümlerin Windows Kimlik Bilgisi Yöneticisine yazmış olabileceği girdileri
+/// her açılışta cep dosyasına birleştirir, sonra o girdileri siler. Cep zaten varsa
+/// keyring'de kalan değerler cep'in üzerine eklenir (son yazılan geçerli sayılır).
+#[cfg(not(feature = "pro"))]
+fn merge_into(cep: &mut Cep, token: Option<String>, repos: HashMap<String, String>) {
+    if let Some(t) = token {
+        let t = t.trim().to_string();
+        if !t.is_empty() {
+            cep.token = Some(t);
+        }
+    }
+    for (k, v) in repos {
+        cep.repos.insert(k, v);
+    }
+}
+
 #[cfg(not(feature = "pro"))]
 pub fn migrate_from_keyring() {
     const SERVICE: &str = "Teknesyum Base";
-    if exists() {
-        return;
-    }
-    let mut cep = Cep::default();
-    let mut moved = false;
-    if let Ok(e) = keyring::Entry::new(SERVICE, "github-token") {
-        if let Ok(t) = e.get_password() {
-            let t = t.trim().to_string();
-            if !t.is_empty() {
-                cep.token = Some(t);
-                moved = true;
-            }
-        }
-    }
-    if let Ok(e) = keyring::Entry::new(SERVICE, "repo-keys") {
-        if let Ok(j) = e.get_password() {
-            if let Ok(map) = serde_json::from_str::<HashMap<String, String>>(&j) {
-                if !map.is_empty() {
-                    cep.repos = map;
-                    moved = true;
-                }
-            }
-        }
-    }
-    if !moved || write_file(&cep).is_err() {
-        return;
-    }
-    *lock() = cep;
-    for user in ["github-token", "repo-keys"] {
-        if let Ok(e) = keyring::Entry::new(SERVICE, user) {
+    let mut cep = lock();
+    let token = keyring::Entry::new(SERVICE, "github-token").ok().and_then(|e| {
+        let v = e.get_password().ok();
+        let _ = e.delete_credential();
+        v
+    });
+    let repos = keyring::Entry::new(SERVICE, "repo-keys")
+        .ok()
+        .and_then(|e| {
+            let v = e.get_password().ok();
             let _ = e.delete_credential();
-        }
-    }
+            v
+        })
+        .and_then(|j| serde_json::from_str::<HashMap<String, String>>(&j).ok())
+        .unwrap_or_default();
+    merge_into(&mut cep, token, repos);
+    let _ = write_file(&cep);
 }
 
 #[cfg(test)]
@@ -165,6 +158,56 @@ mod tests {
         let back = read_file();
         assert_eq!(back.token.as_deref(), Some("tok"));
         assert_eq!(back.repos.get("teknesyum/ornek").map(String::as_str), Some("k-123"));
+
+        std::env::remove_var(PATH_ENV);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn merge_keeps_existing_and_overwrites_duplicates() {
+        let mut cep = Cep {
+            token: Some("eski".into()),
+            repos: HashMap::from([
+                ("teknesyum/a".into(), "ka".into()),
+                ("teknesyum/b".into(), "kb-eski".into()),
+            ]),
+        };
+        let incoming = HashMap::from([
+            ("teknesyum/b".into(), "kb-yeni".into()),
+            ("teknesyum/c".into(), "kc".into()),
+        ]);
+        merge_into(&mut cep, Some(" yeni ".into()), incoming);
+        assert_eq!(cep.token.as_deref(), Some("yeni"));
+        assert_eq!(cep.repos.get("teknesyum/a").map(String::as_str), Some("ka"));
+        assert_eq!(cep.repos.get("teknesyum/b").map(String::as_str), Some("kb-yeni"));
+        assert_eq!(cep.repos.get("teknesyum/c").map(String::as_str), Some("kc"));
+
+        merge_into(&mut cep, None, HashMap::new());
+        assert_eq!(cep.token.as_deref(), Some("yeni"));
+        assert_eq!(cep.repos.len(), 3);
+    }
+
+    #[test]
+    #[ignore]
+    #[cfg(not(feature = "pro"))]
+    fn live_keyring_merge() {
+        let dir = std::env::temp_dir().join(format!("tk-cep-merge-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::env::set_var(PATH_ENV, dir.join("m.cep"));
+
+        let entry = keyring::Entry::new("Teknesyum Base", "repo-keys").unwrap();
+        entry.set_password(r#"{"teknesyum/merge-dummy":"x"}"#).unwrap();
+
+        migrate_from_keyring();
+
+        let gone = keyring::Entry::new("Teknesyum Base", "repo-keys")
+            .unwrap()
+            .get_password()
+            .is_err();
+        println!("keyring silindi = {gone}");
+        println!("cep'e geldi = {:?}", repos().get("teknesyum/merge-dummy"));
+        assert!(gone, "keyring girdisi silinmedi");
+        assert_eq!(repos().get("teknesyum/merge-dummy").map(String::as_str), Some("x"));
 
         std::env::remove_var(PATH_ENV);
         let _ = std::fs::remove_dir_all(&dir);

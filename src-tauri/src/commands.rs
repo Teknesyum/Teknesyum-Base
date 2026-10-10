@@ -766,9 +766,10 @@ pub async fn launch_installed(state: State<'_, AppState>, full_name: String) -> 
     let rec = state
         .find_installed(&full_name)
         .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."))?;
-    let exe = rec
+    let mut exe = rec
         .info
         .exe
+        .as_deref()
         .map(PathBuf::from)
         .filter(|p| p.is_file())
         .ok_or_else(|| {
@@ -777,6 +778,21 @@ pub async fn launch_installed(state: State<'_, AppState>, full_name: String) -> 
                 "Bu program için başlatılacak dosya bilinmiyor; Başlat menüsünden açın.",
             )
         })?;
+    if rec.info.method == InstallMethod::Zip {
+        if let Ok((owner, name)) = split_full(&rec.info.full_name) {
+            let gh = state.gh();
+            let run = tokio::time::timeout(std::time::Duration::from_secs(3), gh.manifest(&owner, &name, false))
+                .await
+                .ok()
+                .and_then(|r| r.ok())
+                .flatten()
+                .and_then(|m| m.run);
+            if let Some(fixed) = installer::run_target(Path::new(&rec.info.path), &exe, run.as_deref()) {
+                let _ = installer::repair_exe(&state.paths, rec.clone(), &fixed);
+                exe = fixed;
+            }
+        }
+    }
     if !installer::is_program(&exe) {
         return tauri_plugin_opener::open_path(exe.to_string_lossy().as_ref(), None::<&str>)
             .map_err(|e| AppError::io(format!("Program açılamadı: {e}")));

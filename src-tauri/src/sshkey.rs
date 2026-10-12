@@ -204,9 +204,9 @@ pub fn identify(key: &str) -> AppResult<String> {
             .arg("-i")
             .arg(&file)
             .args(["-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new", "-o", "ConnectTimeout=15"])
-            .arg("-o")
-            .arg(format!("UserKnownHostsFile=\"{}\"", fwd(&dir.join("known_hosts"))))
+            .args(["-o", "UserKnownHostsFile=known_hosts"])
             .arg(HOST)
+            .current_dir(&dir)
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
@@ -392,6 +392,28 @@ mod tests {
         assert_eq!(parse_greeting(text).as_deref(), Some("Teknesyum/Asistan"));
         assert_eq!(parse_greeting("Hi tcggmn! You've successfully authenticated"), None);
         assert_eq!(parse_greeting("git@github.com: Permission denied (publickey)."), None);
+    }
+
+    #[test]
+    #[ignore]
+    fn live_key_file_identifies_and_provisions() {
+        let file = std::env::var("TEKNESYUM_TEST_SSH_KEY_FILE").expect("TEKNESYUM_TEST_SSH_KEY_FILE");
+        let raw = fs::read_to_string(file).unwrap();
+        let key = normalize(&raw).expect("key file");
+        for mangled in [raw.replace('\n', "\r\n"), raw.replace('\n', " "), format!("\u{feff}{raw}"), raw.replace('\n', "")] {
+            assert_eq!(normalize(&mangled).as_deref(), Some(key.as_str()));
+        }
+        let full = identify(&key).unwrap();
+        println!("identified: {full}");
+        let root = dirs::home_dir().unwrap().join(format!(".tk-ssh-prova-{}", std::process::id()));
+        let t = Target { dir: root.join("depo"), key_file: root.join("anahtar") };
+        assert!(provision(&full, &key, &t, &|l: &str| println!("{l}")).unwrap());
+        assert!(ready(&t));
+        let cmd = git(&["config", "core.sshCommand"], &t.dir).unwrap();
+        assert!(cmd.contains(&fwd(&t.key_file)));
+        assert!(git(&["fetch", "--dry-run"], &t.dir).is_some());
+        assert!(!provision(&full, &key, &t, &|l: &str| println!("{l}")).unwrap());
+        println!("checkout kept for inspection: {}", root.display());
     }
 
     #[test]

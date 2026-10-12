@@ -823,7 +823,7 @@ pub async fn launch_installed(state: State<'_, AppState>, full_name: String) -> 
             exe = fixed;
         }
     }
-    ensure_checkout(&rec.info.full_name, manifest.as_ref()).await?;
+    let _ = ensure_checkout(&rec.info.full_name, manifest.as_ref()).await;
     if !installer::is_program(&exe) {
         return tauri_plugin_opener::open_path(exe.to_string_lossy().as_ref(), None::<&str>)
             .map_err(|e| AppError::io(format!("Program açılamadı: {e}")));

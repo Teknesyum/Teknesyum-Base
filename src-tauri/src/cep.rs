@@ -20,6 +20,8 @@ struct Cep {
     token: Option<String>,
     #[serde(default)]
     repos: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    ssh: HashMap<String, String>,
 }
 
 fn file_path() -> PathBuf {
@@ -99,6 +101,16 @@ pub fn set_repos(repos: HashMap<String, String>) -> AppResult<()> {
     write_file(&cep)
 }
 
+pub fn ssh_keys() -> HashMap<String, String> {
+    lock().ssh.clone()
+}
+
+pub fn set_ssh_keys(keys: HashMap<String, String>) -> AppResult<()> {
+    let mut cep = lock();
+    cep.ssh = keys;
+    write_file(&cep)
+}
+
 /// Eski sürümlerin Windows Kimlik Bilgisi Yöneticisine yazmış olabileceği girdileri
 /// her açılışta cep dosyasına birleştirir, sonra o girdileri siler. Cep zaten varsa
 /// keyring'de kalan değerler cep'in üzerine eklenir (son yazılan geçerli sayılır).
@@ -150,7 +162,7 @@ mod tests {
 
         let mut repos = HashMap::new();
         repos.insert("teknesyum/ornek".to_string(), "k-123".to_string());
-        write_file(&Cep { token: Some("tok".into()), repos }).unwrap();
+        write_file(&Cep { token: Some("tok".into()), repos, ..Default::default() }).unwrap();
 
         let raw = std::fs::read(&path).unwrap();
         assert!(!raw.windows(5).any(|w| w == b"k-123"), "anahtar düz metin görünmemeli");
@@ -171,6 +183,7 @@ mod tests {
                 ("teknesyum/a".into(), "ka".into()),
                 ("teknesyum/b".into(), "kb-eski".into()),
             ]),
+            ..Default::default()
         };
         let incoming = HashMap::from([
             ("teknesyum/b".into(), "kb-yeni".into()),

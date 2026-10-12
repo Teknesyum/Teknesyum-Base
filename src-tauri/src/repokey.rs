@@ -18,6 +18,7 @@ pub enum KeyState {
     Invalid,
     NoAccess,
     Unknown,
+    Ssh,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -56,8 +57,9 @@ pub fn hidden(full_name: &str) -> bool {
 }
 
 pub fn user_repos() -> Vec<String> {
-    let mut v: Vec<String> = crate::cep::repos().into_keys().filter(|k| !hidden(k)).collect();
+    let mut v: Vec<String> = crate::cep::repos().into_keys().chain(crate::sshkey::stored()).filter(|k| !hidden(k)).collect();
     v.sort();
+    v.dedup();
     v
 }
 
@@ -68,6 +70,17 @@ struct KeyRepo {
 }
 
 pub async fn add(http: &reqwest::Client, key: &str) -> AppResult<Vec<String>> {
+    if let Some(ssh) = crate::sshkey::normalize(key) {
+        let probe = ssh.clone();
+        let full = tauri::async_runtime::spawn_blocking(move || crate::sshkey::identify(&probe))
+            .await
+            .map_err(|e| AppError::unknown(e.to_string()))??;
+        if hidden(&full) {
+            return Err(AppError::new(ErrorCode::Auth, format!("Bu SSH anahtarı {full} deposuna ait; Base onu kullanmaz.")));
+        }
+        crate::sshkey::save(&full, &ssh)?;
+        return Ok(vec![full]);
+    }
     let key = key.trim();
     if key.is_empty() || key.chars().any(char::is_whitespace) {
         return Err(AppError::new(ErrorCode::Auth, "Anahtar geçersiz görünüyor."));
@@ -98,8 +111,11 @@ pub async fn add(http: &reqwest::Client, key: &str) -> AppResult<Vec<String>> {
 }
 
 pub fn remove(full_name: &str) -> AppResult<()> {
+    crate::sshkey::remove(full_name)?;
     let mut map = crate::cep::repos();
-    map.remove(&full_name.to_ascii_lowercase());
+    if map.remove(&full_name.to_ascii_lowercase()).is_none() {
+        return Ok(());
+    }
     crate::cep::set_repos(map)
 }
 
@@ -134,7 +150,7 @@ pub fn purge_stored() {
 
 pub async fn check(http: &reqwest::Client, full_name: &str) -> KeyState {
     let Some(token) = get(full_name) else {
-        return KeyState::Missing;
+        return if crate::sshkey::get(full_name).is_some() { KeyState::Ssh } else { KeyState::Missing };
     };
     let r = http
         .get(format!("https://api.github.com/repos/{full_name}"))

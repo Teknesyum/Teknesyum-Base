@@ -74,6 +74,17 @@ foreach ($p in $keys.repos.PSObject.Properties) {
 if ($empty.Count) { "No key yet: $($empty -join ', ')" }
 $env:TEKNESYUM_REPO_KEYS = ($repoKeys | ConvertTo-Json -Compress)
 $repoKeys = $null
+# Deploy keys (SSH private keys) for programs that run from their own checkout, e.g. Asistan.
+$sshKeys = @{}
+if ($keys.ssh) {
+  foreach ($p in $keys.ssh.PSObject.Properties) {
+    $v = "$($p.Value)".Trim()
+    if ($v) { $sshKeys[$p.Name.ToLower()] = $v }
+  }
+}
+"Embedding $($sshKeys.Count) SSH key(s): $(($sshKeys.Keys | Sort-Object) -join ', ')"
+$env:TEKNESYUM_SSH_KEYS = ($sshKeys | ConvertTo-Json -Compress)
+$sshKeys = $null
 $keys = $null
 try {
   npx tauri build --no-bundle --features pro --config src-tauri/tauri.pro.conf.json
@@ -81,6 +92,7 @@ try {
 } finally {
   Remove-Item Env:TEKNESYUM_PRO_TOKEN -ErrorAction SilentlyContinue
   Remove-Item Env:TEKNESYUM_REPO_KEYS -ErrorAction SilentlyContinue
+  Remove-Item Env:TEKNESYUM_SSH_KEYS -ErrorAction SilentlyContinue
 }
 $pro = Join-Path $out "Teknesyum-Base-Pro.exe"
 Copy-Item $built $pro -Force

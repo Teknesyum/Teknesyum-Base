@@ -631,6 +631,14 @@ pub async fn add_repo_key(state: State<'_, AppState>, key: String) -> AppResult<
     if !found.is_empty() {
         state.forget_lists();
     }
+    for full in &found {
+        if crate::sshkey::get(full).is_none() || state.find_installed(full).is_none() {
+            continue;
+        }
+        let Ok((owner, name)) = split_full(full) else { continue };
+        let manifest = quick_manifest(&state.gh(), &owner, &name).await;
+        ensure_checkout(full, manifest.as_ref()).await?;
+    }
     Ok(found)
 }
 
@@ -761,38 +769,61 @@ pub async fn cancel_task(state: State<'_, AppState>, task_id: String) -> AppResu
     Ok(())
 }
 
+/// Clones the checkout a manifest asks for when it is missing and Base holds the deploy key.
+async fn ensure_checkout(full_name: &str, manifest: Option<&crate::model::Manifest>) -> AppResult<()> {
+    let Some(target) = manifest.and_then(|m| m.checkout.as_ref()).and_then(crate::sshkey::target) else {
+        return Ok(());
+    };
+    if crate::sshkey::ready(&target) {
+        return Ok(());
+    }
+    let Some(key) = crate::sshkey::get(full_name) else {
+        return Ok(());
+    };
+    let full = full_name.to_string();
+    tauri::async_runtime::spawn_blocking(move || crate::sshkey::provision(&full, &key, &target, &|_: &str| {}))
+        .await
+        .map_err(|e| AppError::unknown(e.to_string()))??;
+    Ok(())
+}
+
+async fn quick_manifest(gh: &GitHub, owner: &str, name: &str) -> Option<crate::model::Manifest> {
+    tokio::time::timeout(std::time::Duration::from_secs(3), gh.manifest(owner, name, false))
+        .await
+        .ok()
+        .and_then(|r| r.ok())
+        .flatten()
+}
+
 #[tauri::command]
 pub async fn launch_installed(state: State<'_, AppState>, full_name: String) -> AppResult<()> {
     let rec = state
         .find_installed(&full_name)
         .ok_or_else(|| AppError::new(ErrorCode::NotFound, "Bu program kurulu görünmüyor."))?;
-    let mut exe = rec
-        .info
-        .exe
-        .as_deref()
-        .map(PathBuf::from)
-        .filter(|p| p.is_file())
-        .ok_or_else(|| {
-            AppError::new(
-                ErrorCode::NotFound,
-                "Bu program için başlatılacak dosya bilinmiyor; Başlat menüsünden açın.",
-            )
-        })?;
-    if rec.info.method == InstallMethod::Zip {
-        if let Ok((owner, name)) = split_full(&rec.info.full_name) {
-            let gh = state.gh();
-            let run = tokio::time::timeout(std::time::Duration::from_secs(3), gh.manifest(&owner, &name, false))
-                .await
-                .ok()
-                .and_then(|r| r.ok())
-                .flatten()
-                .and_then(|m| m.run);
-            if let Some(fixed) = installer::run_target(Path::new(&rec.info.path), &exe, run.as_deref()) {
-                let _ = installer::repair_exe(&state.paths, rec.clone(), &fixed);
-                exe = fixed;
-            }
+    let (owner, name) = split_full(&rec.info.full_name)?;
+    let manifest = quick_manifest(&state.gh(), &owner, &name).await;
+    let mut exe = rec.info.exe.as_deref().map(PathBuf::from).filter(|p| p.is_file());
+    if exe.is_none() && rec.info.method != InstallMethod::Clone {
+        let skip = vec![state.paths.shared.clone(), PathBuf::from(state.settings().install_dir)];
+        if let Some(found) = detect::find_program(&state.paths.scan_roots, &skip, &name, manifest.as_ref()) {
+            let _ = installer::repair_exe(&state.paths, rec.clone(), &found.exe);
+            exe = Some(found.exe);
         }
     }
+    let mut exe = exe.ok_or_else(|| {
+        AppError::new(
+            ErrorCode::NotFound,
+            "Bu program için başlatılacak dosya bilinmiyor; Başlat menüsünden açın.",
+        )
+    })?;
+    if rec.info.method == InstallMethod::Zip {
+        let run = manifest.as_ref().and_then(|m| m.run.as_deref());
+        if let Some(fixed) = installer::run_target(Path::new(&rec.info.path), &exe, run) {
+            let _ = installer::repair_exe(&state.paths, rec.clone(), &fixed);
+            exe = fixed;
+        }
+    }
+    ensure_checkout(&rec.info.full_name, manifest.as_ref()).await?;
     if !installer::is_program(&exe) {
         return tauri_plugin_opener::open_path(exe.to_string_lossy().as_ref(), None::<&str>)
             .map_err(|e| AppError::io(format!("Program açılamadı: {e}")));

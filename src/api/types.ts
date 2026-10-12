@@ -24,6 +24,7 @@ export type Manifest = {
     lead?: { tr: string; en: string };
     fork?: { by: string; repo: string; play?: string };
   };
+  checkout?: { path: string; sshKey: string };
 };
 
 export type ReleaseAsset = {
@@ -122,7 +123,7 @@ export type AppInfo = {
   kare?: string | null;
 };
 
-export type KeyState = 'missing' | 'ok' | 'invalid' | 'no-access' | 'unknown';
+export type KeyState = 'missing' | 'ok' | 'invalid' | 'no-access' | 'unknown' | 'ssh';
 export type KeyStatus = { fullName: string; state: KeyState };
 
 export type PrereqInfo = { id: string; label: string };

@@ -52,6 +52,18 @@ pub struct Manifest {
     pub requires: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub catalog: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub checkout: Option<Checkout>,
+}
+
+/// A program that runs from its own git checkout: Base clones the repository to `path`
+/// with the repository's deploy key, written to `sshKey`. Both accept %VAR% and must stay
+/// inside the user profile.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Checkout {
+    pub path: String,
+    pub ssh_key: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -698,8 +698,15 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
                 }
                 task.log(TaskStep::Install, 94, "Kurucu bitti");
                 let skip = vec![env.paths.shared.clone(), env.install_dir.clone()];
-                let manifest_name = manifest.as_ref().and_then(|m| m.name.as_deref());
-                match detect::find_in_roots(&env.paths.scan_roots, &skip, &name, manifest_name) {
+                let mut hit = None;
+                for _ in 0..15 {
+                    hit = detect::find_program(&env.paths.scan_roots, &skip, &name, manifest.as_ref());
+                    if hit.is_some() {
+                        break;
+                    }
+                    tokio::time::sleep(Duration::from_secs(1)).await;
+                }
+                match hit {
                     Some(found) => {
                         task.log(TaskStep::Install, 95, &format!("Kurulan program: {}", found.exe.display()));
                         installed_dir = found.dir;
@@ -750,6 +757,10 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
     }
 
     let full = format!("{owner}/{name}");
+    let checkout_note = match manifest.as_ref().and_then(|m| m.checkout.clone()) {
+        Some(c) if !dry => provision_checkout(&task, &full, &c).await,
+        _ => None,
+    };
     let mut desktop = false;
     if let (Some(exe), true, false) = (&exe, env.desktop_shortcut, dry) {
         match write_desktop_shortcut(&full, exe) {
@@ -777,7 +788,41 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
             package,
         },
     )?;
-    Ok(format!("{display} {} kuruldu", release.tag_name))
+    Ok(match checkout_note {
+        Some(note) => format!("{display} {} kuruldu; {note}", release.tag_name),
+        None => format!("{display} {} kuruldu", release.tag_name),
+    })
+}
+
+/// Sets up the git checkout a manifest asks for with the repository's deploy key.
+/// A missing key or a failed clone does not undo the install; it comes back as a note.
+async fn provision_checkout(task: &Task, full: &str, c: &crate::model::Checkout) -> Option<String> {
+    let Some(target) = crate::sshkey::target(c) else {
+        task.log(TaskStep::Install, 96, "Manifestteki depo yolu geçersiz; depo indirilmedi");
+        return Some("depo yolu geçersiz".into());
+    };
+    if crate::sshkey::ready(&target) && crate::sshkey::get(full).is_none() {
+        return None;
+    }
+    let Some(key) = crate::sshkey::get(full) else {
+        task.log(TaskStep::Install, 96, "Bu deponun SSH anahtarı Base'de yok; program ilk açılışta anahtar isteyecek");
+        return Some("SSH anahtarı yok, program anahtar isteyecek".into());
+    };
+    task.log(TaskStep::Install, 96, "Depo SSH anahtarıyla hazırlanıyor");
+    let (t, f) = (task.clone(), full.to_string());
+    let r = tauri::async_runtime::spawn_blocking(move || {
+        crate::sshkey::provision(&f, &key, &target, &|l: &str| t.log(TaskStep::Install, 96, l))
+    })
+    .await
+    .map_err(|e| AppError::unknown(e.to_string()))
+    .and_then(|r| r);
+    match r {
+        Ok(_) => None,
+        Err(e) => {
+            task.log(TaskStep::Install, 96, &e.message);
+            Some(e.message)
+        }
+    }
 }
 
 fn wait_gone(path: &Path, limit: Duration) {

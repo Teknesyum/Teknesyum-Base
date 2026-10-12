@@ -415,7 +415,8 @@
       "ok": "Anahtar geçerli",
       "invalid": "Anahtar yenilenmeli",
       "no-access": "Anahtar bu depoyu görmüyor",
-      "unknown": "Denetlenemedi"
+      "unknown": "Denetlenemedi",
+      "ssh": "SSH anahtarı"
     }
   },
   "prereq": {
@@ -448,12 +449,12 @@
   },
   "userKeys": {
     "title": "Anahtar ve Drive",
-    "intro": "Token, private depo anahtarı ya da Drive dosya linki: hepsi buraya yapıştırılır. Anahtar hangi private depoları açıyorsa yalnız onlar görünür; hiç private depo açmayan anahtar genel token olarak saklanır.",
+    "intro": "Token, private depo anahtarı, deponun SSH anahtarı (deploy key) ya da Drive dosya linki: hepsi buraya yapıştırılır. Anahtar hangi private depoları açıyorsa yalnız onlar görünür; hiç private depo açmayan anahtar genel token olarak saklanır.",
     "key": "Anahtar ya da Drive linki",
     "add": "Ekle",
     "checking": "Denetleniyor",
     "empty": "Önce anahtarı ya da linki yapıştır",
-    "help": "Anahtar GitHub'da denetlenir, sonra bu bilgisayarda Windows Kimlik Bilgisi Yöneticisi'ne yazılır ve bir daha gösterilmez. Drive dosya linki Drive sekmesine eklenir.",
+    "help": "Anahtar GitHub'da denetlenir, sonra Base'in yanındaki şifreli .cep dosyasına yazılır ve bir daha gösterilmez. SSH anahtarı, onu isteyen programa kurulumda ve açılışta Base tarafından verilir. Drive dosya linki Drive sekmesine eklenir.",
     "added": "Anahtar eklendi",
     "removed": "{name} anahtarı kaldırıldı",
     "remove": "Kaldır",

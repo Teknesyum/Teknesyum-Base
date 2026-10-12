@@ -77,6 +77,30 @@ pub fn find_in_roots(roots: &[PathBuf], skip: &[PathBuf], name: &str, manifest_n
     None
 }
 
+/// Like `find_in_roots`, but the manifest's `run` file wins when it sits in a
+/// program folder named after the repository.
+pub fn find_program(roots: &[PathBuf], skip: &[PathBuf], name: &str, manifest: Option<&crate::model::Manifest>) -> Option<Found> {
+    let manifest_name = manifest.and_then(|m| m.name.as_deref());
+    let run = manifest
+        .and_then(|m| m.run.as_deref())
+        .map(|r| Path::new(r.trim().trim_start_matches(['/', '\\'])))
+        .filter(|r| !r.as_os_str().is_empty() && r.components().all(|c| matches!(c, std::path::Component::Normal(_))));
+    if let Some(run) = run {
+        for root in roots {
+            for v in logic::name_variants(name, manifest_name) {
+                let dir = root.join(&v);
+                let exe = dir.join(run);
+                if skip.iter().any(|s| same_path(s, &dir)) || !exe.is_file() || !crate::installer::is_program(&exe) {
+                    continue;
+                }
+                let version = exe_version(&exe);
+                return Some(Found { dir, exe, version });
+            }
+        }
+    }
+    find_in_roots(roots, skip, name, manifest_name)
+}
+
 fn modified_iso(path: &Path) -> String {
     fs::metadata(path)
         .and_then(|m| m.modified())

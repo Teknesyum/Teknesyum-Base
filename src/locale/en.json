@@ -415,7 +415,8 @@
       "ok": "Key valid",
       "invalid": "Key must be renewed",
       "no-access": "Key cannot see this repository",
-      "unknown": "Could not check"
+      "unknown": "Could not check",
+      "ssh": "SSH key"
     }
   },
   "prereq": {
@@ -448,12 +449,12 @@
   },
   "userKeys": {
     "title": "Keys and Drive",
-    "intro": "A token, a private repository key or a Drive file link: paste any of them here. Only the private repositories the key opens appear; a key that opens no private repository is kept as the general token.",
+    "intro": "A token, a private repository key, a repository SSH key (deploy key) or a Drive file link: paste any of them here. Only the private repositories the key opens appear; a key that opens no private repository is kept as the general token.",
     "key": "Key or Drive link",
     "add": "Add",
     "checking": "Checking",
     "empty": "Paste the key or link first",
-    "help": "The key is checked on GitHub, then stored in Windows Credential Manager on this computer and never shown again. A Drive file link is added to the Drive tab.",
+    "help": "The key is checked on GitHub, then stored in the encrypted .cep file next to Base and never shown again. Base hands an SSH key to the program that needs it on install and on open. A Drive file link is added to the Drive tab.",
     "added": "Key added",
     "removed": "{name} key removed",
     "remove": "Remove",

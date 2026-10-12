@@ -12,6 +12,7 @@ mod paths;
 mod prereq;
 mod repokey;
 mod settings;
+mod sshkey;
 mod store;
 mod updater;
 

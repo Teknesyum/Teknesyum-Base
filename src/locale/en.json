@@ -373,6 +373,7 @@
       "readyAria": "New version ready to install. Open the panel"
     },
     "upToDate": "You are up to date: {version}",
+    "staged": "{version} is downloaded; it runs after you close and reopen Base",
     "checkNow": "Check for updates",
     "checkVersion": "Version {version}. Check for updates"
   },

@@ -373,6 +373,7 @@
       "readyAria": "Yeni sürüm yüklemeye hazır. Paneli aç"
     },
     "upToDate": "Güncel sürümdesin: {version}",
+    "staged": "{version} indirildi; Base'i kapatıp açınca çalışır",
     "checkNow": "Güncellemeyi denetle",
     "checkVersion": "Sürüm {version}. Güncellemeyi denetle"
   },

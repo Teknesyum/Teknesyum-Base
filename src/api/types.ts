@@ -216,6 +216,7 @@ export type UpdateState = {
   percent: number;
   message: string | null;
   checkedAt: string | null;
+  staged: string | null;
   dryRun: boolean;
 };
 

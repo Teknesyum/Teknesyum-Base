@@ -157,6 +157,7 @@ pub struct UpdateState {
     pub percent: u8,
     pub message: Option<String>,
     pub checked_at: Option<String>,
+    pub staged: Option<String>,
     pub dry_run: bool,
 }
 
@@ -229,6 +230,7 @@ impl Updater {
                 percent: 0,
                 message: None,
                 checked_at: None,
+                staged: None,
                 dry_run: dry_run_enabled(),
             }),
             pick: Mutex::new(None),
@@ -722,6 +724,7 @@ async fn silent_step(app: &AppHandle) {
                 s.latest = None;
                 s.percent = 0;
                 s.message = Some(format!("{version} kuruldu; bir sonraki açılışta çalışır."));
+                s.staged = Some(version.clone());
             });
         }
         Err(e) => {
@@ -955,7 +958,7 @@ mod tests {
         let v = serde_json::to_value(up.snapshot()).unwrap();
         assert_eq!(v["phase"], "idle");
         assert_eq!(v["current"], env!("CARGO_PKG_VERSION"));
-        for key in ["latest", "notes", "percent", "message", "checkedAt", "dryRun"] {
+        for key in ["latest", "notes", "percent", "message", "checkedAt", "staged", "dryRun"] {
             assert!(v.get(key).is_some(), "{key}");
         }
         let phases = [

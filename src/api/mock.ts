@@ -223,7 +223,7 @@ export function subscribe(handler: (e: TaskEvent) => void): () => void {
 }
 
 const updateListeners = new Set<(s: UpdateState) => void>();
-let update: UpdateState = { phase: 'idle', current: '0.1.0', latest: null, notes: null, percent: 0, message: null, checkedAt: null, dryRun: true };
+let update: UpdateState = { phase: 'idle', current: '0.1.0', latest: null, notes: null, percent: 0, message: null, checkedAt: null, staged: null, dryRun: true };
 let updateBooted = false;
 let updateRun = 0;
 

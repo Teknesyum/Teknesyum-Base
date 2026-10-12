@@ -60,6 +60,7 @@ function Frame() {
       .then((s) => {
         if (s.phase === 'available') setUpdateFrom(el);
         else if (s.phase === 'error') toast({ kind: 'danger', title: t('update.failedTitle'), body: s.message ?? undefined });
+        else if (s.staged) toast({ kind: 'success', title: t('update.staged', { version: s.staged }) });
         else toast({ kind: 'success', title: t('update.upToDate', { version: s.current }) });
       })
       .catch((e: { message?: string }) => toast({ kind: 'danger', title: t('update.failedTitle'), body: e.message }))

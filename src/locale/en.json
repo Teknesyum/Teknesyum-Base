@@ -454,7 +454,7 @@
     "add": "Add",
     "checking": "Checking",
     "empty": "Paste the key or link first",
-    "help": "The key is checked on GitHub, then stored in the encrypted .cep file next to Base and never shown again. Base hands an SSH key to the program that needs it on install and on open. A Drive file link is added to the Drive tab.",
+    "help": "The key is checked on GitHub, then stored in the Windows Credential Manager and never shown again. Base hands an SSH key to the program that needs it on install and on open. A Drive file link is added to the Drive tab.",
     "added": "Key added",
     "removed": "{name} key removed",
     "remove": "Remove",

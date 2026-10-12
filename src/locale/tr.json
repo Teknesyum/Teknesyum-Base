@@ -454,7 +454,7 @@
     "add": "Ekle",
     "checking": "Denetleniyor",
     "empty": "Önce anahtarı ya da linki yapıştır",
-    "help": "Anahtar GitHub'da denetlenir, sonra Base'in yanındaki şifreli .cep dosyasına yazılır ve bir daha gösterilmez. SSH anahtarı, onu isteyen programa kurulumda ve açılışta Base tarafından verilir. Drive dosya linki Drive sekmesine eklenir.",
+    "help": "Anahtar GitHub'da denetlenir, sonra Windows Kimlik Bilgisi Yöneticisine yazılır ve bir daha gösterilmez. SSH anahtarı, onu isteyen programa kurulumda ve açılışta Base tarafından verilir. Drive dosya linki Drive sekmesine eklenir.",
     "added": "Anahtar eklendi",
     "removed": "{name} anahtarı kaldırıldı",
     "remove": "Kaldır",

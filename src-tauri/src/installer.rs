@@ -804,14 +804,14 @@ async fn provision_checkout(task: &Task, full: &str, c: &crate::model::Checkout)
     if crate::sshkey::ready(&target) && crate::sshkey::get(full).is_none() {
         return None;
     }
-    let Some(key) = crate::sshkey::get(full) else {
-        task.log(TaskStep::Install, 96, "Bu deponun SSH anahtarı Base'de yok; program ilk açılışta anahtar isteyecek");
-        return Some("SSH anahtarı yok, program anahtar isteyecek".into());
+    let Some(access) = crate::sshkey::access(full) else {
+        task.log(TaskStep::Install, 96, "Bu deponun anahtarı Base'de yok; program ilk açılışta anahtar isteyecek");
+        return Some("depo anahtarı yok, program anahtar isteyecek".into());
     };
-    task.log(TaskStep::Install, 96, "Depo SSH anahtarıyla hazırlanıyor");
+    task.log(TaskStep::Install, 96, "Depo hazırlanıyor");
     let (t, f) = (task.clone(), full.to_string());
     let r = tauri::async_runtime::spawn_blocking(move || {
-        crate::sshkey::provision(&f, &key, &target, &|l: &str| t.log(TaskStep::Install, 96, l))
+        crate::sshkey::prepare(&f, &access, &target, &|l: &str| t.log(TaskStep::Install, 96, l))
     })
     .await
     .map_err(|e| AppError::unknown(e.to_string()))

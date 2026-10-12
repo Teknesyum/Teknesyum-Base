@@ -13,6 +13,10 @@ const FILE: &str = if cfg!(feature = "pro") {
     "teknesyum-base.cep"
 };
 pub const PATH_ENV: &str = "TEKNESYUM_CEP";
+const SERVICE: &str = if cfg!(feature = "pro") { "Teknesyum Base Pro" } else { "Teknesyum Base" };
+const TOKEN: &str = "github-token";
+const REPOS: &str = "repo-keys";
+const SSH: &str = "ssh-keys";
 
 #[derive(Default, Serialize, Deserialize)]
 struct Cep {
@@ -43,30 +47,73 @@ fn mask(data: &mut [u8]) {
     }
 }
 
-fn read_file() -> Cep {
-    let Ok(mut bytes) = std::fs::read(file_path()) else {
-        return Cep::default();
-    };
+fn read_file() -> Option<Cep> {
+    let mut bytes = std::fs::read(file_path()).ok()?;
     mask(&mut bytes);
-    serde_json::from_slice(&bytes).unwrap_or_default()
+    serde_json::from_slice(&bytes).ok()
 }
 
-fn write_file(cep: &Cep) -> AppResult<()> {
-    let path = file_path();
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
+const CHUNK: usize = 1000;
+
+fn split(text: &str) -> Vec<String> {
+    let chars: Vec<char> = text.chars().collect();
+    chars.chunks(CHUNK).map(|c| c.iter().collect()).collect()
+}
+
+fn entry(name: &str, part: usize) -> Option<keyring::Entry> {
+    let user = if part == 0 { name.to_string() } else { format!("{name}-{part}") };
+    keyring::Entry::new(SERVICE, &user).ok()
+}
+
+fn get(name: &str) -> Option<String> {
+    let mut out = String::new();
+    for part in 0.. {
+        match entry(name, part).and_then(|e| e.get_password().ok()) {
+            Some(p) => out.push_str(&p),
+            None => break,
+        }
     }
-    let mut bytes = serde_json::to_vec(cep)?;
-    mask(&mut bytes);
-    let tmp = path.with_extension("cep.tmp");
-    std::fs::write(&tmp, &bytes)?;
-    std::fs::rename(&tmp, &path)?;
+    (!out.is_empty()).then_some(out)
+}
+
+fn put(name: &str, text: &str) -> AppResult<()> {
+    let parts = split(text);
+    for (i, part) in parts.iter().enumerate() {
+        keyring::Entry::new(SERVICE, &if i == 0 { name.to_string() } else { format!("{name}-{i}") })?.set_password(part)?;
+    }
+    for part in parts.len().. {
+        let Some(e) = entry(name, part) else { break };
+        if e.delete_credential().is_err() {
+            break;
+        }
+    }
     Ok(())
+}
+
+fn get_map(name: &str) -> HashMap<String, String> {
+    get(name).and_then(|j| serde_json::from_str(&j).ok()).unwrap_or_default()
+}
+
+fn put_map(name: &str, map: &HashMap<String, String>) -> AppResult<()> {
+    if map.is_empty() {
+        return put(name, "");
+    }
+    put(name, &serde_json::to_string(map)?)
+}
+
+fn load() -> Cep {
+    Cep { token: get(TOKEN), repos: get_map(REPOS), ssh: get_map(SSH) }
+}
+
+fn store(cep: &Cep) -> AppResult<()> {
+    put(TOKEN, cep.token.as_deref().unwrap_or(""))?;
+    put_map(REPOS, &cep.repos)?;
+    put_map(SSH, &cep.ssh)
 }
 
 fn state() -> &'static Mutex<Cep> {
     static STATE: OnceLock<Mutex<Cep>> = OnceLock::new();
-    STATE.get_or_init(|| Mutex::new(read_file()))
+    STATE.get_or_init(|| Mutex::new(load()))
 }
 
 fn lock() -> std::sync::MutexGuard<'static, Cep> {
@@ -82,13 +129,13 @@ pub fn token() -> Option<String> {
 pub fn set_token(token: &str) -> AppResult<()> {
     let mut cep = lock();
     cep.token = Some(token.trim().to_string());
-    write_file(&cep)
+    store(&cep)
 }
 
 pub fn clear_token() -> AppResult<()> {
     let mut cep = lock();
     cep.token = None;
-    write_file(&cep)
+    store(&cep)
 }
 
 pub fn repos() -> HashMap<String, String> {
@@ -98,7 +145,7 @@ pub fn repos() -> HashMap<String, String> {
 pub fn set_repos(repos: HashMap<String, String>) -> AppResult<()> {
     let mut cep = lock();
     cep.repos = repos;
-    write_file(&cep)
+    store(&cep)
 }
 
 pub fn ssh_keys() -> HashMap<String, String> {
@@ -108,45 +155,30 @@ pub fn ssh_keys() -> HashMap<String, String> {
 pub fn set_ssh_keys(keys: HashMap<String, String>) -> AppResult<()> {
     let mut cep = lock();
     cep.ssh = keys;
-    write_file(&cep)
+    store(&cep)
 }
 
-/// Eski sürümlerin Windows Kimlik Bilgisi Yöneticisine yazmış olabileceği girdileri
-/// her açılışta cep dosyasına birleştirir, sonra o girdileri siler. Cep zaten varsa
-/// keyring'de kalan değerler cep'in üzerine eklenir (son yazılan geçerli sayılır).
-#[cfg(not(feature = "pro"))]
-fn merge_into(cep: &mut Cep, token: Option<String>, repos: HashMap<String, String>) {
-    if let Some(t) = token {
-        let t = t.trim().to_string();
-        if !t.is_empty() {
-            cep.token = Some(t);
-        }
+fn merge_into(cep: &mut Cep, from: Cep) {
+    if let Some(t) = from.token.map(|t| t.trim().to_string()).filter(|t| !t.is_empty()) {
+        cep.token = Some(t);
     }
-    for (k, v) in repos {
-        cep.repos.insert(k, v);
-    }
+    cep.repos.extend(from.repos);
+    cep.ssh.extend(from.ssh);
 }
 
-#[cfg(not(feature = "pro"))]
-pub fn migrate_from_keyring() {
-    const SERVICE: &str = "Teknesyum Base";
+/// Versions 3.12.6 to 3.12.10 kept the keys in a masked file beside the exe. Its content
+/// moves into the Windows Credential Manager once; the file goes only after the move is read back.
+pub fn migrate_from_file() {
+    let Some(old) = read_file() else { return };
     let mut cep = lock();
-    let token = keyring::Entry::new(SERVICE, "github-token").ok().and_then(|e| {
-        let v = e.get_password().ok();
-        let _ = e.delete_credential();
-        v
-    });
-    let repos = keyring::Entry::new(SERVICE, "repo-keys")
-        .ok()
-        .and_then(|e| {
-            let v = e.get_password().ok();
-            let _ = e.delete_credential();
-            v
-        })
-        .and_then(|j| serde_json::from_str::<HashMap<String, String>>(&j).ok())
-        .unwrap_or_default();
-    merge_into(&mut cep, token, repos);
-    let _ = write_file(&cep);
+    merge_into(&mut cep, old);
+    if store(&cep).is_err() {
+        return;
+    }
+    let back = load();
+    if back.token == cep.token && back.repos == cep.repos && back.ssh == cep.ssh {
+        let _ = std::fs::remove_file(file_path());
+    }
 }
 
 #[cfg(test)]
@@ -154,75 +186,61 @@ mod tests {
     use super::*;
 
     #[test]
-    fn roundtrip_and_mask() {
-        let dir = std::env::temp_dir().join(format!("teknesyum-cep-test-{}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
-        let path = dir.join("t.cep");
-        std::env::set_var(PATH_ENV, &path);
-
-        let mut repos = HashMap::new();
-        repos.insert("teknesyum/ornek".to_string(), "k-123".to_string());
-        write_file(&Cep { token: Some("tok".into()), repos, ..Default::default() }).unwrap();
-
-        let raw = std::fs::read(&path).unwrap();
-        assert!(!raw.windows(5).any(|w| w == b"k-123"), "anahtar düz metin görünmemeli");
-
-        let back = read_file();
-        assert_eq!(back.token.as_deref(), Some("tok"));
-        assert_eq!(back.repos.get("teknesyum/ornek").map(String::as_str), Some("k-123"));
-
-        std::env::remove_var(PATH_ENV);
-        let _ = std::fs::remove_dir_all(&dir);
+    fn long_values_split_into_parts_and_join_back() {
+        let text: String = "anahtar-ş".repeat(400);
+        let parts = split(&text);
+        assert!(parts.len() > 1);
+        assert!(parts.iter().all(|p| p.chars().count() <= CHUNK));
+        assert_eq!(parts.concat(), text);
+        assert!(split("").is_empty());
     }
 
     #[test]
     fn merge_keeps_existing_and_overwrites_duplicates() {
         let mut cep = Cep {
             token: Some("eski".into()),
-            repos: HashMap::from([
-                ("teknesyum/a".into(), "ka".into()),
-                ("teknesyum/b".into(), "kb-eski".into()),
-            ]),
+            repos: HashMap::from([("teknesyum/a".into(), "ka".into()), ("teknesyum/b".into(), "kb-eski".into())]),
             ..Default::default()
         };
-        let incoming = HashMap::from([
-            ("teknesyum/b".into(), "kb-yeni".into()),
-            ("teknesyum/c".into(), "kc".into()),
-        ]);
-        merge_into(&mut cep, Some(" yeni ".into()), incoming);
+        let incoming = Cep {
+            token: Some(" yeni ".into()),
+            repos: HashMap::from([("teknesyum/b".into(), "kb-yeni".into()), ("teknesyum/c".into(), "kc".into())]),
+            ssh: HashMap::from([("teknesyum/a".into(), "s".into())]),
+        };
+        merge_into(&mut cep, incoming);
         assert_eq!(cep.token.as_deref(), Some("yeni"));
         assert_eq!(cep.repos.get("teknesyum/a").map(String::as_str), Some("ka"));
         assert_eq!(cep.repos.get("teknesyum/b").map(String::as_str), Some("kb-yeni"));
-        assert_eq!(cep.repos.get("teknesyum/c").map(String::as_str), Some("kc"));
-
-        merge_into(&mut cep, None, HashMap::new());
-        assert_eq!(cep.token.as_deref(), Some("yeni"));
         assert_eq!(cep.repos.len(), 3);
+        assert_eq!(cep.ssh.len(), 1);
+        merge_into(&mut cep, Cep::default());
+        assert_eq!(cep.token.as_deref(), Some("yeni"));
     }
 
     #[test]
     #[ignore]
-    #[cfg(not(feature = "pro"))]
-    fn live_keyring_merge() {
-        let dir = std::env::temp_dir().join(format!("tk-cep-merge-{}", std::process::id()));
+    fn live_file_moves_into_the_credential_manager() {
+        let dir = std::env::temp_dir().join(format!("tk-cep-tasima-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
-        std::env::set_var(PATH_ENV, dir.join("m.cep"));
+        let path = dir.join("t.cep");
+        std::env::set_var(PATH_ENV, &path);
+        let name = "teknesyum/tasima-deneme";
+        let long = "x".repeat(2600);
+        let mut bytes = serde_json::to_vec(&Cep { ssh: HashMap::from([(name.to_string(), long.clone())]), ..Default::default() }).unwrap();
+        mask(&mut bytes);
+        std::fs::write(&path, bytes).unwrap();
 
-        let entry = keyring::Entry::new("Teknesyum Base", "repo-keys").unwrap();
-        entry.set_password(r#"{"teknesyum/merge-dummy":"x"}"#).unwrap();
-
-        migrate_from_keyring();
-
-        let gone = keyring::Entry::new("Teknesyum Base", "repo-keys")
-            .unwrap()
-            .get_password()
-            .is_err();
-        println!("keyring silindi = {gone}");
-        println!("cep'e geldi = {:?}", repos().get("teknesyum/merge-dummy"));
-        assert!(gone, "keyring girdisi silinmedi");
-        assert_eq!(repos().get("teknesyum/merge-dummy").map(String::as_str), Some("x"));
-
+        migrate_from_file();
+        let moved = load().ssh.get(name).cloned();
+        let file_gone = !path.exists();
+        let mut keys = ssh_keys();
+        keys.remove(name);
+        set_ssh_keys(keys).unwrap();
+        let cleaned = !load().ssh.contains_key(name);
         std::env::remove_var(PATH_ENV);
         let _ = std::fs::remove_dir_all(&dir);
+        println!("moved = {}, file gone = {file_gone}, cleaned = {cleaned}", moved.is_some());
+        assert_eq!(moved, Some(long));
+        assert!(file_gone && cleaned);
     }
 }

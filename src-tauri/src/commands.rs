@@ -632,7 +632,7 @@ pub async fn add_repo_key(state: State<'_, AppState>, key: String) -> AppResult<
         state.forget_lists();
     }
     for full in &found {
-        if crate::sshkey::get(full).is_none() || state.find_installed(full).is_none() {
+        if state.find_installed(full).is_none() {
             continue;
         }
         let Ok((owner, name)) = split_full(full) else { continue };
@@ -777,11 +777,11 @@ async fn ensure_checkout(full_name: &str, manifest: Option<&crate::model::Manife
     if crate::sshkey::ready(&target) {
         return Ok(());
     }
-    let Some(key) = crate::sshkey::get(full_name) else {
+    let Some(access) = crate::sshkey::access(full_name) else {
         return Ok(());
     };
     let full = full_name.to_string();
-    tauri::async_runtime::spawn_blocking(move || crate::sshkey::provision(&full, &key, &target, &|_: &str| {}))
+    tauri::async_runtime::spawn_blocking(move || crate::sshkey::prepare(&full, &access, &target, &|_: &str| {}))
         .await
         .map_err(|e| AppError::unknown(e.to_string()))??;
     Ok(())

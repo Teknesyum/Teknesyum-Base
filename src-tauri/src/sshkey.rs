@@ -12,7 +12,7 @@ use crate::model::Checkout;
 const HOST: &str = "git@github.com";
 
 /// Deploy keys (SSH private keys) per repository. Pro embeds them at build time,
-/// both builds accept pasted ones into the .cep file.
+/// both builds accept pasted ones into the Windows Credential Manager.
 fn embedded_map() -> HashMap<String, String> {
     option_env!("TEKNESYUM_SSH_KEYS")
         .and_then(|j| serde_json::from_str::<HashMap<String, String>>(j).ok())
@@ -302,6 +302,9 @@ pub fn provision(full_name: &str, key: &str, t: &Target, log: &dyn Fn(&str)) -> 
     let ssh_cmd = ssh_command(&ssh, &t.key_file, &known_hosts);
     if ready(t) {
         let _ = git(&["config", "core.sshCommand", &ssh_cmd], &t.dir);
+        if git(&["remote", "get-url", "origin"], &t.dir).is_some_and(|u| u.starts_with("https://")) {
+            let _ = git(&["remote", "set-url", "origin", &format!("{HOST}:{full_name}.git")], &t.dir);
+        }
         log(&format!("Depo zaten var: {}", t.dir.display()));
         return Ok(false);
     }
@@ -338,6 +341,83 @@ pub fn provision(full_name: &str, key: &str, t: &Target, log: &dyn Fn(&str)) -> 
         return Err(AppError::new(ErrorCode::Auth, format!("Depo SSH anahtarıyla indirilemedi: {detail}")));
     }
     let _ = git(&["config", "core.sshCommand", &ssh_cmd], &t.dir);
+    let _ = git(&["config", "core.quotepath", "false"], &t.dir);
+    if git(&["config", "user.name"], &t.dir).unwrap_or_default().is_empty() {
+        let user = std::env::var("USERNAME").ok().filter(|u| !u.is_empty()).unwrap_or_else(|| "teknesyum".into());
+        let host = std::env::var("COMPUTERNAME").ok().filter(|h| !h.is_empty()).unwrap_or_else(|| "pc".into());
+        let _ = git(&["config", "user.name", &user], &t.dir);
+        let _ = git(&["config", "user.email", &format!("{user}@{host}")], &t.dir);
+    }
+    log(&format!("Depo hazır: {}", t.dir.display()));
+    Ok(true)
+}
+
+pub enum Access {
+    Ssh(String),
+    Token(String),
+}
+
+/// The deploy key when there is one, otherwise the repository's access token.
+pub fn access(full_name: &str) -> Option<Access> {
+    get(full_name).map(Access::Ssh).or_else(|| crate::repokey::get(full_name).map(Access::Token))
+}
+
+pub fn prepare(full_name: &str, access: &Access, t: &Target, log: &dyn Fn(&str)) -> AppResult<bool> {
+    match access {
+        Access::Ssh(key) => provision(full_name, key, t, log),
+        Access::Token(token) => provision_with_token(full_name, token, t, log),
+    }
+}
+
+/// Clones over HTTPS with the access token and leaves the token in the checkout's own
+/// git config, so the program can sync without Base running and without an SSH key.
+pub fn provision_with_token(full_name: &str, token: &str, t: &Target, log: &dyn Fn(&str)) -> AppResult<bool> {
+    if ready(t) {
+        log(&format!("Depo zaten var: {}", t.dir.display()));
+        return Ok(false);
+    }
+    if t.dir.exists() {
+        if fs::read_dir(&t.dir).map(|mut d| d.next().is_some()).unwrap_or(true) {
+            return Err(AppError::io(format!("Hedef klasör zaten dolu: {}", t.dir.display())));
+        }
+        fs::remove_dir(&t.dir)?;
+    }
+    if let Some(parent) = t.dir.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let url = format!("https://github.com/{full_name}.git");
+    log(&format!("{url} indiriliyor → {}", t.dir.display()));
+    let mut cmd = Command::new("git");
+    cmd.args(["-c", "safe.directory=*", "-c", "credential.helper=", "clone"])
+        .arg(&url)
+        .arg(&t.dir)
+        .env("GIT_TERMINAL_PROMPT", "0")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped());
+    crate::repokey::header_env(&mut cmd, &url, token);
+    no_window(&mut cmd);
+    let out = cmd.output().map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            AppError::new(ErrorCode::GitMissing, "Git bulunamadı. Depoyu indirmek için Git for Windows kurun.")
+        } else {
+            AppError::unknown(format!("git başlatılamadı: {e}"))
+        }
+    })?;
+    if !out.status.success() {
+        let _ = fs::remove_dir_all(&t.dir);
+        let detail = last_line(&String::from_utf8_lossy(&out.stderr));
+        return Err(AppError::new(ErrorCode::Auth, format!("Depo erişim anahtarıyla indirilemedi: {detail}")));
+    }
+    let basic = base64::engine::general_purpose::STANDARD.encode(format!("x-access-token:{token}"));
+    let config = t.dir.join(".git").join("config");
+    let mut text = fs::read_to_string(&config)?;
+    if !text.ends_with('\n') {
+        text.push('\n');
+    }
+    text.push_str(&format!("[http \"{url}\"]\n\textraheader = Authorization: Basic {basic}\n[credential]\n\thelper =\n"));
+    fs::write(&config, text)?;
+    lock_down(&config);
     let _ = git(&["config", "core.quotepath", "false"], &t.dir);
     if git(&["config", "user.name"], &t.dir).unwrap_or_default().is_empty() {
         let user = std::env::var("USERNAME").ok().filter(|u| !u.is_empty()).unwrap_or_else(|| "teknesyum".into());
@@ -413,7 +493,29 @@ mod tests {
         assert!(cmd.contains(&fwd(&t.key_file)));
         assert!(git(&["fetch", "--dry-run"], &t.dir).is_some());
         assert!(!provision(&full, &key, &t, &|l: &str| println!("{l}")).unwrap());
-        println!("checkout kept for inspection: {}", root.display());
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    #[ignore]
+    fn live_token_provisions_a_syncable_checkout() {
+        let file = std::env::var("TEKNESYUM_TEST_KEYS_FILE").expect("TEKNESYUM_TEST_KEYS_FILE");
+        let full = std::env::var("TEKNESYUM_TEST_REPO").expect("TEKNESYUM_TEST_REPO");
+        let json: serde_json::Value = serde_json::from_str(fs::read_to_string(file).unwrap().trim_start_matches('\u{feff}')).unwrap();
+        let token = json["repos"][&full].as_str().expect("token").trim().to_string();
+        let root = dirs::home_dir().unwrap().join(format!(".tk-token-prova-{}", std::process::id()));
+        let t = Target { dir: root.join("depo"), key_file: root.join("anahtar") };
+        let cloned = provision_with_token(&full, &token, &t, &|l: &str| println!("{l}"));
+        let fetch = git(&["fetch", "--dry-run"], &t.dir).is_some();
+        let push = git(&["push", "--dry-run", "origin", "HEAD"], &t.dir).is_some();
+        let again = provision_with_token(&full, &token, &t, &|_: &str| {});
+        let origin = git(&["remote", "get-url", "origin"], &t.dir);
+        let _ = fs::remove_dir_all(&root);
+        println!("fetch: {fetch}, push (dry run): {push}");
+        assert!(cloned.unwrap());
+        assert_eq!(origin.as_deref(), Some(format!("https://github.com/{full}.git").as_str()));
+        assert!(fetch);
+        assert!(!again.unwrap());
     }
 
     #[test]

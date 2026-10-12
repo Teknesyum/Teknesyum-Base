@@ -70,7 +70,45 @@ struct KeyRepo {
     private: bool,
 }
 
+const TOKEN_PREFIXES: [&str; 5] = ["github_pat_", "ghp_", "gho_", "ghu_", "ghs_"];
+
+/// Splits one pasted text into the SSH private keys and the GitHub tokens it carries.
+pub fn parts(raw: &str) -> Vec<String> {
+    let mut rest = raw.replace("\\r", "").replace("\\n", "\n");
+    let mut out = Vec::new();
+    while let Some(start) = rest.find("-----BEGIN ") {
+        let Some(end_at) = rest[start..].find("-----END ") else { break };
+        let tail = start + end_at + "-----END ".len();
+        let Some(close) = rest[tail..].find("-----") else { break };
+        let end = tail + close + "-----".len();
+        out.push(rest[start..end].to_string());
+        rest.replace_range(start..end, " ");
+    }
+    for word in rest.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')) {
+        if TOKEN_PREFIXES.iter().any(|p| word.starts_with(p) && word.len() > p.len() + 10) && !out.iter().any(|o| o == word) {
+            out.push(word.to_string());
+        }
+    }
+    out
+}
+
 pub async fn add(http: &reqwest::Client, key: &str) -> AppResult<Vec<String>> {
+    let pieces = parts(key);
+    if pieces.len() < 2 {
+        return add_one(http, key).await;
+    }
+    let mut found: Vec<String> = Vec::new();
+    for piece in &pieces {
+        for full in add_one(http, piece).await? {
+            if !found.iter().any(|f| f.eq_ignore_ascii_case(&full)) {
+                found.push(full);
+            }
+        }
+    }
+    Ok(found)
+}
+
+async fn add_one(http: &reqwest::Client, key: &str) -> AppResult<Vec<String>> {
     if let Some(ssh) = crate::sshkey::normalize(key) {
         let probe = ssh.clone();
         let full = tauri::async_runtime::spawn_blocking(move || crate::sshkey::identify(&probe))
@@ -184,6 +222,35 @@ pub async fn check(http: &reqwest::Client, full_name: &str) -> KeyState {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parts_pull_the_token_and_the_ssh_key_out_of_one_paste() {
+        let key = "-----BEGIN OPENSSH PRIVATE KEY----- b3BlbnNzaC1rZXk AAAAB3NzaC1 -----END OPENSSH PRIVATE KEY-----";
+        let token = "github_pat_11ABCDEFG0abcdefghij_KLMNOP";
+        let got = parts(&format!("{token} {key}"));
+        assert_eq!(got, vec![key.to_string(), token.to_string()]);
+        let json = format!("{{\"repos\":{{\"a/b\":\"{token}\"}},\"ssh\":{{\"a/b\":\"{}\"}}}}", key.replace("----- ", "-----\\n").replace(" -----", "\\n-----"));
+        let got = parts(&json);
+        assert_eq!(got.len(), 2);
+        assert!(got[0].starts_with("-----BEGIN") && got[0].ends_with("-----"));
+        assert_eq!(got[1], token);
+        assert_eq!(parts(token), vec![token.to_string()]);
+        assert_eq!(parts(&format!("{token} {token}")).len(), 1);
+        assert!(parts("ssh-ed25519 AAAA ad").is_empty());
+    }
+
+    #[test]
+    #[ignore]
+    fn live_single_key_splits_into_the_stored_token_and_ssh_key() {
+        let file = std::env::var("TEKNESYUM_TEST_KEYS_FILE").expect("TEKNESYUM_TEST_KEYS_FILE");
+        let json: serde_json::Value = serde_json::from_str(std::fs::read_to_string(file).unwrap().trim_start_matches('\u{feff}')).unwrap();
+        let single = json["tek"]["Teknesyum/Asistan"].as_str().unwrap();
+        let got = parts(single);
+        let token_ok = got.get(1).map(String::as_str) == json["repos"]["Teknesyum/Asistan"].as_str().map(str::trim);
+        let ssh_ok = got.first().and_then(|k| crate::sshkey::normalize(k)) == crate::sshkey::normalize(json["ssh"]["teknesyum/asistan"].as_str().unwrap());
+        println!("pieces = {}, token matches = {token_ok}, ssh matches = {ssh_ok}", got.len());
+        assert!(got.len() == 2 && token_ok && ssh_ok);
+    }
 
     #[test]
     fn embedded_keys_match_case_insensitively() {

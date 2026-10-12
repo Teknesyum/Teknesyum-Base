@@ -456,7 +456,7 @@
   },
   "userKeys": {
     "title": "Anahtar ve Drive",
-    "intro": "Token, private depo anahtarı, deponun SSH anahtarı (deploy key) ya da Drive dosya linki: hepsi buraya yapıştırılır. Anahtar hangi private depoları açıyorsa yalnız onlar görünür; hiç private depo açmayan anahtar genel token olarak saklanır.",
+    "intro": "Token, private depo anahtarı, deponun SSH anahtarı (deploy key) ya da Drive dosya linki: hepsi buraya yapıştırılır. Token ile SSH anahtarı tek parça yapıştırılırsa Base ikisini ayıklar ve ikisini de saklar. Anahtar hangi private depoları açıyorsa yalnız onlar görünür; hiç private depo açmayan anahtar genel token olarak saklanır.",
     "key": "Anahtar ya da Drive linki",
     "add": "Ekle",
     "checking": "Denetleniyor",

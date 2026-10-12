@@ -456,7 +456,7 @@
   },
   "userKeys": {
     "title": "Keys and Drive",
-    "intro": "A token, a private repository key, a repository SSH key (deploy key) or a Drive file link: paste any of them here. Only the private repositories the key opens appear; a key that opens no private repository is kept as the general token.",
+    "intro": "A token, a private repository key, a repository SSH key (deploy key) or a Drive file link: paste any of them here. A token and an SSH key pasted together in one piece are told apart and both stored. Only the private repositories the key opens appear; a key that opens no private repository is kept as the general token.",
     "key": "Key or Drive link",
     "add": "Add",
     "checking": "Checking",

@@ -425,6 +425,11 @@
     "note": "Base installs each one in turn with winget, or with the vendor's official installer after checking its signature when winget is missing. Confirming also accepts the vendors' license terms; Windows may ask for administrator approval.",
     "confirm": "Install all and continue"
   },
+  "readOnlyKey": {
+    "title": "Install {name} with a read-only key?",
+    "body": "Base holds only a read-only access token for {name}, not its SSH key. The program installs, opens and downloads current data, but cannot send the changes made on this computer back to the repository. To let it send, add this repository's SSH key in Settings.",
+    "confirm": "Install anyway"
+  },
   "claude": {
     "title": "Install Claude Code first?",
     "body": "{name} is a Claude Code plugin and Claude Code was not found on this computer. Base installs Claude Code with winget first, then adds the plugin.",

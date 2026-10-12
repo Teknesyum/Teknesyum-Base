@@ -425,6 +425,11 @@
     "note": "Base her birini winget ile, winget yoksa üreticinin imzası doğrulanmış resmî kurucusuyla sırayla kurar. Onaylarsan üreticilerin lisans koşullarını da kabul etmiş olursun; Windows yönetici onayı isteyebilir.",
     "confirm": "Hepsini kur ve devam et"
   },
+  "readOnlyKey": {
+    "title": "{name} yalnız okunabilir anahtarla kurulsun mu?",
+    "body": "Base'de {name} için yalnız okuma izni olan erişim anahtarı var, SSH anahtarı yok. Program kurulur, açılır ve güncel veriyi indirir; ancak bu bilgisayarda yaptığın değişiklikleri depoya gönderemez. Gönderebilmesi için Ayarlar'dan bu deponun SSH anahtarını ekle.",
+    "confirm": "Yine de kur"
+  },
   "claude": {
     "title": "Önce Claude Code kurulsun mu?",
     "body": "{name} bir Claude Code eklentisi ve bu bilgisayarda Claude Code bulunamadı. Base önce Claude Code'u winget ile kurar, ardından eklentiyi ekler.",

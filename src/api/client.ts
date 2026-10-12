@@ -46,6 +46,7 @@ export const api = {
   driveRemove: (id: string) => call<void>(commands.driveRemove, { id }),
   driveDownload: (id: string) => call<string>(commands.driveDownload, { id }),
   driveReveal: (path: string) => call<void>(commands.driveReveal, { path }),
+  checkoutReadOnly: (owner: string, name: string) => call<boolean>(commands.checkoutReadOnly, { owner, name }),
   missingPrereqs: (owner: string, name: string, clone: boolean) => call<PrereqInfo[]>(commands.missingPrereqs, { owner, name, clone }),
   cancelTask: (taskId: string) => call<void>(commands.cancelTask, { taskId }),
   launch: (fullName: string) => call<void>(commands.launch, { fullName }),

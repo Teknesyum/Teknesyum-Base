@@ -376,6 +376,8 @@ export async function mockInvoke<T>(cmd: string, args: Record<string, unknown> =
     }
     case 'drive_reveal':
       return out(undefined);
+    case 'checkout_read_only':
+      return out(args.name === 'Kalem');
     case 'missing_prereqs':
       return out([]);
     case 'clone_repo':

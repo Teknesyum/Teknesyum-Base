@@ -702,6 +702,19 @@ pub async fn missing_prereqs(
         .unwrap_or_default())
 }
 
+/// True when the program syncs from its own checkout and Base holds only a read-only token for it.
+#[tauri::command]
+pub async fn checkout_read_only(state: State<'_, AppState>, owner: String, name: String) -> AppResult<bool> {
+    check_part(&owner, "hesap adı")?;
+    check_part(&name, "depo adı")?;
+    let full = format!("{owner}/{name}");
+    let manifest = state.gh().manifest(&owner, &name, false).await.ok().flatten();
+    if crate::sshkey::checkout_for(&full, manifest.as_ref()).is_none() {
+        return Ok(false);
+    }
+    Ok(matches!(crate::sshkey::access(&full), Some(crate::sshkey::Access::Token(_))))
+}
+
 #[tauri::command]
 pub async fn uninstall_repo(app: AppHandle, state: State<'_, AppState>, full_name: String) -> AppResult<String> {
     let (_, name) = split_full(&full_name)?;

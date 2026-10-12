@@ -35,6 +35,7 @@ function Frame() {
   const [detail, setDetail] = useState<Target | null>(null);
   const [removal, setRemoval] = useState<Target | null>(null);
   const [claudeAsk, setClaudeAsk] = useState<Target | null>(null);
+  const [keyAsk, setKeyAsk] = useState<Target | null>(null);
   const [prereqAsk, setPrereqAsk] = useState<(Target & { items: PrereqInfo[]; clone?: boolean }) | null>(null);
   const [clearing, setClearing] = useState<Opener | undefined>(undefined);
   const [updateFrom, setUpdateFrom] = useState<HTMLElement | null | undefined>(undefined);
@@ -110,6 +111,15 @@ function Frame() {
     return () => document.removeEventListener('click', onClick);
   }, []);
 
+  const installFresh = (repo: Repo, opener?: Opener) => {
+    void api
+      .missingPrereqs(repo.owner, repo.name, false)
+      .catch(() => [] as PrereqInfo[])
+      .then((items) => {
+        if (items.length) setPrereqAsk({ fullName: repo.fullName, opener: opener ?? null, items });
+        else void store.start(repo, 'install');
+      });
+  };
   const onPrimary = (repo: Repo, opener?: Opener) => {
     const p = primaryOf(repo);
     if (repo.plugin && (p === 'install' || p === 'update') && !store.list?.claudeCode) {
@@ -130,11 +140,11 @@ function Frame() {
     }
     else if (repo.installState === 'not-installed' && !repo.plugin) {
       void api
-        .missingPrereqs(repo.owner, repo.name, false)
-        .catch(() => [] as PrereqInfo[])
-        .then((items) => {
-          if (items.length) setPrereqAsk({ fullName: repo.fullName, opener: opener ?? null, items });
-          else void store.start(repo, 'install');
+        .checkoutReadOnly(repo.owner, repo.name)
+        .catch(() => false)
+        .then((readOnly) => {
+          if (readOnly) setKeyAsk({ fullName: repo.fullName, opener: opener ?? null });
+          else installFresh(repo, opener);
         });
     } else void store.start(repo, 'install');
   };
@@ -160,6 +170,7 @@ function Frame() {
   const removeRepo = find(removal);
   const askRepo = find(claudeAsk);
   const prereqRepo = find(prereqAsk);
+  const keyRepo = find(keyAsk);
 
   return (
     <div ref={appRef} className="app">
@@ -277,6 +288,18 @@ function Frame() {
           setClaudeAsk(null);
         }}
         onClose={() => setClaudeAsk(null)}
+      />
+      <ConfirmDialog
+        open={!!keyAsk && !!keyRepo}
+        title={t('readOnlyKey.title', { name: keyRepo?.name ?? '' })}
+        body={t('readOnlyKey.body', { name: keyRepo?.name ?? '' })}
+        confirmLabel={t('readOnlyKey.confirm')}
+        returnTo={keyAsk?.opener ?? null}
+        onConfirm={() => {
+          if (keyRepo) installFresh(keyRepo, keyAsk?.opener ?? undefined);
+          setKeyAsk(null);
+        }}
+        onClose={() => setKeyAsk(null)}
       />
       <ConfirmDialog
         open={!!prereqAsk && !!prereqRepo}

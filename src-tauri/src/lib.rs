@@ -215,6 +215,7 @@ pub fn run() {
             commands::uninstall_repo,
             commands::clone_repo,
             commands::missing_prereqs,
+            commands::checkout_read_only,
             commands::repo_keys,
             commands::user_repo_keys,
             commands::add_repo_key,

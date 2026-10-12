@@ -161,6 +161,7 @@ export const commands = {
   uninstall: 'uninstall_repo',
   clone: 'clone_repo',
   missingPrereqs: 'missing_prereqs',
+  checkoutReadOnly: 'checkout_read_only',
   repoKeys: 'repo_keys',
   userRepoKeys: 'user_repo_keys',
   addRepoKey: 'add_repo_key',

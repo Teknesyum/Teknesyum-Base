@@ -82,6 +82,18 @@ pub async fn add(http: &reqwest::Client, key: &str) -> AppResult<Vec<String>> {
         return Ok(vec![full]);
     }
     let key = key.trim();
+    if crate::sshkey::is_public_part(key) {
+        return Err(AppError::new(
+            ErrorCode::Auth,
+            "Bu, anahtarın açık yarısı ya da parmak izi. Base'e özel yarısı gerekir: \"-----BEGIN OPENSSH PRIVATE KEY-----\" ile başlayan dosyanın tamamı.",
+        ));
+    }
+    if key.contains("PRIVATE KEY") {
+        return Err(AppError::new(
+            ErrorCode::Auth,
+            "SSH anahtarı eksik ya da bozuk kopyalanmış. \"-----BEGIN\" satırından \"-----END\" satırına kadar tamamını kopyala.",
+        ));
+    }
     if key.is_empty() || key.chars().any(char::is_whitespace) {
         return Err(AppError::new(ErrorCode::Auth, "Anahtar geçersiz görünüyor."));
     }

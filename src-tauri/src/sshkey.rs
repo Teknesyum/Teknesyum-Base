@@ -47,8 +47,14 @@ pub fn remove(full_name: &str) -> AppResult<()> {
 
 /// Rebuilds a private key from what a password field leaves of it (line breaks gone,
 /// CRLF, stray spaces) or from a base64 wrapped copy of the key file.
+pub fn is_public_part(raw: &str) -> bool {
+    let raw = raw.trim();
+    ["ssh-ed25519 ", "ssh-rsa ", "ecdsa-sha2-", "sk-ssh-", "SHA256:"].iter().any(|p| raw.starts_with(p))
+}
+
 pub fn normalize(raw: &str) -> Option<String> {
-    let raw = raw.trim().trim_start_matches('\u{feff}');
+    let unescaped = raw.replace("\\r", "").replace("\\n", "\n");
+    let raw = unescaped.trim().trim_start_matches('\u{feff}');
     if !raw.contains("-----BEGIN") {
         let compact: String = raw.chars().filter(|c| !c.is_whitespace()).collect();
         let bytes = base64::engine::general_purpose::STANDARD.decode(compact).ok()?;
@@ -437,6 +443,18 @@ mod tests {
         let body = base64::engine::general_purpose::STANDARD.encode((0..200u8).collect::<Vec<u8>>());
         let lines: Vec<&str> = body.as_bytes().chunks(70).map(|c| std::str::from_utf8(c).unwrap()).collect();
         format!("-----BEGIN OPENSSH PRIVATE KEY-----\n{}\n-----END OPENSSH PRIVATE KEY-----\n", lines.join("\n"))
+    }
+
+    #[test]
+    fn normalize_reads_a_key_copied_out_of_json() {
+        let plain = key();
+        let escaped = format!("\"{}\"", plain.replace('\n', "\\n"));
+        assert_eq!(normalize(&escaped).as_deref(), Some(plain.as_str()));
+        let crlf = plain.replace('\n', "\\r\\n");
+        assert_eq!(normalize(&crlf).as_deref(), Some(plain.as_str()));
+        assert!(is_public_part("ssh-ed25519 AAAAC3Nz ad"));
+        assert!(is_public_part(" SHA256:abc"));
+        assert!(!is_public_part(&plain));
     }
 
     #[test]

@@ -10,7 +10,8 @@ const BADGE: Record<KeyState, string> = {
   invalid: 'update-available',
   'no-access': 'update-available',
   unknown: 'not-installed',
-  ssh: 'installed',
+  ssh: 'update-available',
+  both: 'installed',
 };
 
 function tokenUrl(fullName: string, write: boolean): string {

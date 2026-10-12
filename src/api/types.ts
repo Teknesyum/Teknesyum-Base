@@ -123,7 +123,7 @@ export type AppInfo = {
   kare?: string | null;
 };
 
-export type KeyState = 'missing' | 'ok' | 'invalid' | 'no-access' | 'unknown' | 'ssh';
+export type KeyState = 'missing' | 'ok' | 'invalid' | 'no-access' | 'unknown' | 'ssh' | 'both';
 export type KeyStatus = { fullName: string; state: KeyState };
 
 export type PrereqInfo = { id: string; label: string };

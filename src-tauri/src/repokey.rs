@@ -19,6 +19,7 @@ pub enum KeyState {
     NoAccess,
     Unknown,
     Ssh,
+    Both,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -172,6 +173,7 @@ pub async fn check(http: &reqwest::Client, full_name: &str) -> KeyState {
         .send()
         .await;
     match r.map(|r| r.status().as_u16()) {
+        Ok(200) if crate::sshkey::get(full_name).is_some() => KeyState::Both,
         Ok(200) => KeyState::Ok,
         Ok(401) => KeyState::Invalid,
         Ok(403 | 404) => KeyState::NoAccess,

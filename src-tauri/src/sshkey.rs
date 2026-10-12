@@ -237,6 +237,17 @@ pub fn identify(key: &str) -> AppResult<String> {
     result
 }
 
+/// The manifest's checkout, or the known one for programs whose manifest predates the field.
+pub fn checkout_for(full_name: &str, manifest: Option<&crate::model::Manifest>) -> Option<Checkout> {
+    if let Some(c) = manifest.and_then(|m| m.checkout.clone()) {
+        return Some(c);
+    }
+    full_name.eq_ignore_ascii_case("Teknesyum/Asistan").then(|| Checkout {
+        path: "%LOCALAPPDATA%\\Asistan\\depo".into(),
+        ssh_key: "%LOCALAPPDATA%\\Asistan\\anahtar".into(),
+    })
+}
+
 pub struct Target {
     pub dir: PathBuf,
     pub key_file: PathBuf,
@@ -381,6 +392,14 @@ mod tests {
         assert_eq!(parse_greeting(text).as_deref(), Some("Teknesyum/Asistan"));
         assert_eq!(parse_greeting("Hi tcggmn! You've successfully authenticated"), None);
         assert_eq!(parse_greeting("git@github.com: Permission denied (publickey)."), None);
+    }
+
+    #[test]
+    fn asistan_has_a_known_checkout() {
+        let c = checkout_for("teknesyum/asistan", None).unwrap();
+        assert_eq!(c.path, "%LOCALAPPDATA%\\Asistan\\depo");
+        assert_eq!(c.ssh_key, "%LOCALAPPDATA%\\Asistan\\anahtar");
+        assert!(checkout_for("Teknesyum/VideoEdit", None).is_none());
     }
 
     #[test]

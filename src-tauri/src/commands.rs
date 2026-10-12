@@ -771,7 +771,7 @@ pub async fn cancel_task(state: State<'_, AppState>, task_id: String) -> AppResu
 
 /// Clones the checkout a manifest asks for when it is missing and Base holds the deploy key.
 async fn ensure_checkout(full_name: &str, manifest: Option<&crate::model::Manifest>) -> AppResult<()> {
-    let Some(target) = manifest.and_then(|m| m.checkout.as_ref()).and_then(crate::sshkey::target) else {
+    let Some(target) = crate::sshkey::checkout_for(full_name, manifest).and_then(|c| crate::sshkey::target(&c)) else {
         return Ok(());
     };
     if crate::sshkey::ready(&target) {

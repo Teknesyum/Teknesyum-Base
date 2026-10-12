@@ -757,7 +757,7 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
     }
 
     let full = format!("{owner}/{name}");
-    let checkout_note = match manifest.as_ref().and_then(|m| m.checkout.clone()) {
+    let checkout_note = match crate::sshkey::checkout_for(&full, manifest.as_ref()) {
         Some(c) if !dry => provision_checkout(&task, &full, &c).await,
         _ => None,
     };

@@ -299,6 +299,15 @@ pub fn sibling(exe: &Path, suffix: &str) -> PathBuf {
 pub fn cleanup_leftovers(exe: &Path) {
     let _ = std::fs::remove_file(sibling(exe, ".old"));
     let _ = std::fs::remove_file(sibling(exe, ".new"));
+    let (Some(dir), Some(name)) = (exe.parent(), exe.file_name().and_then(|n| n.to_str())) else {
+        return;
+    };
+    let prefix = format!("{name}.old-");
+    for entry in std::fs::read_dir(dir).into_iter().flatten().flatten() {
+        if entry.file_name().to_str().is_some_and(|n| n.starts_with(&prefix)) {
+            let _ = std::fs::remove_file(entry.path());
+        }
+    }
 }
 
 pub fn swap_in(exe: &Path) -> std::io::Result<()> {
@@ -310,8 +319,12 @@ pub fn swap_in(exe: &Path) -> std::io::Result<()> {
             format!("{} bulunamadı", new.display()),
         ));
     }
-    if old.exists() {
-        std::fs::remove_file(&old)?;
+    if old.exists() && std::fs::remove_file(&old).is_err() {
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis())
+            .unwrap_or_default();
+        std::fs::rename(&old, sibling(exe, &format!(".old-{stamp}")))?;
     }
     std::fs::rename(exe, &old)?;
     if let Err(e) = std::fs::rename(&new, exe) {
@@ -828,6 +841,34 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
+    }
+
+    #[test]
+    fn swap_moves_a_locked_old_file_aside() {
+        let dir = std::env::temp_dir().join(format!("tk-swap-kilit-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let exe = dir.join("app.exe");
+        let old = sibling(&exe, ".old");
+        std::fs::write(&exe, b"simdiki").unwrap();
+        std::fs::write(sibling(&exe, ".new"), b"yeni").unwrap();
+        let ping = PathBuf::from(std::env::var_os("SystemRoot").unwrap()).join("System32").join("ping.exe");
+        std::fs::copy(ping, &old).unwrap();
+        let mut running = std::process::Command::new(&old)
+            .args(["-n", "30", "127.0.0.1"])
+            .stdout(std::process::Stdio::null())
+            .spawn()
+            .unwrap();
+        assert!(std::fs::remove_file(&old).is_err());
+        swap_in(&exe).unwrap();
+        assert_eq!(std::fs::read(&exe).unwrap(), b"yeni");
+        assert_eq!(std::fs::read(&old).unwrap(), b"simdiki");
+        let aside = std::fs::read_dir(&dir).unwrap().flatten().filter(|e| e.file_name().to_string_lossy().contains(".old-")).count();
+        assert_eq!(aside, 1);
+        running.kill().unwrap();
+        running.wait().unwrap();
+        cleanup_leftovers(&exe);
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 1);
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

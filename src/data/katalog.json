@@ -612,6 +612,61 @@
       ]
     }
   },
+  "kuran-analiz": {
+    "category": "other",
+    "tags": {
+      "tr": [
+        "kuran",
+        "arapça",
+        "analiz",
+        "araştırma"
+      ],
+      "en": [
+        "quran",
+        "arabic",
+        "analysis",
+        "research"
+      ]
+    },
+    "summary": {
+      "tr": "Kur'an'ın yalnız Arapça metninden yola çıkan, yeniden üretilebilir analiz dizisi. Hiçbir hazır meal kullanılmaz; her Arapça pasaj analizin içinde yeniden çevrilir. Testlerin çoğu ön kayıtlıdır: ölçüt ve karar kuralları saymadan önce yazılmış, sonra değiştirilmemiştir. Olasılık tabloları yalnız veriden hesaplanır, varsayımların kattığı ayrı satırda verilir. Raporlar Türkçe, İngilizce özetlidir; Python betikleri ve kaynak listeleriyle birlikte gelir.",
+      "en": "A reproducible series of analyses that start from the Arabic text of the Qur'an alone. No existing translation is used; every Arabic passage is translated afresh inside the analysis. Most tests are pre-registered: criteria and decision rules were written before counting and not changed afterwards. Probability tables are computed from the data alone, and what the assumptions add is reported on a separate row. Reports are in Turkish with an English abstract, and come with the Python scripts and source lists."
+    },
+    "lead": {
+      "tr": "Kur'an Arapça Metni Üzerine Ön Kayıtlı Analizler",
+      "en": "Pre-Registered Analyses of the Arabic Qur'an Text"
+    },
+    "uses": {
+      "tr": [
+        "Analiz raporlarını oku",
+        "Sonuçları kendin üret",
+        "Ön kayıtları incele"
+      ],
+      "en": [
+        "Read the analysis reports",
+        "Reproduce the results yourself",
+        "Review the pre-registrations"
+      ]
+    },
+    "points": {
+      "tr": [
+        "Yalnız Arapça metinden, hazır meal kullanılmadan",
+        "Ölçütleri saymadan önce yazılmış ön kayıtlı testler",
+        "Veri tabloları varsayımlardan ayrı",
+        "Python betikleriyle yeniden üretilebilir",
+        "Danışma kayıtları tam metin",
+        "Türkçe rapor, İngilizce özet"
+      ],
+      "en": [
+        "From the Arabic text alone, no existing translation",
+        "Pre-registered tests with criteria fixed before counting",
+        "Data tables kept apart from assumptions",
+        "Reproducible with Python scripts",
+        "Adviser consultations kept verbatim",
+        "Turkish reports with an English abstract"
+      ]
+    }
+  },
   "Mirror-Translate": {
     "category": "ai",
     "tags": {
@@ -727,6 +782,70 @@
         "Persistent memory of deep searches",
         "Local server and a Tampermonkey board script",
         "No admin rights needed to install"
+      ]
+    }
+  },
+  "NobetListesi": {
+    "category": "medical",
+    "tags": {
+      "tr": [
+        "nöbet",
+        "ameliyathane",
+        "hemşire",
+        "planlama"
+      ],
+      "en": [
+        "duty-roster",
+        "operating-room",
+        "nursing",
+        "scheduling"
+      ]
+    },
+    "summary": {
+      "tr": "Ameliyathane hemşire ekibi için taşınabilir nöbet listesi uygulaması. Kota ve isteklere göre aylık listeyi kurar, art arda nöbet vermez, herkesin ödeme puanını eşitler; az nöbet isteyen önce en ucuz günlerini bırakır. Geçmiş ayları genel çetelede toplar ve farkları sonraki aylarda kapatır. Sürükle bırak takas, sabitlenen hücreler, kayıt yuvaları ve A4 yatay tek sayfa baskı sunar. USB bellekten çalışır, kurulum ve tarayıcı istemez; personel verisi yerelde kalır.",
+      "en": "A portable duty-roster app for an operating-room nursing team. It builds the monthly list from quotas and requests, never gives back-to-back shifts and equalises everyone's pay points; a nurse who asks for fewer duties gives up the cheapest days first. Past months add up in a general tally and the gaps close in the following months. Drag-and-drop swaps, pinned cells, save slots and one-page A4 landscape printing are included. It runs from a USB stick with no install and no browser; staff data stays local."
+    },
+    "lead": {
+      "tr": "Ameliyathane Hemşire Nöbet Listesi Oluşturucu",
+      "en": "Operating Room Nurse Duty Roster Builder"
+    },
+    "uses": {
+      "tr": [
+        "Aylık nöbet listesini kur",
+        "Nöbet ücretini adil dağıt",
+        "Geçmiş ayların farkını kapat",
+        "Listeyi A4 tek sayfa yazdır"
+      ],
+      "en": [
+        "Build the monthly duty list",
+        "Share duty pay fairly",
+        "Close gaps from past months",
+        "Print the list on one A4 page"
+      ]
+    },
+    "icon": "HemsireNobet/simge.png",
+    "points": {
+      "tr": [
+        "Kota, istek, izin ve gruplara göre aylık liste",
+        "Para eşitliği: puan farkı en çok 1",
+        "Az nöbet isteyen önce en ucuz günlerini bırakır",
+        "Genel çetele, kabul edilen aylar ve kapsanan kişiler",
+        "Sürükle bırak takas, kural ve istek etkisine göre renkli",
+        "Sabitlenen hücreler ve ay başına üç kayıt yuvası",
+        "Liste ve çetele A4 yatay tek sayfa baskı",
+        "USB bellekten çalışır, kurulum gerektirmez",
+        "Kendi kendini günceller, bozuk paketten geri döner"
+      ],
+      "en": [
+        "Monthly list from quotas, requests, leave and groups",
+        "Pay equality: point gap of at most 1",
+        "Fewer-duty requests give up the cheapest days first",
+        "General tally with accepted months and covered people",
+        "Drag-and-drop swaps coloured by rule and request impact",
+        "Pinned cells and three save slots per month",
+        "List and tally printed on one A4 landscape page",
+        "Runs from a USB stick, no install",
+        "Updates itself and falls back from a broken package"
       ]
     }
   },
@@ -1031,6 +1150,61 @@
         "One PowerShell command, SHA-256 verified install",
         "Update check on startup",
         "Windows 10/11, Turkish interface"
+      ]
+    }
+  },
+  "SlaytEdit": {
+    "category": "productivity",
+    "tags": {
+      "tr": [
+        "sunum",
+        "slayt",
+        "pptx",
+        "ölçüm"
+      ],
+      "en": [
+        "presentation",
+        "slides",
+        "pptx",
+        "measurement"
+      ]
+    },
+    "summary": {
+      "tr": "Bir konuyu ve kaynaklarını ölçüm kapısından geçmiş bir slayt destesine çeviren hat. Slaytlar HTML olarak yazılır, başsız Chrome'da işlenir; kırpılan harf, kötü başlık kırılması, küçük harfle başlama, 7:1 altı kontrast ve taşma hata sayılır. Yargı gerektirmeyen düzeltmeleri kendisi uygular, kapı geçmeden paketlemez. Çıktı PPTX, tek dosya HTML ve konuşmacı notlarıdır.",
+      "en": "A pipeline that turns a topic and its sources into a slide deck that has passed a measurement gate. Slides are written as HTML and rendered in headless Chrome; clipped glyphs, bad heading breaks, lowercase starts, contrast below 7:1 and overflow count as failures. Fixes that need no judgement are applied automatically, and nothing is packaged until the gate passes. The output is a PPTX, a single-file HTML and speaker notes."
+    },
+    "lead": {
+      "tr": "Ölçüm Kapılı Slayt Destesi Hattı",
+      "en": "Measurement-Gated Slide Deck Pipeline"
+    },
+    "uses": {
+      "tr": [
+        "Konudan slayt destesi çıkar",
+        "Slaytları otomatik ölç",
+        "PPTX ve HTML olarak paketle"
+      ],
+      "en": [
+        "Turn a topic into a deck",
+        "Measure slides automatically",
+        "Package as PPTX and HTML"
+      ]
+    },
+    "points": {
+      "tr": [
+        "Konu ve kaynak dosyalarından deste",
+        "Başsız Chrome ile slayt başına ölçüm",
+        "Kırpılan harf, taşma ve kontrast denetimi",
+        "Yargı gerektirmeyen düzeltmeler otomatik",
+        "Kapı geçmeden paketleme yok",
+        "PPTX, tek dosya HTML ve konuşmacı notları"
+      ],
+      "en": [
+        "Decks from a topic and its source files",
+        "Per-slide measurement in headless Chrome",
+        "Checks for clipped glyphs, overflow and contrast",
+        "Automatic fixes that need no judgement",
+        "No packaging until the gate passes",
+        "PPTX, single-file HTML and speaker notes"
       ]
     }
   },

@@ -72,7 +72,7 @@ WebView2 is required; Windows 10 and 11 normally have it, and the installer fetc
 
 Base calls the GitHub REST API for the account's repositories, then for each one its latest ten releases and its `teknesyum.json`, if any. Without a token GitHub allows 60 requests an hour; the first refresh of 16 repositories costs about 17. After that Base sends the stored ETag, reuses the releases and manifest of a repository whose last push has not changed, for up to six hours, and a second refresh costs 1. When the limit is reached it keeps showing the cached list with the time the limit resets. In the normal build a personal token raises the limit to 5,000 and is kept in Windows Credential Manager, never in a file.
 
-To install, Base picks the asset named in the manifest, or the first Windows asset by extension. It downloads to a temporary file, checks the SHA-256 when the release publishes one, extracts or runs it, and records what it placed. Updating replaces that record; removing deletes only what was recorded.
+To install, Base picks the asset named in the manifest, or the first Windows asset by extension. It downloads to a temporary file, checks the SHA-256 when the release publishes one, extracts or runs it, and records what it placed. Updating replaces that record, except paths listed in the manifest's `keep` field (such as a `data/` folder), which survive a zip update; removing deletes only what was recorded.
 
 A repository can describe itself with a `.teknesyum/` folder: `teknesyum.json` (the manifest), `icon.png`, `shot.jpg` (screenshot) and `full.jpg` (full-resolution image). Base reads it live from each repository. A catalog index, built hourly by GitHub Actions, is used as a fallback. Example `teknesyum.json`:
 

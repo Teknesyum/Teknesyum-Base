@@ -1176,6 +1176,8 @@ mod tests {
         let m = parse_manifest(r#"{"name":"X","keep":["veri","ayar.ini"]}"#).unwrap();
         assert_eq!(m.keep.unwrap(), vec!["veri", "ayar.ini"]);
         assert!(parse_manifest(r#"{"name":"X"}"#).unwrap().keep.is_none());
+        assert_eq!(parse_manifest(r#"{"name":"X","desktop":true}"#).unwrap().desktop, Some(true));
+        assert!(parse_manifest(r#"{"name":"X"}"#).unwrap().desktop.is_none());
     }
 
     #[test]

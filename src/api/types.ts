@@ -12,6 +12,7 @@ export type Manifest = {
   run?: string;
   silentArgs?: string[];
   keep?: string[];
+  desktop?: boolean;
   icon?: string;
   screenshot?: string;
   full?: string;

@@ -45,6 +45,8 @@ pub struct Manifest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub keep: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub desktop: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub screenshot: Option<String>,

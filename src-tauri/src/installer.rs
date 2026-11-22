@@ -825,7 +825,8 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
         _ => None,
     };
     let mut desktop = false;
-    if let (Some(exe), true, false) = (&exe, env.desktop_shortcut, dry) {
+    let want_desktop = env.desktop_shortcut || manifest.as_ref().and_then(|m| m.desktop).unwrap_or(false);
+    if let (Some(exe), true, false) = (&exe, want_desktop, dry) {
         match write_desktop_shortcut(&full, exe) {
             Ok(lnk) => {
                 task.log(TaskStep::Shortcut, 98, &format!("Masaüstü kısayolu: {}", lnk.display()));

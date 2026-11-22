@@ -11,6 +11,7 @@ export type Manifest = {
   method?: InstallMethod;
   run?: string;
   silentArgs?: string[];
+  keep?: string[];
   icon?: string;
   screenshot?: string;
   full?: string;

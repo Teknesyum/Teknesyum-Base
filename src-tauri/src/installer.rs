@@ -288,7 +288,7 @@ fn find_main_exe(dir: &Path, repo: &str, run: Option<&str>) -> Option<PathBuf> {
     logic::pick_main_exe(repo, &exes).map(|rel| dir.join(rel))
 }
 
-fn swap_into(stage: &Path, target: &Path, scratch: &Path) -> AppResult<()> {
+fn swap_into(stage: &Path, target: &Path, scratch: &Path, keep: &[String]) -> AppResult<()> {
     let backup = scratch.join("onceki");
     let had_old = target.exists();
     if had_old {
@@ -304,7 +304,69 @@ fn swap_into(stage: &Path, target: &Path, scratch: &Path) -> AppResult<()> {
         }
         return Err(AppError::io(format!("Dosyalar yerine konamadı: {e}")));
     }
+    if had_old {
+        carry_kept(&backup, target, keep);
+    }
     Ok(())
+}
+
+fn keep_rel(raw: &str) -> Option<PathBuf> {
+    let t = raw.trim();
+    if t.is_empty() {
+        return None;
+    }
+    let p = Path::new(t);
+    if p.is_absolute() || t.starts_with(['/', '\\']) {
+        return None;
+    }
+    let mut out = PathBuf::new();
+    for c in p.components() {
+        match c {
+            std::path::Component::Normal(x) => out.push(x),
+            std::path::Component::CurDir => {}
+            _ => return None,
+        }
+    }
+    if out.as_os_str().is_empty() {
+        None
+    } else {
+        Some(out)
+    }
+}
+
+fn copy_tree(from: &Path, to: &Path) -> std::io::Result<()> {
+    if from.is_dir() {
+        fs::create_dir_all(to)?;
+        for e in fs::read_dir(from)? {
+            let e = e?;
+            copy_tree(&e.path(), &to.join(e.file_name()))?;
+        }
+        Ok(())
+    } else {
+        fs::copy(from, to).map(|_| ())
+    }
+}
+
+fn carry_kept(old: &Path, new: &Path, keep: &[String]) {
+    for raw in keep {
+        let Some(rel) = keep_rel(raw) else { continue };
+        let src = old.join(&rel);
+        if !src.exists() {
+            continue;
+        }
+        let dst = new.join(&rel);
+        if dst.is_dir() {
+            let _ = fs::remove_dir_all(&dst);
+        } else if dst.exists() {
+            let _ = fs::remove_file(&dst);
+        }
+        if let Some(parent) = dst.parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        if fs::rename(&src, &dst).is_err() {
+            let _ = copy_tree(&src, &dst);
+        }
+    }
 }
 
 #[cfg(windows)]
@@ -546,6 +608,7 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
             )
         })?;
     let manifest = env.gh.manifest(&owner, &name, false).await.ok().flatten();
+    let keep: Vec<String> = manifest.as_ref().and_then(|m| m.keep.clone()).unwrap_or_default();
     task.check()?;
     let refs = release.asset_refs();
     let picked = if prefer_setup && manifest.as_ref().and_then(|m| m.asset.as_deref()).is_none() {
@@ -640,21 +703,21 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
             })?;
             let rel = main.strip_prefix(&root).unwrap_or(&main).to_path_buf();
             fs::rename(&root, &stage)?;
-            swap_into(&stage, &target, &scratch)?;
+            swap_into(&stage, &target, &scratch, &keep)?;
             task.log(TaskStep::Install, 95, &format!("Dosyalar yerleşti: {}", target.display()));
             (Some(target.join(rel)), None)
         }
         AssetKind::Portable => {
             fs::create_dir_all(&stage)?;
             fs::rename(&file, stage.join(&asset.name))?;
-            swap_into(&stage, &target, &scratch)?;
+            swap_into(&stage, &target, &scratch, &keep)?;
             task.log(TaskStep::Install, 95, &format!("Program yerleşti: {}", target.display()));
             (Some(target.join(&asset.name)), None)
         }
         AssetKind::Msi => {
             fs::create_dir_all(&stage)?;
             fs::rename(&file, stage.join(&asset.name))?;
-            swap_into(&stage, &target, &scratch)?;
+            swap_into(&stage, &target, &scratch, &keep)?;
             let msi = target.join(&asset.name);
             if dry {
                 task.log(TaskStep::Install, 95, "Prova: msiexec çalıştırılmadı");
@@ -672,7 +735,7 @@ pub async fn install(env: Env, task: Task, owner: String, name: String, prefer_s
         AssetKind::Setup => {
             fs::create_dir_all(&stage)?;
             fs::rename(&file, stage.join(&asset.name))?;
-            swap_into(&stage, &target, &scratch)?;
+            swap_into(&stage, &target, &scratch, &keep)?;
             let setup = target.join(&asset.name);
             let manifest_args = manifest.as_ref().and_then(|m| m.silent_args.clone());
             let silent = match manifest_args {
@@ -1186,6 +1249,37 @@ pub async fn clone(env: Env, task: Task, owner: String, name: String) -> AppResu
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn keep_carries_paths_and_rejects_escapes() {
+        let base = std::env::temp_dir().join(format!("tk-keep-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&base);
+        let old = base.join("old");
+        let new = base.join("new");
+        fs::create_dir_all(old.join("veri/alt")).unwrap();
+        fs::create_dir_all(new.join("veri")).unwrap();
+        fs::write(old.join("veri/alt/a.txt"), "eski").unwrap();
+        fs::write(new.join("veri/yeni.txt"), "yeni").unwrap();
+        fs::write(old.join("ayar.ini"), "x").unwrap();
+        fs::write(base.join("disari.txt"), "d").unwrap();
+        let keep = vec![
+            "veri".to_string(),
+            "../disari.txt".to_string(),
+            "".to_string(),
+            "veri/../../disari.txt".to_string(),
+            base.join("disari.txt").to_string_lossy().into_owned(),
+        ];
+        carry_kept(&old, &new, &keep);
+        assert_eq!(fs::read_to_string(new.join("veri/alt/a.txt")).unwrap(), "eski");
+        assert!(!new.join("veri/yeni.txt").exists());
+        assert!(!new.join("ayar.ini").exists());
+        assert!(!new.join("disari.txt").exists());
+        assert!(base.join("disari.txt").exists());
+        assert!(keep_rel("..").is_none());
+        assert!(keep_rel("a/../b").is_none());
+        assert_eq!(keep_rel("./veri/x"), Some(PathBuf::from("veri/x")));
+        let _ = fs::remove_dir_all(&base);
+    }
 
     #[test]
     fn parses_git_progress_lines() {

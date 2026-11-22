@@ -1172,6 +1172,13 @@ mod tests {
     }
 
     #[test]
+    fn parses_manifest_keep() {
+        let m = parse_manifest(r#"{"name":"X","keep":["veri","ayar.ini"]}"#).unwrap();
+        assert_eq!(m.keep.unwrap(), vec!["veri", "ayar.ini"]);
+        assert!(parse_manifest(r#"{"name":"X"}"#).unwrap().keep.is_none());
+    }
+
+    #[test]
     fn detects_rate_limit_responses() {
         assert!(is_rate_limited(StatusCode::TOO_MANY_REQUESTS, None, None));
         assert!(is_rate_limited(StatusCode::FORBIDDEN, Some(0), None));

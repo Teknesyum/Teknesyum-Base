@@ -1,0 +1,17 @@
+name: Rust tests
+on:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: New-Item -ItemType Directory -Force dist | Out-Null
+      - run: cargo test
+        working-directory: src-tauri
